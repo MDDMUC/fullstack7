@@ -63,3 +63,23 @@ export default function Home() {
     </div>
   );
 }
+
+
+'use client'
+
+import { useEffect } from 'react'
+import { supabase } from '@/lib/supabaseClient'
+
+export default function Home() {
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data, error } = await supabase.from('profiles').select()
+      console.log('data:', data)
+      console.log('error:', error)
+    }
+
+    fetchData()
+  }, [])
+
+  return <main className="p-10 text-xl">Check the console 👀</main>
+}
