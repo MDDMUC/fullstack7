@@ -208,6 +208,7 @@ textarea:focus-visible {
 .profile-meta { color: var(--muted); margin: 0; }
 .tags-column { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
 .tag { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; background: rgba(92, 225, 230, 0.08); border: 1px solid var(--stroke); color: var(--accent); font-weight: 700; }
+.profile-avatar { width: 58px; height: 58px; border-radius: 12px; object-fit: cover; border: 1px solid var(--stroke); background: #0f131d; }
 .subtle-tag { color: var(--muted); font-size: 13px; border: 1px solid var(--stroke); padding: 5px 8px; border-radius: 999px; background: #0f131d; }
 .grade { font-weight: 700; color: var(--accent-2); }
 
@@ -254,6 +255,7 @@ textarea:focus-visible {
 }
 .site-footer a { color: var(--text); text-decoration: none; }
 .site-footer a:hover { color: var(--accent); }
+.footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 
 .toast {
   position: fixed;

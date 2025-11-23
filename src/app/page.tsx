@@ -1,9 +1,5 @@
-import ClimberList from '@/components/climberlist'
+import DatingExperience from '@/components/DatingExperience'
 
 export default function Home() {
-  return (
-    <main className="bg-white dark:bg-black min-h-screen">
-      <ClimberList />
-    </main>
-  )
+  return <DatingExperience />
 }

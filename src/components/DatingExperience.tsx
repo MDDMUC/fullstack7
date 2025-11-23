@@ -1,0 +1,491 @@
+'use client'
+
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { supabase }                              from '@/lib/supabaseClient'
+
+type Profile = {
+  id:           string
+  username:     string
+  age?:         number
+  city?:        string
+  style?:       string
+  availability?: string
+  grade?:       string
+  bio?:         string
+  avatar_url?:  string | null
+  created_at?:  string
+  pronouns?:    string
+  tags?:        string[]
+  status?:      string
+  goals?:       string
+}
+
+type Filters = {
+  location:    string
+  style:       string
+  availability: string
+  sort:        'recent' | 'grade' | 'name'
+}
+
+const demoProfiles: Profile[] = [
+  {
+    id: 'demo-1',
+    username: 'Skyler',
+    age: 28,
+    city: 'Denver, CO',
+    style: 'Sport • Alpine',
+    availability: 'Weekends',
+    grade: '5.11 • V5',
+    bio: 'Lead 5.11 sport, starting alpine season. Looking for sunrise pitches and soft catches.',
+    avatar_url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
+    tags: ['Belays soft', 'Weekend warrior', 'Training 4x4s'],
+    status: 'On belay',
+  },
+  {
+    id: 'demo-2',
+    username: 'Maya',
+    age: 31,
+    city: 'Boulder, CO',
+    style: 'Bouldering • Sport',
+    availability: 'Dawn patrol',
+    grade: 'V7 • 5.12a',
+    bio: 'Gym setter by day, moonboard fiend by night. Always down for Flatirons laps.',
+    avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
+    tags: ['Flashes V5', 'Loves long approaches', 'Flexible schedule'],
+    status: 'Looking to climb',
+  },
+  {
+    id: 'demo-3',
+    username: 'Rowan',
+    age: 26,
+    city: 'Seattle, WA',
+    style: 'Trad • Alpine',
+    availability: 'Weekends',
+    grade: '5.10+',
+    bio: 'Gear nerd with a soft spot for splitter cracks. Can lead 5.10+ and carry too many cams.',
+    avatar_url: 'https://images.unsplash.com/photo-1464863979621-258859e62245?auto=format&fit=crop&w=600&q=80',
+    tags: ['Cooks post-crag', 'Multi-pitch ready', 'Safe belayer'],
+    status: 'On belay',
+  },
+  {
+    id: 'demo-4',
+    username: 'Avery',
+    age: 29,
+    city: 'Salt Lake City, UT',
+    style: 'Bouldering • Sport',
+    availability: 'Weeknights',
+    grade: 'V6 • 5.11b',
+    bio: 'Training for Hueco. Looking for spray-free sessions and new beta partners.',
+    avatar_url: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=600&q=80',
+    tags: ['Moonboard keen', 'Road-trip friendly', 'Beta respectful'],
+    status: 'Ready to match',
+  },
+]
+
+const normalizeProfile = (profile: any): Profile => ({
+  id:           profile.id ?? crypto.randomUUID(),
+  username:     profile.username ?? profile.name ?? 'Climber',
+  age:          profile.age ?? profile.age_range ?? undefined,
+  city:         profile.city ?? profile.home ?? profile.location ?? '',
+  style:        profile.style ?? (Array.isArray(profile.styles) ? profile.styles.join(' • ') : profile.primary_style) ?? '',
+  availability: profile.availability ?? profile.schedule ?? '',
+  grade:        profile.grade ?? profile.grade_focus ?? profile.level ?? '',
+  bio:          profile.bio ?? profile.about ?? '',
+  avatar_url:   profile.avatar_url ?? profile.photo_url ?? null,
+  created_at:   profile.created_at,
+  pronouns:     profile.pronouns ?? profile.pronoun ?? '',
+  tags:         profile.tags ?? profile.traits ?? [],
+  status:       profile.status ?? profile.state ?? '',
+  goals:        profile.goals ?? profile.intent ?? '',
+})
+
+const gradeRank = (grade?: string) => {
+  if (!grade) return -1
+  const upper = grade.toUpperCase()
+
+  if (upper.startsWith('V')) {
+    const num = parseInt(upper.replace(/[^0-9]/g, ''), 10)
+    return Number.isNaN(num) ? -1 : num + 100 // keep bouldering separate
+  }
+
+  const sport = upper.match(/5\.(\d{1,2})([ABCD+-]?)/)
+  if (sport) {
+    const base = parseInt(sport[1], 10)
+    const letter = sport[2] ?? ''
+    const letterScore = { '': 0, '-': -1, '+': 1, A: 0, B: 1, C: 2, D: 3 } as const
+    return base * 10 + (letterScore[letter as keyof typeof letterScore] ?? 0)
+  }
+
+  return -1
+}
+
+const unique = (list: (string | undefined)[]) =>
+  Array.from(new Set(list.filter(Boolean) as string[]))
+
+export default function DatingExperience() {
+  const [profiles, setProfiles] = useState<Profile[]>(demoProfiles)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+  const [filters, setFilters] = useState<Filters>({
+    location: '',
+    style: '',
+    availability: '',
+    sort: 'recent',
+  })
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false })
+
+        if (error) throw error
+
+        if (data && data.length) {
+          const normalized = data.map(normalizeProfile).slice(0, 4) // only show 4 from DB on landing
+          setProfiles([...demoProfiles, ...normalized])
+        }
+      } catch (err) {
+        console.error('Failed to load profiles', err)
+        setError('Showing demo climbers until live data is available.')
+        setProfiles(demoProfiles)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfiles()
+  }, [])
+
+  useEffect(() => {
+    if (!toast) return
+    const id = setTimeout(() => setToast(null), 3200)
+    return () => clearTimeout(id)
+  }, [toast])
+
+  const locationOptions = useMemo(
+    () => unique(profiles.map(p => p.city)),
+    [profiles]
+  )
+
+  const styleOptions = useMemo(
+    () =>
+      unique(
+        profiles
+          .map(p => p.style?.split(/[•,/]/).map(s => s.trim()) ?? [])
+          .flat()
+      ),
+    [profiles]
+  )
+
+  const filteredProfiles = useMemo(() => {
+    let list = [...profiles]
+
+    if (filters.location) {
+      list = list.filter(
+        p => (p.city ?? '').toLowerCase() === filters.location.toLowerCase()
+      )
+    }
+
+    if (filters.style) {
+      list = list.filter(p =>
+        (p.style ?? '').toLowerCase().includes(filters.style.toLowerCase())
+      )
+    }
+
+    if (filters.availability) {
+      list = list.filter(p =>
+        (p.availability ?? '')
+          .toLowerCase()
+          .includes(filters.availability.toLowerCase())
+      )
+    }
+
+    if (filters.sort === 'name') {
+      list.sort((a, b) => (a.username || '').localeCompare(b.username || ''))
+    } else if (filters.sort === 'grade') {
+      list.sort((a, b) => gradeRank(b.grade) - gradeRank(a.grade))
+    } else {
+      list.sort((a, b) => {
+        const aDate = a.created_at ? Date.parse(a.created_at) : 0
+        const bDate = b.created_at ? Date.parse(b.created_at) : 0
+        return bDate - aDate
+      })
+    }
+
+    return list
+  }, [profiles, filters])
+
+  const featured = filteredProfiles[0] ?? profiles[0]
+  const matchesCount = filteredProfiles.length
+
+  const handleJoin = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    const data = new FormData(form)
+    const name = (data.get('name') as string)?.trim() || 'New climber'
+    const city = (data.get('home') as string)?.trim()
+    const style = (data.get('style') as string)?.trim()
+    const intent = (data.get('intent') as string)?.trim()
+
+    const newProfile: Profile = {
+      id: `local-${Date.now()}`,
+      username: name,
+      city,
+      style,
+      availability: 'New signup',
+      grade: '',
+      bio: intent || 'Ready to match for the next project.',
+      avatar_url: null,
+      status: 'Joined today',
+      tags: ['New climber'],
+    }
+
+    setProfiles(prev => [newProfile, ...prev])
+    setToast(`Thanks ${name}, you are on the list!`)
+    form.reset()
+  }
+
+  const handleReset = () => {
+    setFilters({ location: '', style: '', availability: '', sort: 'recent' })
+  }
+
+  return (
+    <>
+      <header className="site-header">
+        <div className="logo">Crux<span>Connections</span></div>
+        <nav className="nav-links">
+          <a href="#profiles">Climbers</a>
+          <a href="#filters">Filters</a>
+          <a href="#join">Join</a>
+        </nav>
+        <button className="cta" onClick={() => document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' })}>
+          Get Started
+        </button>
+      </header>
+
+      <main>
+        <section className="hero">
+          <div className="hero__copy">
+            <p className="eyebrow">Dating for people who think in grades.</p>
+            <h1>Meet climbers who love the same sends you do.</h1>
+            <p className="lede">
+              Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
+            </p>
+            <div className="hero__actions">
+              <button className="cta" onClick={() => document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' })}>Start matching</button>
+              <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
+            </div>
+            <div className="badges">
+              <span>Boulder, sport, trad, ice</span>
+              <span>Local gyms &amp; crags</span>
+              <span>Built for stoke, not spam</span>
+            </div>
+          </div>
+
+          <div className="hero__card">
+            <div className="hero__card-inner">
+              <div className="card-header">
+                <div>
+                  <p className="label">Featured climber</p>
+                  <h3>{featured?.username}{featured?.age ? `, ${featured.age}` : ''}</h3>
+                  <p className="sub">{featured?.style || 'Climber'} • {featured?.city || 'Somewhere craggy'}</p>
+                </div>
+                <span className="chip">{featured?.status || 'On belay'}</span>
+              </div>
+              <div className="card-body">
+                <p>{featured?.bio || 'Seeking partners who love long approaches and clean chains.'}</p>
+                <ul className="traits">
+                  {(featured?.tags?.length ? featured.tags : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']).map(tag => (
+                    <li key={tag}>{tag}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="card-actions">
+                <button className="ghost" aria-label="pass">Pass</button>
+                <button className="cta" aria-label="send a like">Send Like</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="filters" className="filters">
+          <div className="filters__header">
+            <div>
+              <p className="eyebrow">Filters</p>
+              <h2>Find your perfect climbing partner.</h2>
+              <p className="lede">Dial in by location, style, and grade range. Your next project partner is a click away.</p>
+            </div>
+            <div className="filters__meta">
+              <div className="filter-controls">
+                <label className="field">
+                  <span>Location</span>
+                  <select
+                    value={filters.location}
+                    onChange={e => setFilters(prev => ({ ...prev, location: e.target.value }))}
+                  >
+                    <option value="">Anywhere</option>
+                    {locationOptions.map(loc => (
+                      <option key={loc}>{loc}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Style</span>
+                  <select
+                    value={filters.style}
+                    onChange={e => setFilters(prev => ({ ...prev, style: e.target.value }))}
+                  >
+                    <option value="">Any style</option>
+                    {styleOptions.map(style => (
+                      <option key={style}>{style}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Availability</span>
+                  <select
+                    value={filters.availability}
+                    onChange={e => setFilters(prev => ({ ...prev, availability: e.target.value }))}
+                  >
+                    <option value="">Anytime</option>
+                    <option value="Weeknights">Weeknights</option>
+                    <option value="Weekends">Weekends</option>
+                    <option value="Dawn">Dawn patrol</option>
+                  </select>
+                </label>
+                <label className="field">
+                  <span>Sort by</span>
+                  <select
+                    value={filters.sort}
+                    onChange={e => setFilters(prev => ({ ...prev, sort: e.target.value as Filters['sort'] }))}
+                  >
+                    <option value="recent">Most recent</option>
+                    <option value="grade">Grade focus</option>
+                    <option value="name">Name</option>
+                  </select>
+                </label>
+                <button className="ghost" onClick={handleReset}>Reset</button>
+              </div>
+              <p id="filter-count" className="filter-count" aria-live="polite">
+                {loading ? 'Loading climbers…' : `${matchesCount} match${matchesCount === 1 ? '' : 'es'} available`}
+                {error ? ` — ${error}` : ''}
+              </p>
+            </div>
+          </div>
+          <div id="profiles" className="profiles">
+            {filteredProfiles.length ? (
+              filteredProfiles.map(profile => (
+                <article key={profile.id} className="profile-card">
+                  <header>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                      <img
+                        src={profile.avatar_url ?? 'https://images.unsplash.com/photo-1464863979621-258859e62245?auto=format&fit=crop&w=200&q=60'}
+                        alt={profile.username}
+                        className="profile-avatar"
+                      />
+                      <div>
+                        <h3>{profile.username}{profile.age ? `, ${profile.age}` : ''}</h3>
+                        <p className="profile-meta">{profile.city || 'Anywhere'} • {profile.availability || 'Flexible'}</p>
+                      </div>
+                    </div>
+                    <div className="tags-column">
+                      {profile.grade ? <span className="tag grade">{profile.grade}</span> : null}
+                      {profile.style ? <span className="subtle-tag">{profile.style}</span> : null}
+                    </div>
+                  </header>
+                  <div className="profile-body">
+                    <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
+                    <div className="badge-row">
+                      {(profile.tags?.length ? profile.tags : ['Belays soft', 'Down for laps', 'Gear organized']).map(tag => (
+                        <span key={tag}>{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="actions">
+                    <button className="ghost">Pass</button>
+                    <button className="cta">Send like</button>
+                  </div>
+                </article>
+              ))
+            ) : (
+              <p className="profile-body">No matches found.</p>
+            )}
+          </div>
+        </section>
+
+        <section className="cta-panel" id="join">
+          <div className="cta-panel__content">
+            <h2>Ready to clip in together?</h2>
+            <p>Tell us what you climb, where you climb, and when you can meet. We&apos;ll surface climbers who match your grades, goals, and vibe.</p>
+            <form className="join-form" onSubmit={handleJoin}>
+              <label className="field">
+                <span>Name</span>
+                <input type="text" name="name" required placeholder="Alex" />
+              </label>
+              <label className="field">
+                <span>Email</span>
+                <input type="email" name="email" required placeholder="alex@crux.com" />
+              </label>
+              <div className="field-group">
+                <label className="field">
+                  <span>Home base</span>
+                  <input type="text" name="home" required placeholder="Boulder, CO" />
+                </label>
+                <label className="field">
+                  <span>Primary style</span>
+                  <select name="style" required defaultValue="">
+                    <option value="" disabled>Choose</option>
+                    <option>Bouldering</option>
+                    <option>Sport</option>
+                    <option>Trad</option>
+                    <option>Alpine</option>
+                    <option>Ice</option>
+                  </select>
+                </label>
+              </div>
+              <label className="field">
+                <span>What are you looking for?</span>
+                <textarea name="intent" rows={3} placeholder="Weekend multi-pitches, gym partner, or alpine season buddy" />
+              </label>
+              <button className="cta" type="submit">Join the beta</button>
+              <p className="form-note" role="status" aria-live="polite">
+                {toast ? 'Thanks for joining!' : 'We reply within 24 hours.'}
+              </p>
+            </form>
+          </div>
+          <div className="cta-panel__stats">
+            <div className="stat">
+              <span className="stat__number" id="stat-count">{Math.max(matchesCount, profiles.length)}</span>
+              <span className="stat__label">climbers matched today</span>
+            </div>
+            <ul className="stat-list" id="stat-list">
+              <li>{locationOptions.length || 1} active areas right now</li>
+              <li>{styleOptions.length || 1} climbing styles represented</li>
+              <li>{profiles.filter(p => p.availability).length || profiles.length} climbers shared their schedule</li>
+            </ul>
+          </div>
+        </section>
+      </main>
+
+      <footer className="site-footer">
+        <div>
+          <div className="logo">Crux<span>Connections</span></div>
+          <p>Built by climbers, for climbers. Keep your rope-bag organized and your matches even better.</p>
+        </div>
+        <div className="footer-links">
+          <a href="#">Safety tips</a>
+          <a href="#">Community guidelines</a>
+          <a href="mailto:hello@cruxconnections.com">Contact</a>
+        </div>
+      </footer>
+
+      <div className={`toast ${toast ? 'is-visible' : ''}`} role="status" aria-live="polite">
+        {toast}
+      </div>
+    </>
+  )
+}
