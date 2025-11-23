@@ -82,6 +82,13 @@ const demoProfiles: Profile[] = [
   },
 ]
 
+const toArray = (value: any): string[] => {
+  if (!value) return []
+  if (Array.isArray(value)) return value.filter(Boolean).map(String)
+  if (typeof value === 'string') return value.split(',').map(v => v.trim()).filter(Boolean)
+  return []
+}
+
 const normalizeProfile = (profile: any): Profile => ({
   id:           profile.id ?? crypto.randomUUID(),
   username:     profile.username ?? profile.name ?? 'Climber',
@@ -94,7 +101,7 @@ const normalizeProfile = (profile: any): Profile => ({
   avatar_url:   profile.avatar_url ?? profile.photo_url ?? null,
   created_at:   profile.created_at,
   pronouns:     profile.pronouns ?? profile.pronoun ?? '',
-  tags:         profile.tags ?? profile.traits ?? [],
+  tags:         toArray(profile.tags ?? profile.traits),
   status:       profile.status ?? profile.state ?? '',
   goals:        profile.goals ?? profile.intent ?? '',
 })
@@ -133,6 +140,8 @@ export default function DatingExperience() {
     availability: '',
     sort: 'recent',
   })
+  const [passModal, setPassModal] = useState<{ name: string } | null>(null)
+  const [likeModal, setLikeModal] = useState<{ name: string } | null>(null)
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -165,6 +174,18 @@ export default function DatingExperience() {
     const id = setTimeout(() => setToast(null), 3200)
     return () => clearTimeout(id)
   }, [toast])
+
+  useEffect(() => {
+    if (!passModal) return
+    const id = setTimeout(() => setPassModal(null), 3000)
+    return () => clearTimeout(id)
+  }, [passModal])
+
+  useEffect(() => {
+    if (!likeModal) return
+    const id = setTimeout(() => setLikeModal(null), 3600)
+    return () => clearTimeout(id)
+  }, [likeModal])
 
   const locationOptions = useMemo(
     () => unique(profiles.map(p => p.city)),
@@ -253,6 +274,14 @@ export default function DatingExperience() {
     setFilters({ location: '', style: '', availability: '', sort: 'recent' })
   }
 
+  const handlePass = (name?: string) => {
+    setPassModal({ name: name || 'this climber' })
+  }
+
+  const handleLike = (name?: string) => {
+    setLikeModal({ name: name || 'this climber' })
+  }
+
   return (
     <>
       <header className="site-header">
@@ -289,24 +318,37 @@ export default function DatingExperience() {
           <div className="hero__card">
             <div className="hero__card-inner">
               <div className="card-header">
-                <div>
-                  <p className="label">Featured climber</p>
-                  <h3>{featured?.username}{featured?.age ? `, ${featured.age}` : ''}</h3>
-                  <p className="sub">{featured?.style || 'Climber'} • {featured?.city || 'Somewhere craggy'}</p>
+                <div className="card-top">
+                  <p className="label pill">Joined 2 mins ago</p>
+                  <span className="chip">{featured?.status || 'On belay'}</span>
                 </div>
-                <span className="chip">{featured?.status || 'On belay'}</span>
+                <div className="featured-body">
+                  <img
+                    src={featured?.avatar_url ?? 'https://images.unsplash.com/photo-1464863979621-258859e62245?auto=format&fit=crop&w=240&q=60'}
+                    alt={featured?.username || 'Climber'}
+                    className="featured-avatar"
+                  />
+                  <div>
+                    <h3>{featured?.username}{featured?.age ? `, ${featured.age}` : ''}</h3>
+                    <p className="sub">{featured?.style || 'Climber'}</p>
+                    <p className="sub">{featured?.city || 'Somewhere craggy'}</p>
+                  </div>
+                </div>
               </div>
               <div className="card-body">
                 <p>{featured?.bio || 'Seeking partners who love long approaches and clean chains.'}</p>
                 <ul className="traits">
-                  {(featured?.tags?.length ? featured.tags : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']).map(tag => (
+                  {((Array.isArray(featured?.tags) && featured.tags.length)
+                    ? featured?.tags
+                    : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']
+                  ).map(tag => (
                     <li key={tag}>{tag}</li>
                   ))}
                 </ul>
               </div>
               <div className="card-actions">
-                <button className="ghost" aria-label="pass">Pass</button>
-                <button className="cta" aria-label="send a like">Send Like</button>
+                <button className="ghost" aria-label="pass" onClick={() => handlePass(featured?.username)}>Pass</button>
+                <button className="cta" aria-label="send a like" onClick={() => handleLike(featured?.username)}>Send Like</button>
               </div>
             </div>
           </div>
@@ -406,8 +448,8 @@ export default function DatingExperience() {
                     </div>
                   </div>
                   <div className="actions">
-                    <button className="ghost">Pass</button>
-                    <button className="cta">Send like</button>
+                    <button className="ghost" onClick={() => handlePass(profile.username)}>Pass</button>
+                    <button className="cta" onClick={() => handleLike(profile.username)}>Send like</button>
                   </div>
                 </article>
               ))
@@ -486,6 +528,31 @@ export default function DatingExperience() {
       <div className={`toast ${toast ? 'is-visible' : ''}`} role="status" aria-live="polite">
         {toast}
       </div>
+
+      {passModal ? (
+        <div className="modal-backdrop" role="status" aria-live="polite">
+          <div className="modal-card">
+            <button className="modal-close" aria-label="Close" onClick={() => setPassModal(null)}>✕</button>
+            <p className="label">Pass recorded</p>
+            <h3>You passed on {passModal.name}</h3>
+          </div>
+        </div>
+      ) : null}
+
+      {likeModal ? (
+        <div className="modal-backdrop" role="status" aria-live="polite">
+          <div className="modal-card like-modal">
+            <div className="confetti" aria-hidden="true">
+              {Array.from({ length: 14 }).map((_, i) => (
+                <span key={i} className="confetti-piece" />
+              ))}
+            </div>
+            <button className="modal-close" aria-label="Close" onClick={() => setLikeModal(null)}>✕</button>
+            <p className="label">Nice send</p>
+            <h3>You liked {likeModal.name}</h3>
+          </div>
+        </div>
+      ) : null}
     </>
   )
 }
