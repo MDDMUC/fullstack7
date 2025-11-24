@@ -42,7 +42,7 @@ export default function HomeScreen() {
       distance: '10 km',
       city: msg.city,
       avatar_url: msg.avatar || FALLBACK_AVATAR,
-      about: msg.snippet,
+      bio: msg.snippet,
       lookingFor: 'Looking for partners',
       tags: [],
       style: '',
@@ -63,7 +63,7 @@ export default function HomeScreen() {
     return [
       { id: `${msg.id}-1`, from: 'them' as const, text: msg.snippet || 'Hey there!', time: '10:02' },
       { id: `${msg.id}-2`, from: 'you' as const, text: 'Sounds good! Want to plan something this weekend?', time: '10:04' },
-      { id: `${msg.id}-3`, from: 'them' as const, text: 'Yes, let’s pick a crag and time.', time: '10:06' },
+      { id: `${msg.id}-3`, from: 'them' as const, text: "Yes, let's pick a crag and time.", time: '10:06' },
     ]
   }, [selectedMessage])
 
@@ -98,6 +98,7 @@ export default function HomeScreen() {
           style: '',
           availability: '',
           grade: '',
+          bio: '',
         }])
         const previews: MessagePreview[] = profiles.slice(0, 8).map(p => ({
           id: `msg-${p.id}`,
@@ -141,10 +142,10 @@ export default function HomeScreen() {
             <span>You</span>
           </div>
           <div className="sidebar-actions">
-            <button title="Boost" className="pill-icon">⚡</button>
-            <button title="Explore" className="pill-icon">◎</button>
-            <button title="Insights" className="pill-icon">▮▮</button>
-            <button title="Safety" className="pill-icon">🛡️</button>
+            <button title="Boost" className="pill-icon">Boost</button>
+            <button title="Explore" className="pill-icon">Explore</button>
+            <button title="Insights" className="pill-icon">Insights</button>
+            <button title="Safety" className="pill-icon">Safety</button>
           </div>
         </div>
 
@@ -156,7 +157,7 @@ export default function HomeScreen() {
         {activeTab === 'matches' ? (
           <div className="sidebar-grid">
             {loadingMatches ? (
-              <p className="muted" style={{ gridColumn: '1 / -1' }}>Loading matches…</p>
+              <p className="muted" style={{ gridColumn: '1 / -1' }}>Loading matches...</p>
             ) : (
               matches.map(profile => (
                 <button
@@ -209,8 +210,8 @@ export default function HomeScreen() {
                 </div>
               </div>
               <div className="chat-actions">
-                <button className="ghost pill-icon">…</button>
-                <button className="ghost pill-icon" onClick={() => { setSelectedMatch(null); setSelectedMessage(null) }}>×</button>
+                <button className="ghost pill-icon" aria-label="More actions">...</button>
+                <button className="ghost pill-icon" aria-label="Close conversation" onClick={() => { setSelectedMatch(null); setSelectedMessage(null) }}>x</button>
               </div>
             </header>
 
@@ -235,7 +236,7 @@ export default function HomeScreen() {
                 <input type="text" placeholder="Type a message" />
                 <div className="input-actions">
                   <button className="ghost">GIF</button>
-                  <button className="ghost">🙂</button>
+                  <button className="ghost">Emoji</button>
                 </div>
               </div>
               <button className="cta">Send</button>
@@ -247,7 +248,7 @@ export default function HomeScreen() {
             <div className="profile-pane-body">
               <div className="profile-pane-header">
                 <h2>{selectedProfile?.username} <span>{selectedProfile?.age ?? ''}</span></h2>
-                <p className="muted">📍 {selectedProfile?.distance ?? ''}{selectedProfile?.city ? ` • ${selectedProfile.city}` : ''}</p>
+                <p className="muted">Location: {selectedProfile?.distance ?? ''}{selectedProfile?.city ? `, ${selectedProfile.city}` : ''}</p>
               </div>
               <div className="profile-section">
                 <p className="eyebrow">Looking for</p>
@@ -266,14 +267,15 @@ export default function HomeScreen() {
           </aside>
         </>
       ) : (
+
         <section className="swipe-stage">
           <div className="phone-frame">
             <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? FALLBACK_AVATAR})` }}>
               <div className="hero-overlay" />
-              <div className="hero-meta">
+                                          <div className="hero-meta">
                 <div>
                   <h2>{current?.username} <span>{current?.age}</span></h2>
-                  <p>📍 {current?.distance ?? ''} {current?.city ? `• ${current.city}` : ''}</p>
+                  <p>Location: {current?.distance ?? ''}{current?.city ? `, ${current.city}` : ''}</p>
                 </div>
               </div>
             </div>

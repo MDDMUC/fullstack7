@@ -16,6 +16,7 @@ export type Profile = {
   tags?: string[]
   status?: string
   goals?: string
+  distance?: string
 }
 
 const toArray = (value: any): string[] => {
@@ -25,22 +26,29 @@ const toArray = (value: any): string[] => {
   return []
 }
 
-export const normalizeProfile = (profile: any): Profile => ({
-  id: profile.id ?? crypto.randomUUID(),
-  username: profile.username ?? profile.name ?? 'Climber',
-  age: profile.age ?? profile.age_range ?? undefined,
-  city: profile.city ?? profile.home ?? profile.location ?? '',
-  style: profile.style ?? (Array.isArray(profile.styles) ? profile.styles.join(' • ') : profile.primary_style) ?? '',
-  availability: profile.availability ?? profile.schedule ?? '',
-  grade: profile.grade ?? profile.grade_focus ?? profile.level ?? '',
-  bio: profile.bio ?? profile.about ?? '',
-  avatar_url: profile.avatar_url ?? profile.photo_url ?? null,
-  created_at: profile.created_at,
-  pronouns: profile.pronouns ?? profile.pronoun ?? '',
-  tags: toArray(profile.tags ?? profile.traits),
-  status: profile.status ?? profile.state ?? '',
-  goals: profile.goals ?? profile.intent ?? '',
-})
+export const normalizeProfile = (profile: any): Profile => {
+  const styles = Array.isArray(profile.styles)
+    ? profile.styles.join(' • ')
+    : profile.primary_style
+
+  return {
+    id: profile.id ?? crypto.randomUUID(),
+    username: profile.username ?? profile.name ?? 'Climber',
+    age: profile.age ?? profile.age_range ?? undefined,
+    city: profile.city ?? profile.home ?? profile.location ?? '',
+    style: profile.style ?? styles ?? '',
+    availability: profile.availability ?? profile.schedule ?? '',
+    grade: profile.grade ?? profile.grade_focus ?? profile.level ?? '',
+    bio: profile.bio ?? profile.about ?? '',
+    avatar_url: profile.avatar_url ?? profile.photo_url ?? null,
+    created_at: profile.created_at,
+    pronouns: profile.pronouns ?? profile.pronoun ?? '',
+    tags: toArray(profile.tags ?? profile.traits),
+    status: profile.status ?? profile.state ?? '',
+    goals: profile.goals ?? profile.intent ?? '',
+    distance: profile.distance ?? '10 km',
+  }
+}
 
 export async function fetchProfiles(client?: SupabaseClient) {
   const c = client ?? requireSupabase()
