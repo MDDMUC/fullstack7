@@ -71,11 +71,14 @@ export async function listMatches() {
 
   const ids = Array.from(new Set(data.flatMap(m => [m.user_a, m.user_b])))
   const { data: profiles, error: pErr } = await supabase
-    .from('profiles')
+    .from('onboardingprofiles')
     .select('*')
     .in('id', ids)
 
-  if (pErr) throw pErr
+  if (pErr) {
+    console.error('Error fetching profiles for matches:', pErr)
+    throw pErr
+  }
   const map = new Map(profiles?.map(p => [p.id, p]))
   return data.map(m => ({ ...m, profiles: [map.get(m.user_a), map.get(m.user_b)].filter(Boolean) }))
 }

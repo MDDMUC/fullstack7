@@ -36,10 +36,10 @@ export default function LocationStep() {
         console.error('Supabase is not configured')
         setError('Supabase is not configured. Please check your environment variables.')
         setLoading(false)
+        // Save data but DON'T redirect - let user see the error
         const allData = { ...data, homebase, originalFrom, distance }
         localStorage.setItem('onboarding_data', JSON.stringify(allData))
-        router.push('/signup')
-        return
+        return // STAY ON PAGE - don't navigate
       }
 
       console.log('Checking user authentication...')
@@ -58,7 +58,7 @@ export default function LocationStep() {
       }
       
       if (userError || !user) {
-        console.log('User not authenticated - saving to localStorage and redirecting to signup')
+        console.log('User not authenticated - saving to localStorage')
         // Save all onboarding data to localStorage (without File objects which can't be serialized)
         const allData = {
           ...data,
@@ -75,12 +75,11 @@ export default function LocationStep() {
         }
         localStorage.setItem('onboarding_data', JSON.stringify(allData))
         
-        // Show message and redirect to signup
+        // Show message but DON'T redirect - let user see the error and decide what to do
         setError('Please sign up or log in to complete your profile. Your information has been saved and will be applied after you create an account.')
         setLoading(false)
         
-        // Redirect to signup immediately
-        router.push('/signup')
+        // DON'T redirect automatically - stay on page so user can see the message
         return
       }
 
@@ -167,40 +166,78 @@ export default function LocationStep() {
         tags: profileData.tags 
       })
       
-      // First, try to insert the profile
-      const { data: savedData, error: profileError } = await supabase
+      // Try to insert/update the profile
+      // Note: If you get a schema cache error, the table exists but PostgREST needs to refresh
+      let savedData = null
+      let profileError = null
+      
+      // First attempt
+      const result = await supabase
         .from('onboardingprofiles')
         .upsert(profileData, { 
           onConflict: 'id',
           ignoreDuplicates: false 
         })
         .select()
+      
+      savedData = result.data
+      profileError = result.error
+      
+      // If schema cache error, wait and retry once
+      if (profileError && (profileError.code === '42P01' || profileError.message?.includes('schema cache'))) {
+        console.warn('Schema cache issue detected, waiting 2 seconds and retrying...')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Retry the upsert
+        const retryResult = await supabase
+          .from('onboardingprofiles')
+          .upsert(profileData, { 
+            onConflict: 'id',
+            ignoreDuplicates: false 
+          })
+          .select()
+        
+        savedData = retryResult.data
+        profileError = retryResult.error
+      }
 
       if (profileError) {
-        console.error('❌ Error saving profile:', profileError)
-        console.error('Error details:', {
-          message: profileError.message,
-          details: profileError.details,
-          hint: profileError.hint,
-          code: profileError.code
-        })
-        console.error('Profile data attempted:', JSON.stringify(profileData, null, 2))
+        // Log error details for debugging (only in development)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Error saving profile:', profileError)
+          console.error('Error details:', {
+            message: profileError.message,
+            details: profileError.details,
+            hint: profileError.hint,
+            code: profileError.code
+          })
+          console.error('Profile data attempted:', JSON.stringify(profileData, null, 2))
+        }
         
-        // Check if it's an RLS policy issue
-        if (profileError.code === '42501' || profileError.message?.includes('policy')) {
-          setError(`Permission denied. Check Row Level Security policies in Supabase. Error: ${profileError.message}`)
-        } else if (profileError.code === '42P01') {
-          setError(`Table 'onboardingprofiles' does not exist. Please run the migration SQL in Supabase.`)
+        // Check error type and provide specific guidance
+        const errorCode = profileError.code || ''
+        const errorMessage = profileError.message || 'Unknown error'
+        
+        if (errorCode === '42501' || errorMessage.includes('policy') || errorMessage.includes('permission denied') || errorMessage.includes('row-level security')) {
+          setError(`Permission denied by Row Level Security. Error: ${errorMessage}. Make sure you've created the RLS policies. Run supabase/setup_policies.sql in Supabase SQL Editor.`)
+        } else if (errorCode === '42P01' || errorMessage.includes('schema cache') || errorMessage.includes('does not exist')) {
+          // This error can occur even if table exists - usually a schema cache issue
+          setError(`Schema cache issue: ${errorMessage}. The table exists but Supabase needs to refresh its cache. Try: 1) Wait a few seconds and retry, 2) Check if table is in 'public' schema, 3) Verify your Supabase connection settings.`)
+        } else if (errorMessage.includes('JWT') || errorMessage.includes('token') || errorMessage.includes('authentication')) {
+          setError(`Authentication error: ${errorMessage}. Check your Supabase API keys in .env.local file.`)
         } else {
-          setError(`Failed to save profile: ${profileError.message}. Check console for details.`)
+          // Show the actual error message and code for debugging
+          setError(`Failed to save profile: ${errorMessage}${errorCode ? ` (Error Code: ${errorCode})` : ''}. Check browser console for full details.`)
         }
         setLoading(false)
         // Don't continue to success if save failed
         return
       }
 
-      // Verify the save worked
-      if (!savedData || savedData.length === 0) {
+      // CRITICAL: Verify the save actually worked before proceeding
+      let verifiedProfile = savedData?.[0]
+      
+      if (!verifiedProfile) {
         console.warn('⚠️ Upsert returned no data - verifying with select query...')
         
         // Wait a moment for the database to update
@@ -214,55 +251,70 @@ export default function LocationStep() {
           .single()
         
         if (verifyError) {
-          console.error('❌ Profile verification failed:', verifyError)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Profile verification failed:', verifyError)
+          }
           setError(`Profile save verification failed: ${verifyError.message}. Check Supabase setup.`)
           setLoading(false)
-          return
+          return // STAY ON PAGE - don't navigate
         }
         
         if (!verifyData) {
-          console.error('❌ Profile not found in database after save')
+          if (process.env.NODE_ENV === 'development') {
+            console.error('❌ Profile not found in database after save')
+          }
           setError('Profile was not saved to database. Check RLS policies and table setup.')
           setLoading(false)
-          return
+          return // STAY ON PAGE - don't navigate
         }
         
-        console.log('✅ Profile verified in database:', verifyData)
+        verifiedProfile = verifyData
+        console.log('✅ Profile verified in database:', verifiedProfile)
       } else {
-        console.log('✅ Profile saved successfully:', savedData)
+        console.log('✅ Profile saved successfully:', verifiedProfile)
       }
 
-      // Clear onboarding data
+      // FINAL CHECK: Only proceed to success if we have verified profile data
+      if (!verifiedProfile || !verifiedProfile.id) {
+        if (process.env.NODE_ENV === 'development') {
+          console.error('❌ Cannot proceed - no verified profile data')
+        }
+        setError('Profile save could not be verified. Please try again.')
+        setLoading(false)
+        return // STAY ON PAGE - don't navigate
+      }
+
+      // Only clear localStorage and navigate if we have confirmed success
       localStorage.removeItem('onboarding_data')
       
-      // Navigate to success step immediately
+      // Navigate to success step ONLY if everything succeeded
       setCurrentStep(9)
       setLoading(false)
       return
     } catch (error) {
-      console.error('Error completing onboarding:', error)
+      // Only log detailed errors in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error completing onboarding:', error)
+      }
+      
       setLoading(false)
       
-      // If error occurs, still try to show success if data was saved
-      // Otherwise redirect to signup if not authenticated
+      // If error occurs, stay on location step and show error message
+      // Don't navigate to success - let user see the error and try again
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'string' 
+          ? error 
+          : 'An unexpected error occurred. Please try again.'
+      
+      setError(errorMessage)
+      
+      // Save data to localStorage as backup, but don't navigate away
       const allData = { ...data, homebase, originalFrom, distance }
       localStorage.setItem('onboarding_data', JSON.stringify(allData))
       
-      // Check if we have a user (data might have been saved)
-      try {
-        if (supabase) {
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user) {
-            // User is authenticated, go to success step
-            setCurrentStep(9)
-            return
-          }
-        }
-      } catch {
-        // Fall through to signup redirect
-      }
-      
-      router.push('/signup')
+      // Don't navigate to success or signup - stay on location step so user can see error
+      return
     }
   }
 
@@ -330,9 +382,31 @@ export default function LocationStep() {
         </div>
 
         {error && (
-          <div className="w-full p-4 bg-red-50 border border-red-200 rounded-[4px]">
-            <p className="text-red-600 text-sm">{error}</p>
-            <p className="text-red-500 text-xs mt-2">Check the browser console for more details.</p>
+          <div className="w-full max-w-md p-4 bg-red-50 border-2 border-red-400 rounded-[4px] shadow-sm">
+            <p className="text-red-700 text-base font-medium">{error}</p>
+            {error.includes('sign up or log in') ? (
+              <div className="mt-4 flex flex-col gap-2">
+                <p className="text-red-600 text-sm">Your information has been saved. Please sign up or log in to complete your profile.</p>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => router.push('/signup')}
+                    className="flex-1 bg-[#212121] text-white px-4 py-2 rounded-[4px] hover:bg-[#2a2a2a] transition-colors text-sm font-medium"
+                  >
+                    Sign Up
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => router.push('/login')}
+                    className="flex-1 bg-white border border-[#020202] text-[#020202] px-4 py-2 rounded-[4px] hover:bg-gray-50 transition-colors text-sm font-medium"
+                  >
+                    Log In
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-red-600 text-sm mt-2">Please fix the issue and try again. Check the browser console for more details.</p>
+            )}
           </div>
         )}
 

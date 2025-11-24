@@ -1,3 +1,6 @@
+-- Quick script to create onboardingprofiles table
+-- Run this in Supabase SQL Editor if you're getting "table not found" error
+
 -- Create onboardingprofiles table with all onboarding fields
 CREATE TABLE IF NOT EXISTS onboardingprofiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -29,6 +32,11 @@ CREATE INDEX IF NOT EXISTS onboardingprofiles_created_at_idx ON onboardingprofil
 -- Enable Row Level Security
 ALTER TABLE onboardingprofiles ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON onboardingprofiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON onboardingprofiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON onboardingprofiles;
+
 -- Policy: Users can read all profiles (for matching/browsing)
 CREATE POLICY "Public profiles are viewable by everyone"
   ON onboardingprofiles FOR SELECT
@@ -59,15 +67,18 @@ END;
 $$;
 
 -- Trigger to update updated_at on profile updates
+DROP TRIGGER IF EXISTS update_onboardingprofiles_updated_at ON onboardingprofiles;
 CREATE TRIGGER update_onboardingprofiles_updated_at
   BEFORE UPDATE ON onboardingprofiles
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Add comments for documentation
-COMMENT ON TABLE onboardingprofiles IS 'User profiles created during onboarding';
-COMMENT ON COLUMN onboardingprofiles.id IS 'References auth.users.id';
-COMMENT ON COLUMN onboardingprofiles.tags IS 'Array of interests/tags selected during onboarding';
-COMMENT ON COLUMN onboardingprofiles.lookingFor IS 'What user is looking for (Partnership, Friendship, etc.)';
-COMMENT ON COLUMN onboardingprofiles.distance IS 'Search radius in km (e.g., "100 km")';
+-- Verify the table was created
+SELECT 
+  table_name, 
+  column_name, 
+  data_type 
+FROM information_schema.columns 
+WHERE table_name = 'onboardingprofiles'
+ORDER BY ordinal_position;
 

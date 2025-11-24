@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
@@ -18,37 +18,71 @@ export default function OnboardingPage() {
   const { currentStep } = useOnboarding()
   const router = useRouter()
   const [checking, setChecking] = useState(true)
+  const hasCheckedRef = useRef(false)
 
+  // Only run the profile check once on initial mount, and only if not on final steps
   useEffect(() => {
+    // CRITICAL: Never run check if on step 8 (location) or 9 (success)
+    // This prevents redirects during active onboarding completion
+    if (currentStep === 8 || currentStep === 9) {
+      setChecking(false)
+      hasCheckedRef.current = true // Mark as checked to prevent future runs
+      return
+    }
+
+    // Skip check if already checked
+    if (hasCheckedRef.current) {
+      setChecking(false)
+      return
+    }
+
     const checkAuthAndProfile = async () => {
       if (!supabase) {
         setChecking(false)
+        hasCheckedRef.current = true
         return
       }
 
-      // Don't redirect if user is on the success step (step 9)
-      if (currentStep === 9) {
-        setChecking(false)
-        return
-      }
+      // Mark as checked immediately to prevent re-runs
+      hasCheckedRef.current = true
 
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser()
         
         // If user is authenticated, check if they have a profile
         if (user && !userError) {
+          // Check current step again before redirecting (in case it changed during async operation)
+          const stepAtCheckTime = currentStep
+          
+          // CRITICAL: Never redirect if on step 8 or 9 (final onboarding steps)
+          if (stepAtCheckTime >= 8) {
+            console.log('On final onboarding steps, skipping redirect check')
+            return
+          }
+          
           const { data: profile, error: profileError } = await supabase
             .from('onboardingprofiles')
             .select('id')
             .eq('id', user.id)
             .single()
 
-          // If profile exists, redirect to home (they've already completed onboarding)
-          // But only if not on the success step
-          if (profile && !profileError && currentStep !== 9) {
+          // Only redirect if:
+          // 1. Profile exists
+          // 2. We're still on early steps (1-3)
+          // 3. User is not actively completing onboarding (steps 4+ mean they're in flow)
+          if (profile && !profileError && stepAtCheckTime < 4) {
+            // Final safety check - never redirect if somehow we got to step 8/9
+            if (currentStep >= 8) {
+              console.log('Step changed to final steps during check, aborting redirect')
+              return
+            }
             console.log('User already has a profile, redirecting to home')
             router.replace('/home')
             return
+          } else if (profile && !profileError) {
+            // User has profile but is on step 4+, meaning they're actively in onboarding
+            // Don't redirect - let them complete it
+            console.log('User has profile but is in onboarding flow, allowing to continue')
           }
         }
       } catch (error) {
@@ -60,7 +94,7 @@ export default function OnboardingPage() {
     }
 
     checkAuthAndProfile()
-  }, [router, currentStep])
+  }, [currentStep, router])
 
   // Show loading state while checking
   if (checking) {
