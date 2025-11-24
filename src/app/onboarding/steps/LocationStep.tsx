@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import BackButton from '../components/BackButton'
 
 export default function LocationStep() {
   const { data, updateData } = useOnboarding()
@@ -50,21 +51,45 @@ export default function LocationStep() {
       let photoUrls: string[] = []
       if (data.photos && data.photos.length > 0) {
         try {
-          // Upload each photo to Supabase storage
-          for (const photo of data.photos) {
-            const fileExt = photo.name.split('.').pop()
-            const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`
-            const filePath = `avatars/${fileName}`
+          // Check if storage bucket exists
+          const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+          
+          if (bucketsError) {
+            console.error('Error checking storage buckets:', bucketsError)
+          } else {
+            const avatarsBucket = buckets?.find(b => b.id === 'avatars')
+            
+            if (!avatarsBucket) {
+              console.warn('Avatars bucket not found. Photos will not be uploaded.')
+              console.warn('Please create the "avatars" bucket in Supabase Storage and make it public.')
+            } else {
+              // Upload each photo to Supabase storage
+              for (let i = 0; i < data.photos.length; i++) {
+                const photo = data.photos[i]
+                const fileExt = photo.name.split('.').pop() || 'jpg'
+                const timestamp = Date.now()
+                const randomId = Math.random().toString(36).substring(7)
+                // File path: user-id/timestamp_random.ext
+                const filePath = `${user.id}/${timestamp}_${randomId}.${fileExt}`
 
-            const { error: uploadError } = await supabase.storage
-              .from('avatars')
-              .upload(filePath, photo)
+                const { error: uploadError } = await supabase.storage
+                  .from('avatars')
+                  .upload(filePath, photo, {
+                    cacheControl: '3600',
+                    upsert: false
+                  })
 
-            if (!uploadError) {
-              const { data: { publicUrl } } = supabase.storage
-                .from('avatars')
-                .getPublicUrl(filePath)
-              photoUrls.push(publicUrl)
+                if (uploadError) {
+                  console.error(`Error uploading photo ${i + 1}:`, uploadError)
+                  // Continue with other photos even if one fails
+                } else {
+                  const { data: { publicUrl } } = supabase.storage
+                    .from('avatars')
+                    .getPublicUrl(filePath)
+                  photoUrls.push(publicUrl)
+                  console.log(`Successfully uploaded photo ${i + 1}:`, publicUrl)
+                }
+              }
             }
           }
         } catch (uploadErr) {
@@ -84,9 +109,12 @@ export default function LocationStep() {
         bio: data.bio || '',
         availability: '',
         tags: data.interests || [],
-        goals: data.purpose || '',
+        goals: data.purposes?.join(', ') || data.purpose || '',
         lookingFor: data.showMe || '',
         avatar_url: photoUrls[0] || null,
+        // Store all photo URLs as a JSON array in a text field (can be parsed later)
+        // Or you could create a separate photos table for multiple images
+        photos: photoUrls.length > 0 ? JSON.stringify(photoUrls) : null,
         status: 'New member',
         phone_number: data.phoneNumber ? `${data.countryCode}${data.phoneNumber}` : null,
         pronouns: data.gender || '',
@@ -120,7 +148,8 @@ export default function LocationStep() {
   }
 
   return (
-    <div className="bg-white flex flex-col gap-4 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full">
+    <div className="bg-white flex flex-col gap-4 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+      <BackButton />
       <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
         <h1 className="font-bold leading-[41px] text-[#020202] text-[34px] text-nowrap tracking-[0.374px]">
           Location

@@ -18,6 +18,7 @@ export type OnboardingData = {
   
   // Step 4: Purpose
   purpose?: string
+  purposes?: string[] // Multiple selections
   
   // Step 5: Show Me
   showMe?: 'Men' | 'Women' | 'All'
