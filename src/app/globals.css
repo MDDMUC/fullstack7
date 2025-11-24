@@ -145,6 +145,9 @@ textarea:focus-visible {
   box-shadow: var(--shadow);
   max-width: 420px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .card-header { display: flex; flex-direction: column; gap: 10px; }
@@ -154,6 +157,7 @@ textarea:focus-visible {
 .sub { color: var(--muted); margin-top: 4px; }
 .chip { background: rgba(92, 225, 230, 0.1); color: var(--accent); padding: 6px 10px; border-radius: 10px; border: 1px solid var(--accent); font-weight: 700; }
 .card-body { color: var(--text); }
+.hero__card .card-body { flex: 1; }
 .hero__card .card-body { margin-top: 12px; display: grid; gap: 12px; }
 .modal-backdrop {
   position: fixed;
@@ -368,6 +372,8 @@ textarea:focus-visible {
 .traits li { background: #1c2333; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--stroke); }
 .card-actions { display: flex; gap: 8px; margin-top: 14px; }
 .card-actions button { flex: 1; }
+.card-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+.card-actions button { width: 100%; }
 
 .filters {
   margin-top: 32px;

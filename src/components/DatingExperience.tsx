@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 
+const FALLBACK_AVATAR = '/cc-moods-001.jpg'
+
 type Profile = {
   id: string
   username: string
