@@ -92,6 +92,13 @@ export default function DatingExperience() {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
+        if (!supabase) {
+          setProfiles([])
+          setError('Supabase is not configured.')
+          setLoading(false)
+          return
+        }
+
         const { data, error } = await supabase
           .from('profiles')
           .select('*')

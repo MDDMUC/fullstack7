@@ -15,6 +15,7 @@ export default function ClimberList() {
 
   useEffect(() => {
     const load = async () => {
+      if (!supabase) return
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
