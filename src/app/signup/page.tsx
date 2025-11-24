@@ -40,6 +40,12 @@ export default function Signup() {
     setLoading(true)
     setStatus({ type: 'info', message: 'Creating your account...' })
 
+    if (!supabase) {
+      setStatus({ type: 'error', message: 'Supabase is not configured.' })
+      setLoading(false)
+      return
+    }
+
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,

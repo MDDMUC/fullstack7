@@ -75,7 +75,12 @@ export default function HomeScreen() {
   useEffect(() => {
     const load = async () => {
       setLoadingMatches(true)
-      const { data, error } = await supabase.from('profiles').select('*').limit(50)
+      const client = supabase
+      if (!client) {
+        setLoadingMatches(false)
+        return
+      }
+      const { data, error } = await client.from('profiles').select('*').limit(50)
       if (error) {
         console.error('Failed to load profiles', error)
         setLoadingMatches(false)
