@@ -37,13 +37,13 @@ CREATE POLICY "Public profiles are viewable by everyone"
 -- Policy: Users can insert their own profile
 CREATE POLICY "Users can insert own profile"
   ON onboardingprofiles FOR INSERT
-  WITH CHECK (auth.uid() = id);
+  WITH CHECK ((select auth.uid()) = id);
 
 -- Policy: Users can update their own profile
 CREATE POLICY "Users can update own profile"
   ON onboardingprofiles FOR UPDATE
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
+  USING ((select auth.uid()) = id)
+  WITH CHECK ((select auth.uid()) = id);
 
 -- Function to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
