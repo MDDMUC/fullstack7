@@ -18,6 +18,10 @@ function UserNav() {
 
     // Check initial auth state
     const checkAuth = async () => {
+      if (!supabase) {
+        setLoading(false)
+        return
+      }
       try {
         const { data: { user } } = await supabase.auth.getUser()
         setIsLoggedIn(!!user)
@@ -32,6 +36,10 @@ function UserNav() {
     checkAuth()
 
     // Listen for auth state changes
+    if (!supabase) {
+      return
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsLoggedIn(!!session)
       if (event === 'SIGNED_OUT') {
