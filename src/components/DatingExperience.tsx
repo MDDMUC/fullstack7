@@ -1,86 +1,32 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { supabase }                              from '@/lib/supabaseClient'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 
 type Profile = {
-  id:           string
-  username:     string
-  age?:         number
-  city?:        string
-  style?:       string
+  id: string
+  username: string
+  age?: number
+  city?: string
+  style?: string
   availability?: string
-  grade?:       string
-  bio?:         string
-  avatar_url?:  string | null
-  created_at?:  string
-  pronouns?:    string
-  tags?:        string[]
-  status?:      string
-  goals?:       string
+  grade?: string
+  bio?: string
+  avatar_url?: string | null
+  created_at?: string
+  pronouns?: string
+  tags?: string[]
+  status?: string
+  goals?: string
 }
 
 type Filters = {
-  location:    string
-  style:       string
+  location: string
+  style: string
   availability: string
-  sort:        'recent' | 'grade' | 'name'
+  sort: 'recent' | 'grade' | 'name'
 }
-
-const demoProfiles: Profile[] = [
-  {
-    id: 'demo-1',
-    username: 'Skyler',
-    age: 28,
-    city: 'Denver, CO',
-    style: 'Sport • Alpine',
-    availability: 'Weekends',
-    grade: '5.11 • V5',
-    bio: 'Lead 5.11 sport, starting alpine season. Looking for sunrise pitches and soft catches.',
-    avatar_url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
-    tags: ['Belays soft', 'Weekend warrior', 'Training 4x4s'],
-    status: 'On belay',
-  },
-  {
-    id: 'demo-2',
-    username: 'Maya',
-    age: 31,
-    city: 'Boulder, CO',
-    style: 'Bouldering • Sport',
-    availability: 'Dawn patrol',
-    grade: 'V7 • 5.12a',
-    bio: 'Gym setter by day, moonboard fiend by night. Always down for Flatirons laps.',
-    avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
-    tags: ['Flashes V5', 'Loves long approaches', 'Flexible schedule'],
-    status: 'Looking to climb',
-  },
-  {
-    id: 'demo-3',
-    username: 'Rowan',
-    age: 26,
-    city: 'Seattle, WA',
-    style: 'Trad • Alpine',
-    availability: 'Weekends',
-    grade: '5.10+',
-    bio: 'Gear nerd with a soft spot for splitter cracks. Can lead 5.10+ and carry too many cams.',
-    avatar_url: 'https://images.unsplash.com/photo-1464863979621-258859e62245?auto=format&fit=crop&w=600&q=80',
-    tags: ['Cooks post-crag', 'Multi-pitch ready', 'Safe belayer'],
-    status: 'On belay',
-  },
-  {
-    id: 'demo-4',
-    username: 'Avery',
-    age: 29,
-    city: 'Salt Lake City, UT',
-    style: 'Bouldering • Sport',
-    availability: 'Weeknights',
-    grade: 'V6 • 5.11b',
-    bio: 'Training for Hueco. Looking for spray-free sessions and new beta partners.',
-    avatar_url: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=600&q=80',
-    tags: ['Moonboard keen', 'Road-trip friendly', 'Beta respectful'],
-    status: 'Ready to match',
-  },
-]
 
 const toArray = (value: any): string[] => {
   if (!value) return []
@@ -90,31 +36,29 @@ const toArray = (value: any): string[] => {
 }
 
 const normalizeProfile = (profile: any): Profile => ({
-  id:           profile.id ?? crypto.randomUUID(),
-  username:     profile.username ?? profile.name ?? 'Climber',
-  age:          profile.age ?? profile.age_range ?? undefined,
-  city:         profile.city ?? profile.home ?? profile.location ?? '',
-  style:        profile.style ?? (Array.isArray(profile.styles) ? profile.styles.join(' • ') : profile.primary_style) ?? '',
+  id: profile.id ?? crypto.randomUUID(),
+  username: profile.username ?? profile.name ?? 'Climber',
+  age: profile.age ?? profile.age_range ?? undefined,
+  city: profile.city ?? profile.home ?? profile.location ?? '',
+  style: profile.style ?? (Array.isArray(profile.styles) ? profile.styles.join(' • ') : profile.primary_style) ?? '',
   availability: profile.availability ?? profile.schedule ?? '',
-  grade:        profile.grade ?? profile.grade_focus ?? profile.level ?? '',
-  bio:          profile.bio ?? profile.about ?? '',
-  avatar_url:   profile.avatar_url ?? profile.photo_url ?? null,
-  created_at:   profile.created_at,
-  pronouns:     profile.pronouns ?? profile.pronoun ?? '',
-  tags:         toArray(profile.tags ?? profile.traits),
-  status:       profile.status ?? profile.state ?? '',
-  goals:        profile.goals ?? profile.intent ?? '',
+  grade: profile.grade ?? profile.grade_focus ?? profile.level ?? '',
+  bio: profile.bio ?? profile.about ?? '',
+  avatar_url: profile.avatar_url ?? profile.photo_url ?? null,
+  created_at: profile.created_at,
+  pronouns: profile.pronouns ?? profile.pronoun ?? '',
+  tags: toArray(profile.tags ?? profile.traits),
+  status: profile.status ?? profile.state ?? '',
+  goals: profile.goals ?? profile.intent ?? '',
 })
 
 const gradeRank = (grade?: string) => {
   if (!grade) return -1
   const upper = grade.toUpperCase()
-
   if (upper.startsWith('V')) {
     const num = parseInt(upper.replace(/[^0-9]/g, ''), 10)
-    return Number.isNaN(num) ? -1 : num + 100 // keep bouldering separate
+    return Number.isNaN(num) ? -1 : num + 100
   }
-
   const sport = upper.match(/5\.(\d{1,2})([ABCD+-]?)/)
   if (sport) {
     const base = parseInt(sport[1], 10)
@@ -122,7 +66,6 @@ const gradeRank = (grade?: string) => {
     const letterScore = { '': 0, '-': -1, '+': 1, A: 0, B: 1, C: 2, D: 3 } as const
     return base * 10 + (letterScore[letter as keyof typeof letterScore] ?? 0)
   }
-
   return -1
 }
 
@@ -130,7 +73,8 @@ const unique = (list: (string | undefined)[]) =>
   Array.from(new Set(list.filter(Boolean) as string[]))
 
 export default function DatingExperience() {
-  const [profiles, setProfiles] = useState<Profile[]>(demoProfiles)
+  const router = useRouter()
+  const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
@@ -152,20 +96,16 @@ export default function DatingExperience() {
           .order('created_at', { ascending: false })
 
         if (error) throw error
-
-        if (data && data.length) {
-          const normalized = data.map(normalizeProfile).slice(0, 4) // only show 4 from DB on landing
-          setProfiles([...demoProfiles, ...normalized])
-        }
+        const normalized = (data ?? []).map(normalizeProfile)
+        setProfiles(normalized)
       } catch (err) {
         console.error('Failed to load profiles', err)
-        setError('Showing demo climbers until live data is available.')
-        setProfiles(demoProfiles)
+        setError('Unable to load climbers right now.')
+        setProfiles([])
       } finally {
         setLoading(false)
       }
     }
-
     fetchProfiles()
   }, [])
 
@@ -240,7 +180,7 @@ export default function DatingExperience() {
     return list
   }, [profiles, filters])
 
-  const featured = filteredProfiles[0] ?? profiles[0]
+  const featured = filteredProfiles[0]
   const matchesCount = filteredProfiles.length
 
   const handleJoin = (event: FormEvent<HTMLFormElement>) => {
@@ -289,7 +229,7 @@ export default function DatingExperience() {
         <nav className="nav-links">
           <a href="#profiles">Climbers</a>
           <a href="#filters">Filters</a>
-          <a href="#join">Join</a>
+          <a href="/signup">Signup</a>
         </nav>
         <button className="cta" onClick={() => document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' })}>
           Get Started
@@ -305,7 +245,7 @@ export default function DatingExperience() {
               Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
             </p>
             <div className="hero__actions">
-              <button className="cta" onClick={() => document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' })}>Start matching</button>
+              <button className="cta" onClick={() => router.push('/signup')}>Start matching</button>
               <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
             </div>
             <div className="badges">
@@ -315,43 +255,65 @@ export default function DatingExperience() {
             </div>
           </div>
 
-          <div className="hero__card">
-            <div className="hero__card-inner">
-              <div className="card-header">
-                <div className="card-top">
-                  <p className="label pill">Joined 2 mins ago</p>
-                  <span className="chip">{featured?.status || 'On belay'}</span>
+              {featured ? (
+                <div className="hero__card">
+                  <div className="hero__card-inner">
+                <div className="card-header">
+                  <div className="card-top">
+                    <p className="label pill">New climber</p>
+                    <span className="chip">{featured.status || 'On belay'}</span>
+                  </div>
+                  <div className="featured-body">
+                    <img
+                      src={featured.avatar_url ?? FALLBACK_AVATAR}
+                      alt={featured.username}
+                      className="featured-avatar"
+                    />
+                    <div>
+                      <h3>{featured.username}{featured.age ? `, ${featured.age}` : ''}</h3>
+                      <p className="sub">{featured.style || 'Climber'}</p>
+                      <p className="sub">{featured.city || 'Somewhere craggy'}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="featured-body">
-                  <img
-                    src={featured?.avatar_url ?? 'https://images.unsplash.com/photo-1464863979621-258859e62245?auto=format&fit=crop&w=240&q=60'}
-                    alt={featured?.username || 'Climber'}
-                    className="featured-avatar"
-                  />
-                  <div>
-                    <h3>{featured?.username}{featured?.age ? `, ${featured.age}` : ''}</h3>
-                    <p className="sub">{featured?.style || 'Climber'}</p>
-                    <p className="sub">{featured?.city || 'Somewhere craggy'}</p>
+                <div className="card-body sticky-actions">
+                  <div className="card-text">
+                    <p>{featured.bio || 'Seeking partners who love long approaches and clean chains.'}</p>
+                    <ul className="traits">
+                      {((Array.isArray(featured.tags) && featured.tags.length)
+                        ? featured.tags
+                        : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']
+                      ).map(tag => (
+                        <li key={tag}>{tag}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="card-actions">
+                    <button className="ghost" aria-label="pass" onClick={() => handlePass(featured.username)}>Pass</button>
+                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}>Send Like</button>
                   </div>
                 </div>
               </div>
-              <div className="card-body">
-                <p>{featured?.bio || 'Seeking partners who love long approaches and clean chains.'}</p>
-                <ul className="traits">
-                  {((Array.isArray(featured?.tags) && featured.tags.length)
-                    ? featured?.tags
-                    : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']
-                  ).map(tag => (
-                    <li key={tag}>{tag}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="card-actions">
-                <button className="ghost" aria-label="pass" onClick={() => handlePass(featured?.username)}>Pass</button>
-                <button className="cta" aria-label="send a like" onClick={() => handleLike(featured?.username)}>Send Like</button>
+            </div>
+          ) : (
+            <div className="hero__card">
+              <div className="hero__card-inner">
+                <div className="card-header">
+                  <div className="card-top">
+                    <p className="label pill">No climbers yet</p>
+                  </div>
+                </div>
+                <div className="card-body sticky-actions">
+                  <div className="card-text">
+                    <p className="muted">We’ll show new climbers as soon as they join.</p>
+                  </div>
+                  <div className="card-actions">
+                    <button className="cta" onClick={() => router.push('/signup')}>Invite friends</button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </section>
 
         <section id="filters" className="filters">
@@ -425,7 +387,7 @@ export default function DatingExperience() {
                   <header>
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <img
-                        src={profile.avatar_url ?? 'https://images.unsplash.com/photo-1464863979621-258859e62245?auto=format&fit=crop&w=200&q=60'}
+                        src={profile.avatar_url ?? FALLBACK_AVATAR}
                         alt={profile.username}
                         className="profile-avatar"
                       />
@@ -439,17 +401,19 @@ export default function DatingExperience() {
                       {profile.style ? <span className="subtle-tag">{profile.style}</span> : null}
                     </div>
                   </header>
-                  <div className="profile-body">
-                    <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
-                    <div className="badge-row">
-                      {(profile.tags?.length ? profile.tags : ['Belays soft', 'Down for laps', 'Gear organized']).map(tag => (
-                        <span key={tag}>{tag}</span>
-                      ))}
+                  <div className="profile-body sticky-actions">
+                    <div className="card-text">
+                      <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
+                      <div className="badge-row">
+                        {(profile.tags?.length ? profile.tags : ['Belays soft', 'Down for laps', 'Gear organized']).map(tag => (
+                          <span key={tag}>{tag}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  <div className="actions">
-                    <button className="ghost" onClick={() => handlePass(profile.username)}>Pass</button>
-                    <button className="cta" onClick={() => handleLike(profile.username)}>Send like</button>
+                    <div className="actions">
+                      <button className="ghost" onClick={() => handlePass(profile.username)}>Pass</button>
+                      <button className="cta" onClick={() => handleLike(profile.username)}>Send like</button>
+                    </div>
                   </div>
                 </article>
               ))
@@ -532,7 +496,7 @@ export default function DatingExperience() {
       {passModal ? (
         <div className="modal-backdrop" role="status" aria-live="polite">
           <div className="modal-card">
-            <button className="modal-close" aria-label="Close" onClick={() => setPassModal(null)}>✕</button>
+            <button className="modal-close" aria-label="Close" onClick={() => setPassModal(null)}>×</button>
             <p className="label">Pass recorded</p>
             <h3>You passed on {passModal.name}</h3>
           </div>
@@ -547,7 +511,7 @@ export default function DatingExperience() {
                 <span key={i} className="confetti-piece" />
               ))}
             </div>
-            <button className="modal-close" aria-label="Close" onClick={() => setLikeModal(null)}>✕</button>
+            <button className="modal-close" aria-label="Close" onClick={() => setLikeModal(null)}>×</button>
             <p className="label">Nice send</p>
             <h3>You liked {likeModal.name}</h3>
           </div>

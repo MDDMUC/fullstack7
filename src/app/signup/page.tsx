@@ -74,7 +74,6 @@ export default function Signup() {
           city: home,
           style,
           grade,
-          availability,
           bio,
           tags: goalTags,
           status: 'Joined just now',
