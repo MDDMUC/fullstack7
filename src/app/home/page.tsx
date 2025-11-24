@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
+import { RequireAuth } from '@/components/RequireAuth'
 import { sendSwipe } from '@/lib/swipes'
 import { checkAndCreateMatch, listMatches, MatchWithProfiles } from '@/lib/matches'
 import { listMessages, sendMessage, subscribeToMessages, Message as ChatMessage } from '@/lib/messages'
@@ -209,6 +210,7 @@ export default function HomeScreen() {
   }
 
   return (
+    <RequireAuth>
     <main className={`swipe-layout ${selectedMatch || selectedMessage ? 'has-detail' : ''}`}>
       <aside className="swipe-sidebar">
         <div className="sidebar-top">
@@ -381,5 +383,7 @@ export default function HomeScreen() {
         </section>
       )}
     </main>
+    </main>
+    </RequireAuth>
   )
 }

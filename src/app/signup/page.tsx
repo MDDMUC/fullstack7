@@ -1,6 +1,7 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 
 const styles = ['Bouldering', 'Sport', 'Trad', 'Alpine', 'Ice']
@@ -11,6 +12,7 @@ type Status = { type: 'idle' | 'error' | 'success' | 'info'; message: string }
 export default function Signup() {
   const [status, setStatus] = useState<Status>({ type: 'idle', message: '' })
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -103,6 +105,9 @@ export default function Signup() {
       type: 'success',
       message: 'Check your email to confirm. Your profile has been saved.',
     })
+
+    // Send them to profile setup after signup
+    router.push('/profile/setup')
   }
 
   return (
