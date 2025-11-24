@@ -26,6 +26,12 @@ export default function OnboardingPage() {
         return
       }
 
+      // Don't redirect if user is on the success step (step 9)
+      if (currentStep === 9) {
+        setChecking(false)
+        return
+      }
+
       try {
         const { data: { user }, error: userError } = await supabase.auth.getUser()
         
@@ -38,7 +44,8 @@ export default function OnboardingPage() {
             .single()
 
           // If profile exists, redirect to home (they've already completed onboarding)
-          if (profile && !profileError) {
+          // But only if not on the success step
+          if (profile && !profileError && currentStep !== 9) {
             console.log('User already has a profile, redirecting to home')
             router.replace('/home')
             return
@@ -53,7 +60,7 @@ export default function OnboardingPage() {
     }
 
     checkAuthAndProfile()
-  }, [router])
+  }, [router, currentStep])
 
   // Show loading state while checking
   if (checking) {
