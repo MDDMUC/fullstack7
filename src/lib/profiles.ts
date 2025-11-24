@@ -17,6 +17,7 @@ export type Profile = {
   status?: string
   goals?: string
   distance?: string
+  lookingFor?: string
 }
 
 const toArray = (value: any): string[] => {
@@ -47,6 +48,7 @@ export const normalizeProfile = (profile: any): Profile => {
     status: profile.status ?? profile.state ?? '',
     goals: profile.goals ?? profile.intent ?? '',
     distance: profile.distance ?? '10 km',
+    lookingFor: profile.lookingFor ?? profile.looking_for ?? profile.intent ?? profile.goals ?? '',
   }
 }
 

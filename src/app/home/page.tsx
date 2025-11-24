@@ -203,9 +203,13 @@ export default function HomeScreen() {
           <section className="chat-pane">
             <header className="chat-header">
               <div className="chat-match-info">
-                <img src={selectedProfile?.avatar_url ?? FALLBACK_AVATAR} alt={(selectedMatch ?? selectedMessage)?.name} className="chat-avatar" />
+                <img
+                  src={selectedProfile?.avatar_url ?? FALLBACK_AVATAR}
+                  alt={selectedMatch?.username ?? selectedMessage?.name ?? selectedProfile?.username ?? 'Profile'}
+                  className="chat-avatar"
+                />
                 <div>
-                  <p className="sub">You matched with {(selectedMatch ?? selectedMessage)?.name}</p>
+                  <p className="sub">You matched with {selectedMatch?.username ?? selectedMessage?.name ?? selectedProfile?.username}</p>
                   <small className="muted">1 month ago</small>
                 </div>
               </div>
