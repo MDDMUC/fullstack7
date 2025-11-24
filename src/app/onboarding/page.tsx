@@ -10,6 +10,7 @@ import ShowMeStep from './steps/ShowMeStep'
 import InterestsStep from './steps/InterestsStep'
 import PhotosStep from './steps/PhotosStep'
 import LocationStep from './steps/LocationStep'
+import SuccessStep from './steps/SuccessStep'
 
 export default function OnboardingPage() {
   const { currentStep } = useOnboarding()
@@ -24,6 +25,7 @@ export default function OnboardingPage() {
     { component: InterestsStep, step: 6 },
     { component: PhotosStep, step: 7 },
     { component: LocationStep, step: 8 },
+    { component: SuccessStep, step: 9 },
   ]
 
   const currentStepData = steps.find(s => s.step === currentStep)

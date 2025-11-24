@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import BackButton from '../components/BackButton'
 
 export default function LocationStep() {
-  const { data, updateData } = useOnboarding()
+  const { data, updateData, setCurrentStep } = useOnboarding()
   const router = useRouter()
   const [homebase, setHomebase] = useState('')
   const [originalFrom, setOriginalFrom] = useState('')
@@ -128,19 +128,35 @@ export default function LocationStep() {
 
       if (profileError) {
         console.error('Error saving profile:', profileError)
-        // Still redirect, profile can be updated later
+        // Still continue to success step, profile can be updated later
       }
 
       // Clear onboarding data
       localStorage.removeItem('onboarding_data')
       
-      // Redirect to home
-      router.push('/home')
+      // Navigate to success step
+      setCurrentStep(9)
     } catch (error) {
       console.error('Error completing onboarding:', error)
-      // Still redirect to signup if not authenticated
+      // If error occurs, still try to show success if data was saved
+      // Otherwise redirect to signup if not authenticated
       const allData = { ...data, homebase, originalFrom, distance }
       localStorage.setItem('onboarding_data', JSON.stringify(allData))
+      
+      // Check if we have a user (data might have been saved)
+      try {
+        if (supabase) {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user) {
+            // User is authenticated, go to success step
+            setCurrentStep(9)
+            return
+          }
+        }
+      } catch {
+        // Fall through to signup redirect
+      }
+      
       router.push('/signup')
     } finally {
       setLoading(false)
