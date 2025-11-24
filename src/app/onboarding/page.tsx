@@ -32,7 +32,7 @@ export default function OnboardingPage() {
         // If user is authenticated, check if they have a profile
         if (user && !userError) {
           const { data: profile, error: profileError } = await supabase
-            .from('profiles')
+            .from('onboardingprofiles')
             .select('id')
             .eq('id', user.id)
             .single()

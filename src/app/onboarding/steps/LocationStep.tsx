@@ -161,30 +161,75 @@ export default function LocationStep() {
         original_from: originalFrom || null,
       }
 
-      console.log('Saving profile data:', { ...profileData, photos: profileData.photos ? 'JSON string' : null })
+      console.log('Saving profile data:', { 
+        ...profileData, 
+        photos: profileData.photos ? 'JSON string' : null,
+        tags: profileData.tags 
+      })
       
+      // First, try to insert the profile
       const { data: savedData, error: profileError } = await supabase
-        .from('profiles')
-        .upsert(profileData, { onConflict: 'id' })
+        .from('onboardingprofiles')
+        .upsert(profileData, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        })
         .select()
 
       if (profileError) {
-        console.error('Error saving profile:', profileError)
-        console.error('Profile data attempted:', profileData)
-        setError(`Failed to save profile: ${profileError.message}. Check console for details.`)
+        console.error('❌ Error saving profile:', profileError)
+        console.error('Error details:', {
+          message: profileError.message,
+          details: profileError.details,
+          hint: profileError.hint,
+          code: profileError.code
+        })
+        console.error('Profile data attempted:', JSON.stringify(profileData, null, 2))
+        
+        // Check if it's an RLS policy issue
+        if (profileError.code === '42501' || profileError.message?.includes('policy')) {
+          setError(`Permission denied. Check Row Level Security policies in Supabase. Error: ${profileError.message}`)
+        } else if (profileError.code === '42P01') {
+          setError(`Table 'onboardingprofiles' does not exist. Please run the migration SQL in Supabase.`)
+        } else {
+          setError(`Failed to save profile: ${profileError.message}. Check console for details.`)
+        }
         setLoading(false)
         // Don't continue to success if save failed
         return
       }
 
-      console.log('Profile saved successfully:', savedData)
-
-      // Verify the data was actually saved
+      // Verify the save worked
       if (!savedData || savedData.length === 0) {
-        console.warn('Profile upsert returned no data - profile might not have been saved')
-        setError('Profile might not have been saved. Please check your Supabase setup.')
-        setLoading(false)
-        return
+        console.warn('⚠️ Upsert returned no data - verifying with select query...')
+        
+        // Wait a moment for the database to update
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        // Try to fetch the profile to verify it was saved
+        const { data: verifyData, error: verifyError } = await supabase
+          .from('onboardingprofiles')
+          .select('*')
+          .eq('id', user.id)
+          .single()
+        
+        if (verifyError) {
+          console.error('❌ Profile verification failed:', verifyError)
+          setError(`Profile save verification failed: ${verifyError.message}. Check Supabase setup.`)
+          setLoading(false)
+          return
+        }
+        
+        if (!verifyData) {
+          console.error('❌ Profile not found in database after save')
+          setError('Profile was not saved to database. Check RLS policies and table setup.')
+          setLoading(false)
+          return
+        }
+        
+        console.log('✅ Profile verified in database:', verifyData)
+      } else {
+        console.log('✅ Profile saved successfully:', savedData)
       }
 
       // Clear onboarding data

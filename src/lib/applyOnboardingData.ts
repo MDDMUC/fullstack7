@@ -52,7 +52,7 @@ export async function applyOnboardingDataToProfile(
   }
 
   const { data, error } = await client
-    .from('profiles')
+    .from('onboardingprofiles')
     .upsert(profileData, { onConflict: 'id' })
     .select()
 

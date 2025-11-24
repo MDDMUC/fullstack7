@@ -114,7 +114,7 @@ export default function Signup() {
           status: 'Joined just now',
         }
 
-        const { error: profileInsertError } = await supabase.from('profiles').upsert(profileData)
+        const { error: profileInsertError } = await supabase.from('onboardingprofiles').upsert(profileData)
         if (profileInsertError) {
           profileErr = profileInsertError.message
         }

@@ -92,7 +92,7 @@ Or manually run the SQL from `supabase/migrations/001_profiles_table.sql`
 
 ## Database Schema
 
-The `profiles` table includes all onboarding fields:
+The `onboardingprofiles` table includes all onboarding fields:
 
 - **Basic Info**: username, age, bio, pronouns
 - **Location**: city (homebase), original_from, distance
@@ -138,7 +138,7 @@ USING (bucket_id = 'avatars');
 2. Navigate to `/onboarding`
 3. Complete the onboarding flow
 4. Check your Supabase dashboard:
-   - **Table Editor** → `profiles` table should show the new profile
+   - **Table Editor** → `onboardingprofiles` table should show the new profile
    - **Storage** → `avatars` bucket should show uploaded photos
 
 ## Troubleshooting
