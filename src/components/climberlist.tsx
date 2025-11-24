@@ -16,7 +16,7 @@ export default function ClimberList() {
   useEffect(() => {
     const load = async () => {
       const { data, error } = await supabase
-        .from<Profile>('profiles')
+        .from('profiles')
         .select('*')
         .order('created_at', { ascending: false })
       if (error) console.error(error)
