@@ -13,6 +13,7 @@ export default function LocationStep() {
   const [originalFrom, setOriginalFrom] = useState('')
   const [distance, setDistance] = useState(100)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleIncrement = () => {
     setDistance(prev => Math.min(prev + 10, 500))
@@ -27,25 +28,63 @@ export default function LocationStep() {
     if (!homebase.trim()) return
 
     setLoading(true)
+    setError(null)
     
     try {
-      // Get current user
+      // Check Supabase configuration
       if (!supabase) {
-        // Save to local storage and redirect to signup
+        console.error('Supabase is not configured')
+        setError('Supabase is not configured. Please check your environment variables.')
+        setLoading(false)
         const allData = { ...data, homebase, originalFrom, distance }
         localStorage.setItem('onboarding_data', JSON.stringify(allData))
         router.push('/signup')
         return
       }
 
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      console.log('Checking user authentication...')
+      
+      // Try to get user, but handle the case where they're not authenticated
+      let user = null
+      let userError = null
+      
+      try {
+        const authResult = await supabase.auth.getUser()
+        user = authResult.data?.user
+        userError = authResult.error
+      } catch (err: any) {
+        console.warn('Auth check failed (user likely not logged in):', err)
+        userError = err
+      }
+      
       if (userError || !user) {
-        // If no user, save to local storage and redirect to signup
-        const allData = { ...data, homebase, originalFrom, distance }
+        console.log('User not authenticated - saving to localStorage and redirecting to signup')
+        // Save all onboarding data to localStorage (without File objects which can't be serialized)
+        const allData = {
+          ...data,
+          homebase,
+          originalFrom,
+          distance,
+          // Store photo metadata (File objects can't be stored in localStorage)
+          photosMetadata: data.photos?.map((photo, idx) => ({
+            name: photo.name,
+            size: photo.size,
+            type: photo.type,
+            index: idx
+          })) || []
+        }
         localStorage.setItem('onboarding_data', JSON.stringify(allData))
+        
+        // Show message and redirect to signup
+        setError('Please sign up or log in to complete your profile. Your information has been saved and will be applied after you create an account.')
+        setLoading(false)
+        
+        // Redirect to signup immediately
         router.push('/signup')
         return
       }
+
+      console.log('User authenticated:', user.id)
 
       // Upload photos to Supabase storage (if configured)
       let photoUrls: string[] = []
@@ -122,25 +161,38 @@ export default function LocationStep() {
         original_from: originalFrom || null,
       }
 
-      const { error: profileError } = await supabase
+      console.log('Saving profile data:', { ...profileData, photos: profileData.photos ? 'JSON string' : null })
+      
+      const { data: savedData, error: profileError } = await supabase
         .from('profiles')
-        .upsert(profileData)
+        .upsert(profileData, { onConflict: 'id' })
+        .select()
 
       if (profileError) {
         console.error('Error saving profile:', profileError)
-        // Still continue to success step, profile can be updated later
+        console.error('Profile data attempted:', profileData)
+        setError(`Failed to save profile: ${profileError.message}. Check console for details.`)
+        setLoading(false)
+        // Don't continue to success if save failed
+        return
+      }
+
+      console.log('Profile saved successfully:', savedData)
+
+      // Verify the data was actually saved
+      if (!savedData || savedData.length === 0) {
+        console.warn('Profile upsert returned no data - profile might not have been saved')
+        setError('Profile might not have been saved. Please check your Supabase setup.')
+        setLoading(false)
+        return
       }
 
       // Clear onboarding data
       localStorage.removeItem('onboarding_data')
       
-      // Set loading to false
+      // Navigate to success step immediately
+      setCurrentStep(9)
       setLoading(false)
-      
-      // Navigate to success step (use setTimeout to ensure state update happens)
-      setTimeout(() => {
-        setCurrentStep(9)
-      }, 100)
       return
     } catch (error) {
       console.error('Error completing onboarding:', error)
@@ -157,9 +209,7 @@ export default function LocationStep() {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
             // User is authenticated, go to success step
-            setTimeout(() => {
-              setCurrentStep(9)
-            }, 100)
+            setCurrentStep(9)
             return
           }
         }
@@ -233,6 +283,13 @@ export default function LocationStep() {
             </svg>
           </button>
         </div>
+
+        {error && (
+          <div className="w-full p-4 bg-red-50 border border-red-200 rounded-[4px]">
+            <p className="text-red-600 text-sm">{error}</p>
+            <p className="text-red-500 text-xs mt-2">Check the browser console for more details.</p>
+          </div>
+        )}
 
         <button
           type="submit"

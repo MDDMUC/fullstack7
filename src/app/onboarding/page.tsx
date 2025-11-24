@@ -1,7 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabaseClient'
 import PhoneStep from './steps/PhoneStep'
 import WelcomeStep from './steps/WelcomeStep'
 import NameAgeGenderStep from './steps/NameAgeGenderStep'
@@ -15,6 +17,52 @@ import SuccessStep from './steps/SuccessStep'
 export default function OnboardingPage() {
   const { currentStep } = useOnboarding()
   const router = useRouter()
+  const [checking, setChecking] = useState(true)
+
+  useEffect(() => {
+    const checkAuthAndProfile = async () => {
+      if (!supabase) {
+        setChecking(false)
+        return
+      }
+
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        
+        // If user is authenticated, check if they have a profile
+        if (user && !userError) {
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('id', user.id)
+            .single()
+
+          // If profile exists, redirect to home (they've already completed onboarding)
+          if (profile && !profileError) {
+            console.log('User already has a profile, redirecting to home')
+            router.replace('/home')
+            return
+          }
+        }
+      } catch (error) {
+        console.error('Error checking auth/profile:', error)
+        // Continue with onboarding if check fails
+      } finally {
+        setChecking(false)
+      }
+    }
+
+    checkAuthAndProfile()
+  }, [router])
+
+  // Show loading state while checking
+  if (checking) {
+    return (
+      <div className="bg-white flex items-center justify-center min-h-screen w-full">
+        <p className="text-[#757575]">Loading...</p>
+      </div>
+    )
+  }
 
   const steps = [
     { component: PhoneStep, step: 1 },
@@ -29,6 +77,12 @@ export default function OnboardingPage() {
   ]
 
   const currentStepData = steps.find(s => s.step === currentStep)
+  
+  // If no step found, default to first step
+  if (!currentStepData) {
+    console.warn(`Step ${currentStep} not found, defaulting to step 1`)
+  }
+  
   const CurrentComponent = currentStepData?.component || PhoneStep
 
   return <CurrentComponent />

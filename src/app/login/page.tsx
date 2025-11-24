@@ -27,12 +27,31 @@ export default function LoginPage() {
       return
     }
     setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) {
       setStatus(error.message)
       return
     }
+
+    // Check for saved onboarding data and apply it
+    const savedOnboardingData = localStorage.getItem('onboarding_data')
+    if (savedOnboardingData && loginData.user) {
+      try {
+        const onboardingData = JSON.parse(savedOnboardingData)
+        console.log('Found onboarding data after login, applying to profile...')
+        
+        const { applyOnboardingDataToProfile } = await import('@/lib/applyOnboardingData')
+        await applyOnboardingDataToProfile(supabase, loginData.user.id, onboardingData)
+        
+        console.log('Onboarding data successfully applied after login')
+        localStorage.removeItem('onboarding_data')
+      } catch (applyError) {
+        console.error('Error applying onboarding data after login:', applyError)
+        // Continue to home even if applying fails
+      }
+    }
+
     router.push('/home')
   }
 

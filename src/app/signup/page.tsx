@@ -73,10 +73,37 @@ export default function Signup() {
 
     const userId = signUpData.user?.id
     let profileErr: string | null = null
+    const savedOnboardingData = localStorage.getItem('onboarding_data')
 
     if (userId) {
-      const { error: profileInsertError } = await supabase.from('profiles').upsert([
-        {
+      // Check for saved onboarding data
+      let onboardingData: any = null
+      
+      if (savedOnboardingData) {
+        try {
+          onboardingData = JSON.parse(savedOnboardingData)
+          console.log('Found saved onboarding data, applying to profile...', onboardingData)
+        } catch (e) {
+          console.error('Error parsing onboarding data:', e)
+        }
+      }
+
+      // If we have onboarding data, use it (it's more complete)
+      // Otherwise use signup form data
+      if (onboardingData) {
+        const { applyOnboardingDataToProfile } = await import('@/lib/applyOnboardingData')
+        try {
+          await applyOnboardingDataToProfile(supabase, userId, onboardingData)
+          console.log('Onboarding data successfully applied to profile')
+          // Clear onboarding data after successful save
+          localStorage.removeItem('onboarding_data')
+        } catch (applyError: any) {
+          profileErr = applyError.message || 'Failed to apply onboarding data'
+          console.error('Error applying onboarding data:', applyError)
+        }
+      } else {
+        // No onboarding data, use signup form data
+        const profileData = {
           id: userId,
           username: name || email,
           city: home,
@@ -85,9 +112,13 @@ export default function Signup() {
           bio,
           tags: goalTags,
           status: 'Joined just now',
-        },
-      ])
-      if (profileInsertError) profileErr = profileInsertError.message
+        }
+
+        const { error: profileInsertError } = await supabase.from('profiles').upsert(profileData)
+        if (profileInsertError) {
+          profileErr = profileInsertError.message
+        }
+      }
     }
 
     form.reset()
@@ -101,13 +132,25 @@ export default function Signup() {
       return
     }
 
-    setStatus({
-      type: 'success',
-      message: 'Check your email to confirm. Your profile has been saved.',
-    })
-
-    // Send them to profile setup after signup
-    router.push('/profile/setup')
+    // After successful signup
+    // If onboarding data was applied, redirect to home
+    if (savedOnboardingData) {
+      setStatus({
+        type: 'success',
+        message: 'Account created! Your profile has been saved. Check your email to confirm.',
+      })
+      // Redirect to home after a moment
+      setTimeout(() => {
+        router.push('/home')
+      }, 2000)
+    } else {
+      setStatus({
+        type: 'success',
+        message: 'Check your email to confirm. Your profile has been saved.',
+      })
+      // Send them to profile setup after signup
+      router.push('/profile/setup')
+    }
   }
 
   return (
