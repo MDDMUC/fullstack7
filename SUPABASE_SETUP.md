@@ -83,12 +83,18 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_local_anon_key_from_supabase_start
 
 ### Step 3: Run Migrations
 
+**Option 1: Using Supabase CLI**
 ```bash
 # Apply the migration
 supabase db reset
 ```
 
-Or manually run the SQL from `supabase/migrations/001_profiles_table.sql`
+**Option 2: Manual Setup in Supabase Dashboard**
+
+1. Go to your Supabase project dashboard
+2. Navigate to **SQL Editor**
+3. Run the SQL from `supabase/migrations/001_profiles_table.sql` to create the table
+4. If you get a "Policies are required" error, run `supabase/setup_policies.sql` to set up RLS policies
 
 ## Database Schema
 
