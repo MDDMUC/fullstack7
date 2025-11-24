@@ -9,3 +9,10 @@ export let supabase: SupabaseClient | null = null
 if (supabaseUrl && supabaseAnonKey) {
   supabase = createClient(supabaseUrl, supabaseAnonKey)
 }
+
+export function requireSupabase(): SupabaseClient {
+  if (!supabase) {
+    throw new Error('Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.')
+  }
+  return supabase
+}

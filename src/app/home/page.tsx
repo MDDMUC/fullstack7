@@ -1,21 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
+import { supabase, requireSupabase } from '@/lib/supabaseClient'
+import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
 
-const FALLBACK_AVATAR = '/cc-moods-001.jpg'
-
-type Profile = {
-  id: string
-  name: string
-  age: number
-  distance: string
-  city?: string
-  avatar: string
-  badges?: string[]
-  about?: string
-  lookingFor?: string
-  tags?: string[]
+type Profile = DbProfile & {
+  distance?: string
 }
 
 type MessagePreview = {
@@ -25,8 +15,9 @@ type MessagePreview = {
   avatar: string
   age?: number
   city?: string
-  status?: 'likes-you' | 'verified'
 }
+
+const FALLBACK_AVATAR = '/cc-moods-001.jpg'
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches')
@@ -42,18 +33,22 @@ export default function HomeScreen() {
 
   const messageProfile = (msg: MessagePreview | null): Profile | null => {
     if (!msg) return null
-    const found = matches.find(p => p.name.toLowerCase() === msg.name.toLowerCase())
+    const found = matches.find(p => p.username.toLowerCase() === msg.name.toLowerCase())
     if (found) return found
     return {
       id: msg.id,
-      name: msg.name,
+      username: msg.name,
       age: msg.age ?? 27,
       distance: '10 km',
       city: msg.city,
-      avatar: msg.avatar || FALLBACK_AVATAR,
+      avatar_url: msg.avatar || FALLBACK_AVATAR,
       about: msg.snippet,
       lookingFor: 'Looking for partners',
       tags: [],
+      style: '',
+      availability: '',
+      grade: '',
+      status: 'Online',
     }
   }
 
@@ -75,47 +70,49 @@ export default function HomeScreen() {
   useEffect(() => {
     const load = async () => {
       setLoadingMatches(true)
-      const client = supabase
-      if (!client) {
-        setLoadingMatches(false)
-        return
+      if (!supabase) {
+        try {
+          requireSupabase()
+        } catch (err) {
+          console.error('Supabase not configured', err)
+          setLoadingMatches(false)
+          return
+        }
       }
-      const { data, error } = await client.from('profiles').select('*').limit(50)
-      if (error) {
-        console.error('Failed to load profiles', error)
+
+      try {
+        const normalized = await fetchProfiles()
+        const profiles: Profile[] = normalized.map(p => ({
+          ...p,
+          distance: p.distance ?? '10 km',
+          avatar_url: p.avatar_url ?? FALLBACK_AVATAR,
+        }))
+        setMatches(profiles)
+        setDeck(profiles.length ? profiles : [{
+          id: 'fallback',
+          username: 'Climber',
+          age: 27,
+          distance: '10 km',
+          city: '',
+          avatar_url: FALLBACK_AVATAR,
+          style: '',
+          availability: '',
+          grade: '',
+        }])
+        const previews: MessagePreview[] = profiles.slice(0, 8).map(p => ({
+          id: `msg-${p.id}`,
+          name: p.username,
+          snippet: p.bio?.slice(0, 60) || 'Say hi and plan your next session.',
+          avatar: p.avatar_url ?? FALLBACK_AVATAR,
+          age: p.age,
+          city: p.city,
+        }))
+        setMessages(previews)
+      } catch (err) {
+        console.error('Failed to load profiles', err)
+      } finally {
         setLoadingMatches(false)
-        return
       }
-      const normalized: Profile[] = (data ?? []).map((p: any, idx: number) => ({
-        id: p.id ?? `db-${idx}`,
-        name: p.username ?? 'Climber',
-        age: p.age ?? 27,
-        distance: p.distance ?? '10 km',
-        city: p.city ?? '',
-        avatar: p.avatar_url ?? FALLBACK_AVATAR,
-        about: p.bio,
-        lookingFor: p.goals ?? p.intent,
-        tags: Array.isArray(p.tags) ? p.tags : typeof p.tags === 'string' ? [p.tags] : [],
-      }))
-      setMatches(normalized)
-      setDeck(normalized.length ? normalized : [{
-        id: 'fallback',
-        name: 'Climber',
-        age: 27,
-        distance: '10 km',
-        city: '',
-        avatar: FALLBACK_AVATAR,
-      }])
-      const previews: MessagePreview[] = normalized.slice(0, 8).map(p => ({
-        id: `msg-${p.id}`,
-        name: p.name,
-        snippet: p.about?.slice(0, 60) || 'Say hi and plan your next session.',
-        avatar: p.avatar,
-        age: p.age,
-        city: p.city,
-      }))
-      setMessages(previews)
-      setLoadingMatches(false)
     }
     load()
   }, [])
@@ -167,9 +164,9 @@ export default function HomeScreen() {
                   className={`match-card ${selectedMatch?.id === profile.id ? 'is-active' : ''}`}
                   onClick={() => { setSelectedMatch(profile); setSelectedMessage(null) }}
                 >
-                  <img src={profile.avatar} alt={profile.name} />
+                  <img src={profile.avatar_url ?? FALLBACK_AVATAR} alt={profile.username} />
                   <div className="match-meta">
-                    <span className="match-name">{profile.name}</span>
+                    <span className="match-name">{profile.username}</span>
                   </div>
                 </button>
               ))
@@ -182,7 +179,7 @@ export default function HomeScreen() {
                 key={msg.id}
                 className={`message-row ${selectedMessage?.id === msg.id ? 'is-active' : ''}`}
                 onClick={() => {
-                  const matchedProfile = matches.find(p => p.name.toLowerCase() === msg.name.toLowerCase()) ?? null
+                  const matchedProfile = matches.find(p => p.username.toLowerCase() === msg.name.toLowerCase()) ?? null
                   setSelectedMatch(matchedProfile)
                   setSelectedMessage(msg)
                 }}
@@ -205,7 +202,7 @@ export default function HomeScreen() {
           <section className="chat-pane">
             <header className="chat-header">
               <div className="chat-match-info">
-                <img src={selectedProfile?.avatar ?? FALLBACK_AVATAR} alt={(selectedMatch ?? selectedMessage)?.name} className="chat-avatar" />
+                <img src={selectedProfile?.avatar_url ?? FALLBACK_AVATAR} alt={(selectedMatch ?? selectedMessage)?.name} className="chat-avatar" />
                 <div>
                   <p className="sub">You matched with {(selectedMatch ?? selectedMessage)?.name}</p>
                   <small className="muted">1 month ago</small>
@@ -246,10 +243,10 @@ export default function HomeScreen() {
           </section>
 
           <aside className="profile-pane">
-            <div className="profile-hero" style={{ backgroundImage: `url(${selectedProfile?.avatar ?? FALLBACK_AVATAR})` }} />
+            <div className="profile-hero" style={{ backgroundImage: `url(${selectedProfile?.avatar_url ?? FALLBACK_AVATAR})` }} />
             <div className="profile-pane-body">
               <div className="profile-pane-header">
-                <h2>{selectedProfile?.name} <span>{selectedProfile?.age ?? ''}</span></h2>
+                <h2>{selectedProfile?.username} <span>{selectedProfile?.age ?? ''}</span></h2>
                 <p className="muted">📍 {selectedProfile?.distance ?? ''}{selectedProfile?.city ? ` • ${selectedProfile.city}` : ''}</p>
               </div>
               <div className="profile-section">
@@ -258,7 +255,7 @@ export default function HomeScreen() {
               </div>
               <div className="profile-section">
                 <p className="eyebrow">About me</p>
-                <p className="muted">{selectedProfile?.about || 'Climber and traveler. Into good coffee, morning sessions, and keeping things light but real.'}</p>
+                <p className="muted">{selectedProfile?.bio || 'Climber and traveler. Into good coffee, morning sessions, and keeping things light but real.'}</p>
               </div>
               {selectedProfile?.tags?.length ? (
                 <div className="profile-tags">
@@ -271,11 +268,11 @@ export default function HomeScreen() {
       ) : (
         <section className="swipe-stage">
           <div className="phone-frame">
-            <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar ?? FALLBACK_AVATAR})` }}>
+            <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? FALLBACK_AVATAR})` }}>
               <div className="hero-overlay" />
               <div className="hero-meta">
                 <div>
-                  <h2>{current?.name} <span>{current?.age}</span></h2>
+                  <h2>{current?.username} <span>{current?.age}</span></h2>
                   <p>📍 {current?.distance ?? ''} {current?.city ? `• ${current.city}` : ''}</p>
                 </div>
               </div>
