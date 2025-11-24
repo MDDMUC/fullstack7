@@ -383,7 +383,6 @@ export default function HomeScreen() {
         </section>
       )}
     </main>
-    </main>
     </RequireAuth>
   )
 }

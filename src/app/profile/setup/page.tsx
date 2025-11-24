@@ -1,14 +1,14 @@
-"use client"
+﻿'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
-import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { normalizeProfile, Profile } from '@/lib/profiles'
 
 export default function ProfileSetup() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [status, setStatus] = useState<string>('')
+  const [status, setStatus] = useState('')
   const [profile, setProfile] = useState<Profile | null>(null)
 
   useEffect(() => {
@@ -39,10 +39,10 @@ export default function ProfileSetup() {
     const data = new FormData(form)
     const username = (data.get('username') as string)?.trim()
     const city = (data.get('city') as string)?.trim()
-    const style = data.get('style') as string
+    const style = (data.get('style') as string)?.trim()
     const grade = (data.get('grade') as string)?.trim()
     const bio = (data.get('bio') as string)?.trim()
-    const availability = data.get('availability') as string
+    const availability = (data.get('availability') as string)?.trim()
 
     try {
       const client = supabase ?? requireSupabase()
@@ -117,7 +117,7 @@ export default function ProfileSetup() {
               <textarea name="bio" rows={3} defaultValue={profile?.bio} placeholder="Trad partner for desert season, training for alpine this summer." />
             </label>
             <button className="cta wide" type="submit" disabled={loading} aria-busy={loading}>
-              {loading ? 'Saving�' : 'Save profile'}
+              {loading ? 'Saving…' : 'Save profile'}
             </button>
             {status && <p className="form-note" aria-live="polite">{status}</p>}
           </form>

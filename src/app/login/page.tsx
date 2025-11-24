@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -62,7 +62,7 @@ export default function LoginPage() {
                 <input type="password" name="password" required minLength={8} placeholder="Your password" />
               </label>
               <button className="cta wide" type="submit" disabled={loading} aria-busy={loading}>
-                {loading ? 'Signing in�' : 'Log in'}
+                {loading ? 'Signing in…' : 'Log in'}
               </button>
               {status && (
                 <p className="form-note error" aria-live="polite">{status}</p>

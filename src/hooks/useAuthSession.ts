@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 
 export function useAuthSession() {
   const [loading, setLoading] = useState(true)
-  const [session, setSession] = useState<Awaited<ReturnType<typeof supabase?.auth.getSession>>['data']['session'] | null>(null)
+  const [session, setSession] = useState<null | { access_token: string }>(null)
 
   useEffect(() => {
     let mounted = true
