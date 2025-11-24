@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
-import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
+import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
+import { sendSwipe } from '@/lib/swipes'
+import { checkAndCreateMatch, listMatches, MatchWithProfiles } from '@/lib/matches'
+import { listMessages, sendMessage, subscribeToMessages, Message as ChatMessage } from '@/lib/messages'
 
 type Profile = DbProfile & {
   distance?: string
@@ -10,6 +13,8 @@ type Profile = DbProfile & {
 
 type MessagePreview = {
   id: string
+  matchId?: string
+  profileId?: string
   name: string
   snippet: string
   avatar: string
@@ -28,6 +33,12 @@ export default function HomeScreen() {
   const [messages, setMessages] = useState<MessagePreview[]>([])
   const [selectedMatch, setSelectedMatch] = useState<Profile | null>(null)
   const [selectedMessage, setSelectedMessage] = useState<MessagePreview | null>(null)
+  const [matchRows, setMatchRows] = useState<MatchWithProfiles[]>([])
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null)
+  const [threadMessages, setThreadMessages] = useState<ChatMessage[]>([])
+  const [messageInput, setMessageInput] = useState('')
+  const [userId, setUserId] = useState<string | null>(null)
+  const messageUnsub = useMemo(() => ({ current: null as null | (() => void) }), [])
 
   const current = useMemo(() => deck[(currentIndex % Math.max(deck.length, 1)) || 0], [currentIndex, deck])
 
@@ -57,16 +68,6 @@ export default function HomeScreen() {
     [selectedMatch, selectedMessage, deck, matches]
   )
 
-  const conversation = useMemo(() => {
-    const msg = selectedMessage
-    if (!msg) return []
-    return [
-      { id: `${msg.id}-1`, from: 'them' as const, text: msg.snippet || 'Hey there!', time: '10:02' },
-      { id: `${msg.id}-2`, from: 'you' as const, text: 'Sounds good! Want to plan something this weekend?', time: '10:04' },
-      { id: `${msg.id}-3`, from: 'them' as const, text: "Yes, let's pick a crag and time.", time: '10:06' },
-    ]
-  }, [selectedMessage])
-
   useEffect(() => {
     const load = async () => {
       setLoadingMatches(true)
@@ -81,6 +82,10 @@ export default function HomeScreen() {
       }
 
       try {
+        const client = supabase ?? requireSupabase()
+        const { data: userData } = await client.auth.getUser()
+        setUserId(userData.user?.id ?? null)
+
         const normalized = await fetchProfiles()
         const profiles: Profile[] = normalized.map(p => ({
           ...p,
@@ -100,14 +105,25 @@ export default function HomeScreen() {
           grade: '',
           bio: '',
         }])
-        const previews: MessagePreview[] = profiles.slice(0, 8).map(p => ({
-          id: `msg-${p.id}`,
-          name: p.username,
-          snippet: p.bio?.slice(0, 60) || 'Say hi and plan your next session.',
-          avatar: p.avatar_url ?? FALLBACK_AVATAR,
-          age: p.age,
-          city: p.city,
-        }))
+        const matchList = await listMatches().catch(err => {
+          console.error('Failed to load matches', err)
+          return [] as MatchWithProfiles[]
+        })
+        setMatchRows(matchList)
+        const previews: MessagePreview[] = matchList.map(m => {
+          const other = (m.profiles ?? []).find(p => p.id !== userData.user?.id)
+          const resolved = other ? normalizeProfile(other) : null
+          return {
+            id: m.id,
+            matchId: m.id,
+            profileId: resolved?.id,
+            name: resolved?.username ?? 'Match',
+            snippet: resolved?.bio?.slice(0, 60) || 'Say hi and plan your next session.',
+            avatar: resolved?.avatar_url ?? FALLBACK_AVATAR,
+            age: resolved?.age,
+            city: resolved?.city,
+          }
+        })
         setMessages(previews)
       } catch (err) {
         console.error('Failed to load profiles', err)
@@ -131,6 +147,65 @@ export default function HomeScreen() {
 
   const action = () => {
     setCurrentIndex(i => (i + 1) % Math.max(deck.length, 1))
+  }
+
+  const openMatch = async (matchId: string) => {
+    const match = matchRows.find(m => m.id === matchId)
+    if (!match) return
+    setSelectedMatchId(matchId)
+    const other = (match.profiles ?? []).find(p => p.id !== userId)
+    const resolved = other ? normalizeProfile(other) : null
+    setSelectedMatch(resolved)
+    setSelectedMessage({
+      id: matchId,
+      matchId,
+      profileId: resolved?.id,
+      name: resolved?.username ?? 'Match',
+      snippet: resolved?.bio?.slice(0, 60) || 'Say hi and plan your next session.',
+      avatar: resolved?.avatar_url ?? FALLBACK_AVATAR,
+      age: resolved?.age,
+      city: resolved?.city,
+    })
+    try {
+      const msgs = await listMessages(matchId)
+      setThreadMessages(msgs)
+    } catch (err) {
+      console.error('Failed to load messages', err)
+      setThreadMessages([])
+    }
+    if (messageUnsub.current) messageUnsub.current()
+    messageUnsub.current = subscribeToMessages(matchId, msg => setThreadMessages(prev => [...prev, msg]))
+  }
+
+  useEffect(() => () => {
+    if (messageUnsub.current) messageUnsub.current()
+  }, [messageUnsub])
+
+  const handleSend = async () => {
+    if (!selectedMatchId || !messageInput.trim()) return
+    try {
+      await sendMessage(selectedMatchId, messageInput.trim())
+      setMessageInput('')
+    } catch (err) {
+      console.error('Failed to send message', err)
+    }
+  }
+
+  const handleSwipe = async (profile?: Profile, actionType: 'like' | 'pass' = 'like') => {
+    if (!profile) {
+      action()
+      return
+    }
+    try {
+      await sendSwipe(profile.id, actionType)
+      if (actionType === 'like') {
+        await checkAndCreateMatch(profile.id)
+      }
+    } catch (err) {
+      console.error('Swipe failed', err)
+    } finally {
+      action()
+    }
   }
 
   return (
@@ -159,18 +234,22 @@ export default function HomeScreen() {
             {loadingMatches ? (
               <p className="muted" style={{ gridColumn: '1 / -1' }}>Loading matches...</p>
             ) : (
-              matches.map(profile => (
-                <button
-                  key={profile.id}
-                  className={`match-card ${selectedMatch?.id === profile.id ? 'is-active' : ''}`}
-                  onClick={() => { setSelectedMatch(profile); setSelectedMessage(null) }}
-                >
-                  <img src={profile.avatar_url ?? FALLBACK_AVATAR} alt={profile.username} />
-                  <div className="match-meta">
-                    <span className="match-name">{profile.username}</span>
-                  </div>
-                </button>
-              ))
+              matchRows.map(match => {
+                const other = (match.profiles ?? []).find(p => p.id !== userId)
+                const profile = other ? normalizeProfile(other) : null
+                return (
+                  <button
+                    key={match.id}
+                    className={`match-card ${selectedMatchId === match.id ? 'is-active' : ''}`}
+                    onClick={() => openMatch(match.id)}
+                  >
+                    <img src={profile?.avatar_url ?? FALLBACK_AVATAR} alt={profile?.username ?? 'Match'} />
+                    <div className="match-meta">
+                      <span className="match-name">{profile?.username ?? 'Match'}</span>
+                    </div>
+                  </button>
+                )
+              })
             )}
           </div>
         ) : (
@@ -179,11 +258,7 @@ export default function HomeScreen() {
               <button
                 key={msg.id}
                 className={`message-row ${selectedMessage?.id === msg.id ? 'is-active' : ''}`}
-                onClick={() => {
-                  const matchedProfile = matches.find(p => p.username.toLowerCase() === msg.name.toLowerCase()) ?? null
-                  setSelectedMatch(matchedProfile)
-                  setSelectedMessage(msg)
-                }}
+                onClick={() => openMatch(msg.matchId ?? msg.id)}
               >
                 <img src={msg.avatar} alt={msg.name} className="message-avatar" />
                 <div className="message-text">
@@ -221,29 +296,44 @@ export default function HomeScreen() {
 
             <div className="chat-body">
               <div className="chat-thread">
-                {conversation.map(msg => (
-                  <div key={msg.id} className="bubble-row">
-                    <div className={`bubble ${msg.from === 'them' ? 'them' : 'you'}`}>
-                      {msg.text}
+                {threadMessages.length === 0 ? (
+                  <p className="muted">Start the conversation.</p>
+                ) : (
+                  threadMessages.map(msg => (
+                    <div key={msg.id} className="bubble-row">
+                      <div className={`bubble ${msg.sender === userId ? 'you' : 'them'}`}>
+                        {msg.body}
+                      </div>
+                      <div className="bubble-meta">
+                        <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        {msg.sender === userId ? <span>Sent</span> : null}
+                      </div>
                     </div>
-                    <div className="bubble-meta">
-                      <span>{msg.time}</span>
-                      {msg.from === 'you' ? <span>Sent</span> : null}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 
             <footer className="chat-input">
               <div className="input-shell">
-                <input type="text" placeholder="Type a message" />
+                <input
+                  type="text"
+                  placeholder="Type a message"
+                  value={messageInput}
+                  onChange={e => setMessageInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleSend()
+                    }
+                  }}
+                />
                 <div className="input-actions">
                   <button className="ghost">GIF</button>
                   <button className="ghost">Emoji</button>
                 </div>
               </div>
-              <button className="cta">Send</button>
+              <button className="cta" onClick={handleSend}>Send</button>
             </footer>
           </section>
 
@@ -276,7 +366,7 @@ export default function HomeScreen() {
           <div className="phone-frame">
             <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? FALLBACK_AVATAR})` }}>
               <div className="hero-overlay" />
-                                          <div className="hero-meta">
+              <div className="hero-meta">
                 <div>
                   <h2>{current?.username} <span>{current?.age}</span></h2>
                   <p>Location: {current?.distance ?? ''}{current?.city ? `, ${current.city}` : ''}</p>
@@ -284,8 +374,8 @@ export default function HomeScreen() {
               </div>
             </div>
             <div className="hero-actions hero-actions-wide">
-              <button className="ghost wide" onClick={() => action()}>Pass</button>
-              <button className="cta wide" onClick={() => action()}>Send Like</button>
+              <button className="ghost wide" onClick={() => handleSwipe(current, 'pass')}>Pass</button>
+              <button className="cta wide" onClick={() => handleSwipe(current, 'like')}>Send Like</button>
             </div>
           </div>
         </section>

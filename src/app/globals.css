@@ -357,6 +357,14 @@ textarea:focus-visible {
 .message-name { font-weight: 800; }
 .message-pill { background: linear-gradient(120deg, var(--accent), var(--accent-2)); color: #0b0d12; padding: 4px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; }
 
+@media (max-width: 1280px) {
+  .swipe-layout { grid-template-columns: 280px 1fr; }
+  .swipe-layout.has-detail { grid-template-columns: 280px 1fr 0.9fr; }
+  .swipe-sidebar { width: 280px; }
+  .sidebar-grid { grid-template-columns: repeat(2, 1fr); }
+  .chat-pane, .profile-pane { min-height: 60vh; }
+}
+
 @media (max-width: 1000px) {
   .swipe-layout { grid-template-columns: 1fr; }
   .swipe-layout.has-detail { grid-template-columns: 1fr; }
