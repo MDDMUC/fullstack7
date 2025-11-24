@@ -134,10 +134,18 @@ export default function LocationStep() {
       // Clear onboarding data
       localStorage.removeItem('onboarding_data')
       
-      // Navigate to success step
-      setCurrentStep(9)
+      // Set loading to false
+      setLoading(false)
+      
+      // Navigate to success step (use setTimeout to ensure state update happens)
+      setTimeout(() => {
+        setCurrentStep(9)
+      }, 100)
+      return
     } catch (error) {
       console.error('Error completing onboarding:', error)
+      setLoading(false)
+      
       // If error occurs, still try to show success if data was saved
       // Otherwise redirect to signup if not authenticated
       const allData = { ...data, homebase, originalFrom, distance }
@@ -149,7 +157,9 @@ export default function LocationStep() {
           const { data: { user } } = await supabase.auth.getUser()
           if (user) {
             // User is authenticated, go to success step
-            setCurrentStep(9)
+            setTimeout(() => {
+              setCurrentStep(9)
+            }, 100)
             return
           }
         }
@@ -158,8 +168,6 @@ export default function LocationStep() {
       }
       
       router.push('/signup')
-    } finally {
-      setLoading(false)
     }
   }
 

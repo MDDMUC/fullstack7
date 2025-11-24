@@ -7,10 +7,10 @@ export default function SuccessStep() {
   const router = useRouter()
 
   useEffect(() => {
-    // Auto-redirect to home after 5 seconds
+    // Auto-redirect to home after 3 seconds
     const timer = setTimeout(() => {
       router.push('/home')
-    }, 5000)
+    }, 3000)
 
     return () => clearTimeout(timer)
   }, [router])
@@ -57,7 +57,7 @@ export default function SuccessStep() {
 
         {/* Auto-redirect notice */}
         <p className="text-sm text-[#757575] mt-2">
-          Redirecting automatically in a few seconds...
+          Redirecting to home in a few seconds...
         </p>
       </div>
     </div>
