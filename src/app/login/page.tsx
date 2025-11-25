@@ -4,6 +4,7 @@ import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import LoginGuard from '@/components/LoginGuard'
+import { safeGetUser } from '@/lib/authUtils'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -33,7 +34,24 @@ export default function LoginPage() {
       setStatus(error.message)
       return
     }
-    router.push('/home')
+
+    // Best practice: route first-time logins to onboarding if profile not set
+    const { user, error: userError } = await safeGetUser(supabase)
+    if (!user || userError) {
+      router.push('/dab')
+      return
+    }
+    const { data: obProfile } = await supabase
+      .from('onboardingprofiles')
+      .select('id')
+      .eq('id', user.id)
+      .single()
+
+    if (obProfile) {
+      router.push('/home')
+    } else {
+      router.push('/dab')
+    }
   }
 
   return (

@@ -273,7 +273,7 @@ export default function DatingExperience() {
                   </div>
                   <div className="card-actions">
                     <button className="ghost" aria-label="pass" onClick={() => handlePass(featured.username)}>Pass</button>
-                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}>DAB</button>
+                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}><span className="dab-text">DAB</span></button>
                   </div>
                 </div>
               </div>
@@ -395,7 +395,7 @@ export default function DatingExperience() {
                     </div>
                     <div className="actions">
                       <button className="ghost" onClick={() => handlePass(profile.username)}>Pass</button>
-                      <button className="cta" onClick={() => handleLike(profile.username)}>DAB</button>
+                      <button className="cta" onClick={() => handleLike(profile.username)}><span className="dab-text">DAB</span></button>
                     </div>
                   </div>
                 </article>

@@ -89,89 +89,91 @@ export default function PhoneStep() {
   }
 
   return (
-    <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+    <div className="onboard-screen flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
       <BackButton />
-      <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
-          Add your phone
-        </h1>
-      </div>
-      
-      <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-        Only real people.
-      </p>
-      
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md" ref={wrapperRef}>
-        <div className="w-full flex flex-col gap-2">
-          <div className="h-14 relative rounded-[12px] flex items-center gap-2" style={{ background: '#0f131d', border: '1px solid var(--stroke)', padding: '0 8px' }}>
-            <div className="relative" ref={dropdownRef} style={{ width: '240px' }}>
-              <button
-                type="button"
-                onClick={() => setOpen(o => !o)}
-                className="w-full h-10 px-3 text-left rounded-[8px]"
-                style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}
-              >
-                <span>{selectedFlag}</span>
-                <span>{countryCode}</span>
-              </button>
-              {open && (
-                <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: '#0f131d', border: '1px solid var(--stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '240px' }}>
-                  <div style={{ padding: '8px' }}>
-                    <input
-                      type="search"
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="w-full h-9 px-3 rounded-[8px] text-sm"
-                      style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)' }}
-                      placeholder="Search code or country"
-                    />
-                  </div>
-                  {filtered.map(option => (
-                    <button
-                      key={option.code}
-                      type="button"
-                      className="w-full px-3 py-2 hover:bg-[#131826] flex items-center gap-2"
-                      onClick={() => {
-                        setCountryCode(option.code)
-                        setSearch('')
-                        setOpen(false)
-                      }}
-                      style={{ color: 'var(--text)', fontSize: '13px', whiteSpace: 'nowrap' }}
-                    >
-                      <span style={{ minWidth: '20px' }}>{option.flag || '🌐'}</span>
-                      <span style={{ color: 'var(--accent)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{option.label}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-            <input
-              type="tel"
-              value={formatDisplay(nationalNumber)}
-              onChange={(e) => setNationalNumber(normalizedDigits(e.target.value))}
-              className="flex-1 h-12 px-3 bg-transparent border-none outline-none text-base rounded-[8px]"
-              style={{ color: 'var(--text)' }}
-              placeholder="415 555 1234"
-              required
-            />
-          </div>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Add digits only; we’ll verify later. You control when to share.
-          </p>
+      <div className="onboard-card flex flex-col items-center gap-4">
+        <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
+          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
+            Add your phone
+          </h1>
         </div>
         
-        <button
-          type="submit"
-          disabled={loading || normalizedDigits(nationalNumber).length < 6}
-          className="cta w-full"
-          style={{ padding: '10px 16px', borderRadius: '10px' }}
-        >
-          <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-            {loading ? 'Saving...' : 'Continue'}
-          </span>
-        </button>
-      </form>
+        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+          Only real people.
+        </p>
+        
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md" ref={wrapperRef}>
+          <div className="w-full flex flex-col gap-2">
+            <div className="h-14 relative rounded-[12px] flex items-center gap-2" style={{ background: '#0f131d', border: '1px solid var(--stroke)', padding: '0 8px' }}>
+              <div className="relative" ref={dropdownRef} style={{ width: '240px' }}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(o => !o)}
+                  className="w-full h-10 px-3 text-left rounded-[8px]"
+                  style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}
+                >
+                  <span>{selectedFlag}</span>
+                  <span>{countryCode}</span>
+                </button>
+                {open && (
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: '#0f131d', border: '1px solid var(--stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '240px' }}>
+                    <div style={{ padding: '8px' }}>
+                      <input
+                        type="search"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="w-full h-9 px-3 rounded-[8px] text-sm"
+                        style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)' }}
+                        placeholder="Search code or country"
+                      />
+                    </div>
+                    {filtered.map(option => (
+                      <button
+                        key={option.code}
+                        type="button"
+                        className="w-full px-3 py-2 hover:bg-[#131826] flex items-center gap-2"
+                        onClick={() => {
+                          setCountryCode(option.code)
+                          setSearch('')
+                          setOpen(false)
+                        }}
+                        style={{ color: 'var(--text)', fontSize: '13px', whiteSpace: 'nowrap' }}
+                      >
+                        <span style={{ minWidth: '20px' }}>{option.flag || '🌐'}</span>
+                        <span style={{ color: 'var(--accent)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <input
+                type="tel"
+                value={formatDisplay(nationalNumber)}
+                onChange={(e) => setNationalNumber(normalizedDigits(e.target.value))}
+                className="flex-1 h-12 px-3 bg-transparent border-none outline-none text-base rounded-[8px]"
+                style={{ color: 'var(--text)' }}
+                placeholder="415 555 1234"
+                required
+              />
+            </div>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>
+              Add digits only; we’ll verify later. You control when to share.
+            </p>
+          </div>
+          
+          <button
+            type="submit"
+            disabled={loading || normalizedDigits(nationalNumber).length < 6}
+            className="cta w-full"
+            style={{ padding: '10px 16px', borderRadius: '10px' }}
+          >
+            <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
+              {loading ? 'Saving...' : 'Continue'}
+            </span>
+          </button>
+        </form>
+      </div>
     </div>
   )
 }

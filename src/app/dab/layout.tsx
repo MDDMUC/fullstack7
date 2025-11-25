@@ -5,7 +5,7 @@ export default function OnboardingLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <OnboardingProvider>{children}</OnboardingProvider>
+  return <OnboardingProvider><div className="onboard-bg">{children}</div></OnboardingProvider>
 }
 
 

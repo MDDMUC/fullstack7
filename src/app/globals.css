@@ -78,11 +78,17 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 }
 
 .dab-logo {
-  font-family: var(--font-dab), 'Bebas Neue', sans-serif;
+  font-family: var(--font-dab), 'Metal Mania', cursive;
   font-size: 32px;
   font-weight: 400;
   letter-spacing: 2px;
   color: var(--accent);
+  text-transform: uppercase;
+}
+
+.dab-text {
+  font-family: var(--font-dab), 'Metal Mania', cursive;
+  letter-spacing: 1px;
   text-transform: uppercase;
 }
 
@@ -307,6 +313,45 @@ textarea:focus-visible {
 .form-note.error { color: #ff7b7b; }
 .form-note.success { color: var(--accent); }
 .form-note.info { color: var(--muted); }
+
+.onboard-card {
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  padding: 36px 28px;
+  width: min(620px, 95vw);
+  box-shadow: var(--shadow);
+  margin-top: 12px;
+}
+
+.onboard-screen {
+  color: var(--text);
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .onboard-card {
+    padding: 28px 18px;
+    width: 95vw;
+  }
+  .onboard-card h1 {
+    font-size: 28px;
+    line-height: 1.2;
+  }
+}
+
+.onboard-bg {
+  min-height: 100vh;
+  background: radial-gradient(circle at 25% 20%, rgba(92, 225, 230, 0.08), transparent 35%),
+              radial-gradient(circle at 80% 10%, rgba(230, 143, 255, 0.08), transparent 30%),
+              var(--bg);
+  display: flex;
+  flex-direction: column;
+}
 
 /* Swipe layout */
 .swipe-layout { display: grid; grid-template-columns: 320px 1.1fr 0.9fr; min-height: 100vh; background: radial-gradient(circle at 20% 20%, rgba(92,225,230,0.08), transparent 32%), radial-gradient(circle at 80% 10%, rgba(230,143,255,0.08), transparent 28%), #0b0d12; color: var(--text); }

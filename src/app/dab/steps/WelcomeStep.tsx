@@ -70,81 +70,84 @@ export default function WelcomeStep() {
   }
 
   return (
-    <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+    <div className="onboard-screen flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
       <BackButton />
-      <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
-          Pledge
-        </h1>
-      </div>
-      <p className="text-sm font-semibold uppercase tracking-[1px]" style={{ color: 'var(--accent)' }}>
-        Select all to continue
-      </p>
+      <div className="onboard-card flex flex-col items-center gap-4">
+        <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
+          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)', margin: 0 }}>
+            Pledge
+          </h1>
+        </div>
+        <p className="text-sm font-semibold uppercase tracking-[1px]" style={{ color: 'var(--accent)' }}>
+          Select all to continue
+        </p>
 
-      <div className="flex flex-col gap-4 w-full max-w-md">
-        {PLEDGE.map((item) => {
-          const checked = !!accepted[item.title]
-          const isHovered = hovered === item.title
-          return (
-            <div
-              key={item.title}
-              className="flex gap-4 items-start justify-center p-3 rounded-[12px]"
-              style={{
-                border: `1px solid ${checked || isHovered ? 'var(--accent)' : 'var(--stroke)'}`,
-                background: checked ? 'rgba(92, 225, 230, 0.08)' : isHovered ? '#131826' : '#0f131d',
-                cursor: 'pointer',
-                boxShadow: isHovered
-                  ? '0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)'
-                  : '0 4px 18px rgba(0,0,0,0.28)',
-                transition: 'all 160ms ease',
-              }}
-              onClick={() => handleToggle(item.title)}
-              role="checkbox"
-              aria-checked={checked}
-              onMouseEnter={() => setHovered(item.title)}
-              onMouseLeave={() => setHovered(null)}
-            >
+        <div className="flex flex-col gap-4 w-full max-w-md">
+          {PLEDGE.map((item) => {
+            const checked = !!accepted[item.title]
+            const isHovered = hovered === item.title
+            return (
               <div
-                className="mt-1 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                key={item.title}
+                className="flex gap-4 items-start justify-center p-3 rounded-[12px]"
                 style={{
-                  borderColor: checked ? 'var(--accent)' : 'var(--stroke)',
-                  background: checked ? 'var(--accent)' : 'transparent',
+                  border: `1px solid ${checked || isHovered ? 'var(--accent)' : 'var(--stroke)'}`,
+                  background: checked ? 'rgba(92, 225, 230, 0.08)' : isHovered ? '#131826' : '#0f131d',
+                  cursor: 'pointer',
+                  boxShadow: isHovered
+                    ? '0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)'
+                    : '0 4px 18px rgba(0,0,0,0.28)',
+                  transition: 'all 160ms ease',
                 }}
+                onClick={() => handleToggle(item.title)}
+                role="checkbox"
+                aria-checked={checked}
+                onMouseEnter={() => setHovered(item.title)}
+                onMouseLeave={() => setHovered(null)}
               >
-                {checked && (
-                  <div className="w-3 h-3 rounded-full" style={{ background: '#0c0e12' }}></div>
-                )}
-              </div>
-              <div className="flex-1">
-                <p className="font-bold leading-normal text-[18px]" style={{ color: 'var(--text)', margin: 0 }}>
-                  {item.title}
-                </p>
-                <p className="font-normal leading-normal text-[15px] mt-1" style={{ color: 'var(--muted)', margin: 0 }}>
-                  {item.detail}
-                </p>
-                {!checked && (
-                  <p className="text-[12px] font-semibold mt-1" style={{ color: 'var(--muted)', letterSpacing: '0.5px' }}>
-                    Tap to agree (required)
+                <div
+                  className="mt-1 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+                  style={{
+                    borderColor: checked ? 'var(--accent)' : 'var(--stroke)',
+                    background: checked ? 'var(--accent)' : 'transparent',
+                  }}
+                >
+                  {checked && (
+                    <div className="w-3 h-3 rounded-full" style={{ background: '#0c0e12' }}></div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold leading-normal text-[18px]" style={{ color: 'var(--text)', margin: 0 }}>
+                    {item.title}
                   </p>
-                )}
+                  <p className="font-normal leading-normal text-[15px] mt-1" style={{ color: 'var(--muted)', margin: 0 }}>
+                    {item.detail}
+                  </p>
+                  {!checked && (
+                    <p className="text-[12px] font-semibold mt-1" style={{ color: 'var(--muted)', letterSpacing: '0.5px' }}>
+                      Tap to agree (required)
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={!allAccepted || loading}
-        className="cta w-full max-w-md"
-        style={{ padding: '10px 16px', borderRadius: '10px' }}
-      >
-        <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-          {loading ? 'Saving...' : 'Agree & Finish 7/7'}
-        </span>
-      </button>
-      {status && <p className="form-note error" aria-live="polite">{status}</p>}
+        <div className="w-full max-w-md">
+          <button
+            onClick={handleSubmit}
+            disabled={!allAccepted || loading}
+            className="cta w-full"
+            style={{ padding: '10px 16px', borderRadius: '10px' }}
+          >
+            <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
+              {loading ? 'Saving...' : 'Agree & Finish 7/7'}
+            </span>
+          </button>
+          {status && <p className="form-note error" aria-live="polite">{status}</p>}
+        </div>
+      </div>
     </div>
   )
 }
-

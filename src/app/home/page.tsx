@@ -377,7 +377,7 @@ export default function HomeScreen() {
             </div>
             <div className="hero-actions hero-actions-wide">
               <button className="ghost wide" onClick={() => handleSwipe(current, 'pass')}>Pass</button>
-              <button className="cta wide" onClick={() => handleSwipe(current, 'like')}>DAB</button>
+              <button className="cta wide" onClick={() => handleSwipe(current, 'like')}><span className="dab-text">DAB</span></button>
             </div>
           </div>
         </section>
