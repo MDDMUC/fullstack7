@@ -7,7 +7,6 @@ export type OnboardingData = {
   phone?: string
 
   // Identity
-  name?: string
   age?: string
   gender?: 'Man' | 'Woman' | 'Other'
   pronouns?: string

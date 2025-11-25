@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Metal_Mania } from "next/font/google";
 import "./globals.css";
-import UserNav from "@/components/UserNav";
 import Logo from "@/components/Logo";
 
 const geistSans = Geist({
@@ -31,10 +30,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${metal.variable} antialiased`}
       >
-        <header className="site-header">
-          <Logo />
-          <UserNav />
-        </header>
         {children}
       </body>
     </html>

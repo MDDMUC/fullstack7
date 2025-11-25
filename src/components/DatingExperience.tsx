@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import SignupForm from './SignupForm'
+import Logo from './Logo'
 
 const FALLBACK_AVATAR = '/cc-moods-001.jpg'
 
@@ -208,15 +209,11 @@ export default function DatingExperience() {
   return (
     <>
       <header className="site-header">
-        <div className="logo"><span className="dab-logo">DAB</span></div>
-        <nav className="nav-links">
-          <a href="#profiles">Climbers</a>
-          <a href="#filters">Filters</a>
-          <a href="/signup">Signup</a>
+        <Logo />
+        <nav className="nav-links" style={{ gap: '12px' }}>
+          <a className="cta" style={{ padding: '10px 16px', color: '#0c0e12' }} href="/signup">Get Started</a>
+          <a className="ghost" style={{ padding: '10px 16px' }} href="/login">Login</a>
         </nav>
-        <button className="cta" onClick={() => document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' })}>
-          Get Started
-        </button>
       </header>
 
       <main>

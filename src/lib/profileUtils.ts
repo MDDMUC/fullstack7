@@ -16,7 +16,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   const distance = data.radiusKm ? `${data.radiusKm} km` : data.homebase ? '100 km' : null
 
   return {
-    username: data.name || null,
+    username: null,
     age: data.age ? Number(data.age) : null,
     bio: data.bio || null,
     pronouns: data.pronouns || null,

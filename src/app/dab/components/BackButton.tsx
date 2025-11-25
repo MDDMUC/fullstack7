@@ -12,7 +12,7 @@ export default function BackButton() {
       setCurrentStep(currentStep - 1)
     } else {
       // If on first step, go back to previous page
-      router.back()
+      router.push('/signup')
     }
   }
 

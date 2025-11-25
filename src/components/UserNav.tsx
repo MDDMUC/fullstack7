@@ -22,19 +22,8 @@ function UserNav() {
     window.location.href = '/login'
   }
 
-  return (
-    <div className="nav-links" style={{ marginLeft: 'auto', gap: '12px', alignItems: 'center' }}>
-      <Link href="/">Home</Link>
-      <Link href="/signup">Sign up</Link>
-      <Link href="/login">Login</Link>
-      {userEmail && (
-        <>
-          <span style={{ color: 'var(--muted)', fontSize: 13 }}>{userEmail}</span>
-          <button className="ghost" style={{ padding: '6px 12px' }} onClick={handleSignOut}>Logout</button>
-        </>
-      )}
-    </div>
-  )
+  // Temporarily disable this nav to avoid duplicate headers on landing
+  return null
 }
 
 export default UserNav

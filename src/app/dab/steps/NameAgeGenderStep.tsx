@@ -6,16 +6,15 @@ import BackButton from '../components/BackButton'
 
 export default function NameAgeGenderStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
-  const [name, setName] = useState(data.name || '')
   const [age, setAge] = useState(data.age || '')
   const [gender, setGender] = useState<'Man' | 'Woman' | 'Other' | ''>(data.gender || '')
   const [bio, setBio] = useState(data.bio || '')
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!name.trim() || !age.trim() || !gender) return
+    if (!age.trim() || !gender) return
 
-    updateData({ name, age, gender: gender as 'Man' | 'Woman' | 'Other', bio })
+    updateData({ age, gender: gender as 'Man' | 'Woman' | 'Other', bio })
     setCurrentStep(3)
   }
 
@@ -24,41 +23,13 @@ export default function NameAgeGenderStep() {
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)', margin: 0 }}>
-          My Name is
+          About you
         </h1>
         <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
           Share a few basics so matches know who you are.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md">
-          <div 
-            className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
-            style={{ 
-              background: '#0f131d', 
-              border: '1px solid var(--stroke)',
-            }}
-          >
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base"
-              style={{ 
-                color: 'var(--text)'
-              }}
-              placeholder="Name"
-              required
-              onFocus={(e) => {
-                e.currentTarget.style.outline = 'none'
-                e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.parentElement!.style.borderColor = 'var(--accent)'
-              }}
-              onBlur={(e) => {
-                e.currentTarget.parentElement!.style.borderColor = 'var(--stroke)'
-              }}
-            />
-          </div>
-
           <div 
             className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
             style={{ 
@@ -166,7 +137,7 @@ export default function NameAgeGenderStep() {
 
           <button
             type="submit"
-            disabled={!name.trim() || !age.trim() || !gender}
+            disabled={!age.trim() || !gender}
             className="cta w-full"
             style={{ padding: '10px 16px', borderRadius: '10px' }}
           >
