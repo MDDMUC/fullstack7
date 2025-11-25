@@ -5,7 +5,7 @@ import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
 import { RequireAuth } from '@/components/RequireAuth'
 import { sendSwipe } from '@/lib/swipes'
-import { checkAndCreateMatch, listMatches, MatchWithProfiles } from '@/lib/matches'
+import { listMatches, MatchWithProfiles } from '@/lib/matches'
 import { listMessages, sendMessage, subscribeToMessages, Message as ChatMessage } from '@/lib/messages'
 
 type Profile = DbProfile & {
@@ -23,11 +23,11 @@ type MessagePreview = {
   city?: string
 }
 
-const FALLBACK_AVATAR = '/cc-moods-001.jpg'
+const FALLBACK_MALE = '/fallback-male.jpg'
+const FALLBACK_FEMALE = '/fallback-female.jpg'
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches')
-  const [currentIndex, setCurrentIndex] = useState(0)
   const [matches, setMatches] = useState<Profile[]>([])
   const [loadingMatches, setLoadingMatches] = useState(false)
   const [deck, setDeck] = useState<Profile[]>([])
@@ -41,7 +41,42 @@ export default function HomeScreen() {
   const [userId, setUserId] = useState<string | null>(null)
   const messageUnsub = useMemo(() => ({ current: null as null | (() => void) }), [])
 
-  const current = useMemo(() => deck[(currentIndex % Math.max(deck.length, 1)) || 0], [currentIndex, deck])
+  const current = useMemo(() => deck[0], [deck])
+
+  const fallbackAvatarFor = (profile?: Profile | null) => {
+    const hint = (profile?.pronouns || (profile as any)?.gender || '').toString().toLowerCase()
+    if (hint.includes('she') || hint.includes('her') || hint.includes('woman') || hint.includes('female')) {
+      return FALLBACK_FEMALE
+    }
+    return FALLBACK_MALE
+  }
+
+  const demoProfiles: Profile[] = [
+    {
+      id: '618fbbfa-1032-4bc3-a282-15755d2479df',
+      username: 'Lisa',
+      age: 29,
+      distance: '10 km',
+      city: 'Munich',
+      avatar_url: FALLBACK_FEMALE,
+      bio: 'Stoked to climb with new partners.',
+      style: 'Bouldering, Sport',
+      availability: 'Evenings, Weekends',
+      grade: '6c / V4',
+    },
+    {
+      id: 'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f',
+      username: 'Max',
+      age: 31,
+      distance: '12 km',
+      city: 'Berlin',
+      avatar_url: FALLBACK_MALE,
+      bio: 'Always down for laps and good coffee.',
+      style: 'Sport, Trad',
+      availability: 'Weekdays, Flexible',
+      grade: '7a / V5',
+    },
+  ]
 
   const messageProfile = (msg: MessagePreview | null): Profile | null => {
     if (!msg) return null
@@ -91,31 +126,37 @@ export default function HomeScreen() {
         const profiles: Profile[] = normalized.map(p => ({
           ...p,
           distance: p.distance ?? '10 km',
-          avatar_url: p.avatar_url ?? FALLBACK_AVATAR,
+          avatar_url: p.avatar_url ?? fallbackAvatarFor(p),
         }))
         const filtered = userData.user?.id
           ? profiles.filter(p => p.id !== userData.user?.id)
           : profiles
+        const initialDeck = filtered.length ? filtered : demoProfiles
 
-        setMatches(filtered)
-        setDeck(filtered.length ? filtered : [{
-          id: 'fallback',
-          username: 'Climber',
-          age: 27,
-          distance: '10 km',
-          city: '',
-          avatar_url: FALLBACK_AVATAR,
-          style: '',
-          availability: '',
-          grade: '',
-          bio: '',
-        }])
+        setMatches(initialDeck)
+        setDeck(initialDeck)
         const matchList = await listMatches().catch(err => {
           console.error('Failed to load matches', err)
           return [] as MatchWithProfiles[]
         })
-        setMatchRows(matchList)
-        const previews: MessagePreview[] = matchList.map(m => {
+        let resolvedMatches = matchList.map(m => ({
+          ...m,
+          profiles: (m.profiles ?? []).map(p => ({
+            ...p,
+            avatar_url: p?.avatar_url ?? fallbackAvatarFor(p as Profile),
+          })),
+        }))
+        if (!matchList.length) {
+          resolvedMatches = demoProfiles.map((profile, idx) => ({
+            id: `demo-match-${idx}`,
+            created_at: new Date().toISOString(),
+            user_a: userData.user?.id ?? 'demo-user',
+            user_b: profile.id,
+            profiles: [profile],
+          }))
+        }
+        setMatchRows(resolvedMatches)
+        const previews: MessagePreview[] = resolvedMatches.map(m => {
           const other = (m.profiles ?? []).find(p => p.id !== userData.user?.id)
           const resolved = other ? normalizeProfile(other) : null
           return {
@@ -124,7 +165,7 @@ export default function HomeScreen() {
             profileId: resolved?.id,
             name: resolved?.username ?? 'Match',
             snippet: resolved?.bio?.slice(0, 60) || 'Say hi and plan your next session.',
-            avatar: resolved?.avatar_url ?? FALLBACK_AVATAR,
+            avatar: resolved?.avatar_url ?? fallbackAvatarFor(resolved),
             age: resolved?.age,
             city: resolved?.city,
           }
@@ -150,8 +191,37 @@ export default function HomeScreen() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
-  const action = () => {
-    setCurrentIndex(i => (i + 1) % Math.max(deck.length, 1))
+  const rotateDeck = () => {
+    setDeck(prev => {
+      if (!prev.length) return prev
+      const [first, ...rest] = prev
+      return [...rest, first]
+    })
+  }
+
+  const ensureMatch = async (profile: Profile) => {
+    const client = supabase ?? requireSupabase()
+    const { data: userData, error: userErr } = await client.auth.getUser()
+    if (userErr) throw userErr
+    const myId = userData.user?.id
+    if (!myId) throw new Error('Not authenticated')
+    const [user_a, user_b] = myId < profile.id ? [myId, profile.id] : [profile.id, myId]
+    const { data, error } = await client
+      .from('matches')
+      .insert({ user_a, user_b })
+      .select()
+      .single()
+
+    if (error && error.code !== '23505') throw error
+    if (data) return data
+
+    const { data: existing } = await client
+      .from('matches')
+      .select('*')
+      .eq('user_a', user_a)
+      .eq('user_b', user_b)
+      .single()
+    return existing
   }
 
   const openMatch = async (matchId: string) => {
@@ -188,6 +258,18 @@ export default function HomeScreen() {
 
   const handleSend = async () => {
     if (!selectedMatchId || !messageInput.trim()) return
+    // Allow demo matches to behave locally without hitting the API
+    if (selectedMatchId.startsWith('demo-match')) {
+      setThreadMessages(prev => [...prev, {
+        id: crypto.randomUUID(),
+        match_id: selectedMatchId,
+        body: messageInput.trim(),
+        sender: userId ?? 'me',
+        created_at: new Date().toISOString(),
+      } as ChatMessage])
+      setMessageInput('')
+      return
+    }
     try {
       await sendMessage(selectedMatchId, messageInput.trim())
       setMessageInput('')
@@ -198,18 +280,40 @@ export default function HomeScreen() {
 
   const handleSwipe = async (profile?: Profile, actionType: 'like' | 'pass' = 'like') => {
     if (!profile) {
-      action()
+      rotateDeck()
       return
     }
     try {
       await sendSwipe(profile.id, actionType)
       if (actionType === 'like') {
-        await checkAndCreateMatch(profile.id)
+        const match = await ensureMatch(profile)
+        if (match) {
+          setMatchRows(prev => {
+            if (prev.some(m => m.id === match.id)) return prev
+            return [...prev, { ...match, profiles: [profile] }]
+          })
+          setMessages(prev => {
+            if (prev.some(m => m.matchId === match.id)) return prev
+            return [
+              ...prev,
+              {
+                id: match.id,
+                matchId: match.id,
+                profileId: profile.id,
+                name: profile.username,
+                snippet: profile.bio?.slice(0, 60) || 'Say hi and plan your next session.',
+                avatar: profile.avatar_url ?? fallbackAvatarFor(profile),
+                age: profile.age,
+                city: profile.city,
+              },
+            ]
+          })
+        }
       }
     } catch (err) {
       console.error('Swipe failed', err)
     } finally {
-      action()
+      rotateDeck()
     }
   }
 
@@ -370,7 +474,7 @@ export default function HomeScreen() {
 
         <section className="swipe-stage">
           <div className="phone-frame">
-            <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? FALLBACK_AVATAR})` }}>
+            <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? fallbackAvatarFor(current)})` }}>
               <div className="hero-overlay" />
               <div className="hero-meta">
                 <div>

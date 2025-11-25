@@ -4,6 +4,7 @@ import { onboardingDataToProfilePayload, upsertOnboardingProfile, upsertPublicPr
 export type OnboardingDataFromStorage = {
   phone?: string
   name?: string
+  username?: string
   age?: string
   gender?: 'Man' | 'Woman' | 'Other'
   pronouns?: string

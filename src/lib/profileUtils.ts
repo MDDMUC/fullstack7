@@ -15,9 +15,14 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   const purposes = join(data.purposes)
   const distance = data.radiusKm ? `${data.radiusKm} km` : data.homebase ? '100 km' : null
   const goalsText = (data.bigGoal && data.bigGoal.trim()) || purposes || null
+  const username =
+    data.username ||
+    (data as any).name ||
+    (data as any).email?.split?.('@')?.[0] ||
+    'Climber'
 
   return {
-    username: null,
+    username,
     age: data.age ? Number(data.age) : null,
     bio: data.bio || null,
     pronouns: data.pronouns || null,
@@ -57,30 +62,35 @@ export async function upsertPublicProfile(
 ): Promise<UpsertResult> {
   const payload = onboardingDataToProfilePayload(data)
 
-  const { data: row, error } = await client
-    .from('profiles')
-    .upsert(
-      {
-        id: userId,
-        username: payload.username || undefined,
-        bio: payload.bio || undefined,
-        age: payload.age || undefined,
-        city: payload.city || undefined,
-        style: payload.style || undefined,
-        grade: payload.grade || undefined,
-        availabilty: payload.availability || undefined,
-        status: payload.status,
-        tags: payload.tags?.join(', ') || undefined,
-        goals: payload.goals || undefined,
-        email: undefined,
-        home: payload.city || undefined,
-        primary_style: payload.style || undefined,
-        pronouns: payload.pronouns || undefined,
-      },
-      { onConflict: 'id' }
-    )
-    .select('*')
-    .single()
+  try {
+    const { data: row, error } = await client
+      .from('profiles')
+      .upsert(
+        {
+          id: userId,
+          username: payload.username || undefined,
+          bio: payload.bio || undefined,
+          age: payload.age || undefined,
+          city: payload.city || undefined,
+          style: payload.style || undefined,
+          grade: payload.grade || undefined,
+          availabilty: payload.availability || undefined,
+          status: payload.status,
+          tags: payload.tags?.join(', ') || undefined,
+          goals: payload.goals || undefined,
+          email: (data as any)?.email || undefined,
+          home: payload.city || undefined,
+          primary_style: payload.style || undefined,
+          pronouns: payload.pronouns || undefined,
+        },
+        { onConflict: 'id' }
+      )
+      .select('*')
+      .single()
 
-  return { data: row, error }
+    return { data: row, error }
+  } catch (error: any) {
+    // RLS can block public profile upsert; return error but don't throw
+    return { data: null, error }
+  }
 }

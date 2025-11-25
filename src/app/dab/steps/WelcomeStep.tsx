@@ -55,11 +55,23 @@ export default function WelcomeStep() {
       if (error || !user) throw new Error('Please sign up or log in first.')
 
       const { upsertOnboardingProfile, upsertPublicProfile } = await import('@/lib/profileUtils')
-      const payload = { ...data, pledgeAccepted: true }
+      const payload = {
+        ...data,
+        pledgeAccepted: true,
+        username:
+          data.username ||
+          (user.user_metadata as any)?.name ||
+          user.email?.split('@')[0] ||
+          'Climber',
+        email: user.email,
+      }
       const { error: obError } = await upsertOnboardingProfile(supabase, user.id, payload)
       if (obError) throw obError
+
       const { error: profileError } = await upsertPublicProfile(supabase, user.id, payload)
-      if (profileError) throw profileError
+      if (profileError) {
+        console.warn('Public profile upsert skipped due to policy:', profileError?.message || profileError)
+      }
 
       setCurrentStep(8)
     } catch (err: any) {
