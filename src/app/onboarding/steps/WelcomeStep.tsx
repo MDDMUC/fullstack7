@@ -35,19 +35,19 @@ export default function WelcomeStep() {
   const allAccepted = accepted.every(Boolean)
 
   return (
-    <div className="bg-white flex flex-col gap-4 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+    <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <BackButton />
       <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-        <h1 className="font-bold leading-[41px] text-[#020202] text-[34px] text-nowrap tracking-[0.374px]">
+        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
           Welcome
         </h1>
       </div>
 
-      <div className="border border-[#212121] h-[200px] w-[200px] rounded-[4px] flex items-center justify-center bg-gray-50">
-        <span className="text-[#757575] text-sm">Image placeholder</span>
+      <div className="h-[200px] w-[200px] rounded-[10px] flex items-center justify-center" style={{ border: '1px solid var(--stroke)', background: '#0f131d' }}>
+        <span className="text-sm" style={{ color: 'var(--muted)' }}>Image placeholder</span>
       </div>
 
-      <p className="font-normal leading-normal text-[20px] text-black text-center max-w-2xl">
+      <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
         Rules and Safety
       </p>
 
@@ -57,17 +57,19 @@ export default function WelcomeStep() {
             <button
               type="button"
               onClick={() => handleToggle(index)}
-              className={`mt-1 w-[18px] h-[18px] rounded-[2px] border-2 border-[#020202] flex items-center justify-center flex-shrink-0 ${
-                accepted[index] ? 'bg-[#020202]' : 'bg-white'
-              }`}
+              className="mt-1 w-[18px] h-[18px] rounded-[4px] border-2 flex items-center justify-center flex-shrink-0 transition-colors"
+              style={{
+                borderColor: accepted[index] ? 'var(--accent)' : 'var(--stroke)',
+                background: accepted[index] ? 'var(--accent)' : 'transparent',
+              }}
             >
               {accepted[index] && (
-                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="#0c0e12" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
             </button>
-            <p className="font-normal leading-normal text-[20px] text-black text-left flex-1">
+            <p className="font-normal leading-normal text-[20px] text-left flex-1" style={{ color: 'var(--text)' }}>
               {rule}
             </p>
           </div>
@@ -77,9 +79,10 @@ export default function WelcomeStep() {
       <button
         onClick={handleContinue}
         disabled={!allAccepted}
-        className="bg-[#212121] flex items-center justify-center px-6 py-4 rounded-[4px] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2a2a2a] transition-colors w-full max-w-md"
+        className="cta w-full max-w-md"
+        style={{ padding: '10px 16px', borderRadius: '10px' }}
       >
-        <span className="font-medium leading-4 text-base text-white tracking-[1.25px] uppercase">
+        <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
           CONTINUE 1/7
         </span>
       </button>

@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js'
+import { createOrUpdateProfile, onboardingDataToProfileData } from './profileUtils'
 
 export type OnboardingDataFromStorage = {
   phoneNumber?: string
@@ -23,38 +24,19 @@ export type OnboardingDataFromStorage = {
   distance?: number
 }
 
+/**
+ * Apply onboarding data from localStorage to user profile
+ * This is used when user completes onboarding without being authenticated,
+ * then signs up or logs in later
+ */
 export async function applyOnboardingDataToProfile(
   client: SupabaseClient,
   userId: string,
   onboardingData: OnboardingDataFromStorage
 ) {
-  const profileData = {
-    id: userId,
-    username: onboardingData.name || 'Climber',
-    age: onboardingData.age ? parseInt(onboardingData.age) : undefined,
-    city: onboardingData.homebase || '',
-    original_from: onboardingData.originalFrom || null,
-    distance: onboardingData.distance ? `${onboardingData.distance} km` : null,
-    style: onboardingData.interests?.join(', ') || '',
-    grade: '',
-    bio: onboardingData.bio || '',
-    availability: '',
-    tags: onboardingData.interests || [],
-    goals: onboardingData.purposes?.join(', ') || onboardingData.purpose || '',
-    lookingFor: onboardingData.showMe || '',
-    phone_number: onboardingData.phoneNumber 
-      ? `${onboardingData.countryCode || '+1'}${onboardingData.phoneNumber}` 
-      : null,
-    pronouns: onboardingData.gender || '',
-    avatar_url: null,
-    photos: null,
-    status: 'New member',
-  }
-
-  const { data, error } = await client
-    .from('onboardingprofiles')
-    .upsert(profileData, { onConflict: 'id' })
-    .select()
+  const profileData = onboardingDataToProfileData(onboardingData)
+  
+  const { data, error } = await createOrUpdateProfile(client, userId, profileData)
 
   if (error) {
     console.error('Error applying onboarding data:', error)

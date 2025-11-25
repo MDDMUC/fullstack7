@@ -33,36 +33,50 @@ export default function PurposeStep() {
   }
 
   return (
-    <div className="bg-white flex flex-col gap-4 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+    <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <BackButton />
-      <p className="font-normal leading-normal text-[20px] text-black text-center max-w-2xl">
+      <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
         What are you looking for?
       </p>
 
       <div className="flex flex-col gap-4 w-full max-w-md">
-        {PURPOSES.map((purpose) => (
-          <button
-            key={purpose}
-            type="button"
-            onClick={() => handleToggle(purpose)}
-            className="bg-white border border-[#020202] h-14 relative rounded-[4px] w-full flex items-center justify-between px-4 hover:bg-gray-50 transition-colors"
-          >
-            <span className="font-normal leading-6 text-[#757575] text-base">{purpose}</span>
-            <div className="w-6 h-6 rounded-full border-2 border-[#020202] flex items-center justify-center flex-shrink-0">
-              {selected.includes(purpose) && (
-                <div className="w-3 h-3 rounded-full bg-[#020202]"></div>
-              )}
-            </div>
-          </button>
-        ))}
+        {PURPOSES.map((purpose) => {
+          const isSelected = selected.includes(purpose)
+          return (
+            <button
+              key={purpose}
+              type="button"
+              onClick={() => handleToggle(purpose)}
+              className="h-14 relative rounded-[10px] w-full flex items-center justify-between px-4 transition-colors"
+              style={{
+                background: '#0f131d',
+                border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
+              }}
+              onMouseEnter={(e) => {
+                if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
+              }}
+              onMouseLeave={(e) => {
+                if (!isSelected) e.currentTarget.style.borderColor = 'var(--stroke)'
+              }}
+            >
+              <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>{purpose}</span>
+              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: isSelected ? 'var(--accent)' : 'var(--stroke)' }}>
+                {isSelected && (
+                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
+                )}
+              </div>
+            </button>
+          )
+        })}
       </div>
 
       <button
         onClick={handleContinue}
         disabled={selected.length === 0}
-        className="bg-[#212121] flex items-center justify-center px-6 py-4 rounded-[4px] disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#2a2a2a] transition-colors w-full max-w-md"
+        className="cta w-full max-w-md"
+        style={{ padding: '10px 16px', borderRadius: '10px' }}
       >
-        <span className="font-medium leading-4 text-base text-white tracking-[1.25px] uppercase">
+        <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
           CONTINUE 3/7
         </span>
       </button>

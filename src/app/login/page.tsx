@@ -34,9 +34,14 @@ export default function LoginPage() {
       return
     }
 
+    if (!loginData.user?.id) {
+      setStatus('Login successful but user ID not available.')
+      return
+    }
+
     // Check for saved onboarding data and apply it
     const savedOnboardingData = localStorage.getItem('onboarding_data')
-    if (savedOnboardingData && loginData.user) {
+    if (savedOnboardingData) {
       try {
         const onboardingData = JSON.parse(savedOnboardingData)
         console.log('Found onboarding data after login, applying to profile...')
@@ -46,9 +51,10 @@ export default function LoginPage() {
         
         console.log('Onboarding data successfully applied after login')
         localStorage.removeItem('onboarding_data')
-      } catch (applyError) {
+      } catch (applyError: any) {
         console.error('Error applying onboarding data after login:', applyError)
-        // Continue to home even if applying fails
+        setStatus(`Login successful, but failed to apply saved profile data: ${applyError.message || 'Unknown error'}`)
+        // Continue to home even if applying fails - user can update profile later
       }
     }
 

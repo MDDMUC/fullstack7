@@ -16,16 +16,36 @@ export default function BackButton() {
     }
   }
 
+  const buttonStyle = {
+    position: 'absolute' as const,
+    top: '16px',
+    left: '16px',
+    padding: '8px',
+    borderRadius: '50%',
+    background: 'rgba(15, 19, 29, 0.8)',
+    border: '1px solid var(--stroke)',
+    color: 'var(--text)',
+    cursor: 'pointer',
+    transition: 'all 120ms ease',
+  }
+
+  const hoverStyle = {
+    borderColor: 'var(--accent)',
+    color: 'var(--accent)',
+  }
+
   if (currentStep === 1) {
     // On first step, still show back button but it goes to previous page
     return (
       <button
         onClick={handleBack}
-        className="absolute top-4 left-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+        style={buttonStyle}
+        onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+        onMouseLeave={(e) => Object.assign(e.currentTarget.style, buttonStyle)}
         aria-label="Go back"
       >
         <svg
-          className="w-6 h-6 text-[#020202]"
+          className="w-6 h-6"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -40,11 +60,13 @@ export default function BackButton() {
   return (
     <button
       onClick={handleBack}
-      className="absolute top-4 left-4 p-2 hover:bg-gray-100 rounded-full transition-colors"
+      style={buttonStyle}
+      onMouseEnter={(e) => Object.assign(e.currentTarget.style, hoverStyle)}
+      onMouseLeave={(e) => Object.assign(e.currentTarget.style, buttonStyle)}
       aria-label="Go back"
     >
       <svg
-        className="w-6 h-6 text-[#020202]"
+        className="w-6 h-6"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"

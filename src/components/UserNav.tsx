@@ -86,9 +86,14 @@ function UserNav() {
           Log out
         </button>
       ) : (
-        <Link href="/login" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 600 }}>
-          Login
-        </Link>
+        <>
+          <Link href="/signup" className="cta" style={{ padding: '8px 16px', fontSize: 15, textDecoration: 'none', color: '#0c0e12' }}>
+            Get Started
+          </Link>
+          <Link href="/login" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 600 }}>
+            Login
+          </Link>
+        </>
       )}
     </div>
   )

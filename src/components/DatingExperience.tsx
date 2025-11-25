@@ -192,31 +192,108 @@ export default function DatingExperience() {
   const featured = filteredProfiles[0]
   const matchesCount = filteredProfiles.length
 
-  const handleJoin = (event: FormEvent<HTMLFormElement>) => {
+  const [joinLoading, setJoinLoading] = useState(false)
+  const [joinError, setJoinError] = useState<string | null>(null)
+
+  const handleJoin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     const form = event.currentTarget
     const data = new FormData(form)
-    const name = (data.get('name') as string)?.trim() || 'New climber'
-    const city = (data.get('home') as string)?.trim()
-    const style = (data.get('style') as string)?.trim()
-    const intent = (data.get('intent') as string)?.trim()
+    const name = (data.get('name') as string)?.trim() || ''
+    const email = (data.get('email') as string)?.trim() || ''
+    const password = (data.get('password') as string) || ''
+    const style = (data.get('style') as string)?.trim() || ''
+    const intent = (data.get('intent') as string)?.trim() || ''
 
-    const newProfile: Profile = {
-      id: `local-${Date.now()}`,
-      username: name,
-      city,
-      style,
-      availability: 'New signup',
-      grade: '',
-      bio: intent || 'Ready to match for the next project.',
-      avatar_url: null,
-      status: 'Joined today',
-      tags: ['New climber'],
+    if (!name || !email || !password) {
+      setJoinError('Name, email, and password are required.')
+      return
     }
 
-    setProfiles(prev => [newProfile, ...prev])
-    setToast(`Thanks ${name}, you are on the list!`)
-    form.reset()
+    if (password.length < 8) {
+      setJoinError('Password must be at least 8 characters.')
+      return
+    }
+
+    if (!supabase) {
+      setJoinError('Supabase is not configured.')
+      return
+    }
+
+    setJoinLoading(true)
+    setJoinError(null)
+
+    try {
+      // Create user account
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            name,
+            style,
+            intent,
+          },
+        },
+      })
+
+      if (signUpError) {
+        setJoinError(signUpError.message)
+        setJoinLoading(false)
+        return
+      }
+
+      const userId = signUpData.user?.id
+      if (!userId) {
+        setJoinError('Account created but user ID not available. Please try logging in.')
+        setJoinLoading(false)
+        return
+      }
+
+      // Create profile using unified utility
+      try {
+        const { createOrUpdateProfile, signupFormDataToProfileData } = await import('@/lib/profileUtils')
+        const profileData = signupFormDataToProfileData({
+          name,
+          email,
+          style,
+          grade: '',
+          availability: '',
+          goals: intent ? [intent] : [],
+        })
+        
+        // Add bio from intent
+        if (intent) {
+          profileData.bio = intent
+        }
+
+        const { error: profileError } = await createOrUpdateProfile(supabase, userId, profileData)
+        if (profileError) {
+          console.error('Error creating profile:', profileError)
+          setJoinError(`Account created, but profile could not be saved: ${profileError.message}. Please complete your profile in settings.`)
+          setJoinLoading(false)
+          return
+        }
+
+        // Success - show message and redirect
+        setToast(`Thanks ${name}! Account created. Check your email to confirm.`)
+        form.reset()
+        
+        // Redirect to onboarding after a short delay
+        setTimeout(() => {
+          router.push('/onboarding')
+        }, 2000)
+      } catch (profileErr: any) {
+        console.error('Error creating profile:', profileErr)
+        setJoinError(`Account created, but profile could not be saved: ${profileErr.message}. Please complete your profile in settings.`)
+        setJoinLoading(false)
+      }
+    } catch (error: any) {
+      console.error('Error creating account:', error)
+      setJoinError(error.message || 'Failed to create account. Please try again.')
+      setJoinLoading(false)
+    }
   }
 
   const handleReset = () => {
@@ -233,34 +310,24 @@ export default function DatingExperience() {
 
   return (
     <>
-      <header className="site-header">
-        <div className="logo">Crux<span>Connections</span></div>
-        <nav className="nav-links">
-          <a href="#profiles">Climbers</a>
-          <a href="#filters">Filters</a>
-          <a href="/signup">Signup</a>
-        </nav>
-        <button className="cta" onClick={() => document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' })}>
-          Get Started
-        </button>
-      </header>
-
       <main>
         <section className="hero">
-          <div className="hero__copy">
-            <p className="eyebrow">Dating for people who think in grades.</p>
-            <h1>Meet climbers who love the same sends you do.</h1>
-            <p className="lede">
-              Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
-            </p>
-            <div className="hero__actions">
-              <button className="cta" onClick={() => router.push('/signup')}>Start matching</button>
-              <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
-            </div>
-            <div className="badges">
-              <span>Boulder, sport, trad, ice</span>
-              <span>Local gyms &amp; crags</span>
-              <span>Built for stoke, not spam</span>
+          <div className="hero__glass">
+            <div className="hero__copy">
+              <p className="eyebrow">Dating for people who think in grades.</p>
+              <h1>Meet climbers who love the same sends you do.</h1>
+              <p className="lede">
+                Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
+              </p>
+              <div className="hero__actions">
+                <button className="cta" onClick={() => router.push('/signup')}>Start matching</button>
+                <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
+              </div>
+              <div className="badges">
+                <span>Boulder, sport, trad, ice</span>
+                <span>Local gyms &amp; crags</span>
+                <span>Built for stoke, not spam</span>
+              </div>
             </div>
           </div>
 
@@ -439,36 +506,41 @@ export default function DatingExperience() {
             <form className="join-form" onSubmit={handleJoin}>
               <label className="field">
                 <span>Name</span>
-                <input type="text" name="name" required placeholder="Alex" />
+                <input type="text" name="name" required placeholder="Alex" disabled={joinLoading} />
               </label>
               <label className="field">
                 <span>Email</span>
-                <input type="email" name="email" required placeholder="alex@crux.com" />
+                <input type="email" name="email" required placeholder="alex@crux.com" disabled={joinLoading} />
               </label>
-              <div className="field-group">
-                <label className="field">
-                  <span>Home base</span>
-                  <input type="text" name="home" required placeholder="Boulder, CO" />
-                </label>
-                <label className="field">
-                  <span>Primary style</span>
-                  <select name="style" required defaultValue="">
-                    <option value="" disabled>Choose</option>
-                    <option>Bouldering</option>
-                    <option>Sport</option>
-                    <option>Trad</option>
-                    <option>Alpine</option>
-                    <option>Ice</option>
-                  </select>
-                </label>
-              </div>
+              <label className="field">
+                <span>Password</span>
+                <input type="password" name="password" required minLength={8} placeholder="8+ characters" disabled={joinLoading} />
+              </label>
+              <label className="field">
+                <span>Primary style</span>
+                <select name="style" required defaultValue="" disabled={joinLoading}>
+                  <option value="" disabled>Choose</option>
+                  <option>Bouldering</option>
+                  <option>Sport</option>
+                  <option>Trad</option>
+                  <option>Alpine</option>
+                  <option>Ice</option>
+                </select>
+              </label>
               <label className="field">
                 <span>What are you looking for?</span>
-                <textarea name="intent" rows={3} placeholder="Weekend multi-pitches, gym partner, or alpine season buddy" />
+                <textarea name="intent" rows={3} placeholder="Weekend multi-pitches, gym partner, or alpine season buddy" disabled={joinLoading} />
               </label>
-              <button className="cta" type="submit">Join the beta</button>
+              {joinError && (
+                <p className="form-note error" role="alert">
+                  {joinError}
+                </p>
+              )}
+              <button className="cta" type="submit" disabled={joinLoading}>
+                {joinLoading ? 'Creating account...' : 'Join the beta'}
+              </button>
               <p className="form-note" role="status" aria-live="polite">
-                {toast ? 'Thanks for joining!' : 'We reply within 24 hours.'}
+                {toast || 'We\'ll get you set up in under a minute.'}
               </p>
             </form>
           </div>
