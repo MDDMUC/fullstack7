@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
 import { RequireAuth } from '@/components/RequireAuth'
@@ -26,6 +27,7 @@ type MessagePreview = {
 const FALLBACK_AVATAR = '/cc-moods-001.jpg'
 
 export default function HomeScreen() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches')
   const [currentIndex, setCurrentIndex] = useState(0)
   const [matches, setMatches] = useState<Profile[]>([])
@@ -119,7 +121,7 @@ export default function HomeScreen() {
         })
         setMatchRows(matchList)
         const previews: MessagePreview[] = matchList.map(m => {
-          const other = (m.profiles ?? []).find(p => p.id !== userData.user?.id)
+          const other = (m.profiles ?? []).find(p => p.id !== user?.id)
           const resolved = other ? normalizeProfile(other) : null
           return {
             id: m.id,
