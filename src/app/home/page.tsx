@@ -25,6 +25,7 @@ type MessagePreview = {
 
 const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
+const FALLBACK_DEFAULT = FALLBACK_MALE
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches')
@@ -110,7 +111,7 @@ export default function HomeScreen() {
       age: msg.age ?? 27,
       distance: '10 km',
       city: msg.city,
-      avatar_url: msg.avatar || FALLBACK_AVATAR,
+      avatar_url: msg.avatar || FALLBACK_DEFAULT,
       bio: msg.snippet,
       lookingFor: 'Looking for partners',
       tags: [],
@@ -243,7 +244,7 @@ export default function HomeScreen() {
       profileId: resolved?.id,
       name: resolved?.username ?? 'Match',
       snippet: resolved?.bio?.slice(0, 60) || 'Say hi and plan your next session.',
-      avatar: resolved?.avatar_url ?? FALLBACK_AVATAR,
+      avatar: resolved?.avatar_url ?? fallbackAvatarFor(resolved),
       age: resolved?.age,
       city: resolved?.city,
     })
@@ -359,7 +360,7 @@ export default function HomeScreen() {
                     className={`match-card ${selectedMatchId === match.id ? 'is-active' : ''}`}
                     onClick={() => openMatch(match.id)}
                   >
-                    <img src={profile?.avatar_url ?? FALLBACK_AVATAR} alt={profile?.username ?? 'Match'} />
+                    <img src={profile?.avatar_url ?? fallbackAvatarFor(profile)} alt={profile?.username ?? 'Match'} />
                     <div className="match-meta">
                       <span className="match-name">{profile?.username ?? 'Match'}</span>
                     </div>
@@ -395,7 +396,7 @@ export default function HomeScreen() {
             <header className="chat-header">
               <div className="chat-match-info">
                 <img
-                  src={selectedProfile?.avatar_url ?? FALLBACK_AVATAR}
+                  src={selectedProfile?.avatar_url ?? fallbackAvatarFor(selectedProfile)}
                   alt={selectedMatch?.username ?? selectedMessage?.name ?? selectedProfile?.username ?? 'Profile'}
                   className="chat-avatar"
                 />
@@ -454,7 +455,7 @@ export default function HomeScreen() {
           </section>
 
           <aside className="profile-pane">
-            <div className="profile-hero" style={{ backgroundImage: `url(${selectedProfile?.avatar_url ?? FALLBACK_AVATAR})` }} />
+            <div className="profile-hero" style={{ backgroundImage: `url(${selectedProfile?.avatar_url ?? fallbackAvatarFor(selectedProfile)})` }} />
             <div className="profile-pane-body">
               <div className="profile-pane-header">
                 <h2>{selectedProfile?.username} <span>{selectedProfile?.age ?? ''}</span></h2>

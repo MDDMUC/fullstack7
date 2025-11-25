@@ -5,7 +5,17 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import SignupForm from './SignupForm'
 
-const FALLBACK_AVATAR = '/cc-moods-001.jpg'
+const FALLBACK_MALE = '/fallback-male.jpg'
+const FALLBACK_FEMALE = '/fallback-female.jpg'
+const FALLBACK_DEFAULT = FALLBACK_MALE
+
+const fallbackAvatarFor = (profile?: Profile | null) => {
+  const hint = (profile?.pronouns || profile?.bio || '').toLowerCase()
+  if (hint.includes('she ') || hint.includes(' her') || hint.includes('woman') || hint.includes('female')) {
+    return FALLBACK_FEMALE
+  }
+  return FALLBACK_DEFAULT
+}
 
 type Profile = {
   id: string
@@ -236,7 +246,7 @@ export default function DatingExperience() {
                   </div>
                   <div className="featured-body">
                     <img
-                      src={featured.avatar_url ?? FALLBACK_AVATAR}
+                      src={featured.avatar_url ?? fallbackAvatarFor(featured)}
                       alt={featured.username}
                       className="featured-avatar"
                     />
@@ -358,7 +368,7 @@ export default function DatingExperience() {
                   <header>
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <img
-                        src={profile.avatar_url ?? FALLBACK_AVATAR}
+                        src={profile.avatar_url ?? fallbackAvatarFor(profile)}
                         alt={profile.username}
                         className="profile-avatar"
                       />
