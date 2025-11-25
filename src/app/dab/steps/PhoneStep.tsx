@@ -42,7 +42,7 @@ export default function PhoneStep() {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const wrapperRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLFormElement>(null)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!open) return
