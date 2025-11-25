@@ -1,14 +1,13 @@
 // src/lib/swipes.ts
 import { requireSupabase } from './supabaseClient'
-import { safeGetUser } from './authUtils'
 
 export type SwipeAction = 'like' | 'pass'
 
 export async function sendSwipe(swipeeId: string, action: SwipeAction) {
   const supabase = requireSupabase()
-  const { user, error: userErr } = await safeGetUser(supabase)
+  const { data: userData, error: userErr } = await supabase.auth.getUser()
   if (userErr) throw userErr
-  const userId = user?.id
+  const userId = userData.user?.id
   if (!userId) throw new Error('Not authenticated')
 
   const { data, error } = await supabase

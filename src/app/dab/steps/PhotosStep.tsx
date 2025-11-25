@@ -44,7 +44,7 @@ export default function PhotosStep() {
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="h-[150px] w-[200px] rounded-[10px] relative overflow-hidden"
+            className="h-[150px] w-[200px] rounded-[12px] relative overflow-hidden"
             style={{ border: '1px solid var(--stroke)', background: '#0f131d' }}
           >
             {photos[index] ? (

@@ -5,30 +5,30 @@ import { useOnboarding } from '@/contexts/OnboardingContext'
 import BackButton from '../components/BackButton'
 
 const PURPOSES = [
+  'Friends',
   'Partnership',
-  'Friendship',
   'Community',
-  'Only Climbing',
+  'Romance',
+  'Groups',
+  'Training buddy',
   "Don't know yet",
 ]
 
 export default function PurposeStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
-  const [selected, setSelected] = useState<string[]>(
-    data.purposes || (data.purpose ? [data.purpose] : [])
-  )
+  const [selected, setSelected] = useState<string[]>(data.purposes || [])
 
   const handleToggle = (purpose: string) => {
     const newSelected = selected.includes(purpose)
       ? selected.filter(p => p !== purpose)
       : [...selected, purpose]
     setSelected(newSelected)
-    updateData({ purposes: newSelected, purpose: newSelected.join(', ') })
+    updateData({ purposes: newSelected })
   }
 
   const handleContinue = () => {
     if (selected.length > 0) {
-      setCurrentStep(5)
+      setCurrentStep(7)
     }
   }
 
@@ -47,11 +47,11 @@ export default function PurposeStep() {
               key={purpose}
               type="button"
               onClick={() => handleToggle(purpose)}
-              className="h-14 relative rounded-[10px] w-full flex items-center justify-between px-4 transition-colors"
-              style={{
-                background: '#0f131d',
-                border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
-              }}
+            className="h-14 relative rounded-[12px] w-full flex items-center justify-between px-4 transition-colors"
+            style={{
+              background: '#0f131d',
+              border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
+            }}
               onMouseEnter={(e) => {
                 if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
               }}
@@ -77,7 +77,7 @@ export default function PurposeStep() {
         style={{ padding: '10px 16px', borderRadius: '10px' }}
       >
         <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-          CONTINUE 3/7
+          CONTINUE 6/7
         </span>
       </button>
     </div>

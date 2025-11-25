@@ -2,7 +2,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { safeGetSession } from '@/lib/authUtils'
 
 export function useAuthSession() {
   const [loading, setLoading] = useState(true)
@@ -15,9 +14,9 @@ export function useAuthSession() {
         setLoading(false)
         return
       }
-      const { session: fetchedSession } = await safeGetSession(supabase)
+      const { data } = await supabase.auth.getSession()
       if (mounted) {
-        setSession(fetchedSession)
+        setSession(data.session)
         setLoading(false)
       }
     }

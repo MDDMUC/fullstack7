@@ -1,8 +1,9 @@
 'use client'
 
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import SignupForm from './SignupForm'
 
 const FALLBACK_AVATAR = '/cc-moods-001.jpg'
 
@@ -192,86 +193,6 @@ export default function DatingExperience() {
   const featured = filteredProfiles[0]
   const matchesCount = filteredProfiles.length
 
-  const [joinLoading, setJoinLoading] = useState(false)
-  const [joinError, setJoinError] = useState<string | null>(null)
-
-  const handleJoin = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const form = event.currentTarget
-    const data = new FormData(form)
-    const name = (data.get('name') as string)?.trim() || ''
-    const email = (data.get('email') as string)?.trim() || ''
-    const password = (data.get('password') as string) || ''
-
-    if (!name || !email || !password) {
-      setJoinError('Name, email, and password are required.')
-      return
-    }
-
-    if (password.length < 8) {
-      setJoinError('Password must be at least 8 characters.')
-      return
-    }
-
-    if (!supabase) {
-      setJoinError('Supabase is not configured.')
-      return
-    }
-
-    setJoinLoading(true)
-    setJoinError(null)
-
-    try {
-      // Only create auth account - no profile data
-      const { data: _signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          data: {
-            name, // Store name in user metadata only
-          },
-        },
-      })
-
-      if (signUpError) {
-        setJoinError(signUpError.message)
-        setJoinLoading(false)
-        return
-      }
-
-      // Wait for session to be established
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
-      if (sessionError || !session) {
-        // No session yet - likely email confirmation is required
-        setToast(`Thanks ${name}! Account created. Check your email to confirm.`)
-        form.reset()
-        setJoinLoading(false)
-        
-        // Redirect to login after a short delay
-        setTimeout(() => {
-          router.push('/login')
-        }, 2000)
-        return
-      }
-
-      // Session is available - redirect to onboarding
-      setToast(`Thanks ${name}! Account created.`)
-      form.reset()
-      setJoinLoading(false)
-      
-      // Redirect to onboarding after a short delay
-      setTimeout(() => {
-        router.push('/onboarding')
-      }, 2000)
-    } catch (error: any) {
-      console.error('Error creating account:', error)
-      setJoinError(error.message || 'Failed to create account. Please try again.')
-      setJoinLoading(false)
-    }
-  }
-
   const handleReset = () => {
     setFilters({ location: '', style: '', availability: '', sort: 'recent' })
   }
@@ -286,24 +207,34 @@ export default function DatingExperience() {
 
   return (
     <>
+      <header className="site-header">
+        <div className="logo"><span className="dab-logo">DAB</span></div>
+        <nav className="nav-links">
+          <a href="#profiles">Climbers</a>
+          <a href="#filters">Filters</a>
+          <a href="/signup">Signup</a>
+        </nav>
+        <button className="cta" onClick={() => document.getElementById('join')?.scrollIntoView({ behavior: 'smooth' })}>
+          Get Started
+        </button>
+      </header>
+
       <main>
         <section className="hero">
-          <div className="hero__glass">
-            <div className="hero__copy">
-              <p className="eyebrow">Dating for people who think in grades.</p>
-              <h1>Meet climbers who love the same sends you do.</h1>
-              <p className="lede">
-                Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
-              </p>
-              <div className="hero__actions">
-                <button className="cta" onClick={() => router.push('/signup')}>Start matching</button>
-                <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
-              </div>
-              <div className="badges">
-                <span>Boulder, sport, trad, ice</span>
-                <span>Local gyms &amp; crags</span>
-                <span>Built for stoke, not spam</span>
-              </div>
+          <div className="hero__copy">
+            <p className="eyebrow">Dating for people who think in grades.</p>
+            <h1>Meet climbers who love the same sends you do.</h1>
+            <p className="lede">
+              Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
+            </p>
+            <div className="hero__actions">
+              <button className="cta" onClick={() => router.push('/signup')}>Start matching</button>
+              <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
+            </div>
+            <div className="badges">
+              <span>Boulder, sport, trad, ice</span>
+              <span>Local gyms &amp; crags</span>
+              <span>Built for stoke, not spam</span>
             </div>
           </div>
 
@@ -342,7 +273,7 @@ export default function DatingExperience() {
                   </div>
                   <div className="card-actions">
                     <button className="ghost" aria-label="pass" onClick={() => handlePass(featured.username)}>Pass</button>
-                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}>Send Like</button>
+                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}>DAB</button>
                   </div>
                 </div>
               </div>
@@ -464,7 +395,7 @@ export default function DatingExperience() {
                     </div>
                     <div className="actions">
                       <button className="ghost" onClick={() => handlePass(profile.username)}>Pass</button>
-                      <button className="cta" onClick={() => handleLike(profile.username)}>Send like</button>
+                      <button className="cta" onClick={() => handleLike(profile.username)}>DAB</button>
                     </div>
                   </div>
                 </article>
@@ -478,32 +409,8 @@ export default function DatingExperience() {
         <section className="cta-panel" id="join">
           <div className="cta-panel__content">
             <h2>Ready to clip in together?</h2>
-            <p>Tell us what you climb, where you climb, and when you can meet. We&apos;ll surface climbers who match your grades, goals, and vibe.</p>
-            <form className="join-form" onSubmit={handleJoin}>
-              <label className="field">
-                <span>Name</span>
-                <input type="text" name="name" required placeholder="Alex" disabled={joinLoading} />
-              </label>
-              <label className="field">
-                <span>Email</span>
-                <input type="email" name="email" required placeholder="alex@crux.com" disabled={joinLoading} />
-              </label>
-              <label className="field">
-                <span>Password</span>
-                <input type="password" name="password" required minLength={8} placeholder="8+ characters" disabled={joinLoading} />
-              </label>
-              {joinError && (
-                <p className="form-note error" role="alert">
-                  {joinError}
-                </p>
-              )}
-              <button className="cta" type="submit" disabled={joinLoading}>
-                {joinLoading ? 'Creating account...' : 'Join the beta'}
-              </button>
-              <p className="form-note" role="status" aria-live="polite">
-                {toast || 'We\'ll get you set up in under a minute.'}
-              </p>
-            </form>
+            <p>Start with your account details. We’ll collect climbing preferences right after.</p>
+            <SignupForm compact heading="Create your account" subheading="Next: quick onboarding" />
           </div>
           <div className="cta-panel__stats">
             <div className="stat">
@@ -521,13 +428,13 @@ export default function DatingExperience() {
 
       <footer className="site-footer">
         <div>
-          <div className="logo">Crux<span>Connections</span></div>
+          <div className="logo"><span className="dab-logo">DAB</span></div>
           <p>Built by climbers, for climbers. Keep your rope-bag organized and your matches even better.</p>
         </div>
         <div className="footer-links">
           <a href="#">Safety tips</a>
           <a href="#">Community guidelines</a>
-          <a href="mailto:hello@cruxconnections.com">Contact</a>
+          <a href="mailto:hello@dab.com">Contact</a>
         </div>
       </footer>
 

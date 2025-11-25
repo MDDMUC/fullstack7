@@ -10,7 +10,6 @@ import NameAgeGenderStep from './steps/NameAgeGenderStep'
 import PurposeStep from './steps/PurposeStep'
 import ShowMeStep from './steps/ShowMeStep'
 import InterestsStep from './steps/InterestsStep'
-import PhotosStep from './steps/PhotosStep'
 import LocationStep from './steps/LocationStep'
 import SuccessStep from './steps/SuccessStep'
 
@@ -22,9 +21,9 @@ export default function OnboardingPage() {
 
   // Only run the profile check once on initial mount, and only if not on final steps
   useEffect(() => {
-    // CRITICAL: Never run check if on step 8 (location) or 9 (success)
+    // CRITICAL: Never run check if on final steps (7 pledge, 8 success)
     // This prevents redirects during active onboarding completion
-    if (currentStep === 8 || currentStep === 9) {
+    if (currentStep >= 7) {
       setChecking(false)
       hasCheckedRef.current = true // Mark as checked to prevent future runs
       return
@@ -55,8 +54,8 @@ export default function OnboardingPage() {
           // Check current step again before redirecting (in case it changed during async operation)
           const stepAtCheckTime = currentStep
           
-          // CRITICAL: Never redirect if on step 8 or 9 (final onboarding steps)
-          if (stepAtCheckTime >= 8) {
+          // CRITICAL: Never redirect if on final onboarding steps
+          if (stepAtCheckTime >= 7) {
             console.log('On final onboarding steps, skipping redirect check')
             return
           }
@@ -79,8 +78,8 @@ export default function OnboardingPage() {
           // 3. User is not actively completing onboarding (steps 4+ mean they're in flow)
           // 4. Testing mode is not enabled
           if (profile && !profileError && stepAtCheckTime < 4 && !isTestingMode) {
-            // Final safety check - never redirect if somehow we got to step 8/9
-            if (currentStep >= 8) {
+            // Final safety check - never redirect if somehow we got to final steps
+            if (currentStep >= 7) {
               console.log('Step changed to final steps during check, aborting redirect')
               return
             }
@@ -118,14 +117,13 @@ export default function OnboardingPage() {
 
   const steps = [
     { component: PhoneStep, step: 1 },
-    { component: WelcomeStep, step: 2 },
-    { component: NameAgeGenderStep, step: 3 },
-    { component: PurposeStep, step: 4 },
-    { component: ShowMeStep, step: 5 },
-    { component: InterestsStep, step: 6 },
-    { component: PhotosStep, step: 7 },
-    { component: LocationStep, step: 8 },
-    { component: SuccessStep, step: 9 },
+    { component: NameAgeGenderStep, step: 2 },
+    { component: InterestsStep, step: 3 },
+    { component: ShowMeStep, step: 4 },
+    { component: LocationStep, step: 5 },
+    { component: PurposeStep, step: 6 },
+    { component: WelcomeStep, step: 7 },
+    { component: SuccessStep, step: 8 },
   ]
 
   const currentStepData = steps.find(s => s.step === currentStep)

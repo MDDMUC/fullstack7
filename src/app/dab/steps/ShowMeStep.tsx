@@ -4,22 +4,31 @@ import { useState } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import BackButton from '../components/BackButton'
 
-const OPTIONS = ['Men', 'Women', 'All'] as const
+const AVAILABILITY = [
+  'Mornings',
+  'Middays',
+  'Afternoons',
+  'Evenings',
+  'Weekdays',
+  'Weekends',
+  'Flexible',
+] as const
 
 export default function ShowMeStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
-  const [selected, setSelected] = useState<'Men' | 'Women' | 'All' | ''>(
-    data.showMe || ''
-  )
+  const [selected, setSelected] = useState<string[]>(data.availability || [])
 
-  const handleSelect = (option: typeof OPTIONS[number]) => {
-    setSelected(option)
-    updateData({ showMe: option })
+  const handleToggle = (option: string) => {
+    const next = selected.includes(option)
+      ? selected.filter(v => v !== option)
+      : [...selected, option]
+    setSelected(next)
+    updateData({ availability: next })
   }
 
   const handleContinue = () => {
-    if (selected) {
-      setCurrentStep(6)
+    if (selected.length) {
+      setCurrentStep(5)
     }
   }
 
@@ -27,22 +36,22 @@ export default function ShowMeStep() {
     <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <BackButton />
       <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-        I am looking to connect with
+        When are you usually available to climb?
       </p>
 
       <div className="flex flex-col gap-4 w-full max-w-md">
-        {OPTIONS.map((option) => {
-          const isSelected = selected === option
+        {AVAILABILITY.map((option) => {
+          const isSelected = selected.includes(option)
           return (
             <button
               key={option}
               type="button"
-              onClick={() => handleSelect(option)}
-              className="h-14 relative rounded-[10px] w-full flex items-center justify-between px-4 transition-colors"
-              style={{
-                background: '#0f131d',
-                border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
-              }}
+              onClick={() => handleToggle(option)}
+            className="h-14 relative rounded-[12px] w-full flex items-center justify-between px-4 transition-colors"
+            style={{
+              background: '#0f131d',
+              border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
+            }}
               onMouseEnter={(e) => {
                 if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
               }}
@@ -63,7 +72,7 @@ export default function ShowMeStep() {
 
       <button
         onClick={handleContinue}
-        disabled={!selected}
+        disabled={!selected.length}
         className="cta w-full max-w-md"
         style={{ padding: '10px 16px', borderRadius: '10px' }}
       >

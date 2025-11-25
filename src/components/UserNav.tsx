@@ -3,97 +3,34 @@
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 function UserNav() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false)
-  const [loading, setLoading] = useState<boolean>(true)
-  const router = useRouter()
+  const [userEmail, setUserEmail] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!supabase) {
-      setLoading(false)
-      return
+    const load = async () => {
+      if (!supabase) return
+      const { data } = await supabase.auth.getUser()
+      setUserEmail(data.user?.email ?? null)
     }
-
-    // Check initial auth state
-    const checkAuth = async () => {
-      if (!supabase) {
-        setLoading(false)
-        return
-      }
-      try {
-        const { safeGetUser } = await import('@/lib/authUtils')
-        const { user } = await safeGetUser(supabase)
-        setIsLoggedIn(!!user)
-      } catch {
-        // Error is already handled by safeGetUser
-        setIsLoggedIn(false)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    checkAuth()
-
-    // Listen for auth state changes
-    if (!supabase) {
-      return
-    }
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoggedIn(!!session)
-      if (event === 'SIGNED_OUT') {
-        router.refresh()
-      }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [router])
+    load()
+  }, [])
 
   const handleSignOut = async () => {
     if (!supabase) return
-    try {
-      await supabase.auth.signOut()
-      setIsLoggedIn(false)
-      router.push('/')
-      router.refresh()
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="nav-links" style={{ marginLeft: 'auto' }}>
-        <span style={{ color: 'var(--muted)', fontSize: 13 }}>Loading...</span>
-      </div>
-    )
+    await supabase.auth.signOut()
+    window.location.href = '/login'
   }
 
   return (
     <div className="nav-links" style={{ marginLeft: 'auto', gap: '12px', alignItems: 'center' }}>
-      {isLoggedIn ? (
-        <button 
-          className="ghost" 
-          style={{ 
-            padding: '6px 12px',
-            fontSize: 15
-          }} 
-          onClick={handleSignOut}
-        >
-          Log out
-        </button>
-      ) : (
+      <Link href="/">Home</Link>
+      <Link href="/signup">Sign up</Link>
+      <Link href="/login">Login</Link>
+      {userEmail && (
         <>
-          <Link href="/signup" className="cta" style={{ padding: '8px 16px', fontSize: 15, textDecoration: 'none', color: '#0c0e12' }}>
-            Get Started
-          </Link>
-          <Link href="/login" style={{ color: 'var(--muted)', textDecoration: 'none', fontWeight: 600 }}>
-            Login
-          </Link>
+          <span style={{ color: 'var(--muted)', fontSize: 13 }}>{userEmail}</span>
+          <button className="ghost" style={{ padding: '6px 12px' }} onClick={handleSignOut}>Logout</button>
         </>
       )}
     </div>

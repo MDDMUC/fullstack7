@@ -1,0 +1,178 @@
+'use client'
+
+import { FormEvent, useMemo, useState, useRef, useEffect } from 'react'
+import { useOnboarding } from '@/contexts/OnboardingContext'
+import BackButton from '../components/BackButton'
+
+const COUNTRY_CODES = [
+  { code: '+1', label: 'United States / Canada', flag: '🇺🇸' },
+  { code: '+44', label: 'United Kingdom', flag: '🇬🇧' },
+  { code: '+61', label: 'Australia', flag: '🇦🇺' },
+  { code: '+64', label: 'New Zealand', flag: '🇳🇿' },
+  { code: '+49', label: 'Germany', flag: '🇩🇪' },
+  { code: '+33', label: 'France', flag: '🇫🇷' },
+  { code: '+39', label: 'Italy', flag: '🇮🇹' },
+  { code: '+34', label: 'Spain', flag: '🇪🇸' },
+  { code: '+41', label: 'Switzerland', flag: '🇨🇭' },
+  { code: '+81', label: 'Japan', flag: '🇯🇵' },
+  { code: '+82', label: 'South Korea', flag: '🇰🇷' },
+  { code: '+65', label: 'Singapore', flag: '🇸🇬' },
+  { code: '+52', label: 'Mexico', flag: '🇲🇽' },
+  { code: '+55', label: 'Brazil', flag: '🇧🇷' },
+  { code: '+27', label: 'South Africa', flag: '🇿🇦' },
+]
+
+export default function PhoneStep() {
+  const { data, updateData, setCurrentStep } = useOnboarding()
+  const [search, setSearch] = useState('')
+  const [countryCode, setCountryCode] = useState(() => {
+    if (data.phone && data.phone.startsWith('+')) {
+      const match = COUNTRY_CODES.find(c => data.phone?.startsWith(c.code))
+      return match?.code || '+49'
+    }
+    return '+49'
+  })
+  const [nationalNumber, setNationalNumber] = useState(() => {
+    if (data.phone && data.phone.startsWith('+')) {
+      const stripped = data.phone.replace(/^\+\d+/, '').trim()
+      return stripped.replace(/\D/g, '')
+    }
+    return ''
+  })
+  const [open, setOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!open) return
+      const target = event.target as Node
+      if (
+        wrapperRef.current &&
+        dropdownRef.current &&
+        !wrapperRef.current.contains(target) &&
+        !dropdownRef.current.contains(target)
+      ) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase()
+    return COUNTRY_CODES.filter(c => c.code.includes(q) || c.label.toLowerCase().includes(q)).slice(0, 8)
+  }, [search])
+
+  const normalizedDigits = (value: string) => value.replace(/\D/g, '')
+
+  const formatDisplay = (value: string) =>
+    value.replace(/(\d{3})(\d{3})(\d{0,4})/, (_, a, b, c) => [a, b, c].filter(Boolean).join(' '))
+
+  const selectedFlag = useMemo(
+    () => COUNTRY_CODES.find(c => c.code === countryCode)?.flag || '🌐',
+    [countryCode]
+  )
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const digits = normalizedDigits(nationalNumber)
+    if (!digits || digits.length < 6) return
+    const full = `${countryCode}${digits}`
+    setLoading(true)
+    updateData({ phone: full })
+    setTimeout(() => {
+      setLoading(false)
+      setCurrentStep(2)
+    }, 300)
+  }
+
+  return (
+    <div className="flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
+      <BackButton />
+      <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
+        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
+          Add your phone
+        </h1>
+      </div>
+      
+      <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+        Only real people.
+      </p>
+      
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md" ref={wrapperRef}>
+        <div className="w-full flex flex-col gap-2">
+          <div className="h-14 relative rounded-[12px] flex items-center gap-2" style={{ background: '#0f131d', border: '1px solid var(--stroke)', padding: '0 8px' }}>
+            <div className="relative" ref={dropdownRef} style={{ width: '240px' }}>
+              <button
+                type="button"
+                onClick={() => setOpen(o => !o)}
+                className="w-full h-10 px-3 text-left rounded-[8px]"
+                style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}
+              >
+                <span>{selectedFlag}</span>
+                <span>{countryCode}</span>
+              </button>
+              {open && (
+                <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: '#0f131d', border: '1px solid var(--stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '240px' }}>
+                  <div style={{ padding: '8px' }}>
+                    <input
+                      type="search"
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                      className="w-full h-9 px-3 rounded-[8px] text-sm"
+                      style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)' }}
+                      placeholder="Search code or country"
+                    />
+                  </div>
+                  {filtered.map(option => (
+                    <button
+                      key={option.code}
+                      type="button"
+                      className="w-full px-3 py-2 hover:bg-[#131826] flex items-center gap-2"
+                      onClick={() => {
+                        setCountryCode(option.code)
+                        setSearch('')
+                        setOpen(false)
+                      }}
+                      style={{ color: 'var(--text)', fontSize: '13px', whiteSpace: 'nowrap' }}
+                    >
+                      <span style={{ minWidth: '20px' }}>{option.flag || '🌐'}</span>
+                      <span style={{ color: 'var(--accent)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <input
+              type="tel"
+              value={formatDisplay(nationalNumber)}
+              onChange={(e) => setNationalNumber(normalizedDigits(e.target.value))}
+              className="flex-1 h-12 px-3 bg-transparent border-none outline-none text-base rounded-[8px]"
+              style={{ color: 'var(--text)' }}
+              placeholder="415 555 1234"
+              required
+            />
+          </div>
+          <p className="text-sm" style={{ color: 'var(--muted)' }}>
+            Add digits only; we’ll verify later. You control when to share.
+          </p>
+        </div>
+        
+        <button
+          type="submit"
+          disabled={loading || normalizedDigits(nationalNumber).length < 6}
+          className="cta w-full"
+          style={{ padding: '10px 16px', borderRadius: '10px' }}
+        >
+          <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
+            {loading ? 'Saving...' : 'Continue'}
+          </span>
+        </button>
+      </form>
+    </div>
+  )
+}
+

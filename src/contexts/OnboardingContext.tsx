@@ -3,36 +3,29 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 
 export type OnboardingData = {
-  // Step 1: Phone
-  phoneNumber?: string
-  countryCode?: string
-  
-  // Step 2: Rules (checkboxes)
-  rulesAccepted?: boolean[]
-  
-  // Step 3: Name, Age, Gender
+  // Contact
+  phone?: string
+
+  // Identity
   name?: string
   age?: string
   gender?: 'Man' | 'Woman' | 'Other'
+  pronouns?: string
   bio?: string
-  
-  // Step 4: Purpose
-  purpose?: string
-  purposes?: string[] // Multiple selections
-  
-  // Step 5: Show Me
-  showMe?: 'Men' | 'Women' | 'All'
-  
-  // Step 6: Interests
-  interests?: string[]
-  
-  // Step 7: Photos
+
+  // Climbing profile
+  styles?: string[]
+  grade?: string
+  availability?: string[]
+  purposes?: string[]
   photos?: File[]
-  
-  // Step 8: Location
+
+  // Location
   homebase?: string
-  originalFrom?: string
-  distance?: number
+  radiusKm?: number
+
+  // Agreements
+  pledgeAccepted?: boolean
 }
 
 type OnboardingContextType = {
@@ -47,9 +40,11 @@ const OnboardingContext = createContext<OnboardingContextType | undefined>(undef
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<OnboardingData>({
-    countryCode: '+1',
-    rulesAccepted: [],
-    interests: [],
+    styles: [],
+    availability: [],
+    purposes: [],
+    radiusKm: 100,
+    pledgeAccepted: false,
     photos: [],
   })
   const [currentStep, setCurrentStep] = useState(1)
@@ -60,10 +55,11 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const reset = () => {
     setData({
-      countryCode: '+1',
-      rulesAccepted: [],
-      interests: [],
-      photos: [],
+      styles: [],
+      availability: [],
+      purposes: [],
+      radiusKm: 100,
+      pledgeAccepted: false,
     })
     setCurrentStep(1)
   }

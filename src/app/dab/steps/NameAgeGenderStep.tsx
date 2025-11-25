@@ -16,7 +16,7 @@ export default function NameAgeGenderStep() {
     if (!name.trim() || !age.trim() || !gender) return
 
     updateData({ name, age, gender: gender as 'Man' | 'Woman' | 'Other', bio })
-    setCurrentStep(4)
+    setCurrentStep(3)
   }
 
   return (
@@ -28,7 +28,7 @@ export default function NameAgeGenderStep() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md">
         <div 
-          className="h-14 relative rounded-[10px] w-full flex items-center transition-colors"
+          className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
           style={{ 
             background: '#0f131d', 
             border: '1px solid var(--stroke)',
@@ -56,7 +56,7 @@ export default function NameAgeGenderStep() {
         </div>
 
         <div 
-          className="h-14 relative rounded-[10px] w-full flex items-center transition-colors"
+          className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
           style={{ 
             background: '#0f131d', 
             border: '1px solid var(--stroke)',
@@ -89,7 +89,7 @@ export default function NameAgeGenderStep() {
           <button
             type="button"
             onClick={() => setGender('Man')}
-            className="h-14 relative rounded-[10px] flex-1 flex items-center justify-between px-4 transition-colors"
+            className="h-14 relative rounded-[12px] flex-1 flex items-center justify-between px-4 transition-colors"
             style={{
               background: '#0f131d',
               border: `1px solid ${gender === 'Man' ? 'var(--accent)' : 'var(--stroke)'}`,
@@ -112,7 +112,7 @@ export default function NameAgeGenderStep() {
           <button
             type="button"
             onClick={() => setGender('Woman')}
-            className="h-14 relative rounded-[10px] flex-1 flex items-center justify-between px-4 transition-colors"
+            className="h-14 relative rounded-[12px] flex-1 flex items-center justify-between px-4 transition-colors"
             style={{
               background: '#0f131d',
               border: `1px solid ${gender === 'Woman' ? 'var(--accent)' : 'var(--stroke)'}`,
@@ -134,7 +134,7 @@ export default function NameAgeGenderStep() {
         </div>
 
         <div 
-          className="h-14 relative rounded-[10px] w-full flex items-center transition-colors"
+          className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
           style={{ 
             background: '#0f131d', 
             border: '1px solid var(--stroke)',
@@ -167,9 +167,9 @@ export default function NameAgeGenderStep() {
           style={{ padding: '10px 16px', borderRadius: '10px' }}
         >
           <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-            CONTINUE 2/7
-          </span>
-        </button>
+          CONTINUE 2/7
+        </span>
+      </button>
       </form>
     </div>
   )

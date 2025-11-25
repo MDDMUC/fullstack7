@@ -54,7 +54,7 @@ export const normalizeProfile = (profile: any): Profile => {
 
 export async function fetchProfiles(client?: SupabaseClient) {
   const c = client ?? requireSupabase()
-  const { data, error } = await c.from('onboardingprofiles').select('*').order('created_at', { ascending: false })
+  const { data, error } = await c.from('profiles').select('*').order('created_at', { ascending: false })
   if (error) throw error
   return (data ?? []).map(normalizeProfile)
 }

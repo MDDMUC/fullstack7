@@ -1,27 +1,20 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { createOrUpdateProfile, onboardingDataToProfileData } from './profileUtils'
+import { onboardingDataToProfilePayload, upsertOnboardingProfile, upsertPublicProfile } from './profileUtils'
 
 export type OnboardingDataFromStorage = {
-  phoneNumber?: string
-  countryCode?: string
-  rulesAccepted?: boolean[]
+  phone?: string
   name?: string
   age?: string
   gender?: 'Man' | 'Woman' | 'Other'
+  pronouns?: string
   bio?: string
-  purpose?: string
   purposes?: string[]
-  showMe?: 'Men' | 'Women' | 'All'
-  interests?: string[]
-  photosMetadata?: Array<{
-    name: string
-    size: number
-    type: string
-    index: number
-  }>
+  styles?: string[]
+  grade?: string
+  availability?: string[]
   homebase?: string
-  originalFrom?: string
-  distance?: number
+  radiusKm?: number
+  pledgeAccepted?: boolean
 }
 
 /**
@@ -34,13 +27,13 @@ export async function applyOnboardingDataToProfile(
   userId: string,
   onboardingData: OnboardingDataFromStorage
 ) {
-  const profileData = onboardingDataToProfileData(onboardingData)
-  
-  const { data, error } = await createOrUpdateProfile(client, userId, profileData)
+  const payload = onboardingDataToProfilePayload(onboardingData)
+  const { error: obError } = await upsertOnboardingProfile(client, userId, onboardingData)
+  const { data, error } = await upsertPublicProfile(client, userId, onboardingData)
 
-  if (error) {
-    console.error('Error applying onboarding data:', error)
-    throw error
+  if (obError || error) {
+    console.error('Error applying onboarding data:', obError || error)
+    throw obError || error
   }
 
   console.log('Onboarding data applied to profile:', data)
