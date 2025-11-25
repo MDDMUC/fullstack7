@@ -251,7 +251,52 @@ export default function DatingExperience() {
         return
       }
 
-      // Create profile using unified utility
+      // Wait for session to be established (required for RLS policy)
+      // Check if we have an active session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError || !session) {
+        // No session yet - likely email confirmation is required
+        // Save profile data to localStorage to be applied after email confirmation
+        const { signupFormDataToProfileData } = await import('@/lib/profileUtils')
+        const profileData = signupFormDataToProfileData({
+          name,
+          email,
+          style,
+          grade: '',
+          availability: '',
+          goals: intent ? [intent] : [],
+        })
+        
+        if (intent) {
+          profileData.bio = intent
+        }
+
+        // Save to localStorage for later application
+        const onboardingData = {
+          name,
+          email,
+          style,
+          grade: '',
+          availability: '',
+          goals: intent ? [intent] : [],
+          bio: intent || '',
+        }
+        localStorage.setItem('onboarding_data', JSON.stringify(onboardingData))
+        
+        // Success - show message
+        setToast(`Thanks ${name}! Account created. Check your email to confirm.`)
+        form.reset()
+        setJoinLoading(false)
+        
+        // Redirect to login after a short delay
+        setTimeout(() => {
+          router.push('/login')
+        }, 2000)
+        return
+      }
+
+      // Session is available - create profile immediately
       try {
         const { createOrUpdateProfile, signupFormDataToProfileData } = await import('@/lib/profileUtils')
         const profileData = signupFormDataToProfileData({
@@ -277,7 +322,7 @@ export default function DatingExperience() {
         }
 
         // Success - show message and redirect
-        setToast(`Thanks ${name}! Account created. Check your email to confirm.`)
+        setToast(`Thanks ${name}! Account created.`)
         form.reset()
         
         // Redirect to onboarding after a short delay

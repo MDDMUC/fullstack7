@@ -98,6 +98,13 @@ textarea:focus-visible {
   box-shadow: 0 0 0 4px rgba(92, 225, 230, 0.18);
 }
 
+/* Override focus styles for onboarding inputs to match button styling */
+form input:focus-visible {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+}
+
 .cta {
   background: linear-gradient(120deg, var(--accent), var(--accent-2));
   color: #0c0e12;

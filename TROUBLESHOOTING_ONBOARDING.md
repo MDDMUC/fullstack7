@@ -130,3 +130,5 @@ Error saving profile: [error message]
 - [ ] Network tab shows successful POST to Supabase
 
 
+
+

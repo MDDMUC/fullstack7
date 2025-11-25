@@ -1,13 +1,14 @@
 // src/lib/matches.ts
 import { requireSupabase } from './supabaseClient'
+import { safeGetUser } from './authUtils'
 
 const sortPair = (a: string, b: string) => (a < b ? [a, b] : [b, a])
 
 export async function checkAndCreateMatch(swipeeId: string) {
   const supabase = requireSupabase()
-  const { data: userData, error: userErr } = await supabase.auth.getUser()
+  const { user, error: userErr } = await safeGetUser(supabase)
   if (userErr) throw userErr
-  const myId = userData.user?.id
+  const myId = user?.id
   if (!myId) throw new Error('Not authenticated')
 
   // Check reciprocal like
@@ -56,9 +57,9 @@ export type MatchWithProfiles = {
 
 export async function listMatches() {
   const supabase = requireSupabase()
-  const { data: userData, error: userErr } = await supabase.auth.getUser()
+  const { user, error: userErr } = await safeGetUser(supabase)
   if (userErr) throw userErr
-  const myId = userData.user?.id
+  const myId = user?.id
   if (!myId) throw new Error('Not authenticated')
 
   const { data, error } = await supabase

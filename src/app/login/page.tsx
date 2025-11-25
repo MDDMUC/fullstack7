@@ -39,8 +39,10 @@ export default function LoginPage() {
       return
     }
 
-    // Check for saved onboarding data and apply it
+    // Check for saved onboarding data or signup data and apply it
     const savedOnboardingData = localStorage.getItem('onboarding_data')
+    const savedSignupData = localStorage.getItem('signup_data')
+    
     if (savedOnboardingData) {
       try {
         const onboardingData = JSON.parse(savedOnboardingData)
@@ -53,6 +55,33 @@ export default function LoginPage() {
         localStorage.removeItem('onboarding_data')
       } catch (applyError: any) {
         console.error('Error applying onboarding data after login:', applyError)
+        setStatus(`Login successful, but failed to apply saved profile data: ${applyError.message || 'Unknown error'}`)
+        // Continue to home even if applying fails - user can update profile later
+      }
+    } else if (savedSignupData) {
+      try {
+        const signupData = JSON.parse(savedSignupData)
+        console.log('Found signup data after login, applying to profile...')
+        
+        const { createOrUpdateProfile, signupFormDataToProfileData } = await import('@/lib/profileUtils')
+        const profileData = signupFormDataToProfileData({
+          name: signupData.name,
+          email: signupData.email,
+          style: signupData.style,
+          grade: signupData.grade,
+          availability: signupData.availability,
+          goals: signupData.goals,
+        })
+        
+        const { error: profileError } = await createOrUpdateProfile(supabase, loginData.user.id, profileData)
+        if (profileError) {
+          throw profileError
+        }
+        
+        console.log('Signup data successfully applied after login')
+        localStorage.removeItem('signup_data')
+      } catch (applyError: any) {
+        console.error('Error applying signup data after login:', applyError)
         setStatus(`Login successful, but failed to apply saved profile data: ${applyError.message || 'Unknown error'}`)
         // Continue to home even if applying fails - user can update profile later
       }

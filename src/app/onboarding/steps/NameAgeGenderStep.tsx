@@ -27,29 +27,61 @@ export default function NameAgeGenderStep() {
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md">
-        <div className="h-14 relative rounded-[10px] w-full flex items-center" style={{ background: '#0f131d', border: '1px solid var(--stroke)' }}>
+        <div 
+          className="h-14 relative rounded-[10px] w-full flex items-center transition-colors"
+          style={{ 
+            background: '#0f131d', 
+            border: '1px solid var(--stroke)',
+          }}
+        >
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full h-full px-4 bg-transparent border-none outline-none text-base"
-            style={{ color: 'var(--text)' }}
+            className="w-full h-full px-4 bg-transparent border-0 outline-none text-base"
+            style={{ 
+              color: 'var(--text)'
+            }}
             placeholder="Name"
             required
+            onFocus={(e) => {
+              e.currentTarget.style.outline = 'none'
+              e.currentTarget.style.boxShadow = 'none'
+              e.currentTarget.parentElement!.style.borderColor = 'var(--accent)'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.parentElement!.style.borderColor = 'var(--stroke)'
+            }}
           />
         </div>
 
-        <div className="h-14 relative rounded-[10px] w-full flex items-center" style={{ background: '#0f131d', border: '1px solid var(--stroke)' }}>
+        <div 
+          className="h-14 relative rounded-[10px] w-full flex items-center transition-colors"
+          style={{ 
+            background: '#0f131d', 
+            border: '1px solid var(--stroke)',
+          }}
+        >
           <input
             type="number"
             value={age}
             onChange={(e) => setAge(e.target.value)}
-            className="w-full h-full px-4 bg-transparent border-none outline-none text-base"
-            style={{ color: 'var(--text)' }}
+            className="w-full h-full px-4 bg-transparent border-0 outline-none text-base"
+            style={{ 
+              color: 'var(--text)'
+            }}
             placeholder="Age"
             required
             min="18"
             max="100"
+            onFocus={(e) => {
+              e.currentTarget.style.outline = 'none'
+              e.currentTarget.style.boxShadow = 'none'
+              e.currentTarget.parentElement!.style.borderColor = 'var(--accent)'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.parentElement!.style.borderColor = 'var(--stroke)'
+            }}
           />
         </div>
 
@@ -101,14 +133,30 @@ export default function NameAgeGenderStep() {
           </button>
         </div>
 
-        <div className="h-14 relative rounded-[10px] w-full flex items-center" style={{ background: '#0f131d', border: '1px solid var(--stroke)' }}>
+        <div 
+          className="h-14 relative rounded-[10px] w-full flex items-center transition-colors"
+          style={{ 
+            background: '#0f131d', 
+            border: '1px solid var(--stroke)',
+          }}
+        >
           <input
             type="text"
             value={bio}
             onChange={(e) => setBio(e.target.value)}
-            className="w-full h-full px-4 bg-transparent border-none outline-none text-base"
-            style={{ color: 'var(--text)' }}
+            className="w-full h-full px-4 bg-transparent border-0 outline-none text-base"
+            style={{ 
+              color: 'var(--text)'
+            }}
             placeholder="Short bio (optional)"
+            onFocus={(e) => {
+              e.currentTarget.style.outline = 'none'
+              e.currentTarget.style.boxShadow = 'none'
+              e.currentTarget.parentElement!.style.borderColor = 'var(--accent)'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.parentElement!.style.borderColor = 'var(--stroke)'
+            }}
           />
         </div>
 

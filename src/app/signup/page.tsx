@@ -75,6 +75,31 @@ export default function Signup() {
       return
     }
 
+    // Wait for session to be established (required for RLS policy)
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    if (sessionError || !session) {
+      // No session yet - likely email confirmation is required
+      // Save signup data to localStorage to be applied after email confirmation
+      const signupData = {
+        name,
+        email,
+        style,
+        grade,
+        availability,
+        goals: goalTags,
+      }
+      localStorage.setItem('signup_data', JSON.stringify(signupData))
+      
+      setStatus({
+        type: 'success',
+        message: 'Account created! Please check your email to confirm your account, then log in to complete your profile.',
+      })
+      setLoading(false)
+      setTimeout(() => router.push('/login'), 3000)
+      return
+    }
+
     // Check for saved onboarding data
     let onboardingData: any = null
     const savedOnboardingData = localStorage.getItem('onboarding_data')
@@ -89,7 +114,7 @@ export default function Signup() {
       }
     }
 
-    // Create profile using unified utility
+    // Create profile using unified utility (session is available)
     try {
       if (onboardingData) {
         // Use onboarding data (more complete)

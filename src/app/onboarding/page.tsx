@@ -47,7 +47,8 @@ export default function OnboardingPage() {
       hasCheckedRef.current = true
 
       try {
-        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        const { safeGetUser } = await import('@/lib/authUtils')
+        const { user, error: userError } = await safeGetUser(supabase)
         
         // If user is authenticated, check if they have a profile
         if (user && !userError) {
@@ -66,23 +67,33 @@ export default function OnboardingPage() {
             .eq('id', user.id)
             .single()
 
+          // Check if testing mode is enabled (bypass profile check)
+          const isTestingMode = 
+            typeof window !== 'undefined' && 
+            (localStorage.getItem('onboarding_test_mode') === 'true' || 
+             new URLSearchParams(window.location.search).get('test') === 'true')
+          
           // Only redirect if:
           // 1. Profile exists
           // 2. We're still on early steps (1-3)
           // 3. User is not actively completing onboarding (steps 4+ mean they're in flow)
-          if (profile && !profileError && stepAtCheckTime < 4) {
+          // 4. Testing mode is not enabled
+          if (profile && !profileError && stepAtCheckTime < 4 && !isTestingMode) {
             // Final safety check - never redirect if somehow we got to step 8/9
             if (currentStep >= 8) {
               console.log('Step changed to final steps during check, aborting redirect')
               return
             }
             console.log('User already has a profile, redirecting to home')
+            console.log('💡 To test onboarding again, add ?test=true to the URL or set localStorage.setItem("onboarding_test_mode", "true")')
             router.replace('/home')
             return
           } else if (profile && !profileError) {
             // User has profile but is on step 4+, meaning they're actively in onboarding
             // Don't redirect - let them complete it
             console.log('User has profile but is in onboarding flow, allowing to continue')
+          } else if (isTestingMode) {
+            console.log('🧪 Testing mode enabled - allowing onboarding even with existing profile')
           }
         }
       } catch (error) {

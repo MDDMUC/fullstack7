@@ -84,8 +84,15 @@ export default function HomeScreen() {
 
       try {
         const client = supabase ?? requireSupabase()
-        const { data: userData } = await client.auth.getUser()
-        setUserId(userData.user?.id ?? null)
+        const { safeGetUser } = await import('@/lib/authUtils')
+        const { user } = await safeGetUser(client)
+        setUserId(user?.id ?? null)
+        
+        // If no user after safe check, redirect to login
+        if (!user) {
+          router.push('/login')
+          return
+        }
 
         const normalized = await fetchProfiles()
         const profiles: Profile[] = normalized.map(p => ({

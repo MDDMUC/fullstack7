@@ -49,8 +49,9 @@ export default function LocationStep() {
       let userError = null
       
       try {
-        const authResult = await supabase.auth.getUser()
-        user = authResult.data?.user
+        const { safeGetUser } = await import('@/lib/authUtils')
+        const authResult = await safeGetUser(supabase)
+        user = authResult.user
         userError = authResult.error
       } catch (err: any) {
         console.warn('Auth check failed (user likely not logged in):', err)

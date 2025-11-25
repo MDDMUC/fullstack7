@@ -23,10 +23,11 @@ function UserNav() {
         return
       }
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { safeGetUser } = await import('@/lib/authUtils')
+        const { user } = await safeGetUser(supabase)
         setIsLoggedIn(!!user)
       } catch (error) {
-        console.error('Error checking auth:', error)
+        // Error is already handled by safeGetUser
         setIsLoggedIn(false)
       } finally {
         setLoading(false)
