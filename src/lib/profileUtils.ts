@@ -24,12 +24,12 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   const tags = asTextArray(data.styles)
   if (data.gender) tags.push(`gender:${data.gender}`)
   if (data.interest) tags.push(`pref:${data.interest}`)
+  const pronouns = data.pronouns || (data as any).gender || null
 
   return {
     username,
     age: data.age ? Number(data.age) : null,
     bio: data.bio || null,
-    pronouns: data.pronouns || null,
     city: data.homebase || null,
     distance,
     style: styles,
@@ -40,7 +40,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     lookingFor: purposes || null,
     phone_number: data.phone || null,
     status: 'New member',
-    pronouns: data.pronouns || (data as any).gender || null,
+    pronouns,
   }
 }
 
