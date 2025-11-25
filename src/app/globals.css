@@ -268,13 +268,13 @@ textarea:focus-visible {
 .pill-row span { background: rgba(92, 225, 230, 0.06); border: 1px solid var(--stroke); padding: 8px 12px; border-radius: 999px; color: var(--muted); font-weight: 700; }
 .benefits { list-style: none; padding: 0; margin: 16px 0 0; color: var(--muted); display: grid; gap: 8px; }
 
-.signup-panel { background: var(--card); border: 1px solid var(--stroke); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); }
+.signup-panel { background: var(--card); border: 1px solid var(--stroke); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); max-width: 420px; margin-left: auto; margin-right: auto; }
 .panel-header h3 { margin: 0; }
 .panel-header .sub { margin: 4px 0 0; }
 
 .oauth-buttons { display: grid; gap: 10px; margin: 12px 0; }
 .ghost.wide { width: 100%; text-align: center; }
-.cta.wide { width: 100%; text-align: center; }
+.cta.wide { width: 100%; text-align: center; max-width: 320px; margin: 0 auto; }
 
 .oauth-btn {
   width: 100%;
