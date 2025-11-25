@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 
-export default function AuthCallback() {
+function AuthCallbackHandler() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [status, setStatus] = useState('Processing authentication...')
@@ -168,6 +168,36 @@ export default function AuthCallback() {
         <p style={{ color: 'var(--text)', fontSize: '18px', margin: '0' }}>{status}</p>
       </div>
     </main>
+  )
+}
+
+export default function AuthCallback() {
+  return (
+    <Suspense fallback={
+      <main className="signup-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ 
+              width: '48px', 
+              height: '48px', 
+              border: '3px solid var(--accent)',
+              borderTopColor: 'transparent',
+              borderRadius: '50%',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }} />
+            <style jsx>{`
+              @keyframes spin {
+                to { transform: rotate(360deg); }
+              }
+            `}</style>
+          </div>
+          <p style={{ color: 'var(--text)', fontSize: '18px', margin: '0' }}>Loading...</p>
+        </div>
+      </main>
+    }>
+      <AuthCallbackHandler />
+    </Suspense>
   )
 }
 
