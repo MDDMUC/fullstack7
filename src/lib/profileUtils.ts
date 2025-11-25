@@ -14,6 +14,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   const availability = join(data.availability)
   const purposes = join(data.purposes)
   const distance = data.radiusKm ? `${data.radiusKm} km` : data.homebase ? '100 km' : null
+  const goalsText = (data.bigGoal && data.bigGoal.trim()) || purposes || null
 
   return {
     username: null,
@@ -26,7 +27,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     grade: data.grade || null,
     availability,
     tags: asTextArray(data.styles),
-    goals: purposes,
+    goals: goalsText,
     lookingFor: purposes || null,
     phone_number: data.phone || null,
     status: 'New member',

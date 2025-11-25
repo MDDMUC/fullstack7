@@ -4,7 +4,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import SignupForm from './SignupForm'
-import Logo from './Logo'
 
 const FALLBACK_AVATAR = '/cc-moods-001.jpg'
 
@@ -208,14 +207,6 @@ export default function DatingExperience() {
 
   return (
     <>
-      <header className="site-header">
-        <Logo />
-        <nav className="nav-links" style={{ gap: '12px' }}>
-          <a className="cta" style={{ padding: '10px 16px', color: '#0c0e12' }} href="/signup">Get Started</a>
-          <a className="ghost" style={{ padding: '10px 16px' }} href="/login">Login</a>
-        </nav>
-      </header>
-
       <main>
         <section className="hero">
           <div className="hero__copy">
@@ -270,7 +261,7 @@ export default function DatingExperience() {
                   </div>
                   <div className="card-actions">
                     <button className="ghost" aria-label="pass" onClick={() => handlePass(featured.username)}>Pass</button>
-                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}><span className="dab-text">DAB</span></button>
+                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}><span className="dab-text">dab</span></button>
                   </div>
                 </div>
               </div>
@@ -392,7 +383,7 @@ export default function DatingExperience() {
                     </div>
                     <div className="actions">
                       <button className="ghost" onClick={() => handlePass(profile.username)}>Pass</button>
-                      <button className="cta" onClick={() => handleLike(profile.username)}><span className="dab-text">DAB</span></button>
+                      <button className="cta" onClick={() => handleLike(profile.username)}><span className="dab-text">dab</span></button>
                     </div>
                   </div>
                 </article>
@@ -425,7 +416,7 @@ export default function DatingExperience() {
 
       <footer className="site-footer">
         <div>
-          <div className="logo"><span className="dab-logo">DAB</span></div>
+          <div className="logo"><span className="dab-logo">dab</span></div>
           <p>Built by climbers, for climbers. Keep your rope-bag organized and your matches even better.</p>
         </div>
         <div className="footer-links">
@@ -458,8 +449,8 @@ export default function DatingExperience() {
               ))}
             </div>
             <button className="modal-close" aria-label="Close" onClick={() => setLikeModal(null)}>×</button>
-            <p className="label">Nice send</p>
-            <h3>You liked {likeModal.name}</h3>
+            <p className="label">Wow!</p>
+            <h3>You dabbed {likeModal.name}</h3>
           </div>
         </div>
       ) : null}

@@ -70,7 +70,10 @@ export default function WelcomeStep() {
   }
 
   return (
-    <div className="onboard-screen flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+    <div
+      className="onboard-screen flex flex-col gap-6 items-center justify-start px-4 sm:px-8 md:px-16 lg:px-24 py-10 sm:py-14 md:py-16 lg:py-20 w-full relative"
+      style={{ minHeight: 'calc(100vh - 72px)' }}
+    >
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
@@ -78,6 +81,9 @@ export default function WelcomeStep() {
             Pledge
           </h1>
         </div>
+        <p className="font-normal leading-normal text-[18px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+          Only real people. Commit to the crew before we connect you.
+        </p>
         <p className="text-sm font-semibold uppercase tracking-[1px]" style={{ color: 'var(--accent)' }}>
           Select all to continue
         </p>

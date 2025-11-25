@@ -10,6 +10,7 @@ export default function InterestsStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [selected, setSelected] = useState<string[]>(data.styles || [])
   const [grade, setGrade] = useState(data.grade || '')
+  const [bigGoal, setBigGoal] = useState(data.bigGoal || '')
 
   const handleToggle = (style: string) => {
     const newSelected = selected.includes(style)
@@ -20,12 +21,15 @@ export default function InterestsStep() {
   }
 
   const handleContinue = () => {
-    updateData({ styles: selected, grade })
+    updateData({ styles: selected, grade, bigGoal })
     setCurrentStep(4)
   }
 
   return (
-    <div className="onboard-screen flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+    <div
+      className="onboard-screen flex flex-col gap-6 items-center justify-start px-4 sm:px-8 md:px-16 lg:px-24 py-10 sm:py-14 md:py-16 lg:py-20 w-full relative"
+      style={{ minHeight: 'calc(100vh - 72px)' }}
+    >
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
@@ -35,10 +39,13 @@ export default function InterestsStep() {
         </div>
 
         <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-          Choose your styles and grade so partners can match you accurately.
+          Only real people. Choose your styles and grade so partners can match you accurately.
         </p>
 
-        <div className="grid items-start justify-center w-full" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', maxWidth: '620px' }}>
+        <div
+          className="grid items-start justify-center w-full"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', maxWidth: '620px', justifyItems: 'center' }}
+        >
           {STYLES.map((style) => {
             const isSelected = selected.includes(style)
             return (
@@ -75,12 +82,28 @@ export default function InterestsStep() {
               onChange={(e) => setGrade(e.target.value)}
               className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px]"
               style={{ color: 'var(--text)' }}
-              placeholder="Grade focus (optional — e.g., 5.11b / V5)"
+              placeholder="Grade focus (optional, e.g., 5.11b / V5)"
             />
           </div>
           <p className="font-normal leading-normal text-[15px] mt-2" style={{ color: 'var(--muted)' }}>
             Big goal? Let others know what you’re building toward.
           </p>
+          <div
+            className="h-14 relative rounded-[12px] w-full flex items-center transition-colors mt-2"
+            style={{
+              background: '#0f131d',
+              border: '1px solid var(--stroke)',
+            }}
+          >
+            <input
+              type="text"
+              value={bigGoal}
+              onChange={(e) => setBigGoal(e.target.value)}
+              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px]"
+              style={{ color: 'var(--text)' }}
+              placeholder="Big goal? (optional)"
+            />
+          </div>
         </div>
 
         <button

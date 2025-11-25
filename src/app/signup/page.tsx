@@ -1,19 +1,10 @@
 'use client'
 
 import SignupForm from '@/components/SignupForm'
-import Logo from '@/components/Logo'
-import Link from 'next/link'
 
 export default function SignupPage() {
   return (
     <>
-      <header className="site-header">
-        <Logo />
-        <nav className="nav-links" style={{ gap: '12px' }}>
-          <Link className="cta" href="/signup" style={{ padding: '10px 16px', color: '#0c0e12' }}>Get Started</Link>
-          <Link className="ghost" href="/login" style={{ padding: '10px 16px' }}>Login</Link>
-        </nav>
-      </header>
       <main className="signup-wrapper" style={{ maxWidth: '1080px' }}>
         <section className="signup-hero" style={{ alignItems: 'center' }}>
           <div className="signup-copy">
@@ -27,7 +18,7 @@ export default function SignupPage() {
             </div>
           </div>
 
-          <div style={{ width: '100%', maxWidth: '440px' }}>
+          <div style={{ width: '100%', maxWidth: '420px' }}>
             <SignupForm />
           </div>
         </section>

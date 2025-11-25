@@ -23,14 +23,14 @@ export default function Logo() {
   if (isLoggedIn === null) {
     return (
       <div className="logo">
-        <span className="dab-logo">DAB</span>
+        <span className="dab-logo">dab</span>
       </div>
     )
   }
 
   return (
     <Link href={isLoggedIn ? "/home" : "/"} className="logo" style={{ textDecoration: 'none' }}>
-      <span className="dab-logo">DAB</span>
+      <span className="dab-logo">dab</span>
     </Link>
   )
 }

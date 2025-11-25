@@ -5,21 +5,21 @@ import { useOnboarding } from '@/contexts/OnboardingContext'
 import BackButton from '../components/BackButton'
 
 const COUNTRY_CODES = [
+  { code: '+49', label: 'Germany', flag: '🇩🇪' },
   { code: '+1', label: 'United States / Canada', flag: '🇺🇸' },
   { code: '+44', label: 'United Kingdom', flag: '🇬🇧' },
-  { code: '+61', label: 'Australia', flag: '🇦🇺' },
-  { code: '+64', label: 'New Zealand', flag: '🇳🇿' },
-  { code: '+49', label: 'Germany', flag: '🇩🇪' },
   { code: '+33', label: 'France', flag: '🇫🇷' },
   { code: '+39', label: 'Italy', flag: '🇮🇹' },
   { code: '+34', label: 'Spain', flag: '🇪🇸' },
-  { code: '+41', label: 'Switzerland', flag: '🇨🇭' },
+  { code: '+61', label: 'Australia', flag: '🇦🇺' },
+  { code: '+64', label: 'New Zealand', flag: '🇳🇿' },
   { code: '+81', label: 'Japan', flag: '🇯🇵' },
-  { code: '+82', label: 'South Korea', flag: '🇰🇷' },
-  { code: '+65', label: 'Singapore', flag: '🇸🇬' },
   { code: '+52', label: 'Mexico', flag: '🇲🇽' },
   { code: '+55', label: 'Brazil', flag: '🇧🇷' },
+  { code: '+65', label: 'Singapore', flag: '🇸🇬' },
   { code: '+27', label: 'South Africa', flag: '🇿🇦' },
+  { code: '+41', label: 'Switzerland', flag: '🇨🇭' },
+  { code: '+82', label: 'South Korea', flag: '🇰🇷' },
 ]
 
 export default function PhoneStep() {
@@ -43,6 +43,7 @@ export default function PhoneStep() {
   const [loading, setLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLFormElement>(null)
+  const [focused, setFocused] = useState(false)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (!open) return
@@ -62,7 +63,7 @@ export default function PhoneStep() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return COUNTRY_CODES.filter(c => c.code.includes(q) || c.label.toLowerCase().includes(q)).slice(0, 8)
+    return COUNTRY_CODES.filter(c => c.code.includes(q) || c.label.toLowerCase().includes(q))
   }, [search])
 
   const normalizedDigits = (value: string) => value.replace(/\D/g, '')
@@ -89,7 +90,10 @@ export default function PhoneStep() {
   }
 
   return (
-    <div className="onboard-screen flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+    <div
+      className="onboard-screen flex flex-col gap-6 items-center justify-start px-4 sm:px-8 md:px-16 lg:px-24 py-10 sm:py-14 md:py-16 lg:py-20 w-full relative"
+      style={{ minHeight: 'calc(100vh - 72px)' }}
+    >
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
@@ -104,8 +108,17 @@ export default function PhoneStep() {
         
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md" ref={wrapperRef}>
           <div className="w-full flex flex-col gap-2">
-            <div className="h-14 relative rounded-[12px] flex items-center gap-2" style={{ background: '#0f131d', border: '1px solid var(--stroke)', padding: '0 8px' }}>
-              <div className="relative" ref={dropdownRef} style={{ width: '240px' }}>
+            <div
+              className="h-14 relative rounded-[12px] flex items-center gap-2"
+              style={{
+                background: '#0f131d',
+                border: `1px solid ${(focused || open) ? 'var(--accent)' : 'var(--stroke)'}`,
+                padding: '0 8px',
+                boxShadow: (focused || open) ? '0 0 0 3px rgba(92,225,230,0.16)' : 'none',
+                transition: 'border-color 120ms ease, box-shadow 120ms ease',
+              }}
+            >
+              <div className="relative" ref={dropdownRef} style={{ width: '260px' }}>
                 <button
                   type="button"
                   onClick={() => setOpen(o => !o)}
@@ -116,7 +129,7 @@ export default function PhoneStep() {
                   <span>{countryCode}</span>
                 </button>
                 {open && (
-                  <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: '#0f131d', border: '1px solid var(--stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '240px' }}>
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: '#0f131d', border: '1px solid var(--stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '280px' }}>
                     <div style={{ padding: '8px' }}>
                       <input
                         type="search"
@@ -131,7 +144,7 @@ export default function PhoneStep() {
                       <button
                         key={option.code}
                         type="button"
-                        className="w-full px-3 py-2 hover:bg-[#131826] flex items-center gap-2"
+                        className="w-full px-3 py-2 hover:bg-[#131826]"
                         onClick={() => {
                           setCountryCode(option.code)
                           setSearch('')
@@ -139,9 +152,11 @@ export default function PhoneStep() {
                         }}
                         style={{ color: 'var(--text)', fontSize: '13px', whiteSpace: 'nowrap' }}
                       >
-                        <span style={{ minWidth: '20px' }}>{option.flag || '🌐'}</span>
-                        <span style={{ color: 'var(--accent)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
-                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{option.label}</span>
+                        <div style={{ display: 'grid', gridTemplateColumns: '32px 64px 1fr', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ minWidth: '20px' }}>{option.flag || '🌐'}</span>
+                          <span style={{ color: 'var(--accent)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{option.label}</span>
+                        </div>
                       </button>
                     ))}
                   </div>
@@ -154,6 +169,8 @@ export default function PhoneStep() {
                 className="flex-1 h-12 px-3 bg-transparent border-none outline-none text-base rounded-[8px]"
                 style={{ color: 'var(--text)' }}
                 placeholder="415 555 1234"
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
                 required
               />
             </div>

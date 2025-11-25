@@ -8,6 +8,7 @@ export default function LocationStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [homebase, setHomebase] = useState(data.homebase || '')
   const [radius, setRadius] = useState<number>(data.radiusKm || 100)
+  const [homeFocused, setHomeFocused] = useState(false)
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -17,7 +18,10 @@ export default function LocationStep() {
   }
 
   return (
-    <div className="onboard-screen flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+    <div
+      className="onboard-screen flex flex-col gap-6 items-center justify-start px-4 sm:px-8 md:px-16 lg:px-24 py-10 sm:py-14 md:py-16 lg:py-20 w-full relative"
+      style={{ minHeight: 'calc(100vh - 72px)' }}
+    >
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
@@ -27,7 +31,7 @@ export default function LocationStep() {
         </div>
 
         <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-          Set your home base and search radius so we can suggest nearby climbers.
+          Only real people. Set your home base and search radius so we can suggest nearby climbers.
         </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md">
@@ -35,7 +39,8 @@ export default function LocationStep() {
             className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
             style={{
               background: '#0f131d',
-              border: '1px solid var(--stroke)',
+              border: `1px solid ${homeFocused ? 'var(--accent)' : 'var(--stroke)'}`,
+              boxShadow: homeFocused ? '0 0 0 3px rgba(92,225,230,0.12)' : 'none',
             }}
           >
             <input
@@ -45,6 +50,8 @@ export default function LocationStep() {
               className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px]"
               style={{ color: 'var(--text)' }}
               placeholder="City or home crag"
+              onFocus={() => setHomeFocused(true)}
+              onBlur={() => setHomeFocused(false)}
               required
             />
           </div>

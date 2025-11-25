@@ -93,8 +93,12 @@ export default function HomeScreen() {
           distance: p.distance ?? '10 km',
           avatar_url: p.avatar_url ?? FALLBACK_AVATAR,
         }))
-        setMatches(profiles)
-        setDeck(profiles.length ? profiles : [{
+        const filtered = userData.user?.id
+          ? profiles.filter(p => p.id !== userData.user?.id)
+          : profiles
+
+        setMatches(filtered)
+        setDeck(filtered.length ? filtered : [{
           id: 'fallback',
           username: 'Climber',
           age: 27,
@@ -377,7 +381,7 @@ export default function HomeScreen() {
             </div>
             <div className="hero-actions hero-actions-wide">
               <button className="ghost wide" onClick={() => handleSwipe(current, 'pass')}>Pass</button>
-              <button className="cta wide" onClick={() => handleSwipe(current, 'like')}><span className="dab-text">DAB</span></button>
+              <button className="cta wide" onClick={() => handleSwipe(current, 'like')}><span className="dab-text">dab</span></button>
             </div>
           </div>
         </section>

@@ -11,6 +11,7 @@ export type OnboardingDataFromStorage = {
   purposes?: string[]
   styles?: string[]
   grade?: string
+  bigGoal?: string
   availability?: string[]
   homebase?: string
   radiusKm?: number

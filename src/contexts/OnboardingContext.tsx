@@ -15,6 +15,7 @@ export type OnboardingData = {
   // Climbing profile
   styles?: string[]
   grade?: string
+  bigGoal?: string
   availability?: string[]
   purposes?: string[]
   photos?: File[]

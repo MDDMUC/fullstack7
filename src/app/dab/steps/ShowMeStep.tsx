@@ -33,14 +33,17 @@ export default function ShowMeStep() {
   }
 
   return (
-    <div className="onboard-screen flex flex-col gap-6 items-center justify-center px-4 sm:px-8 md:px-16 lg:px-24 py-12 sm:py-16 md:py-20 lg:py-24 min-h-screen w-full relative">
+    <div
+      className="onboard-screen flex flex-col gap-6 items-center justify-start px-4 sm:px-8 md:px-16 lg:px-24 py-10 sm:py-14 md:py-16 lg:py-20 w-full relative"
+      style={{ minHeight: 'calc(100vh - 72px)' }}
+    >
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)', margin: 0 }}>
           Availability
         </h1>
         <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-          When are you usually available to climb?
+          Only real people. When are you usually available to climb?
         </p>
 
         <div className="flex flex-col gap-4 w-full max-w-md">
