@@ -32,6 +32,8 @@ export const normalizeProfile = (profile: any): Profile => {
     ? profile.styles.join(' • ')
     : profile.primary_style
 
+  const rawTags = toArray(profile.tags ?? profile.traits)
+
   return {
     id: profile.id ?? crypto.randomUUID(),
     username: profile.username ?? profile.name ?? 'Climber',
@@ -44,7 +46,7 @@ export const normalizeProfile = (profile: any): Profile => {
     avatar_url: profile.avatar_url ?? profile.photo_url ?? null,
     created_at: profile.created_at,
     pronouns: profile.pronouns ?? profile.pronoun ?? '',
-    tags: toArray(profile.tags ?? profile.traits),
+    tags: rawTags,
     status: profile.status ?? profile.state ?? '',
     goals: profile.goals ?? profile.intent ?? '',
     distance: profile.distance ?? '10 km',

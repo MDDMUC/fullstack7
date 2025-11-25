@@ -19,6 +19,7 @@ export type OnboardingData = {
   bigGoal?: string
   availability?: string[]
   purposes?: string[]
+  interest?: 'Women' | 'Men' | 'All'
   photos?: File[]
 
   // Location

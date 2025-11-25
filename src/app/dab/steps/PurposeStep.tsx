@@ -14,9 +14,12 @@ const PURPOSES = [
   "Don't know yet",
 ]
 
+const INTEREST_OPTIONS: Array<'Women' | 'Men' | 'All'> = ['Women', 'Men', 'All']
+
 export default function PurposeStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [selected, setSelected] = useState<string[]>(data.purposes || [])
+  const [interest, setInterest] = useState<'Women' | 'Men' | 'All' | ''>(data.interest || '')
 
   const handleToggle = (purpose: string) => {
     const newSelected = selected.includes(purpose)
@@ -27,7 +30,8 @@ export default function PurposeStep() {
   }
 
   const handleContinue = () => {
-    if (selected.length > 0) {
+    if (selected.length > 0 && interest) {
+      updateData({ purposes: selected, interest: interest as 'Women' | 'Men' | 'All' })
       setCurrentStep(7)
     }
   }
@@ -77,9 +81,45 @@ export default function PurposeStep() {
           })}
         </div>
 
+        <div className="w-full max-w-md flex flex-col gap-3">
+          <p className="font-normal leading-normal text-[18px]" style={{ color: 'var(--text)', margin: 0 }}>
+            I am interested in:
+          </p>
+          <div className="flex flex-col gap-3">
+            {INTEREST_OPTIONS.map(option => {
+              const isSelected = interest === option
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setInterest(option)}
+                  className="h-12 relative rounded-[12px] w-full flex items-center justify-between px-4 transition-colors"
+                  style={{
+                    background: '#0f131d',
+                    border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) e.currentTarget.style.borderColor = 'var(--stroke)'
+                  }}
+                >
+                  <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>{option}</span>
+                  <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: isSelected ? 'var(--accent)' : 'var(--stroke)' }}>
+                    {isSelected && (
+                      <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
+                    )}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         <button
           onClick={handleContinue}
-          disabled={selected.length === 0}
+          disabled={selected.length === 0 || !interest}
           className="cta w-full max-w-md"
           style={{ padding: '10px 16px', borderRadius: '10px' }}
         >

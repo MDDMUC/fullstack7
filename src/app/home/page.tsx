@@ -5,7 +5,7 @@ import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
 import { RequireAuth } from '@/components/RequireAuth'
 import { sendSwipe } from '@/lib/swipes'
-import { listMatches, MatchWithProfiles } from '@/lib/matches'
+import { checkAndCreateMatch, listMatches, MatchWithProfiles } from '@/lib/matches'
 import { listMessages, sendMessage, subscribeToMessages, Message as ChatMessage } from '@/lib/messages'
 
 type Profile = DbProfile & {
@@ -51,6 +51,24 @@ export default function HomeScreen() {
     return FALLBACK_MALE
   }
 
+  const extractGender = (profile?: Profile | null) => {
+    const tagGender = profile?.tags?.find?.(t => t.toLowerCase().startsWith('gender:'))?.split(':')[1]?.toLowerCase()
+    if (tagGender) return tagGender
+    const pronoun = (profile?.pronouns || '').toLowerCase()
+    if (pronoun.includes('she') || pronoun.includes('her') || pronoun.includes('woman') || pronoun.includes('female')) return 'woman'
+    if (pronoun.includes('he') || pronoun.includes('him') || pronoun.includes('man') || pronoun.includes('male')) return 'man'
+    return 'unknown'
+  }
+
+  const extractPreference = (profile?: Profile | null) => {
+    const prefTag = profile?.tags?.find?.(t => t.toLowerCase().startsWith('pref:'))?.split(':')[1]
+    if (!prefTag) return 'All'
+    const normalized = prefTag.toLowerCase()
+    if (normalized === 'women' || normalized === 'woman') return 'Women'
+    if (normalized === 'men' || normalized === 'man') return 'Men'
+    return 'All'
+  }
+
   const demoProfiles: Profile[] = [
     {
       id: '618fbbfa-1032-4bc3-a282-15755d2479df',
@@ -59,6 +77,8 @@ export default function HomeScreen() {
       distance: '10 km',
       city: 'Munich',
       avatar_url: FALLBACK_FEMALE,
+      pronouns: 'woman',
+      tags: ['gender:woman'],
       bio: 'Stoked to climb with new partners.',
       style: 'Bouldering, Sport',
       availability: 'Evenings, Weekends',
@@ -71,6 +91,8 @@ export default function HomeScreen() {
       distance: '12 km',
       city: 'Berlin',
       avatar_url: FALLBACK_MALE,
+      pronouns: 'man',
+      tags: ['gender:man'],
       bio: 'Always down for laps and good coffee.',
       style: 'Sport, Trad',
       availability: 'Weekdays, Flexible',
@@ -128,9 +150,18 @@ export default function HomeScreen() {
           distance: p.distance ?? '10 km',
           avatar_url: p.avatar_url ?? fallbackAvatarFor(p),
         }))
-        const filtered = userData.user?.id
-          ? profiles.filter(p => p.id !== userData.user?.id)
-          : profiles
+
+        const me = profiles.find(p => p.id === userData.user?.id)
+        const preference = extractPreference(me)
+
+        const filtered = profiles.filter(p => p.id !== userData.user?.id).filter(p => {
+          const gender = extractGender(p)
+          if (preference === 'All') return true
+          if (preference === 'Women') return gender === 'woman'
+          if (preference === 'Men') return gender === 'man'
+          return true
+        })
+
         const initialDeck = filtered.length ? filtered : demoProfiles
 
         setMatches(initialDeck)
@@ -199,31 +230,6 @@ export default function HomeScreen() {
     })
   }
 
-  const ensureMatch = async (profile: Profile) => {
-    const client = supabase ?? requireSupabase()
-    const { data: userData, error: userErr } = await client.auth.getUser()
-    if (userErr) throw userErr
-    const myId = userData.user?.id
-    if (!myId) throw new Error('Not authenticated')
-    const [user_a, user_b] = myId < profile.id ? [myId, profile.id] : [profile.id, myId]
-    const { data, error } = await client
-      .from('matches')
-      .insert({ user_a, user_b })
-      .select()
-      .single()
-
-    if (error && error.code !== '23505') throw error
-    if (data) return data
-
-    const { data: existing } = await client
-      .from('matches')
-      .select('*')
-      .eq('user_a', user_a)
-      .eq('user_b', user_b)
-      .single()
-    return existing
-  }
-
   const openMatch = async (matchId: string) => {
     const match = matchRows.find(m => m.id === matchId)
     if (!match) return
@@ -286,7 +292,7 @@ export default function HomeScreen() {
     try {
       await sendSwipe(profile.id, actionType)
       if (actionType === 'like') {
-        const match = await ensureMatch(profile)
+        const match = await checkAndCreateMatch(profile.id)
         if (match) {
           setMatchRows(prev => {
             if (prev.some(m => m.id === match.id)) return prev

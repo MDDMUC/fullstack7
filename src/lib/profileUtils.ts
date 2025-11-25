@@ -21,6 +21,10 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     (data as any).email?.split?.('@')?.[0] ||
     'Climber'
 
+  const tags = asTextArray(data.styles)
+  if (data.gender) tags.push(`gender:${data.gender}`)
+  if (data.interest) tags.push(`pref:${data.interest}`)
+
   return {
     username,
     age: data.age ? Number(data.age) : null,
@@ -31,11 +35,12 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     style: styles,
     grade: data.grade || null,
     availability,
-    tags: asTextArray(data.styles),
+    tags,
     goals: goalsText,
     lookingFor: purposes || null,
     phone_number: data.phone || null,
     status: 'New member',
+    pronouns: data.pronouns || (data as any).gender || null,
   }
 }
 
