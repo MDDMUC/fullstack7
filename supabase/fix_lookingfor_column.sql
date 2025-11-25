@@ -37,3 +37,4 @@ FROM information_schema.columns
 WHERE table_name = 'onboardingprofiles' 
 AND column_name = 'lookingFor';
 
+

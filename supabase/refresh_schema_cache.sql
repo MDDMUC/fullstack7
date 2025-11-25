@@ -22,3 +22,4 @@ WHERE tablename = 'onboardingprofiles';
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 GRANT ALL ON TABLE public.onboardingprofiles TO anon, authenticated;
 
+

@@ -19,3 +19,4 @@ CREATE POLICY "Users can update own profile"
   USING ((select auth.uid()) = id)
   WITH CHECK ((select auth.uid()) = id);
 
+

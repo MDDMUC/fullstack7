@@ -59,95 +59,82 @@ export default function AuthCallback() {
         }
 
         if (!user) {
-          if (!user) {
-            setStatus('Authentication failed: No user data received.')
-            setTimeout(() => router.push('/signup'), 3000)
-            return
-          }
-
-          // Check if user already has a profile
-          const { data: existingProfile, error: profileCheckError } = await supabase
-            .from('onboardingprofiles')
-            .select('id')
-            .eq('id', user.id)
-            .single()
-
-          // If profile doesn't exist, create one
-          if (!existingProfile && !profileCheckError) {
-            setStatus('Creating your profile...')
-            
-            // Check for saved onboarding data
-            const savedOnboardingData = localStorage.getItem('onboarding_data')
-            let profileData: any = {}
-
-            if (savedOnboardingData) {
-              try {
-                const onboardingData = JSON.parse(savedOnboardingData)
-                const { onboardingDataToProfileData } = await import('@/lib/profileUtils')
-                profileData = onboardingDataToProfileData(onboardingData)
-                localStorage.removeItem('onboarding_data')
-              } catch (e) {
-                console.error('Error parsing onboarding data:', e)
-              }
-            }
-
-            // If no onboarding data, create basic profile from OAuth user data
-            if (!profileData.username) {
-              const { signupFormDataToProfileData } = await import('@/lib/profileUtils')
-              profileData = signupFormDataToProfileData({
-                name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Climber',
-                email: user.email || '',
-                style: '',
-                grade: '',
-                availability: '',
-                goals: [],
-              })
-            }
-
-            // Add OAuth metadata if available
-            if (user.user_metadata?.avatar_url) {
-              profileData.avatar_url = user.user_metadata.avatar_url
-            }
-            if (user.user_metadata?.full_name || user.user_metadata?.name) {
-              profileData.username = user.user_metadata.full_name || user.user_metadata.name
-            }
-
-            // Create profile
-            const { createOrUpdateProfile } = await import('@/lib/profileUtils')
-            const { error: createError } = await createOrUpdateProfile(supabase, user.id, profileData)
-
-            if (createError) {
-              console.error('Error creating profile:', createError)
-              // Continue anyway - profile can be created later
-            }
-          }
-
-          // Redirect based on whether onboarding was completed
-          const hasOnboardingData = localStorage.getItem('onboarding_data')
-          if (hasOnboardingData) {
-            // User has onboarding data, redirect to onboarding to complete it
-            setStatus('Redirecting to complete your profile...')
-            setTimeout(() => router.push('/onboarding'), 1000)
-          } else if (existingProfile) {
-            // User already has profile, go to home
-            setStatus('Welcome back! Redirecting...')
-            setTimeout(() => router.push('/home'), 1000)
-          } else {
-            // New user, redirect to onboarding
-            setStatus('Setting up your profile...')
-            setTimeout(() => router.push('/onboarding'), 1000)
-          }
-        } else {
-          // No code parameter, might be an error
-          const error = searchParams.get('error')
-          const errorDescription = searchParams.get('error_description')
-          
-          if (error) {
-            setStatus(`Authentication error: ${errorDescription || error}`)
-          } else {
-            setStatus('No authentication code received.')
-          }
+          setStatus('Authentication failed: No user data received.')
           setTimeout(() => router.push('/signup'), 3000)
+          return
+        }
+
+        // Check if user already has a profile
+        const { data: existingProfile, error: profileCheckError } = await supabase
+          .from('onboardingprofiles')
+          .select('id')
+          .eq('id', user.id)
+          .single()
+
+        // If profile doesn't exist, create one
+        if (!existingProfile && !profileCheckError) {
+          setStatus('Creating your profile...')
+          
+          // Check for saved onboarding data
+          const savedOnboardingData = localStorage.getItem('onboarding_data')
+          let profileData: any = {}
+
+          if (savedOnboardingData) {
+            try {
+              const onboardingData = JSON.parse(savedOnboardingData)
+              const { onboardingDataToProfileData } = await import('@/lib/profileUtils')
+              profileData = onboardingDataToProfileData(onboardingData)
+              localStorage.removeItem('onboarding_data')
+            } catch (e) {
+              console.error('Error parsing onboarding data:', e)
+            }
+          }
+
+          // If no onboarding data, create basic profile from OAuth user data
+          if (!profileData.username) {
+            const { signupFormDataToProfileData } = await import('@/lib/profileUtils')
+            profileData = signupFormDataToProfileData({
+              name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'Climber',
+              email: user.email || '',
+              style: '',
+              grade: '',
+              availability: '',
+              goals: [],
+            })
+          }
+
+          // Add OAuth metadata if available
+          if (user.user_metadata?.avatar_url) {
+            profileData.avatar_url = user.user_metadata.avatar_url
+          }
+          if (user.user_metadata?.full_name || user.user_metadata?.name) {
+            profileData.username = user.user_metadata.full_name || user.user_metadata.name
+          }
+
+          // Create profile
+          const { createOrUpdateProfile } = await import('@/lib/profileUtils')
+          const { error: createError } = await createOrUpdateProfile(supabase, user.id, profileData)
+
+          if (createError) {
+            console.error('Error creating profile:', createError)
+            // Continue anyway - profile can be created later
+          }
+        }
+
+        // Redirect based on whether onboarding was completed
+        const hasOnboardingData = localStorage.getItem('onboarding_data')
+        if (hasOnboardingData) {
+          // User has onboarding data, redirect to onboarding to complete it
+          setStatus('Redirecting to complete your profile...')
+          setTimeout(() => router.push('/onboarding'), 1000)
+        } else if (existingProfile) {
+          // User already has profile, go to home
+          setStatus('Welcome back! Redirecting...')
+          setTimeout(() => router.push('/home'), 1000)
+        } else {
+          // New user, redirect to onboarding
+          setStatus('Setting up your profile...')
+          setTimeout(() => router.push('/onboarding'), 1000)
         }
       } catch (error: any) {
         console.error('Callback error:', error)

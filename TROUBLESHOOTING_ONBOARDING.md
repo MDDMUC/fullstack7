@@ -129,3 +129,4 @@ Error saving profile: [error message]
 - [ ] Browser console shows no errors
 - [ ] Network tab shows successful POST to Supabase
 
+

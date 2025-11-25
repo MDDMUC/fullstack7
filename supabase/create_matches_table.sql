@@ -46,3 +46,4 @@ FROM information_schema.columns
 WHERE table_name = 'matches'
 ORDER BY ordinal_position;
 
+

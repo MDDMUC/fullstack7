@@ -127,3 +127,4 @@ After setting up OAuth:
 - Both providers require HTTPS in production (Supabase provides this)
 - Local development works with `http://localhost` for Google, but Apple may require HTTPS even locally
 
+
