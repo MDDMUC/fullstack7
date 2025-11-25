@@ -1,14 +1,13 @@
 // src/lib/matches.ts
 import { requireSupabase } from './supabaseClient'
-import { safeGetUser } from './authUtils'
 
 const sortPair = (a: string, b: string) => (a < b ? [a, b] : [b, a])
 
 export async function checkAndCreateMatch(swipeeId: string) {
   const supabase = requireSupabase()
-  const { user, error: userErr } = await safeGetUser(supabase)
+  const { data: userData, error: userErr } = await supabase.auth.getUser()
   if (userErr) throw userErr
-  const myId = user?.id
+  const myId = userData.user?.id
   if (!myId) throw new Error('Not authenticated')
 
   // Check reciprocal like
@@ -57,9 +56,9 @@ export type MatchWithProfiles = {
 
 export async function listMatches() {
   const supabase = requireSupabase()
-  const { user, error: userErr } = await safeGetUser(supabase)
+  const { data: userData, error: userErr } = await supabase.auth.getUser()
   if (userErr) throw userErr
-  const myId = user?.id
+  const myId = userData.user?.id
   if (!myId) throw new Error('Not authenticated')
 
   const { data, error } = await supabase
@@ -72,14 +71,11 @@ export async function listMatches() {
 
   const ids = Array.from(new Set(data.flatMap(m => [m.user_a, m.user_b])))
   const { data: profiles, error: pErr } = await supabase
-    .from('onboardingprofiles')
+    .from('profiles')
     .select('*')
     .in('id', ids)
 
-  if (pErr) {
-    console.error('Error fetching profiles for matches:', pErr)
-    throw pErr
-  }
+  if (pErr) throw pErr
   const map = new Map(profiles?.map(p => [p.id, p]))
   return data.map(m => ({ ...m, profiles: [map.get(m.user_a), map.get(m.user_b)].filter(Boolean) }))
 }

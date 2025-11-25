@@ -1,6 +1,5 @@
 // src/lib/messages.ts
 import { requireSupabase } from './supabaseClient'
-import { safeGetUser } from './authUtils'
 
 export type Message = {
   id: string
@@ -24,9 +23,9 @@ export async function listMessages(matchId: string): Promise<Message[]> {
 
 export async function sendMessage(matchId: string, body: string): Promise<Message> {
   const supabase = requireSupabase()
-  const { user, error: userErr } = await safeGetUser(supabase)
+  const { data: userData, error: userErr } = await supabase.auth.getUser()
   if (userErr) throw userErr
-  const userId = user?.id
+  const userId = userData.user?.id
   if (!userId) throw new Error('Not authenticated')
 
   const { data, error } = await supabase
