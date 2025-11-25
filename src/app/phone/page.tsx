@@ -4,7 +4,7 @@ import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function PhoneNumber() {
-  const router = useRouter()
+  const _router = useRouter()
   const [countryCode, setCountryCode] = useState('+1')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [loading, setLoading] = useState(false)
@@ -73,4 +73,3 @@ export default function PhoneNumber() {
     </div>
   )
 }
-

@@ -2,10 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
-
-const styles = ['Bouldering', 'Sport', 'Trad', 'Alpine', 'Ice']
-const goals = ['Regular partner', 'Weekend projects', 'Trip planning', 'Training accountability']
+import { appUrl, supabase } from '@/lib/supabaseClient'
 
 type Status = { type: 'idle' | 'error' | 'success' | 'info'; message: string }
 
@@ -14,6 +11,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false)
   const [oauthLoading, setOauthLoading] = useState<'google' | 'apple' | null>(null)
   const router = useRouter()
+  const redirectTo = appUrl ? `${appUrl}/auth/callback` : undefined
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -24,10 +22,6 @@ export default function Signup() {
     const email        = (data.get('email') as string)?.trim()
     const password     = (data.get('password') as string) || ''
     const confirm      = (data.get('confirm') as string) || ''
-    const style        = data.get('style') as string
-    const grade        = (data.get('grade') as string)?.trim()
-    const availability = data.get('availability') as string
-    const goalTags     = data.getAll('goals') as string[]
 
     if (password !== confirm) {
       setStatus({ type: 'error', message: 'Passwords do not match.' })
@@ -35,6 +29,10 @@ export default function Signup() {
     }
     if (!email) {
       setStatus({ type: 'error', message: 'Email is required.' })
+      return
+    }
+    if (!name) {
+      setStatus({ type: 'error', message: 'Name is required.' })
       return
     }
 
@@ -47,132 +45,57 @@ export default function Signup() {
       return
     }
 
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    // Only create auth account - no profile data
+    const { data: _signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: redirectTo,
         data: {
-          name,
-          style,
-          grade,
-          availability,
-          goals: goalTags,
+          name, // Store name in user metadata only
         },
       },
     })
 
     if (signUpError) {
-      setStatus({ type: 'error', message: signUpError.message })
+      const msg = signUpError.message || 'Unable to sign up right now.'
+      const lower = msg.toLowerCase()
+      if (lower.includes('redirect')) {
+        setStatus({
+          type: 'error',
+          message: 'Redirect URL not allowed. Add your site URL and /auth/callback in Supabase > Authentication > URL Configuration.',
+        })
+      } else {
+        setStatus({ type: 'error', message: msg })
+      }
       setLoading(false)
       return
     }
 
-    const userId = signUpData.user?.id
-    if (!userId) {
-      setStatus({ type: 'error', message: 'Account created but user ID not available. Please try logging in.' })
-      setLoading(false)
-      return
-    }
-
-    // Wait for session to be established (required for RLS policy)
+    // Wait for session to be established
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     
     if (sessionError || !session) {
       // No session yet - likely email confirmation is required
-      // Save signup data to localStorage to be applied after email confirmation
-      const signupData = {
-        name,
-        email,
-        style,
-        grade,
-        availability,
-        goals: goalTags,
-      }
-      localStorage.setItem('signup_data', JSON.stringify(signupData))
-      
       setStatus({
         type: 'success',
-        message: 'Account created! Please check your email to confirm your account, then log in to complete your profile.',
+        message: 'Check your inbox for verification email',
       })
       setLoading(false)
-      setTimeout(() => router.push('/login'), 3000)
+      // Don't redirect - let user see the message
       return
     }
 
-    // Check for saved onboarding data
-    let onboardingData: any = null
-    const savedOnboardingData = localStorage.getItem('onboarding_data')
-    
-    if (savedOnboardingData) {
-      try {
-        onboardingData = JSON.parse(savedOnboardingData)
-        console.log('Found saved onboarding data, will apply to profile')
-      } catch (e) {
-        console.error('Error parsing onboarding data:', e)
-        // Continue with signup form data if parsing fails
-      }
-    }
-
-    // Create profile using unified utility (session is available)
-    try {
-      if (onboardingData) {
-        // Use onboarding data (more complete)
-        const { applyOnboardingDataToProfile } = await import('@/lib/applyOnboardingData')
-        await applyOnboardingDataToProfile(supabase, userId, onboardingData)
-        console.log('Onboarding data successfully applied to profile')
-        localStorage.removeItem('onboarding_data')
-      } else {
-        // Use signup form data
-        const { createOrUpdateProfile, signupFormDataToProfileData } = await import('@/lib/profileUtils')
-        const profileData = signupFormDataToProfileData({
-          name,
-          email,
-          style,
-          grade,
-          availability,
-          goals: goalTags,
-        })
-        
-        const { error: profileError } = await createOrUpdateProfile(supabase, userId, profileData)
-        if (profileError) {
-          throw profileError
-        }
-        console.log('Profile created from signup form data')
-      }
-    } catch (profileError: any) {
-      console.error('Error creating profile:', profileError)
-      setStatus({
-        type: 'error',
-        message: `Account created, but profile could not be saved: ${profileError.message || 'Unknown error'}. Please contact support.`,
-      })
-      setLoading(false)
-      return
-    }
-
+    // Session is available - redirect to onboarding
     form.reset()
     setLoading(false)
-
-    // Success - redirect based on whether onboarding was completed
-    if (onboardingData) {
-      // User completed onboarding, redirect to home
-      setStatus({
-        type: 'success',
-        message: 'Account created! Your profile has been saved. Redirecting...',
-      })
-      setTimeout(() => {
-        router.push('/home')
-      }, 1500)
-    } else {
-      // User signed up directly, redirect to profile setup
-      setStatus({
-        type: 'success',
-        message: 'Account created! Check your email to confirm. Redirecting...',
-      })
-      setTimeout(() => {
-        router.push('/profile/setup')
-      }, 1500)
-    }
+    setStatus({
+      type: 'success',
+      message: 'Account created! Redirecting to complete your profile...',
+    })
+    setTimeout(() => {
+      router.push('/onboarding')
+    }, 1500)
   }
 
   const handleGoogleSignIn = async () => {
@@ -185,13 +108,10 @@ export default function Signup() {
     setStatus({ type: 'info', message: 'Redirecting to Google...' })
 
     try {
-      // Check for saved onboarding data to pass along
-      const savedOnboardingData = localStorage.getItem('onboarding_data')
-      
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { data: _googleData, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectTo ?? undefined,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -204,7 +124,7 @@ export default function Signup() {
         setOauthLoading(null)
       }
       // If successful, user will be redirected to Google, then to callback
-      // The callback handler will create the profile
+      // The callback handler will redirect to onboarding
     } catch (error: any) {
       console.error('Google OAuth error:', error)
       setStatus({ type: 'error', message: error.message || 'Failed to sign in with Google.' })
@@ -222,10 +142,10 @@ export default function Signup() {
     setStatus({ type: 'info', message: 'Redirecting to Apple...' })
 
     try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { data: _appleData, error } = await supabase.auth.signInWithOAuth({
         provider: 'apple',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: redirectTo ?? undefined,
         },
       })
 
@@ -240,6 +160,7 @@ export default function Signup() {
       setOauthLoading(null)
     }
   }
+
 
   return (
     <main className="signup-wrapper">
@@ -315,40 +236,6 @@ export default function Signup() {
                 <input type="password" name="confirm" required minLength={8} placeholder="Repeat password" />
               </label>
             </div>
-            <div className="field-duo">
-              <label className="field">
-                <span>Primary style</span>
-                <select name="style" defaultValue="">
-                  <option value="" disabled>Select style</option>
-                  {styles.map(s => <option key={s}>{s}</option>)}
-                </select>
-              </label>
-              <label className="field">
-                <span>Grade focus</span>
-                <input name="grade" placeholder="5.11b / V5" />
-              </label>
-            </div>
-            <label className="field">
-              <span>What are you looking for?</span>
-              <div className="chip-row">
-                {goals.map(goal => (
-                  <label key={goal} className="chip-toggle">
-                    <input type="checkbox" name="goals" value={goal} />
-                    <span>{goal}</span>
-                  </label>
-                ))}
-              </div>
-            </label>
-            <label className="field">
-              <span>Availability</span>
-              <select name="availability" defaultValue="">
-                <option value="" disabled>Select availability</option>
-                <option>Weeknights</option>
-                <option>Weekends</option>
-                <option>Dawn patrol</option>
-                <option>Flexible</option>
-              </select>
-            </label>
             <label className="checkbox">
               <input type="checkbox" name="terms" required />
               <span>I agree to community guidelines and safety rules.</span>

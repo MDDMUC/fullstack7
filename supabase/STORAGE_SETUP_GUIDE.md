@@ -194,3 +194,4 @@ If your code currently uses the `avatars` bucket, you have two options:
 
 Update your code to use the `user-images` bucket and start uploading!
 
+

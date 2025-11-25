@@ -82,3 +82,4 @@ BEGIN
   RAISE NOTICE '🔒 RLS policies: Configured';
 END $$;
 
+

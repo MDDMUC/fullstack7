@@ -2,13 +2,17 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { appUrl, supabase } from '@/lib/supabaseClient'
 import LoginGuard from '@/components/LoginGuard'
 
 export default function LoginPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState('')
+  const [needsEmailConfirmation, setNeedsEmailConfirmation] = useState(false)
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null)
+  const [resendLoading, setResendLoading] = useState(false)
+  const redirectTo = appUrl ? `${appUrl}/auth/callback` : undefined
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -30,7 +34,20 @@ export default function LoginPage() {
     const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password })
     setLoading(false)
     if (error) {
-      setStatus(error.message)
+      // Check if error is due to unconfirmed email
+      const isUnconfirmedEmail = 
+        error.message?.toLowerCase().includes('email not confirmed') ||
+        error.message?.toLowerCase().includes('email_not_confirmed') ||
+        error.message?.toLowerCase().includes('confirm your email') ||
+        error.message?.toLowerCase().includes('verification')
+      
+      if (isUnconfirmedEmail) {
+        setNeedsEmailConfirmation(true)
+        setPendingEmail(email)
+        setStatus('Please confirm your email address before logging in. Check your inbox for the verification email.')
+      } else {
+        setStatus(error.message)
+      }
       return
     }
 
@@ -39,55 +56,74 @@ export default function LoginPage() {
       return
     }
 
-    // Check for saved onboarding data or signup data and apply it
+    // Check if user has a profile
+    const { data: profile } = await supabase
+      .from('onboardingprofiles')
+      .select('id')
+      .eq('id', loginData.user.id)
+      .single()
+
+    // Check for saved onboarding data
     const savedOnboardingData = localStorage.getItem('onboarding_data')
-    const savedSignupData = localStorage.getItem('signup_data')
     
     if (savedOnboardingData) {
       try {
-        const onboardingData = JSON.parse(savedOnboardingData)
-        console.log('Found onboarding data after login, applying to profile...')
-        
-        const { applyOnboardingDataToProfile } = await import('@/lib/applyOnboardingData')
-        await applyOnboardingDataToProfile(supabase, loginData.user.id, onboardingData)
-        
-        console.log('Onboarding data successfully applied after login')
-        localStorage.removeItem('onboarding_data')
+        const _onboardingData = JSON.parse(savedOnboardingData)
+        console.log('Found onboarding data after login, will apply during onboarding...')
+        // Don't apply here - let onboarding flow handle it
       } catch (applyError: any) {
-        console.error('Error applying onboarding data after login:', applyError)
-        setStatus(`Login successful, but failed to apply saved profile data: ${applyError.message || 'Unknown error'}`)
-        // Continue to home even if applying fails - user can update profile later
-      }
-    } else if (savedSignupData) {
-      try {
-        const signupData = JSON.parse(savedSignupData)
-        console.log('Found signup data after login, applying to profile...')
-        
-        const { createOrUpdateProfile, signupFormDataToProfileData } = await import('@/lib/profileUtils')
-        const profileData = signupFormDataToProfileData({
-          name: signupData.name,
-          email: signupData.email,
-          style: signupData.style,
-          grade: signupData.grade,
-          availability: signupData.availability,
-          goals: signupData.goals,
-        })
-        
-        const { error: profileError } = await createOrUpdateProfile(supabase, loginData.user.id, profileData)
-        if (profileError) {
-          throw profileError
-        }
-        
-        console.log('Signup data successfully applied after login')
-        localStorage.removeItem('signup_data')
-      } catch (applyError: any) {
-        console.error('Error applying signup data after login:', applyError)
-        setStatus(`Login successful, but failed to apply saved profile data: ${applyError.message || 'Unknown error'}`)
-        // Continue to home even if applying fails - user can update profile later
+        console.error('Error parsing onboarding data after login:', applyError)
       }
     }
 
-    router.push('/home')
+    // Redirect based on profile status
+    if (profile) {
+      // User has profile, go to home
+      router.push('/home')
+    } else {
+      // No profile yet, redirect to onboarding
+      router.push('/onboarding')
+    }
+  }
+
+  const handleResendConfirmation = async () => {
+    if (!supabase || !pendingEmail) {
+      setStatus('Email not available for resend.')
+      return
+    }
+
+    setResendLoading(true)
+    setStatus('Resending confirmation email...')
+
+    try {
+      const { error: resendError } = await supabase.auth.resend({
+        type: 'signup',
+        email: pendingEmail,
+        options: {
+          emailRedirectTo: redirectTo,
+        },
+      })
+
+      if (resendError) {
+        console.error('Resend confirmation error:', resendError)
+        const msg = resendError.message || 'Failed to resend confirmation email. Please check your spam folder.'
+        const lower = msg.toLowerCase()
+        if (lower.includes('redirect')) {
+          setStatus('Redirect URL not allowed. Add your site URL and /auth/callback to Supabase > Authentication > URL Configuration.')
+        } else if (resendError.status === 429 || lower.includes('rate')) {
+          setStatus('Too many attempts. Please wait a minute and try again.')
+        } else {
+          setStatus(msg)
+        }
+      } else {
+        setStatus('Confirmation email sent! Please check your inbox (and spam folder).')
+      }
+    } catch (error: any) {
+      console.error('Resend confirmation error:', error)
+      setStatus(error.message || 'Failed to resend confirmation email.')
+    } finally {
+      setResendLoading(false)
+    }
   }
 
   return (
@@ -115,11 +151,36 @@ export default function LoginPage() {
                 <span>Password</span>
                 <input type="password" name="password" required minLength={8} placeholder="Your password" />
               </label>
-              <button className="cta wide" type="submit" disabled={loading} aria-busy={loading}>
+              <button className="cta wide" type="submit" disabled={loading || resendLoading} aria-busy={loading}>
                 {loading ? 'Signing in…' : 'Log in'}
               </button>
               {status && (
-                <p className="form-note error" aria-live="polite">{status}</p>
+                <p className={`form-note ${needsEmailConfirmation ? 'info' : 'error'}`} aria-live="polite">
+                  {status}
+                </p>
+              )}
+              {needsEmailConfirmation && (
+                <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    className="ghost"
+                    onClick={handleResendConfirmation}
+                    disabled={resendLoading}
+                    style={{
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'var(--accent)',
+                      border: '1px solid var(--stroke)',
+                      borderRadius: '8px',
+                      background: 'transparent',
+                      cursor: resendLoading ? 'not-allowed' : 'pointer',
+                      opacity: resendLoading ? 0.6 : 1,
+                    }}
+                  >
+                    {resendLoading ? 'Sending...' : 'Resend confirmation email'}
+                  </button>
+                </div>
               )}
             </form>
           </div>

@@ -202,8 +202,6 @@ export default function DatingExperience() {
     const name = (data.get('name') as string)?.trim() || ''
     const email = (data.get('email') as string)?.trim() || ''
     const password = (data.get('password') as string) || ''
-    const style = (data.get('style') as string)?.trim() || ''
-    const intent = (data.get('intent') as string)?.trim() || ''
 
     if (!name || !email || !password) {
       setJoinError('Name, email, and password are required.')
@@ -224,16 +222,14 @@ export default function DatingExperience() {
     setJoinError(null)
 
     try {
-      // Create user account
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // Only create auth account - no profile data
+      const { data: _signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
           data: {
-            name,
-            style,
-            intent,
+            name, // Store name in user metadata only
           },
         },
       })
@@ -244,47 +240,11 @@ export default function DatingExperience() {
         return
       }
 
-      const userId = signUpData.user?.id
-      if (!userId) {
-        setJoinError('Account created but user ID not available. Please try logging in.')
-        setJoinLoading(false)
-        return
-      }
-
-      // Wait for session to be established (required for RLS policy)
-      // Check if we have an active session
+      // Wait for session to be established
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
       if (sessionError || !session) {
         // No session yet - likely email confirmation is required
-        // Save profile data to localStorage to be applied after email confirmation
-        const { signupFormDataToProfileData } = await import('@/lib/profileUtils')
-        const profileData = signupFormDataToProfileData({
-          name,
-          email,
-          style,
-          grade: '',
-          availability: '',
-          goals: intent ? [intent] : [],
-        })
-        
-        if (intent) {
-          profileData.bio = intent
-        }
-
-        // Save to localStorage for later application
-        const onboardingData = {
-          name,
-          email,
-          style,
-          grade: '',
-          availability: '',
-          goals: intent ? [intent] : [],
-          bio: intent || '',
-        }
-        localStorage.setItem('onboarding_data', JSON.stringify(onboardingData))
-        
-        // Success - show message
         setToast(`Thanks ${name}! Account created. Check your email to confirm.`)
         form.reset()
         setJoinLoading(false)
@@ -296,44 +256,15 @@ export default function DatingExperience() {
         return
       }
 
-      // Session is available - create profile immediately
-      try {
-        const { createOrUpdateProfile, signupFormDataToProfileData } = await import('@/lib/profileUtils')
-        const profileData = signupFormDataToProfileData({
-          name,
-          email,
-          style,
-          grade: '',
-          availability: '',
-          goals: intent ? [intent] : [],
-        })
-        
-        // Add bio from intent
-        if (intent) {
-          profileData.bio = intent
-        }
-
-        const { error: profileError } = await createOrUpdateProfile(supabase, userId, profileData)
-        if (profileError) {
-          console.error('Error creating profile:', profileError)
-          setJoinError(`Account created, but profile could not be saved: ${profileError.message}. Please complete your profile in settings.`)
-          setJoinLoading(false)
-          return
-        }
-
-        // Success - show message and redirect
-        setToast(`Thanks ${name}! Account created.`)
-        form.reset()
-        
-        // Redirect to onboarding after a short delay
-        setTimeout(() => {
-          router.push('/onboarding')
-        }, 2000)
-      } catch (profileErr: any) {
-        console.error('Error creating profile:', profileErr)
-        setJoinError(`Account created, but profile could not be saved: ${profileErr.message}. Please complete your profile in settings.`)
-        setJoinLoading(false)
-      }
+      // Session is available - redirect to onboarding
+      setToast(`Thanks ${name}! Account created.`)
+      form.reset()
+      setJoinLoading(false)
+      
+      // Redirect to onboarding after a short delay
+      setTimeout(() => {
+        router.push('/onboarding')
+      }, 2000)
     } catch (error: any) {
       console.error('Error creating account:', error)
       setJoinError(error.message || 'Failed to create account. Please try again.')
@@ -560,21 +491,6 @@ export default function DatingExperience() {
               <label className="field">
                 <span>Password</span>
                 <input type="password" name="password" required minLength={8} placeholder="8+ characters" disabled={joinLoading} />
-              </label>
-              <label className="field">
-                <span>Primary style</span>
-                <select name="style" required defaultValue="" disabled={joinLoading}>
-                  <option value="" disabled>Choose</option>
-                  <option>Bouldering</option>
-                  <option>Sport</option>
-                  <option>Trad</option>
-                  <option>Alpine</option>
-                  <option>Ice</option>
-                </select>
-              </label>
-              <label className="field">
-                <span>What are you looking for?</span>
-                <textarea name="intent" rows={3} placeholder="Weekend multi-pitches, gym partner, or alpine season buddy" disabled={joinLoading} />
               </label>
               {joinError && (
                 <p className="form-note error" role="alert">

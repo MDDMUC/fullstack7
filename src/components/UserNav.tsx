@@ -26,7 +26,7 @@ function UserNav() {
         const { safeGetUser } = await import('@/lib/authUtils')
         const { user } = await safeGetUser(supabase)
         setIsLoggedIn(!!user)
-      } catch (error) {
+      } catch {
         // Error is already handled by safeGetUser
         setIsLoggedIn(false)
       } finally {
@@ -58,7 +58,7 @@ function UserNav() {
     try {
       await supabase.auth.signOut()
       setIsLoggedIn(false)
-      router.push('/login')
+      router.push('/')
       router.refresh()
     } catch (error) {
       console.error('Error signing out:', error)

@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import BackButton from '../components/BackButton'
 
 export default function LocationStep() {
-  const { data, updateData, setCurrentStep } = useOnboarding()
+  const { data, updateData: _updateData, setCurrentStep } = useOnboarding()
   const router = useRouter()
   const [homebase, setHomebase] = useState('')
   const [originalFrom, setOriginalFrom] = useState('')
@@ -85,55 +85,77 @@ export default function LocationStep() {
       }
 
       console.log('User authenticated:', user.id)
+      
+      // Verify Supabase connection
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      console.log(' Supabase connection:', supabaseUrl || 'NOT SET - check .env.local')
+      if (supabaseUrl && !supabaseUrl.includes('sbygogkgwthgdzomaqgz')) {
+        console.warn(' Supabase URL does not match expected project!')
+        console.warn('   Expected: https://sbygogkgwthgdzomaqgz.supabase.co')
+        console.warn('   Current:', supabaseUrl)
+      }
 
       // Upload photos to Supabase storage (if configured)
-      let photoUrls: string[] = []
+      const photoUrls: string[] = []
       if (data.photos && data.photos.length > 0) {
         try {
-          // Check if storage bucket exists
-          const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets()
+          console.log(` Starting photo upload for ${data.photos.length} photo(s)`)
+          console.log(` Supabase URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL || 'not set'}`)
           
-          if (bucketsError) {
-            console.error('Error checking storage buckets:', bucketsError)
-          } else {
-            const avatarsBucket = buckets?.find(b => b.id === 'avatars')
+          // Try to upload directly - skip bucket check as it may be blocked by RLS
+          // If bucket exists and RLS is correct, upload will work
+          console.log(' Attempting direct upload to "avatars" bucket...')
+          
+          // Upload each photo to Supabase storage
+          for (let i = 0; i < data.photos.length; i++) {
+            const photo = data.photos[i]
+            const fileExt = photo.name.split('.').pop() || 'jpg'
+            const timestamp = Date.now()
+            const randomId = Math.random().toString(36).substring(7)
+            // File path: user-id/timestamp_random.ext
+            const filePath = `${user.id}/${timestamp}_${randomId}.${fileExt}`
+
+            console.log(`   Uploading photo ${i + 1}/${data.photos.length}: ${photo.name} (${(photo.size / 1024).toFixed(2)} KB)`)
+            console.log(`   File path: ${filePath}`)
             
-            if (!avatarsBucket) {
-              console.warn('Avatars bucket not found. Photos will not be uploaded.')
-              console.warn('Please create the "avatars" bucket in Supabase Storage and make it public.')
-            } else {
-              // Upload each photo to Supabase storage
-              for (let i = 0; i < data.photos.length; i++) {
-                const photo = data.photos[i]
-                const fileExt = photo.name.split('.').pop() || 'jpg'
-                const timestamp = Date.now()
-                const randomId = Math.random().toString(36).substring(7)
-                // File path: user-id/timestamp_random.ext
-                const filePath = `${user.id}/${timestamp}_${randomId}.${fileExt}`
+            const { error: uploadError } = await supabase.storage
+              .from('avatars')
+              .upload(filePath, photo, {
+                cacheControl: '3600',
+                upsert: false
+              })
 
-                const { error: uploadError } = await supabase.storage
-                  .from('avatars')
-                  .upload(filePath, photo, {
-                    cacheControl: '3600',
-                    upsert: false
-                  })
-
-                if (uploadError) {
-                  console.error(`Error uploading photo ${i + 1}:`, uploadError)
-                  // Continue with other photos even if one fails
-                } else {
-                  const { data: { publicUrl } } = supabase.storage
-                    .from('avatars')
-                    .getPublicUrl(filePath)
-                  photoUrls.push(publicUrl)
-                  console.log(`Successfully uploaded photo ${i + 1}:`, publicUrl)
-                }
+            if (uploadError) {
+              console.error(`    Error uploading photo ${i + 1}:`, uploadError)
+              console.error(`   Error details:`, {
+                message: uploadError.message,
+                statusCode: (uploadError as any).statusCode,
+                error: (uploadError as any).error
+              })
+              
+              // Provide helpful error messages
+              if (uploadError.message?.includes('Bucket not found') || uploadError.message?.includes('not found')) {
+                console.error('    The "avatars" bucket may not exist or you may be connected to the wrong Supabase project')
+                console.error('    Verify your .env.local has the correct NEXT_PUBLIC_SUPABASE_URL')
+                console.error('    Expected URL: https://sbygogkgwthgdzomaqgz.supabase.co')
+              } else if (uploadError.message?.includes('row-level security') || uploadError.message?.includes('RLS')) {
+                console.error('    RLS policy issue - check that policies allow authenticated users to upload')
               }
+              // Continue with other photos even if one fails
+            } else {
+              const { data: { publicUrl } } = supabase.storage
+                .from('avatars')
+                .getPublicUrl(filePath)
+              photoUrls.push(publicUrl)
+              console.log(`    Successfully uploaded photo ${i + 1}:`, publicUrl)
             }
           }
-        } catch (uploadErr) {
-          console.error('Error uploading photos:', uploadErr)
-          // Continue without photos if upload fails
+          console.log(` Photo upload complete: ${photoUrls.length}/${data.photos.length} successful`)
+        } catch (uploadErr: unknown) {
+          const uploadErrObj = uploadErr as { message?: string; constructor?: { name?: string } }
+          console.error('?O Error uploading photos:', uploadErr)
+          console.error('   Error type:', uploadErrObj?.constructor?.name)
+          console.error('   Error message:', uploadErrObj?.message)
         }
       }
 
@@ -195,7 +217,7 @@ export default function LocationStep() {
       if (profileError) {
         // Log error details for debugging (only in development)
         if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Error saving profile:', profileError)
+          console.error(' Error saving profile:', profileError)
           console.error('Error details:', {
             message: profileError.message,
             details: profileError.details,
@@ -230,7 +252,7 @@ export default function LocationStep() {
       let verifiedProfile = savedData
       
       if (!verifiedProfile) {
-        console.warn('⚠️ Upsert returned no data - verifying with select query...')
+        console.warn(' Upsert returned no data - verifying with select query...')
         
         // Wait a moment for the database to update
         await new Promise(resolve => setTimeout(resolve, 500))
@@ -244,7 +266,7 @@ export default function LocationStep() {
         
         if (verifyError) {
           if (process.env.NODE_ENV === 'development') {
-            console.error('❌ Profile verification failed:', verifyError)
+            console.error(' Profile verification failed:', verifyError)
           }
           setError(`Profile save verification failed: ${verifyError.message}. Check Supabase setup.`)
           setLoading(false)
@@ -253,7 +275,7 @@ export default function LocationStep() {
         
         if (!verifyData) {
           if (process.env.NODE_ENV === 'development') {
-            console.error('❌ Profile not found in database after save')
+            console.error(' Profile not found in database after save')
           }
           setError('Profile was not saved to database. Check RLS policies and table setup.')
           setLoading(false)
@@ -262,18 +284,18 @@ export default function LocationStep() {
         
         verifiedProfile = verifyData
         if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Profile verified in database:', verifiedProfile)
+          console.log(' Profile verified in database:', verifiedProfile)
         }
       } else {
         if (process.env.NODE_ENV === 'development') {
-          console.log('✅ Profile saved successfully:', verifiedProfile)
+          console.log(' Profile saved successfully:', verifiedProfile)
         }
       }
 
       // FINAL CHECK: Only proceed to success if we have verified profile data
       if (!verifiedProfile || !verifiedProfile.id) {
         if (process.env.NODE_ENV === 'development') {
-          console.error('❌ Cannot proceed - no verified profile data')
+          console.error(' Cannot proceed - no verified profile data')
         }
         setError('Profile save could not be verified. Please try again.')
         setLoading(false)
@@ -430,4 +452,5 @@ export default function LocationStep() {
     </div>
   )
 }
+
 

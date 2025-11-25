@@ -25,3 +25,4 @@ GRANT ALL ON TABLE public.onboardingprofiles TO anon, authenticated;
 
 
 
+

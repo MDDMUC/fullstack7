@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
@@ -45,7 +45,7 @@ export default function HomeScreen() {
 
   const current = useMemo(() => deck[(currentIndex % Math.max(deck.length, 1)) || 0], [currentIndex, deck])
 
-  const messageProfile = (msg: MessagePreview | null): Profile | null => {
+  const messageProfile = useCallback((msg: MessagePreview | null): Profile | null => {
     if (!msg) return null
     const found = matches.find(p => p.username.toLowerCase() === msg.name.toLowerCase())
     if (found) return found
@@ -64,11 +64,11 @@ export default function HomeScreen() {
       grade: '',
       status: 'Online',
     }
-  }
+  }, [matches])
 
   const selectedProfile = useMemo(
     () => selectedMatch ?? messageProfile(selectedMessage) ?? deck[0],
-    [selectedMatch, selectedMessage, deck, matches]
+    [selectedMatch, selectedMessage, deck, messageProfile]
   )
 
   useEffect(() => {
@@ -115,10 +115,23 @@ export default function HomeScreen() {
           grade: '',
           bio: '',
         }])
-        const matchList = await listMatches().catch(err => {
+        let matchList = await listMatches().catch(err => {
           console.error('Failed to load matches', err)
           return [] as MatchWithProfiles[]
         })
+        
+        // If no real matches, create demo matches from other profiles
+        if (matchList.length === 0 && profiles.length > 0) {
+          const demoProfiles = profiles.filter(p => p.id !== user?.id).slice(0, 2)
+          matchList = demoProfiles.map((p, idx) => ({
+            id: `demo-${idx}`,
+            created_at: new Date().toISOString(),
+            user_a: user?.id ?? '',
+            user_b: p.id,
+            profiles: [{ id: user?.id, username: 'You' }, p],
+          }))
+        }
+        
         setMatchRows(matchList)
         const previews: MessagePreview[] = matchList.map(m => {
           const other = (m.profiles ?? []).find(p => p.id !== user?.id)
@@ -142,7 +155,7 @@ export default function HomeScreen() {
       }
     }
     load()
-  }, [])
+  }, [router])
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -373,23 +386,29 @@ export default function HomeScreen() {
         </>
       ) : (
 
-        <section className="swipe-stage">
-          <div className="phone-frame">
-            <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? FALLBACK_AVATAR})` }}>
-              <div className="hero-overlay" />
-              <div className="hero-meta">
-                <div>
-                  <h2>{current?.username} <span>{current?.age}</span></h2>
-                  <p>Location: {current?.distance ?? ''}{current?.city ? `, ${current.city}` : ''}</p>
+        <>
+          <section className="swipe-stage">
+            <div className="phone-frame">
+              <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? FALLBACK_AVATAR})` }}>
+                <div className="hero-overlay" />
+                <div className="hero-meta">
+                  <div>
+                    <h2>{current?.username} <span>{current?.age}</span></h2>
+                    <p>Location: {current?.distance ?? ''}{current?.city ? `, ${current.city}` : ''}</p>
+                  </div>
                 </div>
               </div>
+              <div className="hero-actions hero-actions-wide">
+                <button className="ghost wide" onClick={() => handleSwipe(current, 'pass')}>Pass</button>
+                <button className="cta wide" onClick={() => handleSwipe(current, 'like')}>Send Like</button>
+              </div>
             </div>
-            <div className="hero-actions hero-actions-wide">
-              <button className="ghost wide" onClick={() => handleSwipe(current, 'pass')}>Pass</button>
-              <button className="cta wide" onClick={() => handleSwipe(current, 'like')}>Send Like</button>
-            </div>
-          </div>
-        </section>
+          </section>
+
+          <aside className="right-sidebar">
+            {/* Empty right sidebar for layout balance */}
+          </aside>
+        </>
       )}
     </main>
     </RequireAuth>
