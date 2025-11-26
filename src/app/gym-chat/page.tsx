@@ -115,28 +115,29 @@ export default function GymChatPage() {
       }
     })
     const peakHeight = Math.max(...barData.map(b => b.height), 1)
-    const liveLevel = gym.liveLevel ?? times.find(t => t.hour === currentHour)?.level ?? 0
-    const label =
-      gym.liveStatus ||
-      (liveLevel >= 8 ? 'Peaking now' : liveLevel >= 5 ? 'Moderate' : 'Chill')
+    const busiestLabel =
+      gym.busiestDay || gym.busiestHour
+        ? `${gym.busiestDay ?? ''}${gym.busiestDay && gym.busiestHour ? ' ' : ''}${gym.busiestHour ?? ''}`.trim()
+        : 'No data'
 
     return (
       <div className="busy-meter" aria-label="Gym busyness">
-        <div className="busy-header">
-          <span className="muted small">How busy</span>
-          <span className="busy-label">{label}</span>
-        </div>
-        <div className="busy-bars" aria-hidden="true">
-          <div className="busy-peak-line" style={{ bottom: `${peakHeight}px` }} title="Usual peak" />
-          {barData.map(({ time, height, isLive }) => (
-            <div className="busy-bar-wrap" key={`${gym.id}-${time.hour}`}>
-              <div
-                className={`busy-bar ${isLive ? 'is-live' : ''}`}
-                style={{ height: `${height}px` }}
-                title={`${time.hour}:00`}
-              />
-            </div>
-          ))}
+        <div className="busy-body">
+          <div className="busy-bars" aria-hidden="true">
+            <div className="busy-peak-line" style={{ bottom: `${peakHeight}px` }} title="Usual peak" />
+            {barData.map(({ time, height, isLive }) => (
+              <div className="busy-bar-wrap" key={`${gym.id}-${time.hour}`}>
+                <div
+                  className={`busy-bar ${isLive ? 'is-live' : ''}`}
+                  style={{ height: `${height}px` }}
+                  title={`${time.hour}:00`}
+                />
+              </div>
+            ))}
+          </div>
+          <div className="busy-meta">
+            <strong className="busy-meta-text">{busiestLabel}</strong>
+          </div>
         </div>
       </div>
     )
@@ -232,7 +233,13 @@ export default function GymChatPage() {
                     <p className="muted small">{gym.area}</p>
                   </div>
                 </div>
-                {renderBusyMeter(gym)}
+                <div className="busy-section">
+                  <div className="busy-labels">
+                    <span className="muted tiny">How busy</span>
+                    <span className="muted tiny">Busiest</span>
+                  </div>
+                  {renderBusyMeter(gym)}
+                </div>
                 <div className="tagline gym-card-tags">
                   {gym.tags.map(tag => (
                     <span key={tag} className="ghost-tag">{tag}</span>
@@ -275,9 +282,14 @@ export default function GymChatPage() {
           <div className="chat-window">
             {visibleMessages.map(msg => (
               <div key={msg.id} className="chat-line">
-                <div className="chat-avatar">{msg.author.slice(0, 2)}</div>
                 <div className="chat-bubble">
                   <div className="row-top">
+                    <img
+                      src={msg.avatarUrl || '/fallback-gym.png'}
+                      alt={msg.author}
+                      className="chat-avatar"
+                      loading="lazy"
+                    />
                     <strong>{msg.author}</strong>
                     <span className="muted small">{msg.handle} - {msg.time}</span>
                     {msg.role === 'admin' ? <span className="pill">Host</span> : null}

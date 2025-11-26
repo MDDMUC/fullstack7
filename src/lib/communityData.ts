@@ -19,6 +19,7 @@ export type Message = {
   role?: 'admin' | 'member'
   body: string
   reactions?: string[]
+  avatarUrl?: string
 }
 
 export type GymRoom = {
@@ -32,6 +33,8 @@ export type GymRoom = {
   popularTimes?: Array<{ hour: number; level: number }>
   liveLevel?: number
   liveStatus?: string
+  busiestDay?: string
+  busiestHour?: string
   threads: Thread[]
   messages: Message[]
 }
@@ -97,18 +100,20 @@ const fallbackGyms: GymRoom[] = [
     ],
     liveLevel: 6,
     liveStatus: 'Not too busy',
+    busiestDay: 'Wednesday',
+    busiestHour: '7 PM',
     threads: [
       { id: 'tonight', title: 'Who is in tonight?', lastMessage: "Let's hit comp wall 7pm", unread: 8, vibe: 'Flash crew', members: 133 },
       { id: 'beta', title: 'Beta requests', lastMessage: 'Blue 6C slab beta?', unread: 3, vibe: 'Kind beta only', members: 87 },
       { id: 'partner', title: 'Partner up', lastMessage: 'Lead + belay swap 7-9?', unread: 0, vibe: 'Belay verified', members: 102 },
     ],
     messages: [
-      { id: 'm1', threadId: 'tonight', author: 'Lena', handle: '@lenascends', time: '6:02p', body: 'Heading to comp wall, 7pm. Warm-up laps first.', reactions: ['fire', 'climb'] },
-      { id: 'm2', threadId: 'tonight', author: 'Marco', handle: '@marcok', time: '6:05p', body: 'Bringing a tension board warmup if anyone wants.', reactions: ['strong'] },
-      { id: 'm3', threadId: 'tonight', author: 'Yara', handle: '@yaraw', time: '6:08p', role: 'admin', body: 'Friendly reminder: spot when you film, and wipe holds if chalky please.' },
-      { id: 'm4', threadId: 'beta', author: 'Finn', handle: '@finnish', time: '5:55p', body: 'Blue 6C slab: left palm press on start, bump R to crimp, stand on smear.' },
-      { id: 'm5', threadId: 'beta', author: 'Timo', handle: '@timosends', time: '5:57p', body: 'Same problem: mono undercling is a decoy, go high left toe.', reactions: ['smart'] },
-      { id: 'm6', threadId: 'partner', author: 'Ava', handle: '@ava.belays', time: '5:40p', body: 'Need a safe belay for orange 7a circuit, 7-9pm. GriGri + backup.', reactions: ['safe'] },
+      { id: 'm1', threadId: 'tonight', author: 'Lena', handle: '@lenascends', time: '6:02p', body: 'Heading to comp wall, 7pm. Warm-up laps first.', reactions: ['fire', 'climb'], avatarUrl: '/fallback-female.jpg' },
+      { id: 'm2', threadId: 'tonight', author: 'Marco', handle: '@marcok', time: '6:05p', body: 'Bringing a tension board warmup if anyone wants.', reactions: ['strong'], avatarUrl: '/fallback-male.jpg' },
+      { id: 'm3', threadId: 'tonight', author: 'Yara', handle: '@yaraw', time: '6:08p', role: 'admin', body: 'Friendly reminder: spot when you film, and wipe holds if chalky please.', avatarUrl: '/fallback-female.jpg' },
+      { id: 'm4', threadId: 'beta', author: 'Finn', handle: '@finnish', time: '5:55p', body: 'Blue 6C slab: left palm press on start, bump R to crimp, stand on smear.', avatarUrl: '/fallback-male.jpg' },
+      { id: 'm5', threadId: 'beta', author: 'Timo', handle: '@timosends', time: '5:57p', body: 'Same problem: mono undercling is a decoy, go high left toe.', reactions: ['smart'], avatarUrl: '/fallback-male.jpg' },
+      { id: 'm6', threadId: 'partner', author: 'Ava', handle: '@ava.belays', time: '5:40p', body: 'Need a safe belay for orange 7a circuit, 7-9pm. GriGri + backup.', reactions: ['safe'], avatarUrl: '/fallback-female.jpg' },
     ],
   },
   {
@@ -130,13 +135,15 @@ const fallbackGyms: GymRoom[] = [
     ],
     liveLevel: 7,
     liveStatus: 'Starting to peak',
+    busiestDay: 'Thursday',
+    busiestHour: '6 PM',
     threads: [
       { id: 'lead', title: 'Lead partners', lastMessage: 'Looking for 6b-7a laps', unread: 5, vibe: 'Belay check', members: 90 },
       { id: 'outdoor', title: 'Outdoor trip', lastMessage: 'Kochel Saturday?', unread: 1, vibe: 'Carpool', members: 64 },
     ],
     messages: [
-      { id: 'm7', threadId: 'lead', author: 'Jonas', handle: '@jonas', time: '4:22p', body: 'In for 6b/6c laps from 6pm. Can lead, need catch.', reactions: ['up'] },
-      { id: 'm8', threadId: 'outdoor', author: 'Rami', handle: '@rami', time: '4:30p', body: 'Kochel on Sat, 2 seats from Sendlinger Tor. Meet 8:30.', reactions: ['drive', 'climb'] },
+      { id: 'm7', threadId: 'lead', author: 'Jonas', handle: '@jonas', time: '4:22p', body: 'In for 6b/6c laps from 6pm. Can lead, need catch.', reactions: ['up'], avatarUrl: '/fallback-male.jpg' },
+      { id: 'm8', threadId: 'outdoor', author: 'Rami', handle: '@rami', time: '4:30p', body: 'Kochel on Sat, 2 seats from Sendlinger Tor. Meet 8:30.', reactions: ['drive', 'climb'], avatarUrl: '/fallback-male.jpg' },
     ],
   },
   {
@@ -158,13 +165,15 @@ const fallbackGyms: GymRoom[] = [
     ],
     liveLevel: 4,
     liveStatus: 'Steady',
+    busiestDay: 'Tuesday',
+    busiestHour: '5 PM',
     threads: [
       { id: 'spray', title: 'Spray wall meet', lastMessage: 'Circuit reset today', unread: 0, vibe: 'Training', members: 44 },
       { id: 'beta-freimann', title: 'Beta requests', lastMessage: 'New yellow comp set', unread: 0, vibe: 'Share beta', members: 31 },
     ],
     messages: [
-      { id: 'm9', threadId: 'spray', author: 'Mara', handle: '@mara', time: '2:50p', body: 'Spray wall set is fresh. Anyone for repeaters session 6pm?' },
-      { id: 'm10', threadId: 'beta-freimann', author: 'Phil', handle: '@phil', time: '3:10p', body: 'Yellow comp: drop knee on start, pogo to right pinch.' },
+      { id: 'm9', threadId: 'spray', author: 'Mara', handle: '@mara', time: '2:50p', body: 'Spray wall set is fresh. Anyone for repeaters session 6pm?', avatarUrl: '/fallback-female.jpg' },
+      { id: 'm10', threadId: 'beta-freimann', author: 'Phil', handle: '@phil', time: '3:10p', body: 'Yellow comp: drop knee on start, pogo to right pinch.', avatarUrl: '/fallback-male.jpg' },
     ],
   },
 ]
@@ -354,7 +363,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
     const client = requireSupabase()
     const { data: gyms, error: gymErr } = await client
       .from('gyms')
-      .select('id, name, area, crowd, tags, online_count, image_url, popular_times, live_level, live_status')
+      .select('id, name, area, crowd, tags, online_count, image_url, popular_times, live_level, live_status, busiest_day, busiest_hour')
     if (gymErr) throw gymErr
 
     const { data: threads, error: threadErr } = await client
@@ -364,7 +373,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
 
     const { data: messages, error: msgErr } = await client
       .from('gym_messages')
-      .select('id, thread_id, author, handle, time, role, body, reactions')
+      .select('id, thread_id, author, handle, time, role, body, reactions, avatar_url')
       .order('created_at', { ascending: true })
     if (msgErr) throw msgErr
 
@@ -396,6 +405,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
         role: m.role,
         body: m.body ?? '',
         reactions: (m.reactions as string[]) ?? [],
+        avatarUrl: (m as any).avatar_url || '/fallback-gym.png',
       })
     })
 
@@ -410,6 +420,8 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
       popularTimes: (gym as any).popular_times as GymRoom['popularTimes'],
       liveLevel: (gym as any).live_level ?? undefined,
       liveStatus: (gym as any).live_status ?? undefined,
+      busiestDay: (gym as any).busiest_day ?? undefined,
+      busiestHour: (gym as any).busiest_hour ?? undefined,
       threads: threadByGym.get(gym.id) ?? [],
       messages: (threadByGym.get(gym.id) ?? []).flatMap(thread => messagesByThread.get(thread.id) ?? []),
     }))

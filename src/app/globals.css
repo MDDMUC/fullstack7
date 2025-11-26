@@ -646,13 +646,16 @@ textarea:focus-visible {
 .gym-card-body { display: grid; gap: 2px; align-content: start; }
 .gym-card-tags { width: 100%; }
 .gym-card .pill { padding: 4px 10px; font-size: 12px; line-height: 1; }
-.busy-meter { width: 100%; display: grid; gap: 6px; }
-.busy-header { display: flex; align-items: center; justify-content: space-between; }
-.busy-label { color: var(--text); font-weight: 700; font-size: 12px; }
+.busy-section { display: grid; gap: 4px; }
+.busy-labels { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
+.busy-meter { width: 100%; display: grid; gap: 4px; }
+.busy-body { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; }
 .busy-bars { position: relative; display: flex; align-items: flex-end; gap: 6px; height: 54px; }
 .busy-bar-wrap { position: relative; display: flex; align-items: flex-end; }
 .busy-bar { width: 10px; border-radius: 8px; background: linear-gradient(180deg, rgba(92,225,230,0.12), rgba(92,225,230,0.32)); border: 1px solid rgba(92,225,230,0.2); }
 .busy-peak-line { position: absolute; left: 0; right: 0; height: 2px; background: rgba(230,143,255,0.75); box-shadow: 0 0 6px rgba(230,143,255,0.4); border-radius: 999px; pointer-events: none; }
+.busy-meta { display: grid; gap: 2px; justify-items: start; }
+.busy-meta-text { color: var(--text); font-size: 13px; }
 .busy-bar.is-live { background: linear-gradient(180deg, rgba(230,143,255,0.2), rgba(92,225,230,0.6)); border-color: rgba(92,225,230,0.5); box-shadow: 0 0 0 2px rgba(92,225,230,0.12); }
 .tagline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .presence { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
@@ -674,8 +677,8 @@ textarea:focus-visible {
 .thread-tab { background: #0f131d; border: 1px solid var(--stroke); border-radius: 10px; padding: 10px; text-align: left; color: var(--text); }
 .thread-tab.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(92,225,230,0.1); }
 .chat-window { display: grid; gap: 12px; overflow-y: auto; padding-right: 4px; }
-.chat-line { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; }
-.chat-avatar { width: 42px; height: 42px; border-radius: 12px; background: #0b0f18; border: 1px solid var(--stroke); display: grid; place-items: center; font-weight: 800; letter-spacing: 0.4px; }
+.chat-line { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
+.chat-avatar { width: 32px; height: 32px; border-radius: 8px; background: #0b0f18; border: 1px solid var(--stroke); object-fit: cover; }
 .chat-bubble { background: #0f131d; border: 1px solid var(--stroke); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
 .chat-text { margin: 0; }
 .reaction-row { display: flex; gap: 6px; }
