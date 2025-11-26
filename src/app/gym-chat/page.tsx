@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation'
 import { GymRoom, loadGymRooms } from '@/lib/communityData'
 
 const tonightPrompts = [
+  'Who needs a belay?',
   "Who's in tonight?",
   'Outdoor trip this weekend?',
   'Beta for the blue comp set?',
-  'Who needs a belay?',
 ]
 
 const defaultPopularTimes = [
@@ -332,12 +332,35 @@ export default function GymChatPage() {
             </div>
           </header>
           <div className="list-stack">
-            {tonightPrompts.map(prompt => (
+            {tonightPrompts.map((prompt) => (
               <div key={prompt} className="prompt-card">
-                <p>{prompt}</p>
-                <button className="ghost" onClick={handleJoin}>Post</button>
+                <div className="prompt-marker">
+                  <span className="prompt-node" />
+                  <span className="prompt-stem" />
+                </div>
+                <div className="prompt-content">
+                  <p className="prompt-title">{prompt}</p>
+                  <p className="prompt-hint">Drop it into the wall</p>
+                </div>
+                <button className="ghost prompt-btn" onClick={handleJoin}>Post</button>
               </div>
             ))}
+            <div className="prompt-ad">
+              <div className="prompt-ad-image">
+                <img src="/ad-petzl.jpg" alt="Petzl Adjama Harness" />
+              </div>
+              <div className="prompt-ad-copy">
+                <p className="muted tiny">Sponsored · Petzl</p>
+                <h4>SITTA Harness</h4>
+                <div className="prompt-ad-product">
+                  <img src="/sitta.jpg" alt="SITTA harness" className="prompt-product-img" />
+                  <p className="muted small">For climbers and mountaineers who demand performance! The SITTA is lightweight and technical, without compromising comfort.</p>
+                </div>
+                <div className="prompt-ad-cta">
+                  <a href="https://www.petzl.com" target="_blank" rel="noreferrer" className="cta">Shop Petzl</a>
+                </div>
+              </div>
+            </div>
           </div>
           <div className="panel card">
             <p className="eyebrow">Guidelines</p>
