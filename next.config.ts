@@ -8,6 +8,10 @@ if (process.env.NODE_ENV === 'production') {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  turbopack: {
+    // Anchor the workspace root to this project to avoid picking up parent lockfiles.
+    root: __dirname,
+  },
 }
 
 export default nextConfig
