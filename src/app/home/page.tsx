@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
 import { RequireAuth } from '@/components/RequireAuth'
@@ -26,6 +26,37 @@ type MessagePreview = {
 const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
 const FALLBACK_DEFAULT = FALLBACK_MALE
+
+const demoProfiles: Profile[] = [
+  {
+    id: '618fbbfa-1032-4bc3-a282-15755d2479df',
+    username: 'Lisa',
+    age: 29,
+    distance: '10 km',
+    city: 'Munich',
+    avatar_url: FALLBACK_FEMALE,
+    pronouns: 'woman',
+    tags: ['gender:woman'],
+    bio: 'Stoked to climb with new partners.',
+    style: 'Bouldering, Sport',
+    availability: 'Evenings, Weekends',
+    grade: '6c / V4',
+  },
+  {
+    id: 'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f',
+    username: 'Max',
+    age: 31,
+    distance: '12 km',
+    city: 'Berlin',
+    avatar_url: FALLBACK_MALE,
+    pronouns: 'man',
+    tags: ['gender:man'],
+    bio: 'Always down for laps and good coffee.',
+    style: 'Sport, Trad',
+    availability: 'Weekdays, Flexible',
+    grade: '7a / V5',
+  },
+]
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches')
@@ -70,38 +101,7 @@ export default function HomeScreen() {
     return 'All'
   }
 
-  const demoProfiles: Profile[] = [
-    {
-      id: '618fbbfa-1032-4bc3-a282-15755d2479df',
-      username: 'Lisa',
-      age: 29,
-      distance: '10 km',
-      city: 'Munich',
-      avatar_url: FALLBACK_FEMALE,
-      pronouns: 'woman',
-      tags: ['gender:woman'],
-      bio: 'Stoked to climb with new partners.',
-      style: 'Bouldering, Sport',
-      availability: 'Evenings, Weekends',
-      grade: '6c / V4',
-    },
-    {
-      id: 'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f',
-      username: 'Max',
-      age: 31,
-      distance: '12 km',
-      city: 'Berlin',
-      avatar_url: FALLBACK_MALE,
-      pronouns: 'man',
-      tags: ['gender:man'],
-      bio: 'Always down for laps and good coffee.',
-      style: 'Sport, Trad',
-      availability: 'Weekdays, Flexible',
-      grade: '7a / V5',
-    },
-  ]
-
-  const messageProfile = (msg: MessagePreview | null): Profile | null => {
+  const messageProfile = useCallback((msg: MessagePreview | null): Profile | null => {
     if (!msg) return null
     const found = matches.find(p => p.username.toLowerCase() === msg.name.toLowerCase())
     if (found) return found
@@ -120,11 +120,11 @@ export default function HomeScreen() {
       grade: '',
       status: 'Online',
     }
-  }
+  }, [matches])
 
   const selectedProfile = useMemo(
     () => selectedMatch ?? messageProfile(selectedMessage) ?? deck[0],
-    [selectedMatch, selectedMessage, deck, matches]
+    [selectedMatch, selectedMessage, deck, messageProfile]
   )
 
   useEffect(() => {

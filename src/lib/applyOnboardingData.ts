@@ -1,5 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js'
-import { onboardingDataToProfilePayload, upsertOnboardingProfile, upsertPublicProfile } from './profileUtils'
+import { upsertOnboardingProfile, upsertPublicProfile } from './profileUtils'
 
 export type OnboardingDataFromStorage = {
   phone?: string
@@ -29,7 +29,6 @@ export async function applyOnboardingDataToProfile(
   userId: string,
   onboardingData: OnboardingDataFromStorage
 ) {
-  const payload = onboardingDataToProfilePayload(onboardingData)
   const { error: obError } = await upsertOnboardingProfile(client, userId, onboardingData)
   const { data, error } = await upsertPublicProfile(client, userId, onboardingData)
 

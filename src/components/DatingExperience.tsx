@@ -226,7 +226,7 @@ export default function DatingExperience() {
               Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
             </p>
             <div className="hero__actions">
-              <button className="cta" onClick={() => router.push('/signup')}>Start matching</button>
+              <button className="cta" onClick={() => router.push('/signup')}>Get started</button>
               <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
             </div>
             <div className="badges">

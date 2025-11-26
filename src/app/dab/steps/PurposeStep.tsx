@@ -11,7 +11,7 @@ const PURPOSES = [
   'Romance',
   'Groups',
   'Training buddy',
-  "Don't know yet",
+  'Don&apos;t know yet',
 ]
 
 const INTEREST_OPTIONS: Array<'Women' | 'Men' | 'All'> = ['Women', 'Men', 'All']
@@ -47,7 +47,7 @@ export default function PurposeStep() {
           What are you looking for?
         </h1>
         <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-          Only real people. Pick the reasons you're here so we can match on intent.
+          Only real people. Pick the reasons you&apos;re here so we can match on intent.
         </p>
 
         <div className="flex flex-col gap-4 w-full max-w-md">
