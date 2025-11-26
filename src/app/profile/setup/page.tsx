@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
-import { normalizeProfile, Profile } from '@/lib/profiles'
+import { fetchProfiles, Profile } from '@/lib/profiles'
 import { upsertOnboardingProfile } from '@/lib/profileUtils'
 
 export default function ProfileSetup() {
@@ -21,12 +21,8 @@ export default function ProfileSetup() {
           router.push('/login')
           return
         }
-        const { data, error } = await client
-          .from('profiles')
-          .select('id, username, email, created_at, onboardingprofiles(*)')
-          .eq('id', userData.user.id)
-          .single()
-        if (!error && data) setProfile(normalizeProfile(data))
+        const list = await fetchProfiles(client, [userData.user.id])
+        if (list[0]) setProfile(list[0])
       } catch (err) {
         console.error(err)
       }

@@ -428,7 +428,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
 
     return resolved.length ? resolved : fallbackGyms
   } catch (error) {
-    console.warn('Falling back to local gym chat data:', error)
+    console.warn('Gym chat load failed:', error)
     return fallbackGyms
   }
 }

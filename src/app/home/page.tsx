@@ -27,37 +27,6 @@ const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
 const FALLBACK_DEFAULT = FALLBACK_MALE
 
-const demoProfiles: Profile[] = [
-  {
-    id: '618fbbfa-1032-4bc3-a282-15755d2479df',
-    username: 'Lisa',
-    age: 29,
-    distance: '10 km',
-    city: 'Munich',
-    avatar_url: FALLBACK_FEMALE,
-    pronouns: 'woman',
-    tags: ['gender:woman'],
-    bio: 'Stoked to climb with new partners.',
-    style: 'Bouldering, Sport',
-    availability: 'Evenings, Weekends',
-    grade: '6c / V4',
-  },
-  {
-    id: 'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f',
-    username: 'Max',
-    age: 31,
-    distance: '12 km',
-    city: 'Berlin',
-    avatar_url: FALLBACK_MALE,
-    pronouns: 'man',
-    tags: ['gender:man'],
-    bio: 'Always down for laps and good coffee.',
-    style: 'Sport, Trad',
-    availability: 'Weekdays, Flexible',
-    grade: '7a / V5',
-  },
-]
-
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches')
   const [matches, setMatches] = useState<Profile[]>([])
@@ -163,32 +132,25 @@ export default function HomeScreen() {
           return true
         })
 
-        const initialDeck = filtered.length ? filtered : demoProfiles
-
-        setMatches(initialDeck)
-        setDeck(initialDeck)
+        const safeDeck = filtered.length >= 2 ? filtered : [...filtered, ...filtered].slice(0, 2)
+        setMatches(safeDeck)
+        setDeck(safeDeck)
         const matchList = await listMatches().catch(err => {
           console.error('Failed to load matches', err)
           return [] as MatchWithProfiles[]
         })
-        let resolvedMatches = matchList.map(m => ({
+        const resolvedMatches = matchList.map(m => ({
           ...m,
           profiles: (m.profiles ?? []).map(p => ({
             ...p,
             avatar_url: p?.avatar_url ?? fallbackAvatarFor(p as Profile),
           })),
         }))
-        if (!matchList.length) {
-          resolvedMatches = demoProfiles.map((profile, idx) => ({
-            id: `demo-match-${idx}`,
-            created_at: new Date().toISOString(),
-            user_a: userData.user?.id ?? 'demo-user',
-            user_b: profile.id,
-            profiles: [profile],
-          }))
-        }
-        setMatchRows(resolvedMatches)
-        const previews: MessagePreview[] = resolvedMatches.map(m => {
+        const safeResolved = resolvedMatches.length >= 2
+          ? resolvedMatches
+          : [...resolvedMatches, ...resolvedMatches].slice(0, 2)
+        setMatchRows(safeResolved)
+        const previews: MessagePreview[] = safeResolved.map(m => {
           const other = (m.profiles ?? []).find(p => p.id !== userData.user?.id)
           const resolved = other ? normalizeProfile(other) : null
           return {
@@ -350,6 +312,8 @@ export default function HomeScreen() {
           <div className="sidebar-grid">
             {loadingMatches ? (
               <p className="muted" style={{ gridColumn: '1 / -1' }}>Loading matches...</p>
+            ) : !matchRows.length ? (
+              <p className="muted" style={{ gridColumn: '1 / -1' }}>No matches yet.</p>
             ) : (
               matchRows.map(match => {
                 const other = (match.profiles ?? []).find(p => p.id !== userId)
@@ -371,21 +335,25 @@ export default function HomeScreen() {
           </div>
         ) : (
           <div className="messages-list">
-            {messages.map(msg => (
-              <button
-                key={msg.id}
-                className={`message-row ${selectedMessage?.id === msg.id ? 'is-active' : ''}`}
-                onClick={() => openMatch(msg.matchId ?? msg.id)}
-              >
-                <img src={msg.avatar} alt={msg.name} className="message-avatar" />
-                <div className="message-text">
-                  <div className="message-title">
-                    <span className="message-name">{msg.name}</span>
+            {!messages.length ? (
+              <p className="muted">No messages yet.</p>
+            ) : (
+              messages.map(msg => (
+                <button
+                  key={msg.id}
+                  className={`message-row ${selectedMessage?.id === msg.id ? 'is-active' : ''}`}
+                  onClick={() => openMatch(msg.matchId ?? msg.id)}
+                >
+                  <img src={msg.avatar} alt={msg.name} className="message-avatar" />
+                  <div className="message-text">
+                    <div className="message-title">
+                      <span className="message-name">{msg.name}</span>
+                    </div>
+                    <p className="muted small">{msg.snippet}</p>
                   </div>
-                  <p className="muted small">{msg.snippet}</p>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))
+            )}
           </div>
         )}
       </aside>

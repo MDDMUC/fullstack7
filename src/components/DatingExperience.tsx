@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import SignupForm from './SignupForm'
-import { fetchProfiles } from '@/lib/profiles'
+import { fetchProfiles, Profile } from '@/lib/profiles'
 
 const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
@@ -16,23 +16,6 @@ const fallbackAvatarFor = (profile?: Profile | null) => {
     return FALLBACK_FEMALE
   }
   return FALLBACK_DEFAULT
-}
-
-type Profile = {
-  id: string
-  username: string
-  age?: number
-  city?: string
-  style?: string
-  availability?: string
-  grade?: string
-  bio?: string
-  avatar_url?: string | null
-  created_at?: string
-  pronouns?: string
-  tags?: string[]
-  status?: string
-  goals?: string
 }
 
 type Filters = {

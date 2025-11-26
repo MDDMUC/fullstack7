@@ -19,6 +19,7 @@ export type Profile = {
   goals?: string
   distance?: string
   lookingFor?: string
+  onboardingprofiles?: any[]
 }
 
 const toArray = (value: any): string[] => {
@@ -64,12 +65,29 @@ export const normalizeProfile = (profile: any): Profile => {
   }
 }
 
-export async function fetchProfiles(client?: SupabaseClient) {
+export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
   const c = client ?? requireSupabase()
-  const { data, error } = await c
+  const baseQuery = c
     .from('profiles')
-    .select('id, username, email, created_at, onboardingprofiles(*)')
+    .select('id, username, email, created_at')
     .order('created_at', { ascending: false })
-  if (error) throw error
-  return (data ?? []).map(normalizeProfile)
+  if (ids?.length) baseQuery.in('id', ids)
+
+  const { data: baseProfiles, error: baseErr } = await baseQuery
+  if (baseErr) throw baseErr
+
+  const obIds = (baseProfiles ?? []).map(p => p.id)
+  const { data: obRows, error: obErr } = await c
+    .from('onboardingprofiles')
+    .select('*')
+    .in('id', obIds)
+  if (obErr) throw obErr
+  const obMap = new Map((obRows ?? []).map(ob => [ob.id, ob]))
+
+  return (baseProfiles ?? []).map(profile =>
+    normalizeProfile({
+      ...profile,
+      onboardingprofiles: obMap.get(profile.id) ? [obMap.get(profile.id)] : [],
+    })
+  )
 }
