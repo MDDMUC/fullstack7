@@ -639,11 +639,12 @@ textarea:focus-visible {
 .pill-row span { background: rgba(92, 225, 230, 0.06); border: 1px solid var(--stroke); padding: 8px 12px; border-radius: 999px; color: var(--muted); font-weight: 700; }
 
 .gym-chat-grid { display: grid; grid-template-columns: minmax(260px, 300px) 1fr minmax(260px, 320px); gap: 16px; align-items: start; }
-.thread-panel { gap: 10px; }
+.gym-chat-grid .panel { display: flex; flex-direction: column; gap: 12px; height: 100%; }
+.thread-panel { display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; min-height: 520px; }
 .thread-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
 .thread-tab { background: #0f131d; border: 1px solid var(--stroke); border-radius: 10px; padding: 10px; text-align: left; color: var(--text); }
 .thread-tab.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(92,225,230,0.1); }
-.chat-window { display: grid; gap: 12px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
+.chat-window { display: grid; gap: 12px; overflow-y: auto; padding-right: 4px; }
 .chat-line { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; }
 .chat-avatar { width: 42px; height: 42px; border-radius: 12px; background: #0b0f18; border: 1px solid var(--stroke); display: grid; place-items: center; font-weight: 800; letter-spacing: 0.4px; }
 .chat-bubble { background: #0f131d; border: 1px solid var(--stroke); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; }
@@ -655,6 +656,9 @@ textarea:focus-visible {
 .chat-actions { display: flex; gap: 8px; }
 
 .prompt-card { background: #0f131d; border: 1px solid var(--stroke); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.side-panel .list-stack { flex: 1; }
+.side-panel .panel.card { height: auto; }
+.panel.card { display: grid; gap: 10px; }
 .guideline-list { list-style: disc; padding-left: 18px; color: var(--muted); display: grid; gap: 6px; margin: 0; }
 
 .filter-panel { align-items: center; grid-template-columns: 1fr auto; gap: 12px; }
