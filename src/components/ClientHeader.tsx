@@ -17,7 +17,6 @@ export default function ClientHeader() {
   }, [pathname, isOpen])
 
   const links = [
-    { href: '/home', label: 'Dab' },
     { href: '/gym-chat', label: 'Gym Chat' },
     { href: '/partner-finder', label: 'Partners' },
     { href: '/events', label: 'Events' },
@@ -38,24 +37,26 @@ export default function ClientHeader() {
           <span />
           <span />
         </button>
-        <nav className={`primary-nav ${isOpen ? 'is-open' : ''}`}>
-          {links.map(link => {
-            const isActive =
-              pathname === link.href ||
-              (link.href !== '/' && pathname.startsWith(link.href))
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`nav-link ${isActive ? 'active' : ''}`}
-              >
-                {link.label}
-              </Link>
-            )
-          })}
-        </nav>
       </div>
-      <UserNav />
+      <nav className={`primary-nav ${isOpen ? 'is-open' : ''}`}>
+        {links.map(link => {
+          const isActive =
+            pathname === link.href ||
+            (link.href !== '/' && pathname.startsWith(link.href))
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`nav-link ${isActive ? 'active' : ''}`}
+            >
+              {link.label}
+            </Link>
+          )
+        })}
+      </nav>
+      <div className="header-right">
+        <UserNav />
+      </div>
     </header>
   )
 }
