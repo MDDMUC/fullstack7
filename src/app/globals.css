@@ -183,6 +183,7 @@ textarea:focus-visible {
 .card-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .label { color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin: 0; }
 .pill { background: rgba(92, 225, 230, 0.08); border: 1px solid var(--stroke); padding: 6px 10px; border-radius: 999px; color: var(--accent); font-weight: 700; }
+.joined-label { font-weight: 500; text-transform: none; letter-spacing: 0; }
 .sub { color: var(--muted); margin-top: 4px; }
 .chip { background: rgba(92, 225, 230, 0.1); color: var(--accent); padding: 6px 10px; border-radius: 10px; border: 1px solid var(--accent); font-weight: 700; }
 .card-body { color: var(--text); }
@@ -485,6 +486,7 @@ textarea:focus-visible {
 .featured-body { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; margin-bottom: 12px; }
 .featured-body h3 { margin: 0 0 2px; }
 .featured-body .sub { margin: 2px 0; line-height: 1.2; }
+.featured-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
 .traits li { background: #1c2333; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--stroke); }
 .card-actions { display: flex; gap: 8px; margin-top: 14px; }
 .card-actions button { flex: 1; }

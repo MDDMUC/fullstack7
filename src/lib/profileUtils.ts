@@ -65,28 +65,14 @@ export async function upsertPublicProfile(
   userId: string,
   data: Partial<OnboardingData>
 ): Promise<UpsertResult> {
-  const payload = onboardingDataToProfilePayload(data)
-
   try {
     const { data: row, error } = await client
       .from('profiles')
       .upsert(
         {
           id: userId,
-          username: payload.username || undefined,
-          bio: payload.bio || undefined,
-          age: payload.age || undefined,
-          city: payload.city || undefined,
-          style: payload.style || undefined,
-          grade: payload.grade || undefined,
-          availabilty: payload.availability || undefined,
-          status: payload.status,
-          tags: payload.tags?.join(', ') || undefined,
-          goals: payload.goals || undefined,
           email: (data as any)?.email || undefined,
-          home: payload.city || undefined,
-          primary_style: payload.style || undefined,
-          pronouns: payload.pronouns || undefined,
+          username: data.username || (data as any)?.name || (data as any)?.email?.split?.('@')?.[0] || 'Climber',
         },
         { onConflict: 'id' }
       )

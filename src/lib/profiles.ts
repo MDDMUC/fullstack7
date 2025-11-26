@@ -4,6 +4,7 @@ import { requireSupabase } from './supabaseClient'
 export type Profile = {
   id: string
   username: string
+  email?: string
   age?: number
   city?: string
   style?: string
@@ -28,35 +29,40 @@ const toArray = (value: any): string[] => {
 }
 
 export const normalizeProfile = (profile: any): Profile => {
-  const styles = Array.isArray(profile.styles)
-    ? profile.styles.join(' • ')
-    : profile.primary_style
+  const ob = (profile as any).onboardingprofiles?.[0] ?? {}
+  const styles = Array.isArray(ob.styles ?? profile.styles)
+    ? (ob.styles ?? profile.styles).join(', ')
+    : ob.primary_style ?? profile.primary_style
 
-  const rawTags = toArray(profile.tags ?? profile.traits)
+  const rawTags = toArray(ob.tags ?? profile.tags ?? profile.traits)
 
   return {
-    id: profile.id ?? crypto.randomUUID(),
-    username: profile.username ?? profile.name ?? 'Climber',
-    age: profile.age ?? profile.age_range ?? undefined,
-    city: profile.city ?? profile.home ?? profile.location ?? '',
-    style: profile.style ?? styles ?? '',
-    availability: profile.availability ?? profile.schedule ?? '',
-    grade: profile.grade ?? profile.grade_focus ?? profile.level ?? '',
-    bio: profile.bio ?? profile.about ?? '',
-    avatar_url: profile.avatar_url ?? profile.photo_url ?? null,
-    created_at: profile.created_at,
-    pronouns: profile.pronouns ?? profile.pronoun ?? '',
+    id: profile.id ?? ob.id ?? crypto.randomUUID(),
+    username: profile.username ?? profile.name ?? ob.username ?? 'Climber',
+    email: profile.email ?? undefined,
+    age: ob.age ?? profile.age ?? profile.age_range ?? undefined,
+    city: ob.city ?? ob.home ?? profile.city ?? profile.home ?? profile.location ?? '',
+    style: ob.style ?? styles ?? '',
+    availability: ob.availability ?? profile.availability ?? profile.schedule ?? '',
+    grade: ob.grade ?? profile.grade ?? profile.grade_focus ?? profile.level ?? '',
+    bio: ob.bio ?? profile.bio ?? profile.about ?? '',
+    avatar_url: ob.avatar_url ?? profile.avatar_url ?? profile.photo_url ?? null,
+    created_at: profile.created_at ?? ob.created_at,
+    pronouns: ob.pronouns ?? profile.pronouns ?? profile.pronoun ?? '',
     tags: rawTags,
-    status: profile.status ?? profile.state ?? '',
-    goals: profile.goals ?? profile.intent ?? '',
-    distance: profile.distance ?? '10 km',
-    lookingFor: profile.lookingFor ?? profile.looking_for ?? profile.intent ?? profile.goals ?? '',
+    status: ob.status ?? profile.status ?? profile.state ?? '',
+    goals: ob.goals ?? profile.goals ?? profile.intent ?? '',
+    distance: ob.distance ?? profile.distance ?? '10 km',
+    lookingFor: ob.lookingFor ?? profile.looking_for ?? profile.intent ?? profile.goals ?? '',
   }
 }
 
 export async function fetchProfiles(client?: SupabaseClient) {
   const c = client ?? requireSupabase()
-  const { data, error } = await c.from('profiles').select('*').order('created_at', { ascending: false })
+  const { data, error } = await c
+    .from('profiles')
+    .select('id, username, email, created_at, onboardingprofiles(*)')
+    .order('created_at', { ascending: false })
   if (error) throw error
   return (data ?? []).map(normalizeProfile)
 }

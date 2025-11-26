@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { normalizeProfile, Profile } from '@/lib/profiles'
+import { upsertOnboardingProfile } from '@/lib/profileUtils'
 
 export default function ProfileSetup() {
   const router = useRouter()
@@ -22,7 +23,7 @@ export default function ProfileSetup() {
         }
         const { data, error } = await client
           .from('profiles')
-          .select('*')
+          .select('id, username, email, created_at, onboardingprofiles(*)')
           .eq('id', userData.user.id)
           .single()
         if (!error && data) setProfile(normalizeProfile(data))
@@ -52,14 +53,18 @@ export default function ProfileSetup() {
         return
       }
       setLoading(true)
+      await upsertOnboardingProfile(client, userData.user.id, {
+        username: username || userData.user.email || undefined,
+        homebase: city,
+        styles: style ? style.split('/').map(s => s.trim()) : undefined,
+        grade,
+        bio,
+        availability: availability ? availability.split(',').map(s => s.trim()) : undefined,
+      })
       const { error } = await client.from('profiles').upsert({
         id: userData.user.id,
         username: username || userData.user.email,
-        city,
-        style,
-        grade,
-        bio,
-        availability,
+        email: userData.user.email,
       })
       setLoading(false)
       if (error) {

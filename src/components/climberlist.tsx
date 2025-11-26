@@ -1,27 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase }         from '@/lib/supabaseClient'
-
-interface Profile {
-  id:         string
-  username:   string
-  bio:        string
-  avatar_url: string | null
-}
+import { fetchProfiles, Profile } from '@/lib/profiles'
 
 export default function ClimberList() {
   const [profiles, setProfiles] = useState<Profile[]>([])
 
   useEffect(() => {
     const load = async () => {
-      if (!supabase) return
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-      if (error) console.error(error)
-      else       setProfiles(data)
+      try {
+        const data = await fetchProfiles()
+        setProfiles(data)
+      } catch (error) {
+        console.error(error)
+      }
     }
     load()
   }, [])

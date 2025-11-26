@@ -1,5 +1,6 @@
 // src/lib/matches.ts
 import { requireSupabase } from './supabaseClient'
+import { normalizeProfile } from './profiles'
 
 const sortPair = (a: string, b: string) => (a < b ? [a, b] : [b, a])
 
@@ -72,10 +73,13 @@ export async function listMatches() {
   const ids = Array.from(new Set(data.flatMap(m => [m.user_a, m.user_b])))
   const { data: profiles, error: pErr } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, username, email, created_at, onboardingprofiles(*)')
     .in('id', ids)
 
   if (pErr) throw pErr
-  const map = new Map(profiles?.map(p => [p.id, p]))
+  const map = new Map((profiles ?? []).map(p => {
+    const normalized = normalizeProfile(p)
+    return [normalized.id, normalized]
+  }))
   return data.map(m => ({ ...m, profiles: [map.get(m.user_a), map.get(m.user_b)].filter(Boolean) }))
 }

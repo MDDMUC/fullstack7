@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import SignupForm from './SignupForm'
+import { fetchProfiles } from '@/lib/profiles'
 
 const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
@@ -41,14 +42,14 @@ type Filters = {
   sort: 'recent' | 'grade' | 'name'
 }
 
-const toArray = (value: any): string[] => {
+const _toArray = (value: any): string[] => {
   if (!value) return []
   if (Array.isArray(value)) return value.filter(Boolean).map(String)
   if (typeof value === 'string') return value.split(',').map(v => v.trim()).filter(Boolean)
   return []
 }
 
-const normalizeProfile = (profile: any): Profile => ({
+const _normalizeProfile = (profile: any): Profile => ({
   id: profile.id ?? crypto.randomUUID(),
   username: profile.username ?? profile.name ?? 'Climber',
   age: profile.age ?? profile.age_range ?? undefined,
@@ -60,7 +61,7 @@ const normalizeProfile = (profile: any): Profile => ({
   avatar_url: profile.avatar_url ?? profile.photo_url ?? null,
   created_at: profile.created_at,
   pronouns: profile.pronouns ?? profile.pronoun ?? '',
-  tags: toArray(profile.tags ?? profile.traits),
+  tags: _toArray(profile.tags ?? profile.traits),
   status: profile.status ?? profile.state ?? '',
   goals: profile.goals ?? profile.intent ?? '',
 })
@@ -85,6 +86,17 @@ const gradeRank = (grade?: string) => {
 const unique = (list: (string | undefined)[]) =>
   Array.from(new Set(list.filter(Boolean) as string[]))
 
+const formatJoinedAgo = (iso?: string) => {
+  if (!iso) return 'Joined recently'
+  const diffMs = Date.now() - Date.parse(iso)
+  const minutes = Math.max(1, Math.floor(diffMs / 60000))
+  if (minutes < 60) return `Joined ${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `Joined ${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return `Joined ${days}d ago`
+}
+
 export default function DatingExperience() {
   const router = useRouter()
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -101,7 +113,7 @@ export default function DatingExperience() {
   const [likeModal, setLikeModal] = useState<{ name: string } | null>(null)
 
   useEffect(() => {
-    const fetchProfiles = async () => {
+    const loadProfiles = async () => {
       try {
         if (!supabase) {
           setProfiles([])
@@ -110,13 +122,7 @@ export default function DatingExperience() {
           return
         }
 
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false })
-
-        if (error) throw error
-        const normalized = (data ?? []).map(normalizeProfile)
+        const normalized = await fetchProfiles(supabase)
         setProfiles(normalized)
       } catch (err) {
         console.error('Failed to load profiles', err)
@@ -126,7 +132,7 @@ export default function DatingExperience() {
         setLoading(false)
       }
     }
-    fetchProfiles()
+    loadProfiles()
   }, [])
 
   useEffect(() => {
@@ -200,7 +206,15 @@ export default function DatingExperience() {
     return list
   }, [profiles, filters])
 
-  const featured = filteredProfiles[0]
+  const featured = useMemo(() => {
+    if (!profiles.length) return undefined
+    const sorted = [...profiles].sort((a, b) => {
+      const aDate = a.created_at ? Date.parse(a.created_at) : 0
+      const bDate = b.created_at ? Date.parse(b.created_at) : 0
+      return bDate - aDate
+    })
+    return sorted[0]
+  }, [profiles])
   const matchesCount = filteredProfiles.length
 
   const handleReset = () => {
@@ -241,8 +255,7 @@ export default function DatingExperience() {
                   <div className="hero__card-inner">
                 <div className="card-header">
                   <div className="card-top">
-                    <p className="label pill">New climber</p>
-                    <span className="chip">{featured.status || 'On belay'}</span>
+                    <p className="label pill joined-label">{formatJoinedAgo(featured.created_at).toLowerCase()}</p>
                   </div>
                   <div className="featured-body">
                     <img
@@ -254,6 +267,10 @@ export default function DatingExperience() {
                       <h3>{featured.username}{featured.age ? `, ${featured.age}` : ''}</h3>
                       <p className="sub">{featured.style || 'Climber'}</p>
                       <p className="sub">{featured.city || 'Somewhere craggy'}</p>
+                      <div className="featured-tags">
+                        {featured.grade ? <span className="tag grade">{featured.grade}</span> : null}
+                        {featured.style ? <span className="subtle-tag">{featured.style}</span> : null}
+                      </div>
                     </div>
                   </div>
                 </div>
