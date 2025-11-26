@@ -124,17 +124,18 @@ export default function HomeScreen() {
         const me = profiles.find(p => p.id === userData.user?.id)
         const preference = extractPreference(me)
 
-        const filtered = profiles.filter(p => p.id !== userData.user?.id).filter(p => {
-          const gender = extractGender(p)
-          if (preference === 'All') return true
-          if (preference === 'Women') return gender === 'woman'
-          if (preference === 'Men') return gender === 'man'
-          return true
-        })
+    const filtered = profiles.filter(p => p.id !== userData.user?.id).filter(p => {
+      const gender = extractGender(p)
+      if (preference === 'All') return true
+      if (preference === 'Women') return gender === 'woman'
+      if (preference === 'Men') return gender === 'man'
+      return true
+    })
 
-        const safeDeck = filtered.length >= 2 ? filtered : [...filtered, ...filtered].slice(0, 2)
-        setMatches(safeDeck)
-        setDeck(safeDeck)
+    const shuffled = [...filtered].sort(() => Math.random() - 0.5)
+    const safeDeck = shuffled.length >= 2 ? shuffled : [...shuffled, ...shuffled].slice(0, 2)
+    setMatches(safeDeck)
+    setDeck(safeDeck)
         const matchList = await listMatches().catch(err => {
           console.error('Failed to load matches', err)
           return [] as MatchWithProfiles[]
@@ -146,11 +147,19 @@ export default function HomeScreen() {
             avatar_url: p?.avatar_url ?? fallbackAvatarFor(p as Profile),
           })),
         }))
-        const safeResolved = resolvedMatches.length >= 2
-          ? resolvedMatches
-          : [...resolvedMatches, ...resolvedMatches].slice(0, 2)
-        setMatchRows(safeResolved)
-        const previews: MessagePreview[] = safeResolved.map(m => {
+
+        const fallbackMatches = safeDeck.slice(0, 2).map((profile, idx) => ({
+          id: `fallback-match-${idx}`,
+          created_at: new Date().toISOString(),
+          user_a: userData.user?.id ?? 'demo-user',
+          user_b: profile.id,
+          profiles: [profile],
+        }))
+
+        const matchesForUI = resolvedMatches.length ? resolvedMatches : fallbackMatches
+        setMatchRows(matchesForUI)
+
+        const previews: MessagePreview[] = matchesForUI.map(m => {
           const other = (m.profiles ?? []).find(p => p.id !== userData.user?.id)
           const resolved = other ? normalizeProfile(other) : null
           return {
@@ -318,6 +327,7 @@ export default function HomeScreen() {
               matchRows.map(match => {
                 const other = (match.profiles ?? []).find(p => p.id !== userId)
                 const profile = other ? normalizeProfile(other) : null
+                const shortName = profile?.username?.split?.(' ')?.[0] || profile?.username || 'Match'
                 return (
                   <button
                     key={match.id}
@@ -326,7 +336,7 @@ export default function HomeScreen() {
                   >
                     <img src={profile?.avatar_url ?? fallbackAvatarFor(profile)} alt={profile?.username ?? 'Match'} />
                     <div className="match-meta">
-                      <span className="match-name">{profile?.username ?? 'Match'}</span>
+                      <span className="match-name">{shortName}</span>
                     </div>
                   </button>
                 )
@@ -347,7 +357,7 @@ export default function HomeScreen() {
                   <img src={msg.avatar} alt={msg.name} className="message-avatar" />
                   <div className="message-text">
                     <div className="message-title">
-                      <span className="message-name">{msg.name}</span>
+                      <span className="message-name">{msg.name.split(' ')[0] || msg.name}</span>
                     </div>
                     <p className="muted small">{msg.snippet}</p>
                   </div>
