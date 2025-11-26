@@ -270,9 +270,9 @@ export default function GymChatPage() {
                 className={`thread-tab ${thread.id === activeThread?.id ? 'active' : ''}`}
                 onClick={() => setActiveThreadId(thread.id)}
               >
+                {thread.unread ? <span className="pill unread">{thread.unread}</span> : null}
                 <div className="row-top">
                   <span>{thread.title}</span>
-                  {thread.unread ? <span className="pill unread">{thread.unread}</span> : null}
                 </div>
                 <p className="muted small">{thread.lastMessage}</p>
               </button>

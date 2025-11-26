@@ -660,7 +660,7 @@ textarea:focus-visible {
 .tagline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .presence { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .presence-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(120deg, var(--accent), var(--accent-2)); box-shadow: 0 0 0 4px rgba(92,225,230,0.1); animation: presencePulse 2.4s ease-in-out infinite; }
-.pill.unread { background: rgba(92,225,230,0.12); border-color: var(--accent); color: var(--accent); }
+.pill.unread { background: rgba(92,225,230,0.12); border-color: var(--accent); color: var(--accent); border-radius: 999px; width: 26px; height: 26px; display: inline-grid; place-items: center; padding: 0; position: absolute; top: 8px; right: 8px; }
 .pill.verified { background: rgba(92,225,230,0.12); color: var(--accent); border-color: var(--accent); }
 .pill.busy { color: #ffd166; border-color: #ffd166; background: rgba(255,209,102,0.08); }
 .pill.peaking { color: #ff7b7b; border-color: #ff7b7b; background: rgba(255,123,123,0.08); }
@@ -673,9 +673,9 @@ textarea:focus-visible {
 .gym-chat-grid { display: grid; grid-template-columns: minmax(260px, 300px) 1fr minmax(260px, 320px); gap: 16px; align-items: start; }
 .gym-chat-grid .panel { display: flex; flex-direction: column; gap: 12px; height: 100%; }
 .thread-panel { display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; min-height: 520px; }
-.thread-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
-.thread-tab { background: #0f131d; border: 1px solid var(--stroke); border-radius: 10px; padding: 10px; text-align: left; color: var(--text); }
-.thread-tab.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(92,225,230,0.1); }
+.thread-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.thread-tab { position: relative; background: #0f131d; border: 1px solid var(--stroke); border-radius: 12px; padding: 12px; text-align: left; color: var(--text); transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
+.thread-tab.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(92,225,230,0.14), 0 10px 30px rgba(0,0,0,0.4); transform: translateY(-2px); background: linear-gradient(135deg, rgba(92,225,230,0.08), rgba(230,143,255,0.08)); }
 .chat-window { display: grid; gap: 12px; overflow-y: auto; padding-right: 4px; }
 .chat-line { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: start; }
 .chat-avatar { width: 32px; height: 32px; border-radius: 8px; background: #0b0f18; border: 1px solid var(--stroke); object-fit: cover; }
