@@ -697,13 +697,20 @@ textarea:focus-visible {
 .prompt-hint { margin: 0; line-height: 1.1; font-size: 11px; color: var(--muted); }
 .prompt-btn { padding: 6px 10px; border-radius: 9px; font-size: 12px; line-height: 1.1; }
 
-.prompt-ad { display: grid; grid-template-columns: 1fr; gap: 10px; background: #0f131d; border: 1px solid var(--stroke); border-radius: 12px; padding: 8px; box-shadow: 0 8px 20px rgba(0,0,0,0.32); }
-.prompt-ad-image img { width: 100%; border-radius: 10px; object-fit: cover; max-height: 140px; }
+.prompt-ad { display: grid; grid-template-columns: 1fr; gap: 8px; background: #0f131d; border: 1px solid var(--stroke); border-radius: 12px; padding: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.32); }
+.prompt-ad-image img { width: 100%; border-radius: 10px; object-fit: cover; aspect-ratio: 16 / 9; height: auto; }
 .prompt-ad-copy { display: grid; gap: 8px; }
 .prompt-ad-copy h4 { margin: 0; color: var(--text); }
 .prompt-ad-cta { display: flex; gap: 8px; flex-wrap: wrap; }
+.prompt-link { color: var(--muted); text-decoration: underline; font-weight: 700; }
 .prompt-ad-product { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; }
 .prompt-product-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; border: 1px solid var(--stroke); background: #0b0f18; }
+
+.prompt-ad--alt { padding: 0; background: transparent; border: none; box-shadow: none; }
+.prompt-ad-image.alt { position: relative; border-radius: 12px; overflow: hidden; }
+.prompt-ad-image.alt img { display: block; width: 100%; height: auto; border-radius: 12px; aspect-ratio: 16 / 9; object-fit: cover; }
+.prompt-ad-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 10px; padding: 14px; background: linear-gradient(0deg, rgba(0,0,0,0.45), rgba(0,0,0,0.05)); }
+.prompt-ad-headline { color: #ae0000; font-weight: 900; font-size: 20px; text-shadow: 0 4px 12px rgba(0,0,0,0.55); }
 .side-panel .list-stack { flex: 1; }
 .side-panel .panel.card { height: auto; }
 .panel.card { display: grid; gap: 10px; }

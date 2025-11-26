@@ -322,6 +322,16 @@ export default function GymChatPage() {
               <button className="cta" onClick={handleJoin}>Post</button>
             </div>
           </footer>
+
+          <div className="prompt-ad prompt-ad--alt chat-ad">
+            <div className="prompt-ad-image alt">
+              <img src="/ad-karma.jpg" alt="Karma8a apparel" />
+              <div className="prompt-ad-overlay">
+                <span className="prompt-ad-headline">Climb into the Holidays</span>
+                <a href="https://karma8a.com/" target="_blank" rel="noreferrer" className="prompt-link">Shop Now</a>
+              </div>
+            </div>
+          </div>
         </section>
 
         <aside className="panel side-panel">
@@ -346,18 +356,18 @@ export default function GymChatPage() {
               </div>
             ))}
             <div className="prompt-ad">
+              <p className="prompt-hint">Sponsored · PETZL</p>
               <div className="prompt-ad-image">
                 <img src="/ad-petzl.jpg" alt="Petzl Adjama Harness" />
               </div>
               <div className="prompt-ad-copy">
-                <p className="muted tiny">Sponsored · Petzl</p>
                 <h4>SITTA Harness</h4>
                 <div className="prompt-ad-product">
                   <img src="/sitta.jpg" alt="SITTA harness" className="prompt-product-img" />
                   <p className="muted small">For climbers and mountaineers who demand performance! The SITTA is lightweight and technical, without compromising comfort.</p>
                 </div>
                 <div className="prompt-ad-cta">
-                  <a href="https://www.petzl.com" target="_blank" rel="noreferrer" className="cta">Shop Petzl</a>
+                  <a href="https://www.petzl.com" target="_blank" rel="noreferrer" className="prompt-link">Shop Petzl</a>
                 </div>
               </div>
             </div>
