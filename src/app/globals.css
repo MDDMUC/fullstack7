@@ -594,8 +594,18 @@ textarea:focus-visible {
 .site-footer a:hover { color: var(--accent); }
 .footer-links { display: flex; gap: 16px; flex-wrap: wrap; }
 
-.hero-visual { position: relative; width: 100%; }
-.hero-image { width: 100%; border-radius: 14px; border: 1px solid var(--stroke); object-fit: cover; height: 100%; max-height: 320px; box-shadow: var(--shadow); }
+.hero-visual { position: relative; width: 100%; height: 100%; }
+.hero-image { width: 100%; height: 100%; min-height: 260px; border-radius: 14px; border: 1px solid var(--stroke); object-fit: cover; box-shadow: var(--shadow); object-position: center; }
+.hero-copy { display: grid; gap: 10px; align-content: start; }
+.hero-metal { font-family: var(--font-dab), 'Metal Mania', cursive; font-size: clamp(36px, 6vw, 52px); letter-spacing: 1px; margin: 0; color: var(--text); text-transform: uppercase; }
+.stat-pulse-up { animation: statPulseUp 0.9s ease-in-out; }
+.stat-pulse-down { animation: statPulseDown 0.9s ease-in-out; }
+.stat-walls { background: rgba(92,225,230,0.05); border: 1px solid var(--stroke); border-radius: 12px; padding: 10px; display: grid; gap: 6px; }
+.stat-wall-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat-wall { display: inline-flex; align-items: center; gap: 8px; padding: 6px 8px; background: #0f131d; border: 1px solid var(--stroke); border-radius: 10px; }
+.stat-wall img { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; border: 1px solid var(--stroke); background: #0b0f18; }
+.stat-wall span { color: var(--text); font-weight: 700; font-size: 13px; }
+.stat-live-dot { display: inline-block; width: 12px; height: 12px; margin-right: 10px; border-radius: 50%; background: linear-gradient(120deg, var(--accent), var(--accent-2)); box-shadow: 0 0 0 4px rgba(92,225,230,0.1); animation: presencePulse 2.4s ease-in-out infinite; vertical-align: middle; }
 
 .toast {
   position: fixed;
@@ -619,9 +629,10 @@ textarea:focus-visible {
 }
 
 .feature-shell { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; display: grid; gap: 20px; }
-.feature-hero { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 20px; align-items: center; background: linear-gradient(130deg, rgba(92,225,230,0.08), rgba(230,143,255,0.08)); border: 1px solid var(--stroke); border-radius: 18px; padding: 24px; }
+.feature-hero { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 1.6fr) minmax(220px, 1fr); gap: 20px; align-items: center; background: linear-gradient(130deg, rgba(92,225,230,0.08), rgba(230,143,255,0.08)); border: 1px solid var(--stroke); border-radius: 18px; padding: 24px; }
 .feature-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
-.feature-stat { background: #0f131d; border: 1px solid var(--stroke); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+.feature-stat { background: #0f131d; border: 1px solid var(--stroke); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); align-self: start; justify-self: end; }
+.stat-tall { height: 100%; display: grid; align-content: space-between; gap: 10px; }
 .panel { background: var(--panel); border: 1px solid var(--stroke); border-radius: 16px; padding: 18px; box-shadow: var(--shadow); display: grid; gap: 12px; }
 .panel-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .list-stack { display: grid; gap: 10px; }
@@ -705,6 +716,18 @@ textarea:focus-visible {
   0% { box-shadow: 0 0 0 4px rgba(92,225,230,0.12); transform: scale(1); }
   50% { box-shadow: 0 0 0 10px rgba(92,225,230,0.04); transform: scale(1.08); }
   100% { box-shadow: 0 0 0 4px rgba(92,225,230,0.12); transform: scale(1); }
+}
+
+@keyframes statPulseUp {
+  0% { text-shadow: 0 0 0 rgba(92,225,230,0.0); color: var(--text); }
+  50% { text-shadow: 0 0 12px rgba(92,225,230,0.6); color: var(--accent); }
+  100% { text-shadow: 0 0 0 rgba(92,225,230,0.0); color: var(--text); }
+}
+
+@keyframes statPulseDown {
+  0% { text-shadow: 0 0 0 rgba(230,143,255,0.0); color: var(--text); }
+  50% { text-shadow: 0 0 12px rgba(230,143,255,0.6); color: var(--accent-2); }
+  100% { text-shadow: 0 0 0 rgba(230,143,255,0.0); color: var(--text); }
 }
 
 @media (max-width: 720px) {

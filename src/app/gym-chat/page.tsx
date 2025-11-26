@@ -27,6 +27,8 @@ export default function GymChatPage() {
   const [loading, setLoading] = useState(true)
   const [activeGymId, setActiveGymId] = useState<string | null>(null)
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
+  const [liveOnline, setLiveOnline] = useState(0)
+  const [statPulse, setStatPulse] = useState<'up' | 'down' | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -60,6 +62,44 @@ export default function GymChatPage() {
   )
 
   const currentHour = useMemo(() => new Date().getHours(), [])
+
+  const baseOnline = useMemo(() => gyms.reduce((sum, g) => sum + g.online, 0), [gyms])
+
+  useEffect(() => {
+    setLiveOnline(baseOnline)
+  }, [baseOnline])
+
+  useEffect(() => {
+    if (!baseOnline) return
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+    const tick = () => {
+      setLiveOnline(prev => {
+        const delta = Math.floor(Math.random() * 13) - 6 // -6 to +6
+        const next = prev + delta
+        const min = Math.max(0, baseOnline - 12)
+        const max = baseOnline + 12
+        const clamped = Math.min(max, Math.max(min, next))
+        setStatPulse(delta > 0 ? 'up' : delta < 0 ? 'down' : null)
+        return clamped
+      })
+      const nextDelay = 1800 + Math.random() * 3200
+      timeoutId = setTimeout(tick, nextDelay)
+    }
+
+    tick()
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [baseOnline])
+
+  useEffect(() => {
+    if (!baseOnline) return
+    if (!statPulse) return
+    const t = setTimeout(() => setStatPulse(null), 900)
+    return () => clearTimeout(t)
+  }, [statPulse, baseOnline])
 
   const handleJoin = () => router.push('/signup')
 
@@ -105,9 +145,12 @@ export default function GymChatPage() {
   return (
     <main className="feature-shell">
       <section className="feature-hero">
-        <div>
+        <div className="hero-visual">
+          <img src="/hero-gymchat.jpg" alt="Climbers at the wall" className="hero-image" />
+        </div>
+        <div className="hero-copy">
           <p className="eyebrow">Community-first</p>
-          <h1>Gym-based group chats.</h1>
+          <h1 className="hero-metal">Gymchat</h1>
           <p className="lede">
             Drop into the wall you climb most, ask for beta, or find a partner without awkward DMs.
             Real-time presence, respectful vibes, and prompts that keep the conversation moving.
@@ -122,14 +165,31 @@ export default function GymChatPage() {
             <span>Gym-specific prompts</span>
           </div>
         </div>
-        <div className="hero-visual">
-          <img src="/hero-gymchat.jpg" alt="Climbers at the wall" className="hero-image" />
-        </div>
         {gyms.length ? (
-          <div className="feature-stat">
-            <p className="stat__label">People online in your walls</p>
-            <p className="stat__number">{gyms.reduce((sum, g) => sum + g.online, 0)}</p>
-            <p className="muted small">Presence-driven so you can meet people who are literally there.</p>
+          <div className="feature-stat stat-tall">
+            <div>
+              <p className="stat__label">People online in your walls</p>
+              <p
+                className={`stat__number ${
+                  statPulse === 'up' ? 'stat-pulse-up' : statPulse === 'down' ? 'stat-pulse-down' : ''
+                }`}
+              >
+                <span className="stat-live-dot" aria-hidden="true" />
+                {liveOnline}
+              </p>
+              <p className="muted small">Presence-driven so you can meet people who are literally there.</p>
+            </div>
+            <div className="stat-walls">
+              <p className="muted small">Your walls</p>
+              <div className="stat-wall-row">
+                {gyms.slice(0, 3).map(gym => (
+                  <div className="stat-wall" key={gym.id}>
+                    <img src={gym.imageUrl || '/fallback-gym.png'} alt={gym.name} />
+                    <span>{gym.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : null}
       </section>
