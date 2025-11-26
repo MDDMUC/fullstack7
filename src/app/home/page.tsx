@@ -1,12 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
 import { RequireAuth } from '@/components/RequireAuth'
 import { sendSwipe } from '@/lib/swipes'
-import { checkAndCreateMatch, listMatches, MatchWithProfiles } from '@/lib/matches'
+import { listMatches, MatchWithProfiles } from '@/lib/matches'
 import { listMessages, sendMessage, subscribeToMessages, Message as ChatMessage } from '@/lib/messages'
+import SwipeCard from '@/components/SwipeCard'
 
 type Profile = DbProfile & {
   distance?: string
@@ -25,7 +26,6 @@ type MessagePreview = {
 
 const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
-const FALLBACK_DEFAULT = FALLBACK_MALE
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState<'matches' | 'messages'>('matches')
@@ -40,9 +40,13 @@ export default function HomeScreen() {
   const [threadMessages, setThreadMessages] = useState<ChatMessage[]>([])
   const [messageInput, setMessageInput] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
+  const [viewerHome, setViewerHome] = useState<string | null>(null)
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'match' | null>(null)
+  const swipeTimer = useRef<NodeJS.Timeout | null>(null)
   const messageUnsub = useMemo(() => ({ current: null as null | (() => void) }), [])
 
   const current = useMemo(() => deck[0], [deck])
+  const nextProfile = useMemo(() => deck[1], [deck])
 
   const fallbackAvatarFor = (profile?: Profile | null) => {
     const hint = (profile?.pronouns || (profile as any)?.gender || '').toString().toLowerCase()
@@ -74,27 +78,24 @@ export default function HomeScreen() {
     if (!msg) return null
     const found = matches.find(p => p.username.toLowerCase() === msg.name.toLowerCase())
     if (found) return found
-    return {
-      id: msg.id,
-      username: msg.name,
-      age: msg.age ?? 27,
-      distance: '10 km',
-      city: msg.city,
-      avatar_url: msg.avatar || FALLBACK_DEFAULT,
-      bio: msg.snippet,
-      lookingFor: 'Looking for partners',
-      tags: [],
-      style: '',
-      availability: '',
-      grade: '',
-      status: 'Online',
-    }
+    return null
   }, [matches])
 
   const selectedProfile = useMemo(
-    () => selectedMatch ?? messageProfile(selectedMessage) ?? deck[0],
+    () => selectedMatch ?? (selectedMessage ? messageProfile(selectedMessage) : null) ?? deck[0],
     [selectedMatch, selectedMessage, deck, messageProfile]
   )
+  const shortName = (profile?: Profile | null) =>
+    (profile?.username?.split?.(' ')?.[0] || profile?.username || 'Match')
+  const formatLocation = (profile?: Profile | null, viewerCity?: string | null) => {
+    const city = profile?.city || profile?.homebase || ''
+    if (!city) return ''
+    const same = viewerCity && city.toLowerCase() === viewerCity.toLowerCase()
+    if (same) return `${city}, 0 km`
+    if (profile?.distance) return `${city}, ${profile.distance}`
+    return city
+  }
+  // Animation handled inside SwipeCard
 
   useEffect(() => {
     const load = async () => {
@@ -122,6 +123,7 @@ export default function HomeScreen() {
         }))
 
         const me = profiles.find(p => p.id === userData.user?.id)
+        setViewerHome(me?.city ?? null)
         const preference = extractPreference(me)
 
     const filtered = profiles.filter(p => p.id !== userData.user?.id).filter(p => {
@@ -223,7 +225,7 @@ export default function HomeScreen() {
       const msgs = await listMessages(matchId)
       setThreadMessages(msgs)
     } catch (err) {
-      console.error('Failed to load messages', err)
+      console.warn('Failed to load messages', err)
       setThreadMessages([])
     }
     if (messageUnsub.current) messageUnsub.current()
@@ -232,6 +234,7 @@ export default function HomeScreen() {
 
   useEffect(() => () => {
     if (messageUnsub.current) messageUnsub.current()
+    if (swipeTimer.current) clearTimeout(swipeTimer.current)
   }, [messageUnsub])
 
   const handleSend = async () => {
@@ -257,41 +260,36 @@ export default function HomeScreen() {
   }
 
   const handleSwipe = async (profile?: Profile, actionType: 'like' | 'pass' = 'like') => {
-    if (!profile) {
-      rotateDeck()
-      return
+    if (swipeTimer.current) {
+      clearTimeout(swipeTimer.current)
+      swipeTimer.current = null
     }
+    const dir = actionType === 'like' ? 'right' : 'left'
+    setSwipeDirection(dir)
+    swipeTimer.current = setTimeout(() => {
+      rotateDeck()
+      setSwipeDirection(null)
+    }, 450)
+
+    if (!supabase || !profile) return
+
     try {
       await sendSwipe(profile.id, actionType)
       if (actionType === 'like') {
-        const match = await checkAndCreateMatch(profile.id)
-        if (match) {
-          setMatchRows(prev => {
-            if (prev.some(m => m.id === match.id)) return prev
-            return [...prev, { ...match, profiles: [profile] }]
-          })
-          setMessages(prev => {
-            if (prev.some(m => m.matchId === match.id)) return prev
-            return [
-              ...prev,
-              {
-                id: match.id,
-                matchId: match.id,
-                profileId: profile.id,
-                name: profile.username,
-                snippet: profile.bio?.slice(0, 60) || 'Say hi and plan your next session.',
-                avatar: profile.avatar_url ?? fallbackAvatarFor(profile),
-                age: profile.age,
-                city: profile.city,
-              },
-            ]
-          })
+        // TEMP: always show match animation regardless of reciprocity
+        setSwipeDirection('match')
+        if (swipeTimer.current) {
+          clearTimeout(swipeTimer.current)
+          swipeTimer.current = null
         }
+        swipeTimer.current = setTimeout(() => {
+          rotateDeck()
+          setSwipeDirection(null)
+        }, 600)
+        return
       }
     } catch (err) {
-      console.error('Swipe failed', err)
-    } finally {
-      rotateDeck()
+      console.warn('Swipe failed', err)
     }
   }
 
@@ -375,12 +373,12 @@ export default function HomeScreen() {
               <div className="chat-match-info">
                 <img
                   src={selectedProfile?.avatar_url ?? fallbackAvatarFor(selectedProfile)}
-                  alt={selectedMatch?.username ?? selectedMessage?.name ?? selectedProfile?.username ?? 'Profile'}
+                  alt={shortName(selectedProfile)}
                   className="chat-avatar"
                 />
                 <div>
-                  <p className="sub">You matched with {selectedMatch?.username ?? selectedMessage?.name ?? selectedProfile?.username}</p>
-                  <small className="muted">1 month ago</small>
+                  <p className="sub">You matched with {shortName(selectedProfile)}</p>
+                  <small className="muted">Recently</small>
                 </div>
               </div>
               <div className="chat-actions">
@@ -436,8 +434,8 @@ export default function HomeScreen() {
             <div className="profile-hero" style={{ backgroundImage: `url(${selectedProfile?.avatar_url ?? fallbackAvatarFor(selectedProfile)})` }} />
             <div className="profile-pane-body">
               <div className="profile-pane-header">
-                <h2>{selectedProfile?.username} <span>{selectedProfile?.age ?? ''}</span></h2>
-                <p className="muted">Location: {selectedProfile?.distance ?? ''}{selectedProfile?.city ? `, ${selectedProfile.city}` : ''}</p>
+                <h2>{shortName(selectedProfile)} <span>{selectedProfile?.age ?? ''}</span></h2>
+                <p className="muted">{formatLocation(selectedProfile, viewerHome)}</p>
               </div>
               <div className="profile-section">
                 <p className="eyebrow">Looking for</p>
@@ -459,15 +457,29 @@ export default function HomeScreen() {
 
         <section className="swipe-stage">
           <div className="phone-frame">
-            <div className="hero-photo" style={{ backgroundImage: `url(${current?.avatar_url ?? fallbackAvatarFor(current)})` }}>
-              <div className="hero-overlay" />
-              <div className="hero-meta">
-                <div>
-                  <h2>{current?.username} <span>{current?.age}</span></h2>
-                  <p>Location: {current?.distance ?? ''}{current?.city ? `, ${current.city}` : ''}</p>
+            {nextProfile ? (
+              <div
+                className="hero-photo hero-photo-next"
+                style={{ backgroundImage: `url(${nextProfile.avatar_url ?? fallbackAvatarFor(nextProfile)})` }}
+              >
+                <div className="hero-overlay" />
+              </div>
+            ) : null}
+            <SwipeCard
+              direction={swipeDirection}
+              onSwipeLeft={() => { setSwipeDirection('left'); handleSwipe(current, 'pass') }}
+              onSwipeRight={() => { setSwipeDirection('match'); handleSwipe(current, 'like') }}
+            >
+              <div className="hero-photo">
+                <div className="hero-overlay" />
+                <div className="hero-meta">
+                  <div>
+                    <h2>{shortName(current)} <span>{current?.age}</span></h2>
+                    <p>{formatLocation(current, viewerHome)}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+            </SwipeCard>
             <div className="hero-actions hero-actions-wide">
               <button className="ghost wide" onClick={() => handleSwipe(current, 'pass')}>Pass</button>
               <button className="cta wide" onClick={() => handleSwipe(current, 'like')}><span className="dab-text">dab</span></button>

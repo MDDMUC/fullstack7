@@ -42,7 +42,7 @@ export const normalizeProfile = (profile: any): Profile => {
     username: profile.username ?? profile.name ?? ob.username ?? 'Climber',
     email: profile.email ?? undefined,
     age: ob.age ?? profile.age ?? profile.age_range ?? undefined,
-    city: ob.city ?? ob.home ?? profile.city ?? profile.home ?? profile.location ?? '',
+    city: ob.homebase ?? ob.city ?? ob.home ?? profile.city ?? profile.home ?? profile.location ?? '',
     style: ob.style ?? styles ?? '',
     availability: ob.availability ?? profile.availability ?? profile.schedule ?? '',
     grade: ob.grade ?? profile.grade ?? profile.grade_focus ?? profile.level ?? '',
