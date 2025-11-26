@@ -37,7 +37,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     availability,
     tags,
     goals: goalsText,
-    lookingFor: purposes || null,
+    lookingfor: purposes || null,
     phone_number: data.phone || null,
     status: 'New member',
     pronouns,

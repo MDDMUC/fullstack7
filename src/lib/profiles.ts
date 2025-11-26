@@ -53,7 +53,14 @@ export const normalizeProfile = (profile: any): Profile => {
     status: ob.status ?? profile.status ?? profile.state ?? '',
     goals: ob.goals ?? profile.goals ?? profile.intent ?? '',
     distance: ob.distance ?? profile.distance ?? '10 km',
-    lookingFor: ob.lookingFor ?? profile.looking_for ?? profile.intent ?? profile.goals ?? '',
+    lookingFor:
+      ob.lookingfor ??
+      ob.lookingFor ??
+      profile.lookingfor ??
+      profile.looking_for ??
+      profile.intent ??
+      profile.goals ??
+      '',
   }
 }
 
