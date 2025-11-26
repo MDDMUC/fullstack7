@@ -28,6 +28,7 @@ export type GymRoom = {
   crowd: 'Chill' | 'Busy' | 'Peaking'
   tags: string[]
   online: number
+  imageUrl?: string
   threads: Thread[]
   messages: Message[]
 }
@@ -81,6 +82,7 @@ const fallbackGyms: GymRoom[] = [
     crowd: 'Peaking',
     tags: ['Comp Wall', 'Spray Wall', 'Cafe'],
     online: 48,
+    imageUrl: '/gym-boulderwelt.jpg',
     threads: [
       { id: 'tonight', title: 'Who is in tonight?', lastMessage: "Let's hit comp wall 7pm", unread: 8, vibe: 'Flash crew', members: 133 },
       { id: 'beta', title: 'Beta requests', lastMessage: 'Blue 6C slab beta?', unread: 3, vibe: 'Kind beta only', members: 87 },
@@ -102,6 +104,7 @@ const fallbackGyms: GymRoom[] = [
     crowd: 'Busy',
     tags: ['Lead', 'Moonboard', 'Cafe'],
     online: 33,
+    imageUrl: '/gym-thalkirchen.jpg',
     threads: [
       { id: 'lead', title: 'Lead partners', lastMessage: 'Looking for 6b-7a laps', unread: 5, vibe: 'Belay check', members: 90 },
       { id: 'outdoor', title: 'Outdoor trip', lastMessage: 'Kochel Saturday?', unread: 1, vibe: 'Carpool', members: 64 },
@@ -118,6 +121,7 @@ const fallbackGyms: GymRoom[] = [
     crowd: 'Chill',
     tags: ['Spray Wall', 'Campus', 'Sauna'],
     online: 21,
+    imageUrl: '/gym-freimann.jpg',
     threads: [
       { id: 'spray', title: 'Spray wall meet', lastMessage: 'Circuit reset today', unread: 0, vibe: 'Training', members: 44 },
       { id: 'beta-freimann', title: 'Beta requests', lastMessage: 'New yellow comp set', unread: 0, vibe: 'Share beta', members: 31 },
@@ -298,6 +302,15 @@ const crowdFromString = (crowd?: string): GymRoom['crowd'] => {
   return 'Chill'
 }
 
+const imageFromGym = (gym: { name?: string; image_url?: string | null }) => {
+  if (gym.image_url) return gym.image_url
+  const name = (gym.name || '').toLowerCase()
+  if (name.includes('boulderwelt')) return '/gym-boulderwelt.jpg'
+  if (name.includes('thalkirchen')) return '/gym-thalkirchen.jpg'
+  if (name.includes('freimann')) return '/gym-freimann.jpg'
+  return '/fallback-gym.png'
+}
+
 export async function loadGymRooms(): Promise<GymRoom[]> {
   if (!supabase) return fallbackGyms
 
@@ -305,7 +318,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
     const client = requireSupabase()
     const { data: gyms, error: gymErr } = await client
       .from('gyms')
-      .select('id, name, area, crowd, tags, online_count')
+      .select('id, name, area, crowd, tags, online_count, image_url')
     if (gymErr) throw gymErr
 
     const { data: threads, error: threadErr } = await client
@@ -357,6 +370,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
       crowd: crowdFromString((gym as any).crowd),
       tags: (gym.tags as string[]) ?? [],
       online: (gym as any).online_count ?? 0,
+      imageUrl: imageFromGym(gym as any),
       threads: threadByGym.get(gym.id) ?? [],
       messages: (threadByGym.get(gym.id) ?? []).flatMap(thread => messagesByThread.get(thread.id) ?? []),
     }))

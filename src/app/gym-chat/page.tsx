@@ -93,27 +93,35 @@ export default function GymChatPage() {
             {gyms.map(gym => (
               <button
                 key={gym.id}
-                className={`list-row ${gym.id === activeGym?.id ? 'is-active' : ''}`}
+                className={`list-row gym-card ${gym.id === activeGym?.id ? 'is-active' : ''}`}
                 onClick={() => {
                   setActiveGymId(gym.id)
                   setActiveThreadId(gym.threads[0]?.id ?? null)
                 }}
               >
-                <div>
-                  <div className="row-top">
-                    <strong>{gym.name}</strong>
-                    <span className={`pill ${gym.crowd.toLowerCase()}`}>{gym.crowd}</span>
-                  </div>
-                  <p className="muted small">{gym.area}</p>
-                  <div className="tagline">
-                    {gym.tags.map(tag => (
-                      <span key={tag} className="ghost-tag">{tag}</span>
-                    ))}
+                <div className="gym-card-top">
+                  <span className={`pill ${gym.crowd.toLowerCase()}`}>{gym.crowd}</span>
+                  <div className="presence">
+                    <span className="presence-dot" />
+                    <span className="muted small">{gym.online} online</span>
                   </div>
                 </div>
-                <div className="presence">
-                  <span className="presence-dot" />
-                  <span className="muted small">{gym.online} online</span>
+                <div className="gym-card-main">
+                  <img
+                    src={gym.imageUrl || '/fallback-gym.png'}
+                    alt={gym.name}
+                    className="gym-avatar"
+                    loading="lazy"
+                  />
+                  <div className="gym-card-body">
+                    <strong>{gym.name}</strong>
+                    <p className="muted small">{gym.area}</p>
+                  </div>
+                </div>
+                <div className="tagline gym-card-tags">
+                  {gym.tags.map(tag => (
+                    <span key={tag} className="ghost-tag">{tag}</span>
+                  ))}
                 </div>
               </button>
             ))}

@@ -20,17 +20,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Supabase setup
 
-To learn more about Next.js, take a look at the following resources:
+The app will read live data from Supabase when `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set. Schema expectations:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `gyms` table: `id uuid pk`, `name text`, `area text`, `crowd text`, `tags text[]`, `online_count int`, `image_url text` (public URL; defaults to `/fallback-gym.png` when empty).
+- `gym_threads`: `id uuid pk`, `title text`, `last_message text`, `unread int`, `vibe text`, `members int`, `gym_id uuid fk gyms.id`.
+- `gym_messages`: `id uuid pk`, `thread_id uuid fk gym_threads.id`, `author text`, `handle text`, `time text`, `role text`, `body text`, `reactions text[]`, `created_at timestamptz`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Gym images: store a public URL in `gyms.image_url` (e.g., Supabase Storage public bucket or any HTTPS link). If absent, the UI falls back to `public/fallback-gym.png`.

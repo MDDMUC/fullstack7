@@ -625,6 +625,13 @@ textarea:focus-visible {
 .list-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; width: 100%; text-align: left; background: #0f131d; border: 1px solid var(--stroke); border-radius: 12px; padding: 12px; color: var(--text); }
 .list-row.is-active { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(92,225,230,0.12); }
 .row-top { display: flex; align-items: center; gap: 8px; }
+.gym-card { display: grid; gap: 8px; align-content: start; }
+.gym-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
+.gym-card-main { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; width: 100%; }
+.gym-avatar { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; border: 1px solid var(--stroke); background: #0b0f18; }
+.gym-card-body { display: grid; gap: 2px; align-content: start; }
+.gym-card-tags { width: 100%; }
+.gym-card .pill { padding: 4px 10px; font-size: 12px; line-height: 1; }
 .tagline { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .presence { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .presence-dot { width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(120deg, var(--accent), var(--accent-2)); box-shadow: 0 0 0 4px rgba(92,225,230,0.1); }
