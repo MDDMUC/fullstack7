@@ -29,6 +29,9 @@ export type GymRoom = {
   tags: string[]
   online: number
   imageUrl?: string
+  popularTimes?: Array<{ hour: number; level: number }>
+  liveLevel?: number
+  liveStatus?: string
   threads: Thread[]
   messages: Message[]
 }
@@ -83,6 +86,17 @@ const fallbackGyms: GymRoom[] = [
     tags: ['Comp Wall', 'Spray Wall', 'Cafe'],
     online: 48,
     imageUrl: '/gym-boulderwelt.jpg',
+    popularTimes: [
+      { hour: 9, level: 2 },
+      { hour: 11, level: 3 },
+      { hour: 13, level: 4 },
+      { hour: 15, level: 6 },
+      { hour: 17, level: 8 },
+      { hour: 19, level: 9 },
+      { hour: 21, level: 6 },
+    ],
+    liveLevel: 6,
+    liveStatus: 'Not too busy',
     threads: [
       { id: 'tonight', title: 'Who is in tonight?', lastMessage: "Let's hit comp wall 7pm", unread: 8, vibe: 'Flash crew', members: 133 },
       { id: 'beta', title: 'Beta requests', lastMessage: 'Blue 6C slab beta?', unread: 3, vibe: 'Kind beta only', members: 87 },
@@ -105,6 +119,17 @@ const fallbackGyms: GymRoom[] = [
     tags: ['Lead', 'Moonboard', 'Cafe'],
     online: 33,
     imageUrl: '/gym-thalkirchen.jpg',
+    popularTimes: [
+      { hour: 9, level: 3 },
+      { hour: 11, level: 4 },
+      { hour: 13, level: 5 },
+      { hour: 15, level: 7 },
+      { hour: 17, level: 8 },
+      { hour: 19, level: 7 },
+      { hour: 21, level: 4 },
+    ],
+    liveLevel: 7,
+    liveStatus: 'Starting to peak',
     threads: [
       { id: 'lead', title: 'Lead partners', lastMessage: 'Looking for 6b-7a laps', unread: 5, vibe: 'Belay check', members: 90 },
       { id: 'outdoor', title: 'Outdoor trip', lastMessage: 'Kochel Saturday?', unread: 1, vibe: 'Carpool', members: 64 },
@@ -122,6 +147,17 @@ const fallbackGyms: GymRoom[] = [
     tags: ['Spray Wall', 'Campus', 'Sauna'],
     online: 21,
     imageUrl: '/gym-freimann.jpg',
+    popularTimes: [
+      { hour: 9, level: 2 },
+      { hour: 11, level: 3 },
+      { hour: 13, level: 4 },
+      { hour: 15, level: 5 },
+      { hour: 17, level: 6 },
+      { hour: 19, level: 5 },
+      { hour: 21, level: 3 },
+    ],
+    liveLevel: 4,
+    liveStatus: 'Steady',
     threads: [
       { id: 'spray', title: 'Spray wall meet', lastMessage: 'Circuit reset today', unread: 0, vibe: 'Training', members: 44 },
       { id: 'beta-freimann', title: 'Beta requests', lastMessage: 'New yellow comp set', unread: 0, vibe: 'Share beta', members: 31 },
@@ -318,7 +354,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
     const client = requireSupabase()
     const { data: gyms, error: gymErr } = await client
       .from('gyms')
-      .select('id, name, area, crowd, tags, online_count, image_url')
+      .select('id, name, area, crowd, tags, online_count, image_url, popular_times, live_level, live_status')
     if (gymErr) throw gymErr
 
     const { data: threads, error: threadErr } = await client
@@ -371,6 +407,9 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
       tags: (gym.tags as string[]) ?? [],
       online: (gym as any).online_count ?? 0,
       imageUrl: imageFromGym(gym as any),
+      popularTimes: (gym as any).popular_times as GymRoom['popularTimes'],
+      liveLevel: (gym as any).live_level ?? undefined,
+      liveStatus: (gym as any).live_status ?? undefined,
       threads: threadByGym.get(gym.id) ?? [],
       messages: (threadByGym.get(gym.id) ?? []).flatMap(thread => messagesByThread.get(thread.id) ?? []),
     }))

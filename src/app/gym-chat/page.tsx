@@ -11,6 +11,16 @@ const tonightPrompts = [
   'Who needs a belay?',
 ]
 
+const defaultPopularTimes = [
+  { hour: 9, level: 2 },
+  { hour: 12, level: 3 },
+  { hour: 15, level: 5 },
+  { hour: 17, level: 7 },
+  { hour: 19, level: 9 },
+  { hour: 21, level: 6 },
+  { hour: 22, level: 3 },
+]
+
 export default function GymChatPage() {
   const router = useRouter()
   const [gyms, setGyms] = useState<GymRoom[]>([])
@@ -49,7 +59,48 @@ export default function GymChatPage() {
     [activeGym, activeThread]
   )
 
+  const currentHour = useMemo(() => new Date().getHours(), [])
+
   const handleJoin = () => router.push('/signup')
+
+  const renderBusyMeter = (gym: GymRoom) => {
+    const times = (gym.popularTimes && gym.popularTimes.length ? gym.popularTimes : defaultPopularTimes).slice(0, 7)
+    const maxLevel = Math.max(...times.map(t => t.level), 1)
+    const barData = times.map(time => {
+      const height = Math.max(16, Math.round((time.level / maxLevel) * 48))
+      return {
+        time,
+        height,
+        isLive: time.hour === currentHour,
+      }
+    })
+    const peakHeight = Math.max(...barData.map(b => b.height), 1)
+    const liveLevel = gym.liveLevel ?? times.find(t => t.hour === currentHour)?.level ?? 0
+    const label =
+      gym.liveStatus ||
+      (liveLevel >= 8 ? 'Peaking now' : liveLevel >= 5 ? 'Moderate' : 'Chill')
+
+    return (
+      <div className="busy-meter" aria-label="Gym busyness">
+        <div className="busy-header">
+          <span className="muted small">How busy</span>
+          <span className="busy-label">{label}</span>
+        </div>
+        <div className="busy-bars" aria-hidden="true">
+          <div className="busy-peak-line" style={{ bottom: `${peakHeight}px` }} title="Usual peak" />
+          {barData.map(({ time, height, isLive }) => (
+            <div className="busy-bar-wrap" key={`${gym.id}-${time.hour}`}>
+              <div
+                className={`busy-bar ${isLive ? 'is-live' : ''}`}
+                style={{ height: `${height}px` }}
+                title={`${time.hour}:00`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <main className="feature-shell">
@@ -70,6 +121,9 @@ export default function GymChatPage() {
             <span>Lightweight threads</span>
             <span>Gym-specific prompts</span>
           </div>
+        </div>
+        <div className="hero-visual">
+          <img src="/hero-gymchat.jpg" alt="Climbers at the wall" className="hero-image" />
         </div>
         {gyms.length ? (
           <div className="feature-stat">
@@ -118,6 +172,7 @@ export default function GymChatPage() {
                     <p className="muted small">{gym.area}</p>
                   </div>
                 </div>
+                {renderBusyMeter(gym)}
                 <div className="tagline gym-card-tags">
                   {gym.tags.map(tag => (
                     <span key={tag} className="ghost-tag">{tag}</span>
