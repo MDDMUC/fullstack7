@@ -1,0 +1,10 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='200' height='60' viewBox='0 0 200 60' role='img' aria-label='Pass button'>
+  <defs>
+    <linearGradient id='passStroke' x1='0%' y1='0%' x2='100%' y2='0%'>
+      <stop offset='0%' stop-color='#1f2633'/>
+      <stop offset='100%' stop-color='#2a3140'/>
+    </linearGradient>
+  </defs>
+  <rect x='2' y='2' width='196' height='56' rx='14' ry='14' fill='#0f131d' stroke='url(#passStroke)' stroke-width='2'/>
+  <text x='100' y='36' text-anchor='middle' font-family='Inter, Arial, sans-serif' font-size='18' font-weight='800' fill='#e9eef7'>Pass</text>
+</svg>

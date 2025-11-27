@@ -1,6 +1,7 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
 import { RequireAuth } from '@/components/RequireAuth'
@@ -41,8 +42,10 @@ export default function HomeScreen() {
   const [messageInput, setMessageInput] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
   const [viewerHome, setViewerHome] = useState<string | null>(null)
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'match' | null>(null)
-  const swipeTimer = useRef<NodeJS.Timeout | null>(null)
+  const [swipeMeta, setSwipeMeta] = useState<{ direction: -1 | 0 | 1; kind: 'none' | 'pass' | 'like' | 'match' }>({
+    direction: 0,
+    kind: 'none',
+  })
   const messageUnsub = useMemo(() => ({ current: null as null | (() => void) }), [])
 
   const current = useMemo(() => deck[0], [deck])
@@ -88,7 +91,7 @@ export default function HomeScreen() {
   const shortName = (profile?: Profile | null) =>
     (profile?.username?.split?.(' ')?.[0] || profile?.username || 'Match')
   const formatLocation = (profile?: Profile | null, viewerCity?: string | null) => {
-    const city = profile?.city || profile?.homebase || ''
+    const city = profile?.city || ''
     if (!city) return ''
     const same = viewerCity && city.toLowerCase() === viewerCity.toLowerCase()
     if (same) return `${city}, 0 km`
@@ -196,14 +199,6 @@ export default function HomeScreen() {
     return () => window.removeEventListener('keydown', handler)
   }, [])
 
-  const rotateDeck = () => {
-    setDeck(prev => {
-      if (!prev.length) return prev
-      const [first, ...rest] = prev
-      return [...rest, first]
-    })
-  }
-
   const openMatch = async (matchId: string) => {
     const match = matchRows.find(m => m.id === matchId)
     if (!match) return
@@ -234,7 +229,6 @@ export default function HomeScreen() {
 
   useEffect(() => () => {
     if (messageUnsub.current) messageUnsub.current()
-    if (swipeTimer.current) clearTimeout(swipeTimer.current)
   }, [messageUnsub])
 
   const handleSend = async () => {
@@ -259,38 +253,28 @@ export default function HomeScreen() {
     }
   }
 
-  const handleSwipe = async (profile?: Profile, actionType: 'like' | 'pass' = 'like') => {
-    if (swipeTimer.current) {
-      clearTimeout(swipeTimer.current)
-      swipeTimer.current = null
-    }
-    const dir = actionType === 'like' ? 'right' : 'left'
-    setSwipeDirection(dir)
-    swipeTimer.current = setTimeout(() => {
-      rotateDeck()
-      setSwipeDirection(null)
-    }, 450)
-
+  const recordSwipe = useCallback(async (profile?: Profile, actionType: 'like' | 'pass' = 'like') => {
     if (!supabase || !profile) return
-
     try {
       await sendSwipe(profile.id, actionType)
-      if (actionType === 'like') {
-        // TEMP: always show match animation regardless of reciprocity
-        setSwipeDirection('match')
-        if (swipeTimer.current) {
-          clearTimeout(swipeTimer.current)
-          swipeTimer.current = null
-        }
-        swipeTimer.current = setTimeout(() => {
-          rotateDeck()
-          setSwipeDirection(null)
-        }, 600)
-        return
-      }
     } catch (err) {
       console.warn('Swipe failed', err)
     }
+  }, [])
+
+  const handleSwipe = (actionType: 'like' | 'pass' = 'like') => {
+    if (!current) return
+    const profile = current
+    const direction = actionType === 'pass' ? -1 : 1
+    const kind = actionType === 'like' ? 'match' : 'pass'
+    setSwipeMeta({ direction, kind })
+    setDeck(prev => {
+      if (!prev.length) return prev
+      const [first, ...rest] = prev
+      return [...rest, first]
+    })
+    setTimeout(() => setSwipeMeta({ direction: 0, kind: 'none' }), 180)
+    recordSwipe(profile, actionType)
   }
 
   return (
@@ -465,24 +449,32 @@ export default function HomeScreen() {
                 <div className="hero-overlay" />
               </div>
             ) : null}
-            <SwipeCard
-              direction={swipeDirection}
-              onSwipeLeft={() => { setSwipeDirection('left'); handleSwipe(current, 'pass') }}
-              onSwipeRight={() => { setSwipeDirection('match'); handleSwipe(current, 'like') }}
-            >
-              <div className="hero-photo">
-                <div className="hero-overlay" />
-                <div className="hero-meta">
-                  <div>
-                    <h2>{shortName(current)} <span>{current?.age}</span></h2>
-                    <p>{formatLocation(current, viewerHome)}</p>
+            <AnimatePresence mode="popLayout">
+              {current ? (
+                <SwipeCard
+                  key={current.id}
+                  swipeMeta={swipeMeta}
+                  onSwipeLeft={() => handleSwipe('pass')}
+                  onSwipeRight={() => handleSwipe('like')}
+                  >
+                  <div
+                    className="hero-photo"
+                    style={{ backgroundImage: `url(${current.avatar_url ?? fallbackAvatarFor(current)})` }}
+                  >
+                    <div className="hero-overlay" />
+                    <div className="hero-meta">
+                      <div>
+                        <h2>{shortName(current)} <span>{current?.age}</span></h2>
+                        <p>{formatLocation(current, viewerHome)}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </SwipeCard>
+                </SwipeCard>
+              ) : null}
+            </AnimatePresence>
             <div className="hero-actions hero-actions-wide">
-              <button className="ghost wide" onClick={() => handleSwipe(current, 'pass')}>Pass</button>
-              <button className="cta wide" onClick={() => handleSwipe(current, 'like')}><span className="dab-text">dab</span></button>
+              <button className="ghost wide" onClick={() => handleSwipe('pass')}>Pass</button>
+              <button className="cta wide" onClick={() => handleSwipe('like')}><span className="dab-text">dab</span></button>
             </div>
           </div>
         </section>
