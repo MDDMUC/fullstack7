@@ -65,6 +65,54 @@ export const normalizeProfile = (profile: any): Profile => {
   }
 }
 
+const USER_IMAGES_BUCKET = 'user-images'
+const SUPABASE_PUBLIC_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+// Pre-mapped demo user images (bucket folders with explicit filenames)
+const DEMO_IMAGE_MAP: Record<string, string> = {
+  '1a518ec3-83f4-4c0b-a279-9195a983f4c1': '1a518ec3-83f4-4c0b-a279-9195a983f4c1/yarahost.jpg',
+  '266a5e75-89d9-407d-a1d8-0cc8dc6d6196': '266a5e75-89d9-407d-a1d8-0cc8dc6d6196/timopogo.jpg',
+  '618fbbfa-1032-4bc3-a282-15755d2479df': '618fbbfa-1032-4bc3-a282-15755d2479df/lenaflash.jpg',
+  '9530fc24-bbed-4724-9a5c-b4d66d198f2a': '9530fc24-bbed-4724-9a5c-b4d66d198f2a/maraearly.jpg',
+  '9886aaf9-8bd8-4cd7-92e1-72962891eace': '9886aaf9-8bd8-4cd7-92e1-72962891eace/stefanhoermann.jpg',
+  'd63497aa-a038-49e7-b393-aeb16f5c52be': 'd63497aa-a038-49e7-b393-aeb16f5c52be/marcoboard.jpg',
+  'dba824e8-04d8-48ab-81b1-bdb8f7360287': 'dba824e8-04d8-48ab-81b1-bdb8f7360287/finnslab.jpg',
+  'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f': 'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f/maxtrad.jpg',
+}
+
+const publicUrlFor = (path?: string | null) => {
+  if (!path || !SUPABASE_PUBLIC_URL) return null
+  return `${SUPABASE_PUBLIC_URL}/storage/v1/object/public/${USER_IMAGES_BUCKET}/${path}`
+}
+
+const toSlug = (value?: string | null) =>
+  (value || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+
+const resolveAvatarUrl = async (
+  client: SupabaseClient,
+  profileId: string,
+  existingUrl?: string | null,
+  bucketListing?: { name: string }[]
+): Promise<string | null | undefined> => {
+  if (existingUrl) return existingUrl
+  try {
+    // Try a folder named after the profile ID (recommended structure)
+    const { data, error } = await client.storage
+      .from(USER_IMAGES_BUCKET)
+      .list(profileId, { limit: 1, offset: 0, sortBy: { column: 'created_at', order: 'desc' } })
+    if (error || !data?.length) return existingUrl
+    const filePath = `${profileId}/${data[0].name}`
+    const { data: urlData } = client.storage.from(USER_IMAGES_BUCKET).getPublicUrl(filePath)
+    return urlData?.publicUrl ?? existingUrl
+  } catch (err) {
+    console.warn('Avatar lookup failed', err)
+    return existingUrl
+  }
+}
+
 export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
   const c = client ?? requireSupabase()
   const baseQuery = c
@@ -84,10 +132,51 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
   if (obErr) throw obErr
   const obMap = new Map((obRows ?? []).map(ob => [ob.id, ob]))
 
-  return (baseProfiles ?? []).map(profile =>
-    normalizeProfile({
-      ...profile,
-      onboardingprofiles: obMap.get(profile.id) ? [obMap.get(profile.id)] : [],
+  // Preload a flat listing at root as a fallback for manually uploaded files not placed in user folders
+  let bucketListing: { name: string }[] | undefined
+  try {
+    const { data, error } = await c.storage.from(USER_IMAGES_BUCKET).list('', { limit: 200 })
+    if (!error && data?.length) bucketListing = data
+  } catch (err) {
+    console.warn('Bucket root listing failed', err)
+  }
+
+  const resolved = await Promise.all(
+    (baseProfiles ?? []).map(async profile => {
+      const normalized = normalizeProfile({
+        ...profile,
+        onboardingprofiles: obMap.get(profile.id) ? [obMap.get(profile.id)] : [],
+      })
+
+      let avatarUrl = normalized.avatar_url
+
+      // Known demo mapping: always prefer the uploaded file for these seeded users
+      if (DEMO_IMAGE_MAP[normalized.id]) {
+        const mappedPath = DEMO_IMAGE_MAP[normalized.id]
+        const { data: urlData } = c.storage.from(USER_IMAGES_BUCKET).getPublicUrl(mappedPath)
+        avatarUrl = urlData?.publicUrl ?? publicUrlFor(mappedPath) ?? avatarUrl
+      }
+
+      // Try explicit folder lookup
+      avatarUrl = (await resolveAvatarUrl(c, normalized.id, avatarUrl, bucketListing)) ?? avatarUrl
+
+      // If still missing, try matching root files by slug/id when a bucket listing is available
+      if (!avatarUrl && bucketListing?.length) {
+        const slug = toSlug(normalized.username)
+        const candidate = bucketListing.find(file => {
+          const name = (file.name || '').toLowerCase()
+          return name.includes(slug) || name.includes(normalized.id.toLowerCase())
+        })
+        if (candidate) {
+          const path = candidate.name // root-level file
+          const { data: urlData } = c.storage.from(USER_IMAGES_BUCKET).getPublicUrl(path)
+          avatarUrl = urlData?.publicUrl ?? null
+        }
+      }
+
+      return { ...normalized, avatar_url: avatarUrl ?? null }
     })
   )
+
+  return resolved
 }

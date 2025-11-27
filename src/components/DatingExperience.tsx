@@ -80,6 +80,8 @@ const formatJoinedAgo = (iso?: string) => {
   return `Joined ${days}d ago`
 }
 
+const firstName = (name?: string | null) => (name || '').trim().split(/\s+/)[0] || (name ?? '')
+
 export default function DatingExperience() {
   const router = useRouter()
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -189,15 +191,8 @@ export default function DatingExperience() {
     return list
   }, [profiles, filters])
 
-  const featured = useMemo(() => {
-    if (!profiles.length) return undefined
-    const sorted = [...profiles].sort((a, b) => {
-      const aDate = a.created_at ? Date.parse(a.created_at) : 0
-      const bDate = b.created_at ? Date.parse(b.created_at) : 0
-      return bDate - aDate
-    })
-    return sorted[0]
-  }, [profiles])
+  // Supabase already returns profiles ordered by created_at desc; take the first as the newest join.
+  const featured = useMemo(() => (profiles.length ? profiles[0] : undefined), [profiles])
   const matchesCount = filteredProfiles.length
 
   const handleReset = () => {
@@ -243,11 +238,11 @@ export default function DatingExperience() {
                   <div className="featured-body">
                     <img
                       src={featured.avatar_url ?? fallbackAvatarFor(featured)}
-                      alt={featured.username}
+                      alt={firstName(featured.username)}
                       className="featured-avatar"
                     />
                     <div>
-                      <h3>{featured.username}{featured.age ? `, ${featured.age}` : ''}</h3>
+                      <h3>{firstName(featured.username)}{featured.age ? `, ${featured.age}` : ''}</h3>
                       <p className="sub">{featured.style || 'Climber'}</p>
                       <p className="sub">{featured.city || 'Somewhere craggy'}</p>
                       <div className="featured-tags">
@@ -270,8 +265,8 @@ export default function DatingExperience() {
                     </ul>
                   </div>
                   <div className="card-actions">
-                    <button className="ghost" aria-label="pass" onClick={() => handlePass(featured.username)}>Pass</button>
-                    <button className="cta" aria-label="send a like" onClick={() => handleLike(featured.username)}><span className="dab-text">dab</span></button>
+                    <button className="ghost" aria-label="pass" onClick={() => handlePass(firstName(featured.username))}>Pass</button>
+                    <button className="cta" aria-label="send a like" onClick={() => handleLike(firstName(featured.username))}><span className="dab-text">dab</span></button>
                   </div>
                 </div>
               </div>
@@ -369,11 +364,11 @@ export default function DatingExperience() {
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       <img
                         src={profile.avatar_url ?? fallbackAvatarFor(profile)}
-                        alt={profile.username}
+                        alt={firstName(profile.username)}
                         className="profile-avatar"
                       />
                       <div>
-                        <h3>{profile.username}{profile.age ? `, ${profile.age}` : ''}</h3>
+                        <h3>{firstName(profile.username)}{profile.age ? `, ${profile.age}` : ''}</h3>
                         <p className="profile-meta">{profile.city || 'Anywhere'} • {profile.availability || 'Flexible'}</p>
                       </div>
                     </div>
@@ -392,8 +387,8 @@ export default function DatingExperience() {
                       </div>
                     </div>
                     <div className="actions">
-                      <button className="ghost" onClick={() => handlePass(profile.username)}>Pass</button>
-                      <button className="cta" onClick={() => handleLike(profile.username)}><span className="dab-text">dab</span></button>
+                      <button className="ghost" onClick={() => handlePass(firstName(profile.username))}>Pass</button>
+                      <button className="cta" onClick={() => handleLike(firstName(profile.username))}><span className="dab-text">dab</span></button>
                     </div>
                   </div>
                 </article>
