@@ -82,6 +82,28 @@ const formatJoinedAgo = (iso?: string) => {
 
 const firstName = (name?: string | null) => (name || '').trim().split(/\s+/)[0] || (name ?? '')
 
+type StatusState = { label: string; variant: 'live' | 'offline' | 'new' | 'omw' | 'dab'; live: boolean }
+
+const statusForProfile = (profile: Profile): StatusState => {
+  const raw = (profile.status || '').toLowerCase()
+  const city = profile.city || 'your gym'
+
+  if (raw.includes('offline')) return { label: 'Offline', variant: 'offline', live: false }
+  if (raw.includes('climbing')) return { label: 'Climbing now', variant: 'climb', live: true }
+  if (raw.includes('omw') || raw.includes('heading')) return { label: 'OMW', variant: 'omw', live: true }
+  if (raw.includes('dab')) return { label: 'DAB me', variant: 'dab', live: true }
+  if (raw.includes('online')) return { label: 'Online now', variant: 'live', live: true }
+
+  const created = profile.created_at ? Date.parse(profile.created_at) : 0
+  const hours = created ? (Date.now() - created) / 3600000 : 999
+  if (hours <= 24) return { label: 'Just joined', variant: 'new', live: true }
+  if (hours <= 24 * 7) return { label: 'Just joined', variant: 'new', live: false }
+
+  if (profile.availability) return { label: 'OMW', variant: 'omw', live: false }
+
+  return { label: 'Online now', variant: 'live', live: true }
+}
+
 export default function DatingExperience() {
   const router = useRouter()
   const [profiles, setProfiles] = useState<Profile[]>([])
@@ -234,6 +256,19 @@ export default function DatingExperience() {
                 <div className="card-header">
                   <div className="card-top">
                     <p className="label pill joined-label">{formatJoinedAgo(featured.created_at).toLowerCase()}</p>
+                    {(() => {
+                      const status = statusForProfile(featured)
+                      const live = status.live
+                      const showDot = status.variant !== 'offline' && status.variant !== 'new'
+                      return (
+                        <span className={`status-pill status-${status.variant}`}>
+                          {showDot ? (
+                            <span className={`status-dot status-dot-${status.variant} ${live ? 'is-live' : ''}`} />
+                          ) : null}
+                          {status.label}
+                        </span>
+                      )
+                    })()}
                   </div>
                   <div className="featured-body">
                     <img
@@ -242,27 +277,31 @@ export default function DatingExperience() {
                       className="featured-avatar"
                     />
                     <div>
-                      <h3>{firstName(featured.username)}{featured.age ? `, ${featured.age}` : ''}</h3>
-                      <p className="sub">{featured.style || 'Climber'}</p>
+                      <h3 style={{ fontSize: '22px', lineHeight: 1.2 }}>
+                        <span style={{ fontWeight: 800 }}>{firstName(featured.username)}</span>
+                        {featured.age ? <span style={{ fontWeight: 400, marginLeft: 8, fontSize: '18px' }}>{featured.age}</span> : null}
+                      </h3>
                       <p className="sub">{featured.city || 'Somewhere craggy'}</p>
-                      <div className="featured-tags">
-                        {featured.grade ? <span className="tag grade">{featured.grade}</span> : null}
-                        {featured.style ? <span className="subtle-tag">{featured.style}</span> : null}
+                      <div className="featured-tags" style={{ justifyContent: 'flex-end', gap: '6px 8px' }}>
+                        {(featured.style ? featured.style.split(/[ƒ?›,/]/).map(s => s.trim()).filter(Boolean) : ['Climber']).map(style => (
+                          <span key={style} className="tag">{style}</span>
+                        ))}
+                        {featured.grade ? <span className="tag grade">{featured.grade}</span> : <span className="subtle-tag">Grade focus</span>}
                       </div>
+                      <p className="sub" style={{ fontSize: '13px' }}>
+                        Goal: {featured.goals || featured.lookingFor || 'Goals incoming'}
+                      </p>
                     </div>
                   </div>
                 </div>
                 <div className="card-body sticky-actions">
                   <div className="card-text">
-                    <p>{featured.bio || 'Seeking partners who love long approaches and clean chains.'}</p>
-                    <ul className="traits">
-                      {((Array.isArray(featured.tags) && featured.tags.length)
-                        ? featured.tags
-                        : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']
-                      ).map(tag => (
-                        <li key={tag}>{tag}</li>
+                    <p>{featured.bio || 'Ready for the next session.'}</p>
+                    <div className="badge-row">
+                      {(featured.tags?.length ? featured.tags : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']).map(tag => (
+                        <span key={tag} className="subtle-tag">{tag}</span>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                   <div className="card-actions">
                     <button className="ghost" aria-label="pass" onClick={() => handlePass(firstName(featured.username))}>Pass</button>
@@ -360,21 +399,45 @@ export default function DatingExperience() {
             {filteredProfiles.length ? (
               filteredProfiles.map(profile => (
                 <article key={profile.id} className="profile-card">
-                  <header>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                      <img
-                        src={profile.avatar_url ?? fallbackAvatarFor(profile)}
-                        alt={firstName(profile.username)}
-                        className="profile-avatar"
-                      />
+                  <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '12px', alignItems: 'start', justifyItems: 'start' }}>
+                      <div className="profile-avatar-frame">
+                        <img
+                          src={profile.avatar_url ?? fallbackAvatarFor(profile)}
+                          alt={firstName(profile.username)}
+                          className="profile-avatar"
+                        />
+                      </div>
                       <div>
-                        <h3>{firstName(profile.username)}{profile.age ? `, ${profile.age}` : ''}</h3>
-                        <p className="profile-meta">{profile.city || 'Anywhere'} • {profile.availability || 'Flexible'}</p>
+                        <h3 style={{ margin: 0 }}>
+                          <span style={{ fontWeight: 800 }}>{firstName(profile.username)}</span>
+                          {profile.age ? <span style={{ fontWeight: 400, marginLeft: 6 }}>{profile.age}</span> : null}
+                        </h3>
+                        <p className="profile-meta" style={{ margin: '2px 0 0' }}>{profile.city || 'Anywhere'}</p>
                       </div>
                     </div>
                     <div className="tags-column">
-                      {profile.grade ? <span className="tag grade">{profile.grade}</span> : null}
-                      {profile.style ? <span className="subtle-tag">{profile.style}</span> : null}
+                      {(() => {
+                        const status = statusForProfile(profile)
+                        const live = status.live
+                        const showDot = status.variant !== 'offline' && status.variant !== 'new'
+                        return (
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6 }}>
+                            <span className={`status-pill status-${status.variant}`}>
+                              {showDot ? (
+                                <span className={`status-dot status-dot-${status.variant} ${live ? 'is-live' : ''}`} />
+                              ) : null}
+                              {status.label}
+                            </span>
+                          </div>
+                        )
+                      })()}
+                      <div className="featured-tags" style={{ justifyContent: 'flex-end', gap: '6px 8px' }}>
+                        {(profile.style ? profile.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean) : ['Climber']).map(style => (
+                          <span key={style} className="tag">{style}</span>
+                        ))}
+                        {profile.grade ? <span className="tag grade">{profile.grade}</span> : <span className="subtle-tag">Grade focus</span>}
+                      </div>
                     </div>
                   </header>
                   <div className="profile-body sticky-actions">
@@ -382,7 +445,7 @@ export default function DatingExperience() {
                       <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
                       <div className="badge-row">
                         {(profile.tags?.length ? profile.tags : ['Belays soft', 'Down for laps', 'Gear organized']).map(tag => (
-                          <span key={tag}>{tag}</span>
+                          <span key={tag} className="subtle-tag">{tag}</span>
                         ))}
                       </div>
                     </div>
