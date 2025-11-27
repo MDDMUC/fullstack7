@@ -170,7 +170,7 @@ export default function NameAgeGenderStep() {
             style={{ padding: '10px 16px', borderRadius: '10px' }}
           >
             <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-              CONTINUE 2/7
+              CONTINUE 2/9
             </span>
           </button>
         </form>

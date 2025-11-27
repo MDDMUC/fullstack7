@@ -9,9 +9,10 @@ export type OnboardingData = {
   // Identity
   username?: string
   age?: string
-  gender?: 'Man' | 'Woman' | 'Other'
+  gender?: 'Man' | 'Woman' | 'Other' | "Won't say"
   pronouns?: string
   bio?: string
+  photo?: string
 
   // Climbing profile
   styles?: string[]
@@ -20,7 +21,7 @@ export type OnboardingData = {
   availability?: string[]
   purposes?: string[]
   interest?: 'Women' | 'Men' | 'All'
-  photos?: File[]
+  photos?: (File | string)[]
 
   // Location
   homebase?: string
@@ -62,6 +63,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       purposes: [],
       radiusKm: 100,
       pledgeAccepted: false,
+      photos: [],
     })
     setCurrentStep(1)
   }

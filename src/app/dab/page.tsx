@@ -11,6 +11,7 @@ import PurposeStep from './steps/PurposeStep'
 import ShowMeStep from './steps/ShowMeStep'
 import InterestsStep from './steps/InterestsStep'
 import LocationStep from './steps/LocationStep'
+import PhotosStep from './steps/PhotosStep'
 import SuccessStep from './steps/SuccessStep'
 
 export default function OnboardingPage() {
@@ -21,9 +22,9 @@ export default function OnboardingPage() {
 
   // Only run the profile check once on initial mount, and only if not on final steps
   useEffect(() => {
-    // CRITICAL: Never run check if on final steps (7 pledge, 8 success)
+    // CRITICAL: Never run check if on final steps (8 pledge, 9 success)
     // This prevents redirects during active onboarding completion
-    if (currentStep >= 7) {
+    if (currentStep >= 8) {
       setChecking(false)
       hasCheckedRef.current = true // Mark as checked to prevent future runs
       return
@@ -55,7 +56,7 @@ export default function OnboardingPage() {
           const stepAtCheckTime = currentStep
           
           // CRITICAL: Never redirect if on final onboarding steps
-          if (stepAtCheckTime >= 7) {
+          if (stepAtCheckTime >= 8) {
             console.log('On final onboarding steps, skipping redirect check')
             return
           }
@@ -79,7 +80,7 @@ export default function OnboardingPage() {
           // 4. Testing mode is not enabled
           if (profile && !profileError && stepAtCheckTime < 4 && !isTestingMode) {
             // Final safety check - never redirect if somehow we got to final steps
-            if (currentStep >= 7) {
+            if (currentStep >= 8) {
               console.log('Step changed to final steps during check, aborting redirect')
               return
             }
@@ -122,8 +123,9 @@ export default function OnboardingPage() {
     { component: ShowMeStep, step: 4 },
     { component: LocationStep, step: 5 },
     { component: PurposeStep, step: 6 },
-    { component: WelcomeStep, step: 7 },
-    { component: SuccessStep, step: 8 },
+    { component: PhotosStep, step: 7 },
+    { component: WelcomeStep, step: 8 },
+    { component: SuccessStep, step: 9 },
   ]
 
   const currentStepData = steps.find(s => s.step === currentStep)

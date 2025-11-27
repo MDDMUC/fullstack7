@@ -6,7 +6,7 @@ export type OnboardingDataFromStorage = {
   name?: string
   username?: string
   age?: string
-  gender?: 'Man' | 'Woman' | 'Other'
+  gender?: 'Man' | 'Woman' | 'Other' | "Won't say"
   pronouns?: string
   bio?: string
   purposes?: string[]
@@ -14,6 +14,8 @@ export type OnboardingDataFromStorage = {
   grade?: string
   bigGoal?: string
   availability?: string[]
+  photo?: string
+  photos?: string[]
   homebase?: string
   radiusKm?: number
   pledgeAccepted?: boolean

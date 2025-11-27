@@ -6,6 +6,8 @@ export type Profile = {
   username: string
   email?: string
   age?: number
+  gender?: string
+  photo?: string | null
   city?: string
   homebase?: string
   style?: string
@@ -37,19 +39,23 @@ export const normalizeProfile = (profile: any): Profile => {
     : ob.primary_style ?? profile.primary_style ?? (profile as any).style
 
   const rawTags = toArray(ob.tags ?? profile.tags ?? profile.traits)
+  const availability = toArray(ob.availability ?? profile.availability ?? profile.schedule).join(', ')
+  const mainPhoto = ob.photo ?? profile.photo ?? ob.avatar_url ?? profile.avatar_url ?? profile.photo_url ?? null
 
   return {
     id: profile.id ?? ob.id ?? crypto.randomUUID(),
     username: profile.username ?? profile.name ?? ob.username ?? 'Climber',
     email: profile.email ?? undefined,
     age: ob.age ?? profile.age ?? profile.age_range ?? undefined,
+    gender: ob.gender ?? profile.gender ?? '',
     homebase: ob.homebase ?? (profile as any).homebase ?? profile.home ?? profile.location ?? '',
     city: ob.homebase ?? ob.city ?? ob.home ?? (profile as any).homebase ?? profile.city ?? profile.home ?? profile.location ?? '',
     style: styles ?? '',
-    availability: ob.availability ?? profile.availability ?? profile.schedule ?? '',
+    availability,
     grade: ob.grade ?? profile.grade ?? profile.grade_focus ?? profile.level ?? '',
     bio: ob.bio ?? profile.bio ?? profile.about ?? '',
-    avatar_url: ob.avatar_url ?? profile.avatar_url ?? profile.photo_url ?? null,
+    avatar_url: mainPhoto ?? null,
+    photo: mainPhoto ?? null,
     created_at: profile.created_at ?? ob.created_at,
     pronouns: ob.pronouns ?? profile.pronouns ?? profile.pronoun ?? '',
     tags: rawTags,

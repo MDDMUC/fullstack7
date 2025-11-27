@@ -5,6 +5,21 @@ import { useOnboarding } from '@/contexts/OnboardingContext'
 import BackButton from '../components/BackButton'
 import { supabase } from '@/lib/supabaseClient'
 
+const PHOTO_BUCKET = 'user-images'
+const publicUrlFor = (path?: string | null) => {
+  if (!path) return null
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL
+  return base ? `${base}/storage/v1/object/public/${PHOTO_BUCKET}/${path}` : null
+}
+
+const onlyFiles = (items?: (File | string)[]) =>
+  Array.isArray(items) && typeof File !== 'undefined'
+    ? items.filter((item): item is File => item instanceof File)
+    : []
+
+const onlyStrings = (items?: (File | string)[]) =>
+  Array.isArray(items) ? items.filter((item): item is string => typeof item === 'string') : []
+
 const PLEDGE = [
   {
     title: 'Respect other climbers',
@@ -54,6 +69,33 @@ export default function WelcomeStep() {
       const { user, error } = await safeGetUser(supabase)
       if (error || !user) throw new Error('Please sign up or log in first.')
 
+      const uploadPhotos = async () => {
+        const files = onlyFiles(data.photos)
+        const existingUrls = onlyStrings(data.photos)
+        if (!files.length && !existingUrls.length) return { photoUrls: existingUrls, mainPhoto: existingUrls[0] || null }
+
+        const uploadedUrls: string[] = []
+        for (let i = 0; i < files.length; i += 1) {
+          const file = files[i]
+          const ext = (file.name.split('.').pop() || 'jpg').replace(/[^a-zA-Z0-9]/g, '') || 'jpg'
+          const path = `${user.id}/${Date.now()}-${i}.${ext}`
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from(PHOTO_BUCKET)
+            .upload(path, file, { upsert: true })
+          if (uploadError) throw uploadError
+          const { data: publicData } = supabase.storage.from(PHOTO_BUCKET).getPublicUrl(uploadData?.path || path)
+          uploadedUrls.push(publicData?.publicUrl || publicUrlFor(uploadData?.path || path) || '')
+        }
+
+        const photoUrls = [...existingUrls, ...uploadedUrls].filter(Boolean)
+        return { photoUrls, mainPhoto: photoUrls[0] || null }
+      }
+
+      const { photoUrls, mainPhoto } = await uploadPhotos()
+      if (photoUrls?.length) {
+        updateData({ photos: photoUrls, photo: mainPhoto ?? undefined })
+      }
+
       const { upsertOnboardingProfile, upsertPublicProfile } = await import('@/lib/profileUtils')
       const payload = {
         ...data,
@@ -64,16 +106,18 @@ export default function WelcomeStep() {
           user.email?.split('@')[0] ||
           'Climber',
         email: user.email,
+        photo: mainPhoto ?? (data as any).photo,
+        photos: photoUrls ?? [],
       }
       const { error: obError } = await upsertOnboardingProfile(supabase, user.id, payload)
       if (obError) throw obError
 
       const { error: profileError } = await upsertPublicProfile(supabase, user.id, payload)
-      if (profileError) {
-        console.warn('Public profile upsert skipped due to policy:', profileError?.message || profileError)
+      if (profileError && !/row-level security/i.test(profileError?.message || '')) {
+        console.warn('Public profile upsert skipped:', profileError?.message || profileError)
       }
 
-      setCurrentStep(8)
+      setCurrentStep(9)
     } catch (err: any) {
       setStatus(err?.message || 'Unable to save profile. Please try again.')
     } finally {
@@ -160,7 +204,7 @@ export default function WelcomeStep() {
             style={{ padding: '10px 16px', borderRadius: '10px' }}
           >
             <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-              {loading ? 'Saving...' : 'Agree & Finish 7/7'}
+              {loading ? 'Saving...' : 'Agree & Finish 8/9'}
             </span>
           </button>
           {status && <p className="form-note error" aria-live="polite">{status}</p>}

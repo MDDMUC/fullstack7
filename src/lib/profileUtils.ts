@@ -9,6 +9,9 @@ const join = (arr?: string[]) =>
 const asTextArray = (arr?: string[]) =>
   Array.isArray(arr) ? arr.filter(Boolean) : []
 
+const onlyStrings = (arr?: (string | File)[]) =>
+  Array.isArray(arr) ? arr.filter((v): v is string => typeof v === 'string' && !!v) : []
+
 export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   const stylesJoined = join(data.styles)
   const availabilityJoined = join(data.availability)
@@ -24,25 +27,30 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   if (data.gender) tags.push(`gender:${data.gender}`)
   if (data.interest) tags.push(`pref:${data.interest}`)
 
-  const pronouns = data.pronouns || (data as any).gender || null
+  const availabilityArray = asTextArray(data.availability)
+  const photoUrls = onlyStrings(data.photos)
+  const mainPhoto = (data as any).photo || photoUrls[0] || null
 
   const payload: any = {
     username,
     age: data.age ? Number(data.age) : null,
+    gender: data.gender || null,
     searchradius: typeof data.radiusKm === 'number' ? data.radiusKm : null,
     bio: data.bio || null,
     homebase: data.homebase || null,
     styles: data.styles ?? null,
     style: undefined,
     grade: data.grade || null,
-    availability: availabilityJoined,
+    availability: availabilityArray.length ? availabilityArray : availabilityJoined,
     interest: data.interest ?? null,
+    photo: mainPhoto,
+    photos: photoUrls.length ? photoUrls : null,
+    avatar_url: mainPhoto,
     tags,
     goals: goalsText,
     lookingfor: purposes || null,
     phone_number: data.phone || null,
     status: 'New member',
-    pronouns,
   }
 
   // Safety: ensure we never send legacy columns that may not exist remotely
