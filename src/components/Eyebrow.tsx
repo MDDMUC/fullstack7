@@ -1,5 +1,7 @@
+import type { ReactNode } from 'react'
+
 type EyebrowProps = {
-  children: React.ReactNode
+  children: ReactNode
   as?: 'p' | 'div' | 'span'
 }
 

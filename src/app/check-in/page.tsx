@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CheckIn, loadCheckIns } from '@/lib/communityData'
+import Eyebrow from '@/components/Eyebrow'
 
 export default function CheckInPage() {
   const router = useRouter()
   const [checkIns, setCheckIns] = useState<CheckIn[]>([])
   const [loading, setLoading] = useState(true)
   const [pinged, setPinged] = useState<Record<string, boolean>>({})
+  const [liveCount, setLiveCount] = useState(0)
+  const [statPulse, setStatPulse] = useState<'up' | 'down' | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -16,6 +19,7 @@ export default function CheckInPage() {
       const data = await loadCheckIns()
       if (!mounted) return
       setCheckIns(data)
+      setLiveCount(data.length || 6)
       setLoading(false)
     }
     load()
@@ -23,6 +27,27 @@ export default function CheckInPage() {
       mounted = false
     }
   }, [])
+
+  useEffect(() => {
+    if (!checkIns.length && liveCount === 0) return
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    const tick = () => {
+      setLiveCount(prev => {
+        const base = prev || 6
+        const delta = Math.floor(Math.random() * 5) - 2 // -2 to +2
+        const next = base + delta
+        const clamped = Math.max(2, Math.min(40, next))
+        setStatPulse(delta > 0 ? 'up' : delta < 0 ? 'down' : null)
+        return clamped
+      })
+      const nextDelay = 2000 + Math.random() * 2500
+      timeoutId = setTimeout(tick, nextDelay)
+    }
+    tick()
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [checkIns.length, liveCount])
 
   const occupancy = useMemo(() => {
     return checkIns.reduce<Record<string, number>>((acc, curr) => {
@@ -39,9 +64,12 @@ export default function CheckInPage() {
   return (
     <main className="feature-shell">
       <section className="feature-hero">
-        <div>
-          <p className="eyebrow">Presence</p>
-          <h1>Check-ins that feel live.</h1>
+        <div className="hero-visual">
+          <img src="/group3.jpg" alt="Climbers checking in at the gym" className="hero-image" />
+        </div>
+        <div className="hero-copy">
+          <Eyebrow>Presence</Eyebrow>
+          <h1 className="hero-metal">Check-ins that feel live.</h1>
           <p className="lede">
             Opt-in status so you can see who is at your gym right now, who is driving there, and who is wrapping up.
             Perfect for spontaneous linkups.
@@ -57,10 +85,18 @@ export default function CheckInPage() {
           </div>
         </div>
         {checkIns.length ? (
-          <div className="feature-stat">
-            <p className="stat__label">People checked in</p>
-            <p className="stat__number">{checkIns.length}</p>
-            <p className="muted small">Presence expires after your session. No weird passive tracking.</p>
+          <div className="feature-stat stat-tall">
+            <div>
+              <p className="stat__label">People checked in</p>
+              <p
+                className={`stat__number ${
+                  statPulse === 'up' ? 'stat-pulse-up' : statPulse === 'down' ? 'stat-pulse-down' : ''
+                }`}
+              >
+                {liveCount || checkIns.length || 6}
+              </p>
+              <p className="muted small">Presence expires after your session. No weird passive tracking.</p>
+            </div>
           </div>
         ) : null}
       </section>
@@ -69,7 +105,7 @@ export default function CheckInPage() {
         <div className="occupancy-grid">
           {Object.entries(occupancy).map(([gym, count]) => (
             <div key={gym} className="occupancy-card">
-              <p className="eyebrow">{gym}</p>
+              <Eyebrow>{gym}</Eyebrow>
               <h3>{count} climbers</h3>
               <p className="muted small">Live check-ins only.</p>
             </div>
@@ -85,7 +121,7 @@ export default function CheckInPage() {
           <article key={checkin.id} className="session-card">
             <header>
               <div>
-                <p className="eyebrow">{checkin.gym}</p>
+                <Eyebrow>{checkin.gym}</Eyebrow>
                 <h3>{checkin.name}</h3>
                 <p className="muted small">{checkin.status} - {checkin.since}</p>
               </div>

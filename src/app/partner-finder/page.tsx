@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Session, loadSessions } from '@/lib/communityData'
+import Eyebrow from '@/components/Eyebrow'
 
 const unique = (list: string[]) => Array.from(new Set(list))
 
@@ -10,6 +11,8 @@ export default function PartnerFinderPage() {
   const router = useRouter()
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
+  const [statPulse, setStatPulse] = useState<'up' | 'down' | null>(null)
+  const [liveSpots, setLiveSpots] = useState(0)
   const [filters, setFilters] = useState({
     gym: 'All',
     style: 'All',
@@ -24,6 +27,8 @@ export default function PartnerFinderPage() {
       const data = await loadSessions()
       if (!mounted) return
       setSessions(data)
+      const sum = data.reduce((acc, s) => acc + (parseInt(s.availability, 10) || 0), 0)
+      setLiveSpots(sum || 8)
       setLoading(false)
     }
     load()
@@ -31,6 +36,27 @@ export default function PartnerFinderPage() {
       mounted = false
     }
   }, [])
+
+  useEffect(() => {
+    if (!sessions.length && liveSpots === 0) return
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    const tick = () => {
+      setLiveSpots(prev => {
+        const base = prev || 8
+        const delta = Math.floor(Math.random() * 5) - 2 // -2 to +2
+        const next = base + delta
+        const clamped = Math.max(2, Math.min(18, next))
+        setStatPulse(delta > 0 ? 'up' : delta < 0 ? 'down' : null)
+        return clamped
+      })
+      const nextDelay = 2000 + Math.random() * 2500
+      timeoutId = setTimeout(tick, nextDelay)
+    }
+    tick()
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [sessions.length, liveSpots])
 
   const gyms = useMemo(() => unique(sessions.map(s => s.gym)), [sessions])
   const styles = useMemo(() => unique(sessions.map(s => s.style)), [sessions])
@@ -58,9 +84,12 @@ export default function PartnerFinderPage() {
   return (
     <main className="feature-shell">
       <section className="feature-hero">
-        <div>
-          <p className="eyebrow">Partner finder</p>
-          <h1>Find a session fast.</h1>
+        <div className="hero-visual">
+          <img src="/hero-main.jpg" alt="Climbers at the wall" className="hero-image" />
+        </div>
+        <div className="hero-copy">
+          <Eyebrow>Partner finder</Eyebrow>
+          <h1 className="hero-metal">Find a session fast.</h1>
           <p className="lede">
             Availability + grade + style in one glance. No cold DMs - just opt in and climb with people who match
             your pace and stoke.
@@ -76,12 +105,18 @@ export default function PartnerFinderPage() {
           </div>
         </div>
         {sessions.length ? (
-          <div className="feature-stat">
-            <p className="stat__label">Spots open right now</p>
-            <p className="stat__number">
-              {sessions.reduce((sum, s) => sum + (parseInt(s.availability, 10) || 0), 0)}
-            </p>
-            <p className="muted small">Low-friction invites, opt-in responses, and clear safety signals.</p>
+          <div className="feature-stat stat-tall">
+            <div>
+              <p className="stat__label">Spots open right now</p>
+              <p
+                className={`stat__number ${
+                  statPulse === 'up' ? 'stat-pulse-up' : statPulse === 'down' ? 'stat-pulse-down' : ''
+                }`}
+              >
+                {liveSpots || sessions.reduce((sum, s) => sum + (parseInt(s.availability, 10) || 0), 0) || 8}
+              </p>
+              <p className="muted small">Low-friction invites, opt-in responses, and clear safety signals.</p>
+            </div>
           </div>
         ) : null}
       </section>
