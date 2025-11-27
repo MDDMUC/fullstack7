@@ -70,6 +70,7 @@ export default function WelcomeStep() {
       if (error || !user) throw new Error('Please sign up or log in first.')
 
       const uploadPhotos = async () => {
+        if (!supabase) throw new Error('Supabase client missing')
         const files = onlyFiles(data.photos)
         const existingUrls = onlyStrings(data.photos)
         if (!files.length && !existingUrls.length) return { photoUrls: existingUrls, mainPhoto: existingUrls[0] || null }

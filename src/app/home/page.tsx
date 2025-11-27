@@ -12,6 +12,7 @@ import SwipeCard from '@/components/SwipeCard'
 
 type Profile = DbProfile & {
   distance?: string
+  interest?: string
 }
 
 type MessagePreview = {
@@ -60,6 +61,8 @@ export default function HomeScreen() {
   }
 
   const extractGender = (profile?: Profile | null) => {
+    const direct = (profile?.gender || '').toString().toLowerCase()
+    if (direct) return direct
     const tagGender = profile?.tags?.find?.(t => t.toLowerCase().startsWith('gender:'))?.split(':')[1]?.toLowerCase()
     if (tagGender) return tagGender
     const pronoun = (profile?.pronouns || '').toLowerCase()
@@ -69,6 +72,8 @@ export default function HomeScreen() {
   }
 
   const extractPreference = (profile?: Profile | null) => {
+    const direct = (profile?.interest || '').toString()
+    if (direct) return direct as 'Women' | 'Men' | 'All'
     const prefTag = profile?.tags?.find?.(t => t.toLowerCase().startsWith('pref:'))?.split(':')[1]
     if (!prefTag) return 'All'
     const normalized = prefTag.toLowerCase()
@@ -129,13 +134,16 @@ export default function HomeScreen() {
         setViewerHome(me?.city ?? null)
         const preference = extractPreference(me)
 
-    const filtered = profiles.filter(p => p.id !== userData.user?.id).filter(p => {
-      const gender = extractGender(p)
-      if (preference === 'All') return true
-      if (preference === 'Women') return gender === 'woman'
-      if (preference === 'Men') return gender === 'man'
-      return true
-    })
+    const filtered = profiles
+      .filter(p => p.id !== userData.user?.id)
+      .filter(p => {
+        const gender = extractGender(p)
+        const normalized = gender?.toLowerCase()
+        if (preference === 'All') return true
+        if (preference === 'Women') return normalized === 'woman'
+        if (preference === 'Men') return normalized === 'man'
+        return true
+      })
 
     const shuffled = [...filtered].sort(() => Math.random() - 0.5)
     const safeDeck = shuffled.length >= 2 ? shuffled : [...shuffled, ...shuffled].slice(0, 2)

@@ -32,6 +32,14 @@ const _toArray = (value: any): string[] => {
   return []
 }
 
+const stripPrivateTags = (tags?: string[]) =>
+  (tags || []).filter(tag => {
+    const lower = (tag || '').toLowerCase()
+    if (lower.startsWith('gender:')) return false
+    if (lower.startsWith('pref:')) return false
+    return true
+  })
+
 const _normalizeProfile = (profile: any): Profile => ({
   id: profile.id ?? crypto.randomUUID(),
   username: profile.username ?? profile.name ?? 'Climber',
@@ -235,7 +243,7 @@ export default function DatingExperience() {
         <section className="hero">
           <div className="hero__copy">
             <p className="eyebrow">Dating for people who think in grades.</p>
-            <h1>Meet climbers who love the same sends you do.</h1>
+            <h1>You know who’s pulling tonight</h1>
             <p className="lede">
               Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
             </p>
@@ -249,11 +257,10 @@ export default function DatingExperience() {
               <span>Built for stoke, not spam</span>
             </div>
           </div>
-
-              {featured ? (
-                <div className="hero__card">
-                  <div className="hero__card-inner">
-                <div className="card-header">
+          {featured ? (
+            <div className="hero__card">
+              <div className="hero__card-inner">
+                <div className="card-header" style={{ position: 'relative' }}>
                   <div className="card-top">
                     <p className="label pill joined-label">{formatJoinedAgo(featured.created_at).toLowerCase()}</p>
                     {(() => {
@@ -270,38 +277,86 @@ export default function DatingExperience() {
                       )
                     })()}
                   </div>
-                  <div className="featured-body">
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 42,
+                      right: 0,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-end',
+                      gap: '6px',
+                      maxWidth: '65%',
+                    }}
+                  >
+                    <div
+                      className="featured-tags"
+                      style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'flex-end',
+                        gap: '6px 8px',
+                      }}
+                      >
+                        {(featured.style ? featured.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean) : ['Climber']).map(style => (
+                          <span key={style} className="tag">{style}</span>
+                        ))}
+                        {featured.grade ? <span className="tag grade">{featured.grade}</span> : <span className="subtle-tag">Grade focus</span>}
+                    </div>
+                  </div>
+                  <div
+                    className="featured-body"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-end',
+                      gap: '12px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
                     <img
                       src={featured.avatar_url ?? fallbackAvatarFor(featured)}
                       alt={firstName(featured.username)}
                       className="featured-avatar"
+                      style={{ aspectRatio: '2 / 3', width: '48%', minWidth: '160px', height: 'auto', objectFit: 'cover' }}
                     />
-                    <div>
+                    <div
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        justifyContent: 'flex-end',
+                        gap: '6px',
+                      }}
+                    >
                       <h3 style={{ fontSize: '22px', lineHeight: 1.2 }}>
                         <span style={{ fontWeight: 800 }}>{firstName(featured.username)}</span>
                         {featured.age ? <span style={{ fontWeight: 400, marginLeft: 8, fontSize: '18px' }}>{featured.age}</span> : null}
                       </h3>
                       <p className="sub">{featured.city || 'Somewhere craggy'}</p>
-                      <div className="featured-tags" style={{ justifyContent: 'flex-end', gap: '6px 8px' }}>
-                        {(featured.style ? featured.style.split(/[ƒ?›,/]/).map(s => s.trim()).filter(Boolean) : ['Climber']).map(style => (
-                          <span key={style} className="tag">{style}</span>
-                        ))}
-                        {featured.grade ? <span className="tag grade">{featured.grade}</span> : <span className="subtle-tag">Grade focus</span>}
-                      </div>
                       <p className="sub" style={{ fontSize: '13px' }}>
                         Goal: {featured.goals || featured.lookingFor || 'Goals incoming'}
                       </p>
+                      <div
+                        className="badge-row"
+                        style={{
+                          marginTop: '6px',
+                          display: 'flex',
+                          justifyContent: 'flex-start',
+                          gap: '6px',
+                          flexWrap: 'wrap',
+                        }}
+                      >
+                        {(stripPrivateTags(featured.tags)?.length ? stripPrivateTags(featured.tags) : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']).map(tag => (
+                          <span key={tag} className="subtle-tag">{tag}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
                 <div className="card-body sticky-actions">
                   <div className="card-text">
                     <p>{featured.bio || 'Ready for the next session.'}</p>
-                    <div className="badge-row">
-                      {(featured.tags?.length ? featured.tags : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']).map(tag => (
-                        <span key={tag} className="subtle-tag">{tag}</span>
-                      ))}
-                    </div>
                   </div>
                   <div className="card-actions">
                     <button className="ghost" aria-label="pass" onClick={() => handlePass(firstName(featured.username))}>Pass</button>
@@ -320,7 +375,7 @@ export default function DatingExperience() {
                 </div>
                 <div className="card-body sticky-actions">
                   <div className="card-text">
-                    <p className="muted">We’ll show new climbers as soon as they join.</p>
+                    <p className="muted">We'll show new climbers as soon as they join.</p>
                   </div>
                   <div className="card-actions">
                     <button className="cta" onClick={() => router.push('/signup')}>Invite friends</button>
@@ -409,7 +464,7 @@ export default function DatingExperience() {
                         />
                       </div>
                       <div>
-                        <h3 style={{ margin: 0 }}>
+                        <h3 style={{ margin: 0 }} className="profile-name">
                           <span style={{ fontWeight: 800 }}>{firstName(profile.username)}</span>
                           {profile.age ? <span style={{ fontWeight: 400, marginLeft: 6 }}>{profile.age}</span> : null}
                         </h3>
@@ -444,7 +499,7 @@ export default function DatingExperience() {
                     <div className="card-text">
                       <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
                       <div className="badge-row">
-                        {(profile.tags?.length ? profile.tags : ['Belays soft', 'Down for laps', 'Gear organized']).map(tag => (
+                        {(stripPrivateTags(profile.tags)?.length ? stripPrivateTags(profile.tags) : ['Belays soft', 'Down for laps', 'Gear organized']).map(tag => (
                           <span key={tag} className="subtle-tag">{tag}</span>
                         ))}
                       </div>
@@ -525,3 +580,9 @@ export default function DatingExperience() {
     </>
   )
 }
+
+
+
+
+
+

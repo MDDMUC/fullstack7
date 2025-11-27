@@ -6,7 +6,7 @@ import BackButton from '../components/BackButton'
 
 export default function PhotosStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
-  const [photos, setPhotos] = useState<File[]>(data.photos || [])
+  const [photos, setPhotos] = useState<Array<File | string>>(data.photos || [])
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +51,7 @@ export default function PhotosStep() {
               {photos[index] ? (
                 <>
                   <img
-                    src={URL.createObjectURL(photos[index])}
+                    src={typeof photos[index] === 'string' ? photos[index] : URL.createObjectURL(photos[index] as File)}
                     alt={`Photo ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
