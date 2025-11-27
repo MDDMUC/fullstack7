@@ -10,10 +10,9 @@ const asTextArray = (arr?: string[]) =>
   Array.isArray(arr) ? arr.filter(Boolean) : []
 
 export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
-  const styles = join(data.styles)
-  const availability = join(data.availability)
+  const stylesJoined = join(data.styles)
+  const availabilityJoined = join(data.availability)
   const purposes = join(data.purposes)
-  const distance = data.radiusKm ? `${data.radiusKm} km` : data.homebase ? '100 km' : null
   const goalsText = (data.bigGoal && data.bigGoal.trim()) || purposes || null
   const username =
     data.username ||
@@ -24,18 +23,20 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   const tags = asTextArray(data.styles)
   if (data.gender) tags.push(`gender:${data.gender}`)
   if (data.interest) tags.push(`pref:${data.interest}`)
+
   const pronouns = data.pronouns || (data as any).gender || null
 
-  return {
+  const payload: any = {
     username,
     age: data.age ? Number(data.age) : null,
-    gender: data.gender || null,
+    searchradius: typeof data.radiusKm === 'number' ? data.radiusKm : null,
     bio: data.bio || null,
-    city: data.homebase || null,
-    distance,
-    style: styles,
+    homebase: data.homebase || null,
+    styles: data.styles ?? null,
+    style: undefined,
     grade: data.grade || null,
-    availability,
+    availability: availabilityJoined,
+    interest: data.interest ?? null,
     tags,
     goals: goalsText,
     lookingfor: purposes || null,
@@ -43,6 +44,13 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     status: 'New member',
     pronouns,
   }
+
+  // Safety: ensure we never send legacy columns that may not exist remotely
+  delete payload.city
+  delete payload.distance
+  delete payload.style
+
+  return payload
 }
 
 export async function upsertOnboardingProfile(

@@ -59,7 +59,7 @@ export default function InterestsStep() {
             gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
             gap: '10px 12px',
             maxWidth: '500px',
-            justifyItems: 'start',
+            justifyItems: 'stretch',
             margin: '0 auto',
           }}
         >
@@ -70,15 +70,16 @@ export default function InterestsStep() {
                 key={style}
                 type="button"
                 onClick={() => handleToggle(style)}
-                className="h-12 relative rounded-[10px] px-4 transition-colors text-left"
+                className="h-12 relative rounded-[10px] px-4 transition-colors text-center"
                 style={{
                   minWidth: '120px',
+                  width: '100%',
                   border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
                   background: isSelected ? 'rgba(92, 225, 230, 0.12)' : '#0f131d',
                   color: isSelected ? 'var(--accent)' : 'var(--text)',
                 }}
               >
-                <span className="font-normal leading-none text-[18px] tracking-[-0.32px]">
+                <span className="font-normal leading-none text-[18px] tracking-[-0.32px] w-full block text-center">
                   {style}
                 </span>
               </button>

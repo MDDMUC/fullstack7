@@ -7,6 +7,7 @@ export type Profile = {
   email?: string
   age?: number
   city?: string
+  homebase?: string
   style?: string
   availability?: string
   grade?: string
@@ -31,9 +32,9 @@ const toArray = (value: any): string[] => {
 
 export const normalizeProfile = (profile: any): Profile => {
   const ob = (profile as any).onboardingprofiles?.[0] ?? {}
-  const styles = Array.isArray(ob.styles ?? profile.styles)
-    ? (ob.styles ?? profile.styles).join(', ')
-    : ob.primary_style ?? profile.primary_style
+  const styles = Array.isArray(ob.styles ?? (profile as any).styles ?? profile.styles)
+    ? (ob.styles ?? (profile as any).styles ?? profile.styles).join(', ')
+    : ob.primary_style ?? profile.primary_style ?? (profile as any).style
 
   const rawTags = toArray(ob.tags ?? profile.tags ?? profile.traits)
 
@@ -42,8 +43,9 @@ export const normalizeProfile = (profile: any): Profile => {
     username: profile.username ?? profile.name ?? ob.username ?? 'Climber',
     email: profile.email ?? undefined,
     age: ob.age ?? profile.age ?? profile.age_range ?? undefined,
-    city: ob.homebase ?? ob.city ?? ob.home ?? profile.city ?? profile.home ?? profile.location ?? '',
-    style: ob.style ?? styles ?? '',
+    homebase: ob.homebase ?? (profile as any).homebase ?? profile.home ?? profile.location ?? '',
+    city: ob.homebase ?? ob.city ?? ob.home ?? (profile as any).homebase ?? profile.city ?? profile.home ?? profile.location ?? '',
+    style: styles ?? '',
     availability: ob.availability ?? profile.availability ?? profile.schedule ?? '',
     grade: ob.grade ?? profile.grade ?? profile.grade_focus ?? profile.level ?? '',
     bio: ob.bio ?? profile.bio ?? profile.about ?? '',

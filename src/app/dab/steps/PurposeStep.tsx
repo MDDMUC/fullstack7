@@ -12,6 +12,8 @@ const PURPOSES = [
   'Groups',
   'Training buddy',
   "Don't know yet",
+  'Mentorship',
+  'Competition',
 ]
 
 const INTEREST_OPTIONS: Array<'Women' | 'Men' | 'All'> = ['Women', 'Men', 'All']

@@ -142,7 +142,7 @@ export default function WelcomeStep() {
                     {item.detail}
                   </p>
                   {!checked && (
-                    <p className="text-[12px] font-semibold mt-1" style={{ color: 'var(--muted)', letterSpacing: '0.5px' }}>
+                    <p className="text-[12px] font-semibold mt-1" style={{ color: 'var(--accent)', letterSpacing: '0.5px' }}>
                       Tap to agree (required)
                     </p>
                   )}

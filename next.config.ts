@@ -12,6 +12,13 @@ const nextConfig: NextConfig = {
     // Anchor the workspace root to this project to avoid picking up parent lockfiles.
     root: __dirname,
   },
+  webpack: (config, { dev }) => {
+    // Avoid eval-based source maps that violate strict CSP in dev
+    if (dev) {
+      config.devtool = 'cheap-module-source-map'
+    }
+    return config
+  },
 }
 
 export default nextConfig
