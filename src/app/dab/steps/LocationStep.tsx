@@ -40,16 +40,17 @@ export default function LocationStep() {
             style={{
               background: '#0f131d',
               border: `1px solid ${homeFocused ? 'var(--accent)' : 'var(--stroke)'}`,
-              boxShadow: homeFocused ? '0 0 0 3px rgba(92,225,230,0.12)' : 'none',
+              boxShadow: homeFocused ? '0 0 0 2px rgba(92,225,230,0.18)' : 'none',
             }}
           >
             <input
+              className="homebase-input"
               type="text"
               value={homebase}
               onChange={(e) => setHomebase(e.target.value)}
-              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px]"
+              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px] homebase-input"
               style={{ color: 'var(--text)' }}
-              placeholder="City or home crag"
+              placeholder="Homebase"
               onFocus={() => setHomeFocused(true)}
               onBlur={() => setHomeFocused(false)}
               required

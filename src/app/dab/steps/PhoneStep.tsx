@@ -114,7 +114,7 @@ export default function PhoneStep() {
                 background: '#0f131d',
                 border: `1px solid ${(focused || open) ? 'var(--accent)' : 'var(--stroke)'}`,
                 padding: '0 8px',
-                boxShadow: (focused || open) ? '0 0 0 3px rgba(92,225,230,0.16)' : 'none',
+                boxShadow: (focused || open) ? '0 0 0 2px rgba(92,225,230,0.2)' : 'none',
                 transition: 'border-color 120ms ease, box-shadow 120ms ease',
               }}
             >
@@ -122,8 +122,18 @@ export default function PhoneStep() {
                 <button
                   type="button"
                   onClick={() => setOpen(o => !o)}
-                  className="w-full h-10 px-3 text-left rounded-[8px]"
-                  style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}
+                  className="w-full h-12 px-3 text-left rounded-[10px]"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: 'var(--text)',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    outline: 'none',
+                    boxShadow: 'none',
+                  }}
                 >
                   <span>{selectedFlag}</span>
                   <span>{countryCode}</span>
@@ -135,7 +145,7 @@ export default function PhoneStep() {
                         type="search"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full h-9 px-3 rounded-[8px] text-sm"
+                        className="w-full h-9 px-3 rounded-[10px] text-sm"
                         style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)' }}
                         placeholder="Search code or country"
                       />
@@ -166,8 +176,8 @@ export default function PhoneStep() {
                 type="tel"
                 value={formatDisplay(nationalNumber)}
                 onChange={(e) => setNationalNumber(normalizedDigits(e.target.value))}
-                className="flex-1 h-12 px-3 bg-transparent border-none outline-none text-base rounded-[8px]"
-                style={{ color: 'var(--text)' }}
+                className="flex-1 h-12 px-3 bg-transparent border-none outline-none text-base rounded-[10px]"
+                style={{ color: 'var(--text)', outline: 'none', boxShadow: 'none' }}
                 placeholder="415 555 1234"
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
@@ -175,7 +185,7 @@ export default function PhoneStep() {
               />
             </div>
             <p className="text-sm" style={{ color: 'var(--muted)' }}>
-              Add digits only; we’ll verify later. You control when to share.
+              Add digits only; we'll verify later. You control when to share.
             </p>
           </div>
           

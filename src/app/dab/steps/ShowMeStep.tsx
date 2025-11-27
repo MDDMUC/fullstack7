@@ -12,7 +12,85 @@ const AVAILABILITY = [
   'Weekdays',
   'Weekends',
   'Flexible',
+  'Always',
+  'Spontaneous',
 ] as const
+
+const availabilityIcon = (option: string) => {
+  const common = { width: 14, height: 14, viewBox: '0 0 24 24', fill: 'none', strokeWidth: 2 }
+  switch (option) {
+    case 'Mornings':
+      return (
+        <svg {...common} stroke="var(--accent)">
+          <circle cx="12" cy="12" r="4" />
+          <path strokeLinecap="round" d="M12 2v3m0 14v3m10-10h-3M5 12H2m15.5-6.5-2.1 2.1M8.6 17.4l-2.1 2.1m0-13.6 2.1 2.1m8.8 9.4-2.1-2.1" />
+        </svg>
+      )
+    case 'Middays':
+      return (
+        <svg {...common} stroke="#ffd166">
+          <circle cx="12" cy="12" r="5" />
+          <path strokeLinecap="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m13.5-6.5-1.5 1.5M9.9 17.6 8.4 19m0-14.6 1.5 1.5m7.6 9.7-1.5-1.5" />
+        </svg>
+      )
+    case 'Afternoons':
+      return (
+        <svg {...common} stroke="#ff9f1c">
+          <path strokeLinecap="round" d="M4 16c2.5-3 6.5-4 10-2.5 1.5.6 3 1.7 4 2.5" />
+          <path strokeLinecap="round" d="M7 14a5 5 0 0 1 10 0" />
+        </svg>
+      )
+    case 'Evenings':
+      return (
+        <svg {...common} stroke="#9ad0ff">
+          <path strokeLinecap="round" d="M16 4a6 6 0 1 0 4 10 7 7 0 1 1-4-10Z" />
+          <path strokeLinecap="round" d="M5 19h14" />
+        </svg>
+      )
+    case 'Weekdays':
+      return (
+        <svg {...common} stroke="var(--accent)">
+          <rect x="4" y="6" width="16" height="12" rx="2" />
+          <path strokeLinecap="round" d="M8 4v4m8-4v4" />
+          <path d="M7 12h2m3 0h5" />
+        </svg>
+      )
+    case 'Weekends':
+      return (
+        <svg {...common} stroke="var(--accent-2)">
+          <path strokeLinecap="round" d="M7 6v6" />
+          <path strokeLinecap="round" d="M11 6v8" />
+          <path strokeLinecap="round" d="M15 8v6" />
+          <path strokeLinecap="round" d="M7 12c0 4 2 6 5 6s5-2 5-6V8" />
+          <path strokeLinecap="round" d="M9 6c0-1 .8-2 2-2s2 1 2 2" />
+        </svg>
+      )
+    case 'Flexible':
+      return (
+        <svg {...common} stroke="#b9fbc0">
+          <path strokeLinecap="round" d="M6 8c2-3 10-3 12 2-4 0-6 2-6 6-3 0-5-2-6-4" />
+          <circle cx="8" cy="16" r="1" />
+          <circle cx="16" cy="10" r="1" />
+        </svg>
+      )
+    case 'Always':
+      return (
+        <svg {...common} stroke="var(--accent)">
+          <circle cx="12" cy="12" r="7" />
+          <path strokeLinecap="round" d="M12 8v4l3 2" />
+        </svg>
+      )
+    case 'Spontaneous':
+      return (
+        <svg {...common} stroke="#ffd166">
+          <path strokeLinecap="round" d="m7 10 2 2-2 2m4-4 2 2-2 2m4-4 2 2-2 2" />
+          <path strokeLinecap="round" d="M5 6h14" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
 
 export default function ShowMeStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
@@ -46,32 +124,37 @@ export default function ShowMeStep() {
           Only real people. When are you usually available to climb?
         </p>
 
-        <div className="flex flex-col gap-4 w-full max-w-md">
-          {AVAILABILITY.map((option) => {
+        <div
+          className="grid items-start w-full"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '10px 12px',
+            maxWidth: '520px',
+            justifyItems: 'start',
+            margin: '0 auto',
+          }}
+        >
+          {AVAILABILITY.map(option => {
             const isSelected = selected.includes(option)
             return (
               <button
                 key={option}
                 type="button"
                 onClick={() => handleToggle(option)}
-                className="h-14 relative rounded-[12px] w-full flex items-center justify-between px-4 transition-colors"
+                aria-pressed={isSelected}
+                className="h-12 relative rounded-[10px] px-4 transition-colors text-left"
                 style={{
-                  background: '#0f131d',
+                  minWidth: '140px',
+                  width: '100%',
                   border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.borderColor = 'var(--stroke)'
+                  background: isSelected ? 'rgba(92, 225, 230, 0.12)' : '#0f131d',
+                  color: isSelected ? 'var(--accent)' : 'var(--text)',
                 }}
               >
-                <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>{option}</span>
-                <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: isSelected ? 'var(--accent)' : 'var(--stroke)' }}>
-                  {isSelected && (
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
-                  )}
-                </div>
+                <span className="font-normal leading-none text-[16px] tracking-[-0.2px] w-full text-center block flex items-center justify-center gap-2">
+                  {availabilityIcon(option)}
+                  <span>{option}</span>
+                </span>
               </button>
             )
           })}

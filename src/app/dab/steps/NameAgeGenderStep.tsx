@@ -7,7 +7,7 @@ import BackButton from '../components/BackButton'
 export default function NameAgeGenderStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [age, setAge] = useState(data.age || '')
-  const [gender, setGender] = useState<'Man' | 'Woman' | 'Other' | ''>(data.gender || '')
+  const [gender, setGender] = useState<'Man' | 'Woman' | 'Other' | "Won't say" | ''>(data.gender || '')
   const [bio, setBio] = useState(data.bio || '')
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -44,10 +44,12 @@ export default function NameAgeGenderStep() {
               type="number"
               value={age}
               onChange={(e) => setAge(e.target.value)}
-              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base"
+              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base appearance-none"
               style={{ 
-                color: 'var(--text)'
-              }}
+                color: 'var(--text)',
+                WebkitAppearance: 'none',
+                MozAppearance: 'textfield',
+              } as any}
               placeholder="Age"
               required
               min="18"
@@ -105,6 +107,29 @@ export default function NameAgeGenderStep() {
               <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>Woman</span>
               <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === 'Woman' ? 'var(--accent)' : 'var(--stroke)' }}>
                 {gender === 'Woman' && (
+                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
+                )}
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setGender("Won't say")}
+              className="h-14 relative rounded-[12px] flex-1 flex items-center justify-between px-4 transition-colors"
+              style={{
+                background: '#0f131d',
+                border: `1px solid ${gender === "Won't say" ? 'var(--accent)' : 'var(--stroke)'}`,
+              }}
+              onMouseEnter={(e) => {
+                if (gender !== "Won't say") e.currentTarget.style.borderColor = 'var(--accent)'
+              }}
+              onMouseLeave={(e) => {
+                if (gender !== "Won't say") e.currentTarget.style.borderColor = 'var(--stroke)'
+              }}
+            >
+              <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>Won't say</span>
+              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === "Won't say" ? 'var(--accent)' : 'var(--stroke)' }}>
+                {gender === "Won't say" && (
                   <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
                 )}
               </div>

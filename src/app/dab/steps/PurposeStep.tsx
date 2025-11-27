@@ -11,7 +11,7 @@ const PURPOSES = [
   'Romance',
   'Groups',
   'Training buddy',
-  'Don&apos;t know yet',
+  "Don't know yet",
 ]
 
 const INTEREST_OPTIONS: Array<'Women' | 'Men' | 'All'> = ['Women', 'Men', 'All']
@@ -50,7 +50,16 @@ export default function PurposeStep() {
           Only real people. Pick the reasons you&apos;re here so we can match on intent.
         </p>
 
-        <div className="flex flex-col gap-4 w-full max-w-md">
+        <div
+          className="grid items-start w-full"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+            gap: '10px 12px',
+            maxWidth: '520px',
+            justifyItems: 'start',
+            margin: '0 auto',
+          }}
+        >
           {PURPOSES.map((purpose) => {
             const isSelected = selected.includes(purpose)
             return (
@@ -58,24 +67,19 @@ export default function PurposeStep() {
                 key={purpose}
                 type="button"
                 onClick={() => handleToggle(purpose)}
-                className="h-14 relative rounded-[12px] w-full flex items-center justify-between px-4 transition-colors"
+                aria-pressed={isSelected}
+                className="h-12 relative rounded-[10px] px-4 transition-colors text-left"
                 style={{
-                  background: '#0f131d',
+                  minWidth: '140px',
+                  width: '100%',
                   border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
-                }}
-                onMouseEnter={(e) => {
-                  if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSelected) e.currentTarget.style.borderColor = 'var(--stroke)'
+                  background: isSelected ? 'rgba(92, 225, 230, 0.12)' : '#0f131d',
+                  color: isSelected ? 'var(--accent)' : 'var(--text)',
                 }}
               >
-                <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>{purpose}</span>
-                <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: isSelected ? 'var(--accent)' : 'var(--stroke)' }}>
-                  {isSelected && (
-                    <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
-                  )}
-                </div>
+                <span className="font-normal leading-none text-[16px] tracking-[-0.2px] w-full text-center block">
+                  {purpose}
+                </span>
               </button>
             )
           })}
@@ -85,7 +89,13 @@ export default function PurposeStep() {
           <p className="font-normal leading-normal text-[18px]" style={{ color: 'var(--text)', margin: 0 }}>
             I am interested in:
           </p>
-          <div className="flex flex-col gap-3">
+          <div
+            className="grid items-start w-full"
+            style={{
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: '10px 12px',
+            }}
+          >
             {INTEREST_OPTIONS.map(option => {
               const isSelected = interest === option
               return (
@@ -93,24 +103,18 @@ export default function PurposeStep() {
                   key={option}
                   type="button"
                   onClick={() => setInterest(option)}
-                  className="h-12 relative rounded-[12px] w-full flex items-center justify-between px-4 transition-colors"
+                  aria-pressed={isSelected}
+                  className="h-12 relative rounded-[10px] px-4 transition-colors text-center"
                   style={{
-                    background: '#0f131d',
+                    minWidth: '140px',
                     border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) e.currentTarget.style.borderColor = 'var(--accent)'
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) e.currentTarget.style.borderColor = 'var(--stroke)'
+                    background: isSelected ? 'rgba(92, 225, 230, 0.12)' : '#0f131d',
+                    color: isSelected ? 'var(--accent)' : 'var(--text)',
                   }}
                 >
-                  <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>{option}</span>
-                  <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: isSelected ? 'var(--accent)' : 'var(--stroke)' }}>
-                    {isSelected && (
-                      <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
-                    )}
-                  </div>
+                  <span className="font-normal leading-none text-[16px] tracking-[-0.2px]">
+                    {option}
+                  </span>
                 </button>
               )
             })}

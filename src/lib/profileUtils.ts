@@ -29,6 +29,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   return {
     username,
     age: data.age ? Number(data.age) : null,
+    gender: data.gender || null,
     bio: data.bio || null,
     city: data.homebase || null,
     distance,

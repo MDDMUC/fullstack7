@@ -118,6 +118,17 @@ textarea:focus-visible {
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(92, 225, 230, 0.18);
 }
+.homebase-input:focus-visible { outline: none; box-shadow: none; }
+
+/* Hide default number spinners to match brand inputs */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
 
 .cta {
   background: linear-gradient(120deg, var(--accent), var(--accent-2));

@@ -4,7 +4,18 @@ import { useState } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import BackButton from '../components/BackButton'
 
-const STYLES = ['Bouldering', 'Sport', 'Trad', 'Alpine', 'Ice', 'Multipitch', 'Training', 'Mountaineering']
+const STYLES = [
+  'Bouldering',
+  'Sport',
+  'Trad',
+  'Alpine',
+  'Ice',
+  'Multipitch',
+  'Training',
+  'Mountaineering',
+  'Comps',
+  'Board',
+]
 
 export default function InterestsStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
@@ -43,8 +54,14 @@ export default function InterestsStep() {
         </p>
 
         <div
-          className="grid items-start justify-center w-full"
-          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px', maxWidth: '620px', justifyItems: 'center' }}
+          className="grid items-start w-full"
+          style={{
+            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+            gap: '10px 12px',
+            maxWidth: '500px',
+            justifyItems: 'start',
+            margin: '0 auto',
+          }}
         >
           {STYLES.map((style) => {
             const isSelected = selected.includes(style)
@@ -53,8 +70,9 @@ export default function InterestsStep() {
                 key={style}
                 type="button"
                 onClick={() => handleToggle(style)}
-                className="h-12 relative rounded-[12px] px-3 transition-colors"
+                className="h-12 relative rounded-[10px] px-4 transition-colors text-left"
                 style={{
+                  minWidth: '120px',
                   border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
                   background: isSelected ? 'rgba(92, 225, 230, 0.12)' : '#0f131d',
                   color: isSelected ? 'var(--accent)' : 'var(--text)',
