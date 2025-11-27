@@ -82,7 +82,7 @@ const formatJoinedAgo = (iso?: string) => {
 
 const firstName = (name?: string | null) => (name || '').trim().split(/\s+/)[0] || (name ?? '')
 
-type StatusState = { label: string; variant: 'live' | 'offline' | 'new' | 'omw' | 'dab'; live: boolean }
+type StatusState = { label: string; variant: 'live' | 'offline' | 'new' | 'omw' | 'dab' | 'climb'; live: boolean }
 
 const statusForProfile = (profile: Profile): StatusState => {
   const raw = (profile.status || '').toLowerCase()
