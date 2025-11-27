@@ -97,6 +97,13 @@ export default function PartnerFinderPage() {
 
   const handleJoin = () => router.push('/signup')
   const sessionImages = ['/gym.jpg', '/group2.jpg', '/group3.jpg', '/group4.jpg', '/hero-main.jpg']
+  const gymThumbFor = (gym: string) => {
+    const lower = gym.toLowerCase()
+    if (lower.includes('boulderwelt')) return '/gym-boulderwelt.jpg'
+    if (lower.includes('thalkirchen')) return '/gym-thalkirchen.jpg'
+    if (lower.includes('freimann')) return '/gym-freimann.jpg'
+    return '/fallback-gym.png'
+  }
 
   return (
     <main className="feature-shell">
@@ -138,48 +145,50 @@ export default function PartnerFinderPage() {
         ) : null}
       </section>
 
-      <section className="panel filter-panel">
-        <div className="filter-group">
-          <label className="field">
-            <span>Gym</span>
-            <select value={filters.gym} onChange={e => setFilters(prev => ({ ...prev, gym: e.target.value }))}>
-              <option>All</option>
-              {gyms.map(gym => <option key={gym}>{gym}</option>)}
-            </select>
-          </label>
-          <label className="field">
-            <span>Style</span>
-            <select value={filters.style} onChange={e => setFilters(prev => ({ ...prev, style: e.target.value }))}>
+      <section className="panel filter-panel" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr)) 100px', gap: '10px', alignItems: 'end' }}>
+        <label className="field">
+          <span>Gym</span>
+          <select value={filters.gym} onChange={e => setFilters(prev => ({ ...prev, gym: e.target.value }))}>
             <option>All</option>
-              {styles.map(style => <option key={style}>{style}</option>)}
-            </select>
-          </label>
-          <label className="field">
-            <span>Day</span>
-            <select value={filters.day} onChange={e => setFilters(prev => ({ ...prev, day: e.target.value }))}>
-              <option>All</option>
-              {days.map(day => <option key={day}>{day}</option>)}
-            </select>
-          </label>
-          <label className="field">
-            <span>Belay</span>
-            <select value={filters.belay} onChange={e => setFilters(prev => ({ ...prev, belay: e.target.value }))}>
-              <option value="any">Any</option>
-              <option value="verified">Verified</option>
-              <option value="unverified">Not verified</option>
-            </select>
-          </label>
-          <label className="field">
-            <span>Search</span>
-            <input
-              type="search"
-              placeholder="Comp wall, carpool, morning..."
-              value={filters.search}
-              onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
-            />
-          </label>
-        </div>
-        <button className="ghost" onClick={() => setFilters({ gym: 'All', style: 'All', day: 'All', belay: 'any', search: '' })}>
+            {gyms.map(gym => <option key={gym}>{gym}</option>)}
+          </select>
+        </label>
+        <label className="field">
+          <span>Style</span>
+          <select value={filters.style} onChange={e => setFilters(prev => ({ ...prev, style: e.target.value }))}>
+          <option>All</option>
+            {styles.map(style => <option key={style}>{style}</option>)}
+          </select>
+        </label>
+        <label className="field">
+          <span>Day</span>
+          <select value={filters.day} onChange={e => setFilters(prev => ({ ...prev, day: e.target.value }))}>
+            <option>All</option>
+            {days.map(day => <option key={day}>{day}</option>)}
+          </select>
+        </label>
+        <label className="field">
+          <span>Belay</span>
+          <select value={filters.belay} onChange={e => setFilters(prev => ({ ...prev, belay: e.target.value }))}>
+            <option value="any">Any</option>
+            <option value="verified">Verified</option>
+            <option value="unverified">Not verified</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>Search</span>
+          <input
+            type="search"
+            placeholder="Comp wall, carpool, morning..."
+            value={filters.search}
+            onChange={e => setFilters(prev => ({ ...prev, search: e.target.value }))}
+          />
+        </label>
+        <button
+          className="ghost"
+          style={{ alignSelf: 'center', justifySelf: 'end', height: '100%' }}
+          onClick={() => setFilters({ gym: 'All', style: 'All', day: 'All', belay: 'any', search: '' })}
+        >
           Reset
         </button>
       </section>
@@ -204,6 +213,9 @@ export default function PartnerFinderPage() {
                 }}
               >
                 <div style={{ display: 'grid', gap: '6px' }}>
+                  <div style={{ position: 'absolute', top: 10, left: 10, width: 52, height: 52, borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--stroke)' }}>
+                    <img src={gymThumbFor(session.gym)} alt={session.gym} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
                   <div>
                     <Eyebrow>{session.gym} • {session.location}</Eyebrow>
                     <h4 style={{ margin: 0 }}>{session.host} is climbing</h4>
@@ -227,13 +239,15 @@ export default function PartnerFinderPage() {
               </div>
             </div>
             <header>
-              <div>
-                <p className="muted small">{session.day} - {session.time}</p>
-                <p className="muted small">Style: {session.style} • Grade: {session.grade}</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+                <div>
+                  <p className="muted small" style={{ margin: 0 }}>{session.day} - {session.time}</p>
+                  <p className="muted small" style={{ margin: 0 }}>Style: {session.style} • Grade: {session.grade}</p>
+                </div>
+                <span className={`pill ${session.belayVerified ? 'verified' : ''}`} style={{ justifySelf: 'end' }}>
+                  {session.belayVerified ? 'Belay verified' : 'Boulder crew'}
+                </span>
               </div>
-              <span className={`pill ${session.belayVerified ? 'verified' : ''}`}>
-                {session.belayVerified ? 'Belay verified' : 'Boulder crew'}
-              </span>
             </header>
             <div className="session-meta">
               <div>
@@ -258,8 +272,10 @@ export default function PartnerFinderPage() {
               {session.tags.map(tag => <span key={tag} className="ghost-tag">{tag}</span>)}
             </div>
             <div className="session-actions">
-              <button className="ghost" onClick={() => router.push('/gym-chat')}>Ask in wall</button>
-              <button className="cta" onClick={handleJoin}>I&apos;m in</button>
+              <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                <button className="ghost" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
+                <button className="cta" style={{ flex: 1 }} onClick={handleJoin}>I&apos;m in</button>
+              </div>
             </div>
           </article>
         ))}

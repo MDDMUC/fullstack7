@@ -243,10 +243,10 @@ export default function DatingExperience() {
       <main>
         <section className="hero">
           <div className="hero__copy">
-            <Eyebrow>Dating for people who think in grades.</Eyebrow>
+            <Eyebrow>Crewed up or clueless.</Eyebrow>
             <h1>You know who’s pulling tonight</h1>
             <p className="lede">
-              Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
+              DAB isn’t for everyone. It’s for the ones who chase the set. Drop in, see who’s there, throw a dab. You’re not climbing alone anymore.
             </p>
             <div className="hero__actions">
               <button className="cta" onClick={() => router.push('/signup')}>Get started</button>
