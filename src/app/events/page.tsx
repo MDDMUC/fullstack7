@@ -15,12 +15,6 @@ export default function EventsPage() {
   const [statPulse, setStatPulse] = useState<'up' | 'down' | null>(null)
   const eventImages = ['/event1.jpg', '/event2.jpg', '/event3.jpg', '/event4.jpg', '/group2.jpg', '/group3.jpg', '/boardlords.jpg']
   const [recentMessages, setRecentMessages] = useState<Message[]>([])
-  const [recentMessages, setRecentMessages] = useState<Message[]>([])
-  const recentChats = [
-    { user: 'Lena', avatar: '/fallback-female.jpg', time: '5m ago', message: "I might bring some snacks, anyone allergic?" },
-    { user: 'Marco', avatar: '/fallback-male.jpg', time: '12m ago', message: 'Looking for a ride from Sendlinger Tor, 13:30?' },
-    { user: 'Ava', avatar: '/fallback-female.jpg', time: '22m ago', message: 'I can belay 6b-7a, happy to swap leads.' },
-  ]
 
   useEffect(() => {
     let mounted = true

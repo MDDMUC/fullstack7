@@ -44,7 +44,14 @@ export async function fetchMessages(threadId: string) {
     .eq('thread_id', threadId)
     .order('created_at', { ascending: true })
   if (error) throw error
-  return data as Message[]
+  return (data ?? []).map(row => ({
+    id: row.id,
+    thread_id: row.thread_id,
+    user_id: row.user_id,
+    body: row.body,
+    created_at: row.created_at,
+    profiles: Array.isArray((row as any).profiles) ? (row as any).profiles[0] : (row as any).profiles,
+  })) as Message[]
 }
 
 export async function sendMessage(threadId: string, body: string) {

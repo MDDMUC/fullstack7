@@ -7,7 +7,7 @@ import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/pro
 import { RequireAuth } from '@/components/RequireAuth'
 import { sendSwipe } from '@/lib/swipes'
 import { listMatches, MatchWithProfiles } from '@/lib/matches'
-import { listMessages, sendMessage, subscribeToMessages, Message as ChatMessage } from '@/lib/messages'
+import { sendMessage, subscribeToThread, Message as ChatMessage, fetchMessages } from '@/lib/messages'
 import SwipeCard from '@/components/SwipeCard'
 
 type Profile = DbProfile & {
@@ -225,18 +225,26 @@ export default function HomeScreen() {
       city: resolved?.city,
     })
     try {
-      const msgs = await listMessages(matchId)
-      setThreadMessages(msgs)
+      const msgs = await fetchMessages(matchId)
+      setThreadMessages(msgs as unknown as ChatMessage[])
     } catch (err) {
       console.warn('Failed to load messages', err)
       setThreadMessages([])
     }
-    if (messageUnsub.current) messageUnsub.current()
-    messageUnsub.current = subscribeToMessages(matchId, msg => setThreadMessages(prev => [...prev, msg]))
+    if (messageUnsub.current) {
+      try { (messageUnsub.current as any)?.unsubscribe?.() } catch (_) {}
+      messageUnsub.current = null as any
+    }
+    const channel = subscribeToThread(matchId, msg => setThreadMessages(prev => [...prev, msg as unknown as ChatMessage]))
+    messageUnsub.current = () => {
+      try { (channel as any)?.unsubscribe?.() } catch (_) {}
+    }
   }
 
   useEffect(() => () => {
-    if (messageUnsub.current) messageUnsub.current()
+    if (messageUnsub.current) {
+      try { (messageUnsub.current as any)() } catch (_) {}
+    }
   }, [messageUnsub])
 
   const handleSend = async () => {
@@ -247,7 +255,8 @@ export default function HomeScreen() {
         id: crypto.randomUUID(),
         match_id: selectedMatchId,
         body: messageInput.trim(),
-        sender: userId ?? 'me',
+        thread_id: selectedMatchId,
+        user_id: userId ?? 'me',
         created_at: new Date().toISOString(),
       } as ChatMessage])
       setMessageInput('')
@@ -386,12 +395,12 @@ export default function HomeScreen() {
                 ) : (
                   threadMessages.map(msg => (
                     <div key={msg.id} className="bubble-row">
-                      <div className={`bubble ${msg.sender === userId ? 'you' : 'them'}`}>
+                      <div className={`bubble ${msg.user_id === userId ? 'you' : 'them'}`}>
                         {msg.body}
                       </div>
                       <div className="bubble-meta">
                         <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        {msg.sender === userId ? <span>Sent</span> : null}
+                        {msg.user_id === userId ? <span>Sent</span> : null}
                       </div>
                     </div>
                   ))
