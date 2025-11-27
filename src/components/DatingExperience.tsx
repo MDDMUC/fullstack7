@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import SignupForm from './SignupForm'
 import { fetchProfiles, Profile } from '@/lib/profiles'
+import Eyebrow from './Eyebrow'
 
 const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
@@ -242,7 +243,7 @@ export default function DatingExperience() {
       <main>
         <section className="hero">
           <div className="hero__copy">
-            <p className="eyebrow">Dating for people who think in grades.</p>
+            <Eyebrow>Dating for people who think in grades.</Eyebrow>
             <h1>You know who’s pulling tonight</h1>
             <p className="lede">
               Swipe through climbers near you, match on style and schedule, and plan your next multi-pitch date without explaining what a cam is.
@@ -487,7 +488,10 @@ export default function DatingExperience() {
                           </div>
                         )
                       })()}
-                      <div className="featured-tags" style={{ justifyContent: 'flex-end', gap: '6px 8px' }}>
+                      <div
+                        className="featured-tags"
+                        style={{ justifyContent: 'flex-end', gap: '6px 8px', flexWrap: 'wrap' }}
+                      >
                         {(profile.style ? profile.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean) : ['Climber']).map(style => (
                           <span key={style} className="tag">{style}</span>
                         ))}
@@ -519,7 +523,7 @@ export default function DatingExperience() {
 
         <section className="cta-panel" id="join">
           <div className="cta-panel__content">
-            <h2>Ready to clip in together?</h2>
+            <h3>Ready to clip in together?</h3>
             <p>Start with your account details. We’ll collect climbing preferences right after.</p>
             <SignupForm compact heading="Create your account" subheading="Next: quick onboarding" />
           </div>
