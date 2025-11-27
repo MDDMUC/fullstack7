@@ -78,6 +78,7 @@ export type CheckIn = {
   plan: string
   grade: string
   tags: string[]
+  avatar_url?: string | null
 }
 
 const fallbackGyms: GymRoom[] = [
@@ -525,20 +526,43 @@ export async function loadCheckIns(): Promise<CheckIn[]> {
     const client = requireSupabase()
     const { data, error } = await client
       .from('checkins')
-      .select('id, name, gym, status, since, plan, grade, tags')
+      .select('id, name, gym, status, since, plan, grade, tags, profiles:profiles!checkins_user_id_fkey(id, username, avatar_url)')
       .order('created_at', { ascending: false })
     if (error) throw error
     const resolved = (data ?? []).map(checkin => ({
       id: checkin.id,
-      name: checkin.name ?? 'Climber',
+      name: checkin.name ?? (Array.isArray((checkin as any).profiles) ? (checkin as any).profiles[0]?.username : (checkin as any).profiles?.username) ?? 'Climber',
       gym: checkin.gym ?? 'Gym',
       status: (checkin.status as CheckIn['status']) ?? 'Here now',
       since: checkin.since ?? '',
       plan: checkin.plan ?? '',
       grade: checkin.grade ?? '',
       tags: (checkin.tags as string[]) ?? [],
+      avatar_url: (checkin as any).avatar_url
+        ?? (Array.isArray((checkin as any).profiles) ? (checkin as any).profiles[0]?.avatar_url : (checkin as any).profiles?.avatar_url)
+        ?? null,
     }))
-    return resolved.length ? resolved : fallbackCheckins
+    if (resolved.length) return resolved
+
+    // Fallback to profiles if no live check-ins
+    const { data: profiles, error: profErr } = await client
+      .from('profiles')
+      .select('id, username, homebase, availability, grade, tags, avatar_url')
+      .order('created_at', { ascending: false })
+      .limit(8)
+    if (profErr) throw profErr
+    const fromProfiles = (profiles ?? []).map(p => ({
+      id: p.id ?? crypto.randomUUID(),
+      name: p.username ?? 'Climber',
+      gym: (p as any).homebase ?? 'Gym',
+      status: 'Here now' as CheckIn['status'],
+      since: 'Just now',
+      plan: (p as any).availability ?? 'Session',
+      grade: (p as any).grade ?? '',
+      tags: Array.isArray((p as any).tags) ? (p as any).tags : [],
+      avatar_url: (p as any).avatar_url ?? null,
+    }))
+    return fromProfiles.length ? fromProfiles : fallbackCheckins
   } catch (error) {
     console.warn('Falling back to local check-ins data:', error)
     return fallbackCheckins

@@ -7,6 +7,22 @@ import Eyebrow from '@/components/Eyebrow'
 
 const unique = (list: string[]) => Array.from(new Set(list))
 
+const formatBoulderweltGrade = (grade: string) => {
+  if (!grade) return ''
+  const trimmed = grade.trim()
+  const numeric = parseInt(trimmed, 10)
+  if (!Number.isNaN(numeric)) return `Boulderwelt ${Math.min(Math.max(numeric, 1), 9)}`
+
+  const vMatch = trimmed.toUpperCase().match(/^V\s*([0-9+]+)/)
+  if (vMatch) {
+    const vNum = parseInt(vMatch[1].replace('+', ''), 10)
+    const map: Record<number, number> = { 0: 1, 1: 2, 2: 3, 3: 4, 4: 5, 5: 6, 6: 7, 7: 8, 8: 9, 9: 9 }
+    const bw = map[Math.min(vNum, 9)] ?? 5
+    return `Boulderwelt ${bw}`
+  }
+  return trimmed
+}
+
 export default function PartnerFinderPage() {
   const router = useRouter()
   const [sessions, setSessions] = useState<Session[]>([])
@@ -80,6 +96,7 @@ export default function PartnerFinderPage() {
   }, [filters, sessions])
 
   const handleJoin = () => router.push('/signup')
+  const sessionImages = ['/gym.jpg', '/group2.jpg', '/group3.jpg', '/group4.jpg', '/hero-main.jpg']
 
   return (
     <main className="feature-shell">
@@ -170,11 +187,49 @@ export default function PartnerFinderPage() {
       <section className="session-grid">
         {filteredSessions.map(session => (
           <article key={session.id} className="session-card">
+            <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', border: '1px solid var(--stroke)', marginBottom: 10 }}>
+              <img
+                src={sessionImages[Math.abs(session.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)) % sessionImages.length]}
+                alt={session.gym}
+                style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.55))',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  padding: '12px',
+                }}
+              >
+                <div style={{ display: 'grid', gap: '6px' }}>
+                  <div>
+                    <Eyebrow>{session.gym} • {session.location}</Eyebrow>
+                    <h4 style={{ margin: 0 }}>{session.host} is climbing</h4>
+                  </div>
+                  <div
+                    className="pill"
+                    style={{
+                      width: 'fit-content',
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      lineHeight: 1.1,
+                      border: '1px solid var(--stroke)',
+                      background: 'rgba(12,14,18,0.65)',
+                      color: 'var(--text)',
+                      letterSpacing: '0.2px',
+                    }}
+                  >
+                    {session.availability}
+                  </div>
+                </div>
+              </div>
+            </div>
             <header>
               <div>
-                <p className="eyebrow">{session.gym} - {session.location}</p>
-                <h3>{session.host} is climbing</h3>
                 <p className="muted small">{session.day} - {session.time}</p>
+                <p className="muted small">Style: {session.style} • Grade: {session.grade}</p>
               </div>
               <span className={`pill ${session.belayVerified ? 'verified' : ''}`}>
                 {session.belayVerified ? 'Belay verified' : 'Boulder crew'}
@@ -183,7 +238,7 @@ export default function PartnerFinderPage() {
             <div className="session-meta">
               <div>
                 <p className="muted small">Grade</p>
-                <strong>{session.grade}</strong>
+                <strong>{formatBoulderweltGrade(session.grade)}</strong>
               </div>
               <div>
                 <p className="muted small">Style</p>

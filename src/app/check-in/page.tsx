@@ -119,10 +119,17 @@ export default function CheckInPage() {
       <section className="checkin-grid">
         {checkIns.map(checkin => (
           <article key={checkin.id} className="session-card">
-            <header>
+            <header style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '12px', alignItems: 'center' }}>
+              <div className="profile-avatar-frame">
+                <img
+                  src={checkin.avatar_url || '/fallback-male.jpg'}
+                  alt={checkin.name}
+                  className="profile-avatar"
+                />
+              </div>
               <div>
                 <Eyebrow>{checkin.gym}</Eyebrow>
-                <h3>{checkin.name}</h3>
+                <h4>{checkin.name}</h4>
                 <p className="muted small">{checkin.status} - {checkin.since}</p>
               </div>
               <span
@@ -151,16 +158,18 @@ export default function CheckInPage() {
               {checkin.tags.map(tag => <span key={tag} className="ghost-tag">{tag}</span>)}
             </div>
             <div className="session-actions">
-              <button className="ghost" onClick={() => router.push('/gym-chat')}>Ask in wall</button>
-              <button className="cta" onClick={() => handlePing(checkin.id)}>
-                {pinged[checkin.id] ? (
-                  'Ping sent'
-                ) : (
-                  <>
-                    <span className="dab-text">dab</span> to climb
-                  </>
-                )}
-              </button>
+              <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+                <button className="ghost" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
+                <button className="cta" style={{ flex: 1 }} onClick={() => handlePing(checkin.id)}>
+                  {pinged[checkin.id] ? (
+                    'Ping sent'
+                  ) : (
+                    <>
+                      <span className="dab-text">dab</span> to climb
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </article>
         ))}
