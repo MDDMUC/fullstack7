@@ -143,6 +143,75 @@ export default function GymChatPage() {
     )
   }
 
+  const renderChatAd = () => {
+    if (activeGym?.id === 'thalkirchen') {
+      return (
+        <div className="prompt-ad prompt-ad--alt chat-ad chat-ad--bd">
+          <div className="prompt-ad-image alt">
+            <img src="/ad-blackdiamond.webp" alt="Black Diamond climbing gear" />
+            <div className="prompt-ad-overlay bd-overlay">
+              <div className="overlay-top">
+                <p className="prompt-hint">Sponsored Black Diamond</p>
+              </div>
+              <div className="overlay-bottom">
+                <h4 className="prompt-ad-headline">The Cragging Kit</h4>
+                <p className="muted small">
+                  The rope, the rack and the shirt on your back. We&apos;ve got you covered for a season of sending,
+                  from our apparel built for the climbing life, to our cornerstone equipment. Let&apos;s go.
+                </p>
+                <div className="prompt-ad-cta">
+                  <a
+                    href="https://www.blackdiamondequipment.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="prompt-link"
+                  >
+                    Shop Black Diamond
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (activeGym?.id === 'freimann') {
+      return (
+        <div className="prompt-ad prompt-ad--alt chat-ad chat-ad--video">
+          <div className="prompt-ad-copy">
+            <p className="prompt-hint">Sponsored Edelrid</p>
+            <h4 className="prompt-ad-headline">Ohmega Tour 20025</h4>
+            <p className="muted small">
+              The OHMEGA is now touring Europe&apos;s climbing gyms - your chance to test the new belaying experience live!
+            </p>
+            <strong>12.11.2025 | DAV Freimann, Munich</strong>
+            <div className="chat-ad-video">
+              <iframe
+                src="https://www.youtube.com/embed/cRkLYw0WGqU?list=TLGGGR2nbw7kTlsyNzExMjAyNQ"
+                title="Edelrid video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div className="prompt-ad prompt-ad--alt chat-ad">
+        <div className="prompt-ad-image alt">
+          <img src="/ad-karma.jpg" alt="Karma8a apparel" />
+          <div className="prompt-ad-overlay">
+            <span className="prompt-ad-headline karma-headline">CLIMB INTO THE HOLIDAYS</span>
+            <a href="https://karma8a.com/" target="_blank" rel="noreferrer" className="prompt-link">Shop Now</a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <main className="feature-shell">
       <section className="feature-hero">
@@ -323,15 +392,7 @@ export default function GymChatPage() {
             </div>
           </footer>
 
-          <div className="prompt-ad prompt-ad--alt chat-ad">
-            <div className="prompt-ad-image alt">
-              <img src="/ad-karma.jpg" alt="Karma8a apparel" />
-              <div className="prompt-ad-overlay">
-                <span className="prompt-ad-headline">Climb into the Holidays</span>
-                <a href="https://karma8a.com/" target="_blank" rel="noreferrer" className="prompt-link">Shop Now</a>
-              </div>
-            </div>
-          </div>
+          {renderChatAd()}
         </section>
 
         <aside className="panel side-panel">
