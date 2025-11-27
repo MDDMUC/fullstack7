@@ -44,12 +44,21 @@ export default function LocationStep() {
             }}
           >
             <input
-              className="homebase-input"
               type="text"
               value={homebase}
               onChange={(e) => setHomebase(e.target.value)}
-              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px] homebase-input"
-              style={{ color: 'var(--text)' }}
+              className="homebase-input"
+              style={{
+                color: 'var(--text)',
+                width: '100%',
+                height: '100%',
+                padding: '0 16px',
+                background: 'transparent',
+                border: '0',
+                outline: 'none',
+                fontSize: '16px',
+                borderRadius: '12px',
+              }}
               placeholder="Homebase"
               onFocus={() => setHomeFocused(true)}
               onBlur={() => setHomeFocused(false)}
