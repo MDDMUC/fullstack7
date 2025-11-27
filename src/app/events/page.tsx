@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Event, loadEvents } from '@/lib/communityData'
 import Eyebrow from '@/components/Eyebrow'
+import { fetchThreads, fetchMessages, Message } from '@/lib/messages'
 
 export default function EventsPage() {
   const router = useRouter()
@@ -13,6 +14,8 @@ export default function EventsPage() {
   const [liveAttendees, setLiveAttendees] = useState(0)
   const [statPulse, setStatPulse] = useState<'up' | 'down' | null>(null)
   const eventImages = ['/event1.jpg', '/event2.jpg', '/event3.jpg', '/event4.jpg', '/group2.jpg', '/group3.jpg', '/boardlords.jpg']
+  const [recentMessages, setRecentMessages] = useState<Message[]>([])
+  const [recentMessages, setRecentMessages] = useState<Message[]>([])
   const recentChats = [
     { user: 'Lena', avatar: '/fallback-female.jpg', time: '5m ago', message: "I might bring some snacks, anyone allergic?" },
     { user: 'Marco', avatar: '/fallback-male.jpg', time: '12m ago', message: 'Looking for a ride from Sendlinger Tor, 13:30?' },
@@ -61,6 +64,23 @@ export default function EventsPage() {
     }
   }, [events.length, liveAttendees])
 
+  useEffect(() => {
+    const loadRecent = async () => {
+      try {
+        if (!events.length) return
+        const target = events.find(e => e.id === 'e-boardlords') || events[0]
+        const threads = await fetchThreads({ type: 'event', eventId: target.id })
+        const thread = threads[0]
+        if (!thread) return
+        const msgs = await fetchMessages(thread.id)
+        setRecentMessages(msgs.slice(-3).reverse()) // latest 3, newest first
+      } catch (err) {
+        console.warn('Failed to load recent event messages', err)
+      }
+    }
+    loadRecent()
+  }, [events])
+
   const toggleGoing = (id: string) => {
     setGoing(prev => ({ ...prev, [id]: !prev[id] }))
   }
@@ -106,9 +126,9 @@ export default function EventsPage() {
               </p>
               <p className="muted small">Threads stay attached to events for coordination and safety.</p>
               <div style={{ marginTop: 10, display: 'grid', gap: 10 }}>
-                {recentChats.map(chat => (
+                {recentMessages.map(msg => (
                   <div
-                    key={`${chat.user}-${chat.time}`}
+                    key={msg.id}
                     style={{
                       display: 'grid',
                       gridTemplateColumns: 'auto 1fr',
@@ -121,17 +141,17 @@ export default function EventsPage() {
                     }}
                   >
                     <img
-                      src={chat.avatar}
-                      alt={chat.user}
+                      src={msg.profiles?.avatar_url || '/fallback-male.jpg'}
+                      alt={msg.profiles?.username || 'Climber'}
                       style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--stroke)' }}
                     />
                     <div style={{ display: 'grid', gap: '2px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
-                        <strong style={{ fontSize: 13 }}>{chat.user}</strong>
-                        <span className="muted small" style={{ fontSize: 11 }}>{chat.time}</span>
+                        <strong style={{ fontSize: 13 }}>{msg.profiles?.username || 'Climber'}</strong>
+                        <span className="muted small" style={{ fontSize: 11 }}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                       <p className="muted small" style={{ margin: 0, fontSize: 12 }}>
-                        {chat.message.length > 42 ? `${chat.message.slice(0, 42)}…` : chat.message}
+                        {msg.body.length > 42 ? `${msg.body.slice(0, 42)}…` : msg.body}
                       </p>
                     </div>
                   </div>
