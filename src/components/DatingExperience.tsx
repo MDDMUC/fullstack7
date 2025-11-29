@@ -341,11 +341,9 @@ export default function DatingExperience() {
                             {/* Special chips next */}
                             {specialChips.map(chip => {
                               const chipClass = getChipClass(chip)
-                              const isFounder = chip.toLowerCase().includes('founder')
-                              const isCrew = chip.toLowerCase().includes('crew')
                               return (
                                 <span key={`special-${chip}`} className={chipClass}>
-                                  {(isFounder || isCrew) ? `🤘${chip}` : chip}
+                                  {chip}
                                 </span>
                               )
                             })}
@@ -469,68 +467,80 @@ export default function DatingExperience() {
           </div>
           <div id="profiles" className="profiles">
             {filteredProfiles.length ? (
-              filteredProfiles.map(profile => (
-                <article key={profile.id} className="profile-card">
-                  <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '12px', alignItems: 'start', justifyItems: 'start' }}>
-                      <div className="profile-avatar-frame">
+              filteredProfiles.map(profile => {
+                const { tags, specialChips, standardChips } = organizeTagsAndChips(profile)
+                const status = statusForProfile(profile)
+                const live = status.live
+                const showDot = status.variant !== 'offline' && status.variant !== 'new'
+                return (
+                  <article key={profile.id} className="profile-card featured-climber-card">
+                    <div className="featured-card-top">
+                      <div className="featured-pill joined-pill">
+                        {formatJoinedAgo(profile.created_at).toLowerCase()}
+                      </div>
+                      <div className={`featured-pill status-pill-featured ${status.variant === 'live' ? 'online' : ''}`}>
+                        {showDot ? (
+                          <span className={`status-dot status-dot-${status.variant} ${live ? 'is-live' : ''}`} />
+                        ) : null}
+                        {status.label}
+                      </div>
+                    </div>
+                    <div className="featured-card-content">
+                      <div className="featured-image-wrapper">
                         <img
                           src={profile.avatar_url ?? fallbackAvatarFor(profile)}
                           alt={firstName(profile.username)}
-                          className="profile-avatar"
+                          className="featured-image"
                         />
                       </div>
-                      <div>
-                        <h3 style={{ margin: 0 }} className="profile-name">
-                          <span style={{ fontWeight: 800 }}>{firstName(profile.username)}</span>
-                          {profile.age ? <span style={{ fontWeight: 400, marginLeft: 6 }}>{profile.age}</span> : null}
-                        </h3>
-                        <p className="profile-meta" style={{ margin: '2px 0 0' }}>{profile.city || 'Anywhere'}</p>
-                      </div>
-                    </div>
-                    <div className="tags-column">
-                      {(() => {
-                        const status = statusForProfile(profile)
-                        const live = status.live
-                        const showDot = status.variant !== 'offline' && status.variant !== 'new'
-                        return (
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 6 }}>
-                            <span className={`status-pill status-${status.variant}`}>
-                              {showDot ? (
-                                <span className={`status-dot status-dot-${status.variant} ${live ? 'is-live' : ''}`} />
-                              ) : null}
-                              {status.label}
+                      <div className="featured-info-wrapper">
+                        <div className="featured-tags-row">
+                          {tags.map((tag, idx) => {
+                            const isGrade = idx >= tags.length - 1 && profile.grade && tag === profile.grade
+                            return (
+                              <span key={`tag-${idx}`} className={isGrade ? 'featured-tag featured-tag-grade' : 'featured-tag'}>
+                                {tag}
+                              </span>
+                            )
+                          })}
+                          {specialChips.map(chip => {
+                            const chipClass = getChipClass(chip)
+                            return (
+                              <span key={`special-${chip}`} className={chipClass}>
+                                {chip}
+                              </span>
+                            )
+                          })}
+                          {standardChips.slice(0, 8).map(chip => (
+                            <span key={`standard-${chip}`} className="featured-chip">
+                              {chip}
                             </span>
+                          ))}
+                        </div>
+                        <div className="featured-info-bottom">
+                          <div className="featured-name-row">
+                            <span className="featured-name">{firstName(profile.username)}</span>
+                            {profile.age ? <span className="featured-age">{profile.age}</span> : null}
                           </div>
-                        )
-                      })()}
-                      <div
-                        className="featured-tags"
-                        style={{ justifyContent: 'flex-end', gap: '6px 8px', flexWrap: 'wrap' }}
-                      >
-                        {(profile.style ? profile.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean) : ['Climber']).map(style => (
-                          <span key={style} className="tag">{style}</span>
-                        ))}
-                        {profile.grade ? <span className="tag grade">{profile.grade}</span> : <span className="subtle-tag">Grade focus</span>}
+                          <div className="featured-location">{profile.city || 'Anywhere'}</div>
+                          <div className="featured-goal">
+                            Goal: {profile.goals || profile.lookingFor || 'Join more comps and start training seriously this winter.'}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </header>
-                  <div className="profile-body sticky-actions">
-                    <div className="card-text">
+                    <div className="featured-bio">
                       <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
-                      <div className="badge-row">
-                        {(stripPrivateTags(profile.tags)?.length ? stripPrivateTags(profile.tags) : ['Belays soft', 'Down for laps', 'Gear organized']).map(tag => (
-                          <span key={tag} className="subtle-tag">{tag}</span>
-                        ))}
-                      </div>
                     </div>
-                    <div className="actions">
-                      <button className="ghost" onClick={() => handlePass(firstName(profile.username))}>Pass</button>
-                      <button className="cta" onClick={() => handleLike(firstName(profile.username))}><span className="dab-text">dab</span></button>
+                    <div className="featured-actions">
+                      <button className="ghost featured-pass" aria-label="pass" onClick={() => handlePass(firstName(profile.username))}>Pass</button>
+                      <button className="cta featured-dab" aria-label="send a like" onClick={() => handleLike(firstName(profile.username))}>
+                        <span className="dab-text">DAB</span>
+                      </button>
                     </div>
-                  </div>
-                </article>
-              ))
+                  </article>
+                )
+              })
             ) : (
               <p className="profile-body">No matches found.</p>
             )}
