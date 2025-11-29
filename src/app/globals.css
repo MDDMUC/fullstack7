@@ -344,7 +344,7 @@ input[type=number] {
 .featured-chip.founder {
   position: relative;
   background: transparent;
-  border: none;
+  border: 1px solid #FF9500;
   border-radius: 8px;
   padding: 6px 8px;
   /* Text gradient: yellow to red (matching SVG paint1_linear) */
@@ -355,38 +355,13 @@ input[type=number] {
   color: transparent;
   display: inline-flex;
   align-items: center;
-}
-
-.featured-chip.founder::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  right: -1px;
-  bottom: -1px;
-  border-radius: 8px;
-  /* Border gradient: red to yellow (matching SVG paint0_linear) */
-  background: linear-gradient(90deg, #FF0004, #FFEA00);
-  z-index: -1;
-}
-
-.featured-chip.founder::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  border-radius: 7px;
-  z-index: -1;
 }
 
 
 .featured-chip.crew {
   position: relative;
   background: transparent;
-  border: none;
+  border: 1px solid #FF9500;
   border-radius: 8px;
   padding: 6px 8px;
   /* Text gradient: yellow to red (matching SVG paint1_linear) */
@@ -397,31 +372,6 @@ input[type=number] {
   color: transparent;
   display: inline-flex;
   align-items: center;
-}
-
-.featured-chip.crew::before {
-  content: '';
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  right: -1px;
-  bottom: -1px;
-  border-radius: 8px;
-  /* Border gradient: red to yellow (matching SVG paint0_linear) */
-  background: linear-gradient(90deg, #FF0004, #FFEA00);
-  z-index: -1;
-}
-
-.featured-chip.crew::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  border-radius: 7px;
-  z-index: -1;
 }
 
 
