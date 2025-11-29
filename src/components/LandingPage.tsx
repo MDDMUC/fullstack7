@@ -199,7 +199,7 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
           </div>
           <div className="fc-cta-wrapper">
             <button className="fc-btn-dab" onClick={onDab} aria-label="send a like">
-              Get Started
+              DAB
             </button>
           </div>
         </div>
@@ -327,7 +327,7 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
         {/* CTA Row */}
         <div className="gpc-cta">
           <button className="gpc-pass" onClick={onPass} aria-label="pass">Pass</button>
-          <button className="gpc-dab" onClick={onDab} aria-label="send a like">Get Started</button>
+          <button className="gpc-dab" onClick={onDab} aria-label="send a like">DAB</button>
         </div>
       </div>
     </div>
@@ -719,7 +719,7 @@ function Footer() {
     <footer className="landing-footer">
       <div className="landing-footer-content">
         <div className="landing-footer-logo">
-          <span>DAB</span>
+          <img src="/dab-logo.svg" alt="DAB" className="footer-logo-img" />
         </div>
         <div className="landing-footer-text">
           <p>Built by climbers for climbers. Finding your crew made easy.</p>

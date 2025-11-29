@@ -433,18 +433,20 @@ fc-card (420px, bg: #151927, border: 1px #1f2633, radius: 14px)
   cursor: pointer;
 }
 
-/* Get Started Button - gradient, shadow, same padding/radius */
+/* DAB Button - gradient, glow, Metal Mania font */
 .fc-btn-dab {
   width: 100%;
+  height: 38px;
   padding: 10px 16px;                   /* py: btn-pad-md, px: btn-pad-xxl */
   border: none;
   background: linear-gradient(120deg, #5ce1e6, #e68fff);
   color: #0c0e12;                       /* color/bg */
-  font-size: 15px;                      /* button/base size */
-  font-weight: 700;                     /* Bold */
-  font-family: 'Inter', sans-serif;
+  font-size: 18px;                      /* button/dab size */
+  font-weight: 400;                     /* Regular */
+  font-family: 'Metal Mania', cursive;  /* Figma: Metal Mania */
+  letter-spacing: 1.8px;                /* Figma tracking */
   border-radius: 10px;                  /* radius/md */
-  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4); /* cyan glow */
   line-height: normal;
   text-align: center;
   cursor: pointer;
@@ -566,7 +568,7 @@ Map Figma tokens to CSS custom properties:
 | `.fc-cta-row` | Button row |
 | `.fc-cta-wrapper` | Button wrapper |
 | `.fc-btn-pass` | Pass button (ghost) |
-| `.fc-btn-dab` | Get Started button (CTA) |
+| `.fc-btn-dab` | DAB button (CTA, Metal Mania font) |
 
 ---
 

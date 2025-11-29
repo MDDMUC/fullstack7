@@ -212,6 +212,13 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   white-space: nowrap;
 }
 
+/* Logo SVG image in navbar */
+.dab-logo-img {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
 .dab-text {
   font-family: 'Metal Mania', cursive;
   letter-spacing: 0.5px;
@@ -1036,30 +1043,36 @@ input[type=number] {
   color: #5ce1e6;
 }
 
-/* Get Started Button
-   Figma: px-[16px] py-[10px] rounded-[10px] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)] w-full
-          font-bold text-[15px] text-[#0c0e12]
-          background: linear-gradient(120deg, #5ce1e6, #e68fff) */
+/* DAB Button (state=dab)
+   Figma: border border-[#5ce1e6] px-[16px] py-[10px] rounded-[10px] h-[38px]
+          shadow-[0px_0px_20px_0px_rgba(92,225,230,0.4)]
+          font-['Metal_Mania'] text-[18px] tracking-[1.8px]
+          background: linear-gradient(120deg, #5ce1e6, #e68fff) for fill */
 .fc-btn-dab {
   width: 100%;
+  height: 38px;
   padding: 10px 16px;
   border: none;
   background: linear-gradient(120deg, #5ce1e6, #e68fff);
   color: #0c0e12;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  font-family: 'Metal Mania', cursive;
+  letter-spacing: 1.8px;
   border-radius: 10px;
-  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease;
   line-height: normal;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fc-btn-dab:hover {
   transform: translateY(-1px);
-  box-shadow: 0px 24px 70px 0px rgba(0, 0, 0, 0.45);
+  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6);
 }
 
 /* Responsive - smaller screens */
@@ -2851,22 +2864,25 @@ input[type=number] {
   text-decoration: none;
 }
 
-/* DAB/Get Started Button
-   Figma: flex-1 px-[16px] py-[10px] rounded-[10px] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)]
-   font-bold text-[15px] text-[#0c0e12] text-center gradient-bg */
+/* DAB Button
+   Figma: flex-1 h-[38px] px-[16px] py-[10px] rounded-[10px] 
+   shadow-[0px_0px_20px_0px_rgba(92,225,230,0.4)] (cyan glow)
+   Metal Mania font, text-[18px], tracking-[1.8px], text-[#0c0e12], gradient-bg */
 .gpc-dab {
   flex: 1 0 0;
   min-width: 1px;
   min-height: 1px;
+  height: 38px;
   padding: 10px 16px;
   border: none;
   background: linear-gradient(120deg, #5ce1e6, #e68fff);
   color: #0c0e12;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  font-family: 'Metal Mania', cursive;
+  letter-spacing: 1.8px;
   border-radius: 10px;
-  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease;
   line-height: normal;
@@ -2876,7 +2892,7 @@ input[type=number] {
 
 .gpc-dab:hover {
   transform: translateY(-1px);
-  box-shadow: 0px 24px 70px 0px rgba(0, 0, 0, 0.45);
+  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6);
   text-decoration: none;
   color: #0c0e12;
 }
@@ -3994,6 +4010,13 @@ input[type=number] {
   color: white;
   line-height: normal;
   white-space: nowrap;
+}
+
+/* Footer Logo SVG image */
+.footer-logo-img {
+  height: 50px;
+  width: auto;
+  display: block;
 }
 
 /* Footer Text - basis-0 grow font-normal text-[16px] text-[#8ea0bd] */

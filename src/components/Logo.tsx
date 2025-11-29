@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
 import { useEffect, useState } from 'react'
 
@@ -19,19 +20,29 @@ export default function Logo() {
     checkAuth()
   }, [])
 
+  const logoImage = (
+    <Image
+      src="/dab-logo.svg"
+      alt="DAB"
+      width={60}
+      height={38}
+      className="dab-logo-img"
+      priority
+    />
+  )
+
   // Show nothing while checking to avoid flash
   if (isLoggedIn === null) {
     return (
       <div className="logo">
-        <span className="dab-logo">dab</span>
+        {logoImage}
       </div>
     )
   }
 
   return (
     <Link href={isLoggedIn ? "/home" : "/"} className="logo" style={{ textDecoration: 'none' }}>
-      <span className="dab-logo">dab</span>
+      {logoImage}
     </Link>
   )
 }
-
