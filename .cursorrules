@@ -1,0 +1,82 @@
+# DAB Project - Cursor Rules
+
+## Figma Implementation Workflow (MANDATORY)
+
+When implementing UI from Figma designs, ALWAYS follow this exact workflow:
+
+### Step 1: Extract Token Values
+```
+mcp_Figma_Desktop_get_variable_defs({ nodeId: "XXX-XXXX" })
+```
+
+### Step 2: Get Design Context
+```
+mcp_Figma_Desktop_get_design_context({ nodeId: "XXX-XXXX", forceCode: true })
+```
+
+### Step 3: Screenshot (verification only)
+```
+mcp_Figma_Desktop_get_screenshot({ nodeId: "XXX-XXXX" })
+```
+
+### Step 4: Transcribe Exact Values
+
+From Tailwind output, extract EXACT pixel values:
+- `px-[10px]` → `padding-left: 10px; padding-right: 10px`
+- `py-[6px]` → `padding-top: 6px; padding-bottom: 6px`
+- `rounded-[14px]` → `border-radius: 14px`
+- `gap-[12px]` → `gap: 12px`
+- `text-[12px]` → `font-size: 12px`
+- `bg-[#151927]` → `background: #151927`
+- `basis-0 grow` → `flex: 1 0 0`
+
+### Step 5: Store in Library
+
+Save extracted Tailwind classes in `UI_SYSTEM_LIBRARY.md` for future reference.
+
+## NEVER Do These:
+- ❌ Guess values from screenshots
+- ❌ Use "close enough" approximations
+- ❌ Round pixel values
+- ❌ Assume colors without extraction
+
+## ALWAYS Do These:
+- ✅ Extract exact values from `get_design_context`
+- ✅ Use exact hex colors from Figma
+- ✅ Use exact pixel values (6px not 8px)
+- ✅ Document extracted values in UI_SYSTEM_LIBRARY.md
+
+## Design Token Quick Reference
+
+### Colors
+- bg: #0c0e12
+- panel: #11141c
+- card: #151927
+- stroke: #1f2633
+- accent: #5ce1e6
+- accent2: #e68fff
+- muted: #8ea0bd
+- text: #e9eef7
+
+### Spacing
+- xxs: 4px, xs: 6px, sm: 8px, md: 12px, lg: 16px, xxl: 32px
+
+### Button Padding
+- xs: 6px, sm: 8px, md: 10px, xxl: 16px, xxxxl: 20px
+
+### Radius
+- sm: 8px, md: 10px, lg: 14px, circle: 999px
+
+### Typography
+- body/xs: Inter 12px 400
+- body/base: Inter 16px 500
+- pill/base: Inter 12px 700
+- button/base: Inter 15px 700
+- heading/sm: Inter 20px 800
+- age: Inter 18px 400
+
+## File References
+- Design System Library: `UI_SYSTEM_LIBRARY.md`
+- Global CSS: `src/app/globals.css`
+- Landing Page Components: `src/components/LandingPage.tsx`
+

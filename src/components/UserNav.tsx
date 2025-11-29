@@ -39,24 +39,24 @@ function UserNav() {
 
   if (!checked) {
     return (
-      <nav className="nav-links" style={{ gap: '12px' }}>
-        <span className="ghost" style={{ padding: '10px 16px', opacity: 0.6 }}>Loading…</span>
+      <nav className="site-header-cta">
+        <span className="site-header-ghost" style={{ opacity: 0.6 }}>Loading…</span>
       </nav>
     )
   }
 
   if (!userEmail) {
     return (
-      <nav className="nav-links" style={{ gap: '12px' }}>
-        <Link className="cta" href="/signup" style={{ padding: '10px 16px', color: '#0c0e12' }}>Get Started</Link>
-        <Link className="ghost" href="/login" style={{ padding: '10px 16px' }}>Login</Link>
+      <nav className="site-header-cta">
+        <Link className="site-header-ghost" href="/login">Login</Link>
+        <Link className="site-header-cta-btn" href="/signup">Get Started</Link>
       </nav>
     )
   }
 
   return (
-    <nav className="nav-links" style={{ gap: '12px' }}>
-      <button className="ghost" style={{ padding: '10px 16px' }} onClick={handleSignOut}>
+    <nav className="site-header-cta">
+      <button className="site-header-ghost" onClick={handleSignOut}>
         Logout
       </button>
     </nav>

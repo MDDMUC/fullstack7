@@ -24,11 +24,32 @@ export default function ClientHeader() {
   ]
 
   return (
-    <header className="site-header">
-      <div className="header-left">
-        <Logo />
+    <header className="site-header-new">
+      <div className="site-header-container">
+        <div className="site-header-logo">
+          <Logo />
+        </div>
+        <nav className={`site-header-nav ${isOpen ? 'is-open' : ''}`}>
+          {links.map(link => {
+            const isActive =
+              pathname === link.href ||
+              (link.href !== '/' && pathname.startsWith(link.href))
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`site-header-navlink ${isActive ? 'active' : ''}`}
+              >
+                {link.label}
+              </Link>
+            )
+          })}
+        </nav>
+        <div className="site-header-cta">
+          <UserNav />
+        </div>
         <button
-          className="nav-toggle"
+          className="site-header-toggle"
           aria-label={isOpen ? 'Close navigation' : 'Open navigation'}
           aria-expanded={isOpen}
           onClick={() => setIsOpen(prev => !prev)}
@@ -37,25 +58,6 @@ export default function ClientHeader() {
           <span />
           <span />
         </button>
-      </div>
-      <nav className={`primary-nav ${isOpen ? 'is-open' : ''}`}>
-        {links.map(link => {
-          const isActive =
-            pathname === link.href ||
-            (link.href !== '/' && pathname.startsWith(link.href))
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`nav-link ${isActive ? 'active' : ''}`}
-            >
-              {link.label}
-            </Link>
-          )
-        })}
-      </nav>
-      <div className="header-right">
-        <UserNav />
       </div>
     </header>
   )

@@ -1,0 +1,9 @@
+# Ignore documentation and non-source files
+*.md
+*.json
+*.txt
+*.sql
+README.md
+UI_SYSTEM_LIBRARY.md
+tokens.json
+
