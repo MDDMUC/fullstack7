@@ -280,7 +280,7 @@ export default function DatingExperience() {
         <section className="hero">
           <div className="hero__copy">
             <Eyebrow>Crewed up or clueless.</Eyebrow>
-            <h1>You know who’s pulling tonight</h1>
+            <h1>See who&apos;s dropping by the wall tonight</h1>
             <p className="lede">
               DAB isn’t for everyone. It’s for the ones who chase the set. Drop in, see who’s there, throw a dab. You’re not climbing alone anymore.
             </p>
@@ -610,7 +610,6 @@ export default function DatingExperience() {
     </>
   )
 }
-
 
 
 
