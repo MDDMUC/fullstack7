@@ -297,15 +297,20 @@ input[type=number] {
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  align-items: flex-end;
 }
 
 .featured-tags-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 2px;
+  gap: 0;
   justify-content: flex-end;
   align-items: flex-start;
   width: 100%;
+}
+
+.featured-tags-row > * {
+  margin: 0;
 }
 
 .featured-tag {
@@ -320,6 +325,7 @@ input[type=number] {
   font-family: 'Inter', sans-serif;
   line-height: 1;
   white-space: nowrap;
+  margin: 0;
 }
 
 .featured-tag.featured-tag-grade {
@@ -339,6 +345,7 @@ input[type=number] {
   font-family: 'Inter', sans-serif;
   line-height: 1;
   white-space: nowrap;
+  margin: 0;
 }
 
 .featured-chip.founder {
@@ -976,7 +983,9 @@ input[type=number] {
 .actions button { flex: 1; }
 
 .profile-card .featured-tags-row {
-  justify-content: flex-start;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 0;
 }
 
 .profile-card .featured-actions {
