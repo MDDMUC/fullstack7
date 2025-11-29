@@ -91,6 +91,42 @@ const formatJoinedAgo = (iso?: string) => {
 
 const firstName = (name?: string | null) => (name || '').trim().split(/\s+/)[0] || (name ?? '')
 
+const isSpecialChip = (tag: string): boolean => {
+  const lower = tag.toLowerCase()
+  return lower.includes('founder') || lower.includes('crew') || lower.includes('belay') || lower.includes('certified')
+}
+
+const getChipClass = (tag: string): string => {
+  const lower = tag.toLowerCase()
+  let chipClass = 'featured-chip'
+  if (lower.includes('founder')) chipClass += ' founder'
+  if (lower.includes('crew')) chipClass += ' crew'
+  if (lower.includes('belay') || lower.includes('certified')) chipClass += ' belay-certified'
+  return chipClass
+}
+
+const organizeTagsAndChips = (profile: Profile) => {
+  // Tags: style and grade
+  const styleTags = profile.style ? profile.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean).slice(0, 2) : []
+  const gradeTag = profile.grade ? [profile.grade] : []
+  const tags = [...styleTags, ...gradeTag]
+  
+  // Chips: everything else from tags array
+  const allChips = stripPrivateTags(profile.tags) || []
+  const specialChips: string[] = []
+  const standardChips: string[] = []
+  
+  allChips.forEach(chip => {
+    if (isSpecialChip(chip)) {
+      specialChips.push(chip)
+    } else {
+      standardChips.push(chip)
+    }
+  })
+  
+  return { tags, specialChips, standardChips }
+}
+
 type StatusState = { label: string; variant: 'live' | 'offline' | 'new' | 'omw' | 'dab' | 'climb'; live: boolean }
 
 const statusForProfile = (profile: Profile): StatusState => {
@@ -260,109 +296,84 @@ export default function DatingExperience() {
           </div>
           {featured ? (
             <div className="hero__card">
-              <div className="hero__card-inner">
-                <div className="card-header" style={{ position: 'relative' }}>
-                  <div className="card-top">
-                    <p className="label pill joined-label">{formatJoinedAgo(featured.created_at).toLowerCase()}</p>
-                    {(() => {
-                      const status = statusForProfile(featured)
-                      const live = status.live
-                      const showDot = status.variant !== 'offline' && status.variant !== 'new'
-                      return (
-                        <span className={`status-pill status-${status.variant}`}>
-                          {showDot ? (
-                            <span className={`status-dot status-dot-${status.variant} ${live ? 'is-live' : ''}`} />
-                          ) : null}
-                          {status.label}
-                        </span>
-                      )
-                    })()}
+              <div className="hero__card-inner featured-climber-card">
+                <div className="featured-card-top">
+                  <div className="featured-pill joined-pill">
+                    {formatJoinedAgo(featured.created_at).toLowerCase()}
                   </div>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 42,
-                      right: 0,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-end',
-                      gap: '6px',
-                      maxWidth: '65%',
-                    }}
-                  >
-                    <div
-                      className="featured-tags"
-                      style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        justifyContent: 'flex-end',
-                        gap: '6px 8px',
-                      }}
-                      >
-                        {(featured.style ? featured.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean) : ['Climber']).map(style => (
-                          <span key={style} className="tag">{style}</span>
-                        ))}
-                        {featured.grade ? <span className="tag grade">{featured.grade}</span> : <span className="subtle-tag">Grade focus</span>}
-                    </div>
-                  </div>
-                  <div
-                    className="featured-body"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-end',
-                      gap: '12px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
+                  {(() => {
+                    const status = statusForProfile(featured)
+                    return (
+                      <div className={`featured-pill status-pill-featured ${status.variant === 'live' ? 'online' : ''}`}>
+                        {status.label}
+                      </div>
+                    )
+                  })()}
+                </div>
+                <div className="featured-card-content">
+                  <div className="featured-image-wrapper">
                     <img
                       src={featured.avatar_url ?? fallbackAvatarFor(featured)}
                       alt={firstName(featured.username)}
-                      className="featured-avatar"
-                      style={{ aspectRatio: '2 / 3', width: '48%', minWidth: '160px', height: 'auto', objectFit: 'cover' }}
+                      className="featured-image"
                     />
-                    <div
-                      style={{
-                        flex: 1,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'flex-start',
-                        justifyContent: 'flex-end',
-                        gap: '6px',
-                      }}
-                    >
-                      <h3 style={{ fontSize: '22px', lineHeight: 1.2 }}>
-                        <span style={{ fontWeight: 800 }}>{firstName(featured.username)}</span>
-                        {featured.age ? <span style={{ fontWeight: 400, marginLeft: 8, fontSize: '18px' }}>{featured.age}</span> : null}
-                      </h3>
-                      <p className="sub">{featured.city || 'Somewhere craggy'}</p>
-                      <p className="sub" style={{ fontSize: '13px' }}>
-                        Goal: {featured.goals || featured.lookingFor || 'Goals incoming'}
-                      </p>
-                      <div
-                        className="badge-row"
-                        style={{
-                          marginTop: '6px',
-                          display: 'flex',
-                          justifyContent: 'flex-start',
-                          gap: '6px',
-                          flexWrap: 'wrap',
-                        }}
-                      >
-                        {(stripPrivateTags(featured.tags)?.length ? stripPrivateTags(featured.tags) : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']).map(tag => (
-                          <span key={tag} className="subtle-tag">{tag}</span>
-                        ))}
+                  </div>
+                  <div className="featured-info-wrapper">
+                    <div className="featured-tags-row">
+                      {(() => {
+                        const { tags, specialChips, standardChips } = organizeTagsAndChips(featured)
+                        return (
+                          <>
+                            {/* Tags first: style and grade */}
+                            {tags.map((tag, idx) => {
+                              const isGrade = idx >= tags.length - 1 && featured.grade && tag === featured.grade
+                              return (
+                                <span key={`tag-${idx}`} className={isGrade ? 'featured-tag featured-tag-grade' : 'featured-tag'}>
+                                  {tag}
+                                </span>
+                              )
+                            })}
+                            {/* Special chips next */}
+                            {specialChips.map(chip => {
+                              const chipClass = getChipClass(chip)
+                              const isFounder = chip.toLowerCase().includes('founder')
+                              const isCrew = chip.toLowerCase().includes('crew')
+                              return (
+                                <span key={`special-${chip}`} className={chipClass}>
+                                  {(isFounder || isCrew) ? `🤘${chip}` : chip}
+                                </span>
+                              )
+                            })}
+                            {/* Standard chips last */}
+                            {standardChips.slice(0, 8).map(chip => (
+                              <span key={`standard-${chip}`} className="featured-chip">
+                                {chip}
+                              </span>
+                            ))}
+                          </>
+                        )
+                      })()}
+                    </div>
+                    <div className="featured-info-bottom">
+                      <div className="featured-name-row">
+                        <span className="featured-name">{firstName(featured.username)}</span>
+                        {featured.age ? <span className="featured-age">{featured.age}</span> : null}
+                      </div>
+                      <div className="featured-location">{featured.city || 'Somewhere craggy'}</div>
+                      <div className="featured-goal">
+                        Goal: {featured.goals || featured.lookingFor || 'Join more comps and start training seriously this winter.'}
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="card-body sticky-actions">
-                  <div className="card-text">
-                    <p>{featured.bio || 'Ready for the next session.'}</p>
-                  </div>
-                  <div className="card-actions">
-                    <button className="ghost" aria-label="pass" onClick={() => handlePass(firstName(featured.username))}>Pass</button>
-                    <button className="cta" aria-label="send a like" onClick={() => handleLike(firstName(featured.username))}><span className="dab-text">dab</span></button>
-                  </div>
+                <div className="featured-bio">
+                  <p>{featured.bio || 'Looking for people to hit me up. Always keen to just hang and give a belay if neccessary. Let me know when you have time and hit me up xx.'}</p>
+                </div>
+                <div className="featured-actions">
+                  <button className="ghost featured-pass" aria-label="pass" onClick={() => handlePass(firstName(featured.username))}>Pass</button>
+                  <button className="cta featured-dab" aria-label="send a like" onClick={() => handleLike(firstName(featured.username))}>
+                    <span className="dab-text">DAB</span>
+                  </button>
                 </div>
               </div>
             </div>
