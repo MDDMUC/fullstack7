@@ -303,8 +303,13 @@ export default function DatingExperience() {
                   </div>
                   {(() => {
                     const status = statusForProfile(featured)
+                    const live = status.live
+                    const showDot = status.variant !== 'offline' && status.variant !== 'new'
                     return (
                       <div className={`featured-pill status-pill-featured ${status.variant === 'live' ? 'online' : ''}`}>
+                        {showDot ? (
+                          <span className={`status-dot status-dot-${status.variant} ${live ? 'is-live' : ''}`} />
+                        ) : null}
                         {status.label}
                       </div>
                     )

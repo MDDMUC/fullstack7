@@ -244,6 +244,9 @@ input[type=number] {
   font-weight: 400;
   line-height: 1;
   font-family: 'Inter', sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .featured-pill.joined-pill {
