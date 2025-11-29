@@ -433,23 +433,35 @@ fc-card (420px, bg: #151927, border: 1px #1f2633, radius: 14px)
   cursor: pointer;
 }
 
-/* DAB Button - gradient, glow, Metal Mania font */
+/* DAB Button (state=dab) - Figma node 476:13447
+   Outer: shadow-[0px_0px_20px_0px_rgba(92,225,230,0.4)]
+   Inner: border border-[#5ce1e6] h-[38px] px-[16px] py-[10px] rounded-[10px]
+   Contains DAB logo icon (h-[22px]) */
 .fc-btn-dab {
   width: 100%;
   height: 38px;
   padding: 10px 16px;                   /* py: btn-pad-md, px: btn-pad-xxl */
-  border: none;
-  background: linear-gradient(120deg, #5ce1e6, #e68fff);
-  color: #0c0e12;                       /* color/bg */
-  font-size: 18px;                      /* button/dab size */
-  font-weight: 400;                     /* Regular */
-  font-family: 'Metal Mania', cursive;  /* Figma: Metal Mania */
-  letter-spacing: 1.8px;                /* Figma tracking */
+  border: 1px solid #5ce1e6;            /* cyan border */
+  background: transparent;
   border-radius: 10px;                  /* radius/md */
   box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4); /* cyan glow */
-  line-height: normal;
-  text-align: center;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.fc-btn-dab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6);
+  border-color: #e68fff;                /* accent2 on hover */
+}
+
+.fc-btn-dab img {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
 }
 ```
 
@@ -568,7 +580,7 @@ Map Figma tokens to CSS custom properties:
 | `.fc-cta-row` | Button row |
 | `.fc-cta-wrapper` | Button wrapper |
 | `.fc-btn-pass` | Pass button (ghost) |
-| `.fc-btn-dab` | DAB button (CTA, Metal Mania font) |
+| `.fc-btn-dab` | DAB button (cyan border, glow, contains logo icon) |
 
 ---
 

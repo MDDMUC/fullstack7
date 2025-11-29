@@ -199,7 +199,7 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
           </div>
           <div className="fc-cta-wrapper">
             <button className="fc-btn-dab" onClick={onDab} aria-label="send a like">
-              DAB
+              <img src="/dab-logo.svg" alt="DAB" />
             </button>
           </div>
         </div>
@@ -327,7 +327,9 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
         {/* CTA Row */}
         <div className="gpc-cta">
           <button className="gpc-pass" onClick={onPass} aria-label="pass">Pass</button>
-          <button className="gpc-dab" onClick={onDab} aria-label="send a like">DAB</button>
+          <button className="gpc-dab" onClick={onDab} aria-label="send a like">
+            <img src="/dab-logo.svg" alt="DAB" />
+          </button>
         </div>
       </div>
     </div>
