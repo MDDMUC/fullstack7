@@ -2,140 +2,178 @@
 
 import { useState } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
-import BackButton from '../components/BackButton'
 
-const STYLES = [
+/**
+ * Onboarding Step 2: Climbing Stuffs
+ * Figma node: 483-764
+ * 
+ * LAYOUT FROM FIGMA:
+ * - Content: flex flex-col justify-between p-[16px]
+ * - Text block: at TOP with pt-[44px] pb-[10px] gap-[8px], contains logo + title + subtitle
+ * - Card: at BOTTOM, contains form elements
+ */
+
+// Climbing styles from Figma - exact order
+const CLIMBING_STYLES = [
   'Bouldering',
   'Sport',
-  'Trad',
-  'Alpine',
-  'Ice',
-  'Multipitch',
-  'Training',
-  'Mountaineering',
   'Comps',
   'Board',
+  'Multipitch',
+  'Alpine',
+  'Ice',
+  'Trad',
+  'Training',
+  'Mountaineering',
 ]
+
+// Grade options from Figma
+const GRADES = ['Beginner', 'Mediate', 'Advanced'] as const
+type Grade = typeof GRADES[number]
 
 export default function InterestsStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
-  const [selected, setSelected] = useState<string[]>(data.styles || [])
-  const [grade, setGrade] = useState(data.grade || '')
-  const [bigGoal, setBigGoal] = useState(data.bigGoal || '')
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(data.styles || [])
+  const [selectedGrade, setSelectedGrade] = useState<Grade | null>(
+    (data.grade as Grade) || null
+  )
 
-  const handleToggle = (style: string) => {
-    const newSelected = selected.includes(style)
-      ? selected.filter(i => i !== style)
-      : [...selected, style]
-    setSelected(newSelected)
-    updateData({ styles: newSelected })
+  const handleStyleToggle = (style: string) => {
+    const newSelected = selectedStyles.includes(style)
+      ? selectedStyles.filter(s => s !== style)
+      : [...selectedStyles, style]
+    setSelectedStyles(newSelected)
+  }
+
+  const handleGradeSelect = (grade: Grade) => {
+    setSelectedGrade(grade)
   }
 
   const handleContinue = () => {
-    updateData({ styles: selected, grade, bigGoal })
-    setCurrentStep(4)
+    updateData({ 
+      styles: selectedStyles, 
+      grade: selectedGrade || undefined 
+    })
+    setCurrentStep(3)
   }
 
+  const isValid = selectedStyles.length > 0
+
   return (
-    <div
-      className="onboard-screen flex flex-col gap-6 items-center justify-start px-4 sm:px-8 md:px-16 lg:px-24 py-10 sm:py-14 md:py-16 lg:py-20 w-full relative"
-      style={{ minHeight: 'calc(100vh - 72px)' }}
+    <div 
+      className="onb-screen"
+      data-name="onboarding / step2 / climbing"
+      data-node-id="483:764"
     >
-      <BackButton />
-      <div className="onboard-card flex flex-col items-center gap-4">
-        <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
-            Interests
+      {/* BACKGROUND LAYERS */}
+      <div aria-hidden="true" className="onb-bg-layers">
+        <div className="onb-bg-base" />
+        <video
+          className="onb-bg-video onb-bg-video-step2"
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/hero-main.jpg"
+        >
+          <source src="/007.mp4" type="video/mp4" />
+        </video>
+        <div className="onb-bg-gradient" />
+      </div>
+
+      {/* CONTENT - justify-between puts text at top, card at bottom */}
+      <div className="onb-content-step1-new" data-node-id="483:765">
+        
+        {/* TEXT BLOCK - at TOP with safe area padding */}
+        <div className="onb-step1-textblock" data-node-id="529:797">
+          {/* DAB Logo - 76x43px white */}
+          <div className="onb-step1-logo" data-node-id="529:798">
+            <img src="/dab-logo.svg" alt="DAB" className="onb-step1-logo-img" />
+          </div>
+          
+          {/* Title - 52px Inter Extra Bold Italic #5ce1e6 */}
+          <h1 className="onb-step1-title" data-node-id="529:799">
+            WHAT'S YOUR DEAL?
           </h1>
-        </div>
-
-        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-          Only real people. Choose your styles and grade so partners can match you accurately.
-        </p>
-
-        <div
-          className="grid items-start w-full"
-          style={{
-            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-            gap: '10px 12px',
-            maxWidth: '500px',
-            justifyItems: 'stretch',
-            margin: '0 auto',
-          }}
-        >
-          {STYLES.map((style) => {
-            const isSelected = selected.includes(style)
-            return (
-              <button
-                key={style}
-                type="button"
-                onClick={() => handleToggle(style)}
-                className="h-12 relative rounded-[10px] px-4 transition-colors text-center"
-                style={{
-                  minWidth: '120px',
-                  width: '100%',
-                  border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
-                  background: isSelected ? 'rgba(92, 225, 230, 0.12)' : '#0f131d',
-                  color: isSelected ? 'var(--accent)' : 'var(--text)',
-                }}
-              >
-                <span className="font-normal leading-none text-[18px] tracking-[-0.32px] w-full block text-center">
-                  {style}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-
-        <div className="w-full max-w-md">
-          <div
-            className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
-            style={{
-              background: '#0f131d',
-              border: '1px solid var(--stroke)',
-            }}
-          >
-            <input
-              type="text"
-              value={grade}
-              onChange={(e) => setGrade(e.target.value)}
-              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px]"
-              style={{ color: 'var(--text)' }}
-              placeholder="Grade focus (optional, e.g., 5.11b / V5)"
-            />
-          </div>
-          <p className="font-normal leading-normal text-[15px] mt-2" style={{ color: 'var(--muted)' }}>
-            Big goal? Let others know what you’re building toward.
+          
+          {/* Subtitle - 16px Inter Medium #e9eef7 */}
+          <p className="onb-step1-subtitle" data-node-id="529:800">
+            Three max. Be honest.
           </p>
-          <div
-            className="h-14 relative rounded-[12px] w-full flex items-center transition-colors mt-2"
-            style={{
-              background: '#0f131d',
-              border: '1px solid var(--stroke)',
-            }}
-          >
-            <input
-              type="text"
-              value={bigGoal}
-              onChange={(e) => setBigGoal(e.target.value)}
-              className="w-full h-full px-4 bg-transparent border-0 outline-none text-base rounded-[12px]"
-              style={{ color: 'var(--text)' }}
-              placeholder="Big goal? (optional)"
-            />
-          </div>
         </div>
 
-        <button
-          onClick={handleContinue}
-          className="cta w-full max-w-md"
-          style={{ padding: '10px 16px', borderRadius: '10px' }}
-        >
-          <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-            CONTINUE 3/9
-          </span>
-        </button>
+        {/* SIGNUP CARD - at BOTTOM */}
+        <div className="onb-signup-card" data-node-id="483:766">
+          <div className="onb-signup-inner">
+            
+            {/* Header */}
+            <div className="onb-header-block" data-node-id="483:767">
+              <h2 className="onb-header-title" data-node-id="483:768">Climbing Stuffs</h2>
+              <p className="onb-header-subtitle" data-node-id="483:769">
+                Your top styles. Grampas old boots in the basement don't count as Mountaineering.
+              </p>
+            </div>
+
+            {/* Field row */}
+            <div className="onb-field-row" data-node-id="483:773">
+              
+              {/* Climbing Style field */}
+              <div className="onb-field" data-node-id="483:774">
+                <label className="onb-label" data-node-id="483:775">Climbing Style</label>
+                {/* Style select grid - flex-wrap with gap 6px */}
+                <div className="onb-style-grid" data-node-id="483:809">
+                  {CLIMBING_STYLES.map((style) => {
+                    const isSelected = selectedStyles.includes(style)
+                    return (
+                      <button
+                        key={style}
+                        type="button"
+                        className={`onb-style-btn ${isSelected ? 'onb-style-btn-active' : ''}`}
+                        onClick={() => handleStyleToggle(style)}
+                        data-node-id={`style-${style}`}
+                      >
+                        {style}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Grade field */}
+              <div className="onb-field" data-node-id="483:777">
+                <label className="onb-label" data-node-id="483:778">Grade</label>
+                {/* Grade select row - 3 equal-width buttons */}
+                <div className="onb-gender-select" data-node-id="483:779">
+                  {GRADES.map((grade) => (
+                    <button
+                      key={grade}
+                      type="button"
+                      className={`onb-gender-btn ${selectedGrade === grade ? 'onb-gender-btn-active' : ''}`}
+                      onClick={() => handleGradeSelect(grade)}
+                      data-node-id={`grade-${grade}`}
+                    >
+                      {grade}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* CTA row */}
+            <div className="onb-cta-row" data-node-id="483:783">
+              <button
+                type="button"
+                className="onb-cta-btn"
+                onClick={handleContinue}
+                disabled={!isValid}
+                data-node-id="483:784"
+              >
+                Continue 2/5
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
-

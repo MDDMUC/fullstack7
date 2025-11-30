@@ -926,6 +926,301 @@ font-normal text-[15px] text-[#8ea0bd]
 
 ---
 
-*Last Updated: 2025-11-29*
-*Source: Figma node 470:1116 via get_variable_defs and get_design_context*
+## Mobile Onboarding Components (node 482-530)
+
+### Screen 1: Signup (step0/signup)
+
+**Structure:**
+```
+mob-onboard-screen (390px width, min-height: 100vh, bg: #0c0e12)
+├── mob-watermark (absolute, "dab" text, 180px, #1f2633, opacity 0.4)
+└── mob-onboard-content (padding: 100px 20px 40px 20px, gap: 24px)
+    ├── mob-title-section
+    │   └── mob-hero-title ("JOIN YOUR CREW", Metal Mania, 52px, #5ce1e6)
+    └── mob-form-section (gap: 16px)
+        ├── mob-form-header
+        │   ├── mob-form-title (18px, 600 weight, white)
+        │   └── mob-form-subtitle (14px, 400 weight, #8ea0bd)
+        ├── mob-google-btn (white bg, border: #747775, rounded: 8px)
+        ├── mob-divider
+        │   ├── mob-divider-line (bg: #1f2633)
+        │   └── mob-divider-text ("or", 14px, #8ea0bd)
+        └── mob-form (gap: 12px)
+            ├── mob-field > mob-label + mob-input
+            ├── mob-field-row > mob-field-half (for side-by-side)
+            └── mob-cta-btn (gradient, rounded: 10px)
+```
+
+### Tailwind Classes (node 482-530)
+
+```tailwind
+/* MOBILE SCREEN */
+bg-[#0c0e12] w-[390px] min-h-screen flex flex-col items-center relative overflow-hidden
+
+/* WATERMARK */
+font-['Metal_Mania'] text-[180px] text-[#1f2633] opacity-40 absolute top-[20px] left-1/2 -translate-x-1/2
+
+/* CONTENT */
+flex flex-col items-center gap-[24px] pt-[100px] px-[20px] pb-[40px] w-full relative z-1
+
+/* HERO TITLE */
+font-['Metal_Mania'] text-[52px] text-[#5ce1e6] leading-[1] text-center
+
+/* FORM SECTION */
+flex flex-col gap-[16px] w-full mt-[16px]
+
+/* FORM HEADER */
+flex flex-col gap-[4px] items-center text-center
+
+/* FORM TITLE */
+font-semibold text-[18px] text-white
+
+/* FORM SUBTITLE */
+font-normal text-[14px] text-[#8ea0bd]
+
+/* GOOGLE BUTTON */
+bg-white border border-[#747775] rounded-[8px] px-[12px] py-[10px] gap-[10px] w-full
+font-medium text-[14px] text-[#1f1f1f]
+
+/* DIVIDER */
+flex items-center justify-center w-full gap-[12px]
+/* Divider line: flex-1 h-[1px] bg-[#1f2633] */
+/* Divider text: font-normal text-[14px] text-[#8ea0bd] */
+
+/* FORM */
+flex flex-col gap-[12px] w-full
+
+/* FIELD */
+flex flex-col gap-[8px] w-full
+
+/* FIELD ROW (side-by-side) */
+flex gap-[12px] w-full
+/* FIELD HALF: flex-1 min-w-0 */
+
+/* LABEL */
+font-bold text-[15px] text-white
+
+/* INPUT */
+bg-[#0c0e12] border border-[#1f2633] rounded-[10px] px-[16px] py-[10px] w-full
+font-normal text-[15px] text-[#e9eef7]
+placeholder:text-[#8ea0bd]
+focus:border-[#5ce1e6] focus:shadow-[0_0_0_2px_rgba(92,225,230,0.12)]
+
+/* CTA BUTTON */
+bg-gradient-to-r from-[#5ce1e6] to-[#e68fff]
+rounded-[10px] px-[16px] py-[12px] w-full mt-[4px]
+shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)]
+font-bold text-[15px] text-[#0c0e12]
+
+/* PROGRESS DOTS (for multi-step) */
+flex gap-[8px] items-center justify-center py-[16px]
+/* Dot: w-[8px] h-[8px] rounded-full bg-[#1f2633] */
+/* Active: bg-[#5ce1e6] scale-[1.2] */
+/* Completed: bg-[#5ce1e6] */
+```
+
+### CSS Classes Reference
+
+| Class | Purpose |
+|-------|---------|
+| `.mob-onboard-screen` | Full screen container (390px, dark bg) |
+| `.mob-watermark` | Background "dab" text watermark |
+| `.mob-onboard-content` | Main content wrapper |
+| `.mob-title-section` | Title container |
+| `.mob-hero-title` | Metal Mania cyan title |
+| `.mob-form-section` | Form container |
+| `.mob-form-header` | Form header (title + subtitle) |
+| `.mob-form-title` | Form heading text |
+| `.mob-form-subtitle` | Form description text |
+| `.mob-google-btn` | Google sign-in button |
+| `.mob-divider` | "or" divider with lines |
+| `.mob-divider-line` | Horizontal line |
+| `.mob-divider-text` | "or" text |
+| `.mob-form` | Form element container |
+| `.mob-field` | Single field wrapper |
+| `.mob-field-row` | Side-by-side fields row |
+| `.mob-field-half` | Half-width field |
+| `.mob-label` | Input label |
+| `.mob-input` | Text input |
+| `.mob-error` | Error message |
+| `.mob-cta-btn` | Gradient CTA button |
+| `.mob-continue-btn` | Continue button variant |
+| `.mob-progress` | Progress dots container |
+| `.mob-progress-dot` | Individual progress dot |
+
+---
+
+### Screen 2: Basic Profile (node 482-1122)
+
+**Extracted via Figma MCP Tools (get_variable_defs, get_design_context)**
+
+**Token Values:**
+```json
+{
+  "color/text/highlight": "#FFFFFF",
+  "color/muted": "#8ea0bd",
+  "space/sm": "8",
+  "radius/md": "10",
+  "field/base": "Font(family: Inter, style: Regular, size: 15, weight: 400)",
+  "button/padding/xxl": "16",
+  "button/padding/md": "10",
+  "space/md": "12",
+  "button/padding/xxxxl": "20",
+  "radius/lg": "14",
+  "color/card": "#151927",
+  "color/stroke": "#1f2633",
+  "color/bg": "#0c0e12",
+  "button/padding/xs": "6",
+  "space/xs": "6",
+  "button/base": "Font(family: Inter, style: Bold, size: 15, weight: 700)",
+  "color/accent": "#5ce1e6",
+  "color/accent2": "#e68fff",
+  "space/lg": "16"
+}
+```
+
+**Structure:**
+```
+onb-screen (size-full, relative, flex col, justify-between)
+├── onb-bg-layers (absolute inset-0)
+│   └── video (fullbleed: h-[107.88%] w-[145.87%] top-[-7.87%] left-[-9.22%])
+├── onb-logo-watermark (top-[44px], blur-[2px], opacity-20)
+└── onb-content (basis-0 grow, flex col, gap-[8px], justify-end, p-[16px])
+    └── onb-signup-card (bg-[#151927], border-[#1f2633], rounded-[14px])
+        └── signup-inner (p-[20px], gap-[12px], overflow-clip)
+            ├── header-block (py-[10px], gap-[8px])
+            │   ├── title ("The Basics", extrabold 20px, tracking-[-0.16px], white)
+            │   └── subtitle (normal 16px, #8ea0bd)
+            ├── avatar-upload (h-[200px], bg-[#151927], border-[#1f2633], rounded-[14px])
+            │   ├── inner (p-[20px], gap-[12px], center)
+            │   │   └── "Upload an Image" (normal 15px, #8ea0bd)
+            │   └── inset-shadow (shadow-[inset_0px_4px_4px_0px_rgba(0,0,0,0.25)])
+            ├── field-row (gap-[8px])
+            │   ├── age-field (gap-[6px])
+            │   │   ├── label ("Age", bold 15px, white)
+            │   │   └── input (bg-[#0c0e12], border-[#1f2633], rounded-[10px], px-[16px] py-[10px])
+            │   └── gender-field (gap-[6px])
+            │       ├── label ("Gender", bold 15px, white)
+            │       └── select-row (gap-[6px])
+            │           ├── btn ("Male", flex-1, bg-[#0c0e12], rounded-[10px], px-[16px] py-[10px])
+            │           ├── btn ("Female", flex-1)
+            │           └── btn ("Other", flex-1)
+            └── cta-row (gap-[8px])
+                └── cta-btn ("Continue 1/5", gradient, rounded-[10px], px-[16px] py-[10px])
+```
+
+**CSS Values (node 482-1122):**
+```css
+/* SCREEN CONTAINER */
+display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+position: relative; width: 100%; height: 100%;
+
+/* VIDEO BACKGROUND - FULL BLEED */
+position: absolute; height: 107.88%; left: -9.22%; top: -7.87%; width: 145.87%;
+
+/* LOGO WATERMARK */
+position: absolute; filter: blur(2px); height: 163px; left: 51px; opacity: 0.2; top: 44px; width: 287px;
+
+/* CONTENT WRAPPER */
+flex: 1 0 0; display: flex; flex-direction: column; gap: 8px; /* space-sm */
+align-items: center; justify-content: flex-end; padding: 16px; /* space-lg */
+position: relative; width: 100%;
+
+/* SIGNUP CARD */
+background: #151927; /* color-card */
+border: 1px solid #1f2633; /* color-stroke */
+border-radius: 14px; /* radius-lg */
+width: 100%;
+
+/* SIGNUP INNER */
+display: flex; flex-direction: column; gap: 12px; /* space-md */
+overflow: clip; padding: 20px; /* button-padding-xxxxl */
+border-radius: inherit; width: 100%;
+
+/* HEADER TEXT BLOCK */
+display: flex; flex-direction: column; gap: 8px; /* space-sm */
+padding: 10px 0; /* py: radius-md */
+width: 100%;
+
+/* HEADER TITLE */
+font-family: Inter; font-weight: 800; font-size: 20px;
+color: white; letter-spacing: -0.16px;
+
+/* HEADER SUBTITLE */
+font-family: Inter; font-weight: 400; font-size: 16px;
+color: #8ea0bd; /* color-muted */
+
+/* AVATAR UPLOAD AREA */
+background: #151927; /* color-card */
+border: 1px solid #1f2633; /* color-stroke */
+height: 200px; border-radius: 14px; /* radius-lg */
+width: 100%;
+
+/* AVATAR INSET SHADOW */
+position: absolute; inset: 0; pointer-events: none;
+box-shadow: inset 0px 4px 4px 0px rgba(0,0,0,0.25);
+
+/* AVATAR PLACEHOLDER TEXT */
+font-family: Inter; font-weight: 400; font-size: 15px;
+color: #8ea0bd; /* color-muted */
+text-align: center;
+
+/* FIELD LABEL */
+font-family: Inter; font-weight: 700; font-size: 15px; color: white;
+
+/* FIELD INPUT */
+background: #0c0e12; /* color-bg */
+border: 1px solid #1f2633; /* color-stroke */
+border-radius: 10px; /* radius-md */
+padding: 10px 16px; /* py: button-padding-md, px: button-padding-xxl */
+width: 100%;
+
+/* INPUT PLACEHOLDER */
+font-family: Inter; font-weight: 400; font-size: 15px;
+color: #8ea0bd; /* color-muted */
+
+/* GENDER SELECT ROW */
+display: flex; gap: 6px; /* space-xs */
+align-items: flex-start; width: 100%;
+
+/* GENDER BUTTON (default) */
+flex: 1 0 0; background: #0c0e12; /* color-bg */
+border: 1px solid #1f2633; /* color-stroke */
+border-radius: 10px; /* radius-md */
+padding: 10px 16px; /* py: button-padding-md, px: button-padding-xxl */
+font-family: Inter; font-weight: 400; font-size: 15px;
+color: #8ea0bd; /* color-muted */
+text-align: center;
+
+/* CTA BUTTON */
+border-radius: 10px; /* radius-md */
+padding: 10px 16px; /* py: button-padding-md, px: button-padding-xxl */
+width: 100%;
+font-family: Inter; font-weight: 700; font-size: 15px;
+color: #0c0e12; /* color-bg */
+text-align: center;
+/* background: gradient from cyan to pink */
+```
+
+### CSS Classes Reference for Screen 2
+
+| Class | Purpose |
+|-------|---------|
+| `.onb-screen` | Full viewport container |
+| `.onb-bg-layers` | Background layer wrapper |
+| `.onb-bg-video-fullbleed` | Video extending beyond viewport |
+| `.onb-logo-watermark-top` | Logo positioned at top-[44px] |
+| `.onb-content-bottom` | Content aligned to bottom |
+| `.onb-avatar-upload` | 200px tall upload area |
+| `.onb-avatar-upload-inner` | Centered content wrapper |
+| `.onb-avatar-shadow` | Inset shadow overlay |
+| `.onb-avatar-text` | "Upload an Image" text |
+| `.onb-gender-select` | 3-button row for gender |
+| `.onb-gender-btn` | Individual gender button |
+| `.onb-gender-btn-active` | Selected state with accent color |
+
+---
+
+*Last Updated: 2025-11-30*
+*Source: Figma nodes 470:1116, 482:530, 482:1122 via MCP tools (get_variable_defs, get_design_context)*
 

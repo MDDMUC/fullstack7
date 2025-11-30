@@ -4,14 +4,11 @@ import { useEffect, useState, useRef } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
-import PhoneStep from './steps/PhoneStep'
-import WelcomeStep from './steps/WelcomeStep'
-import NameAgeGenderStep from './steps/NameAgeGenderStep'
-import PurposeStep from './steps/PurposeStep'
-import ShowMeStep from './steps/ShowMeStep'
+import BasicProfileStep from './steps/BasicProfileStep'
+import AvailabilityStep from './steps/AvailabilityStep'
 import InterestsStep from './steps/InterestsStep'
 import LocationStep from './steps/LocationStep'
-import PhotosStep from './steps/PhotosStep'
+import PledgeStep from './steps/PledgeStep'
 import SuccessStep from './steps/SuccessStep'
 
 export default function OnboardingPage() {
@@ -22,9 +19,9 @@ export default function OnboardingPage() {
 
   // Only run the profile check once on initial mount, and only if not on final steps
   useEffect(() => {
-    // CRITICAL: Never run check if on final steps (8 pledge, 9 success)
+    // CRITICAL: Never run check if on final steps (7 pledge, 8 success)
     // This prevents redirects during active onboarding completion
-    if (currentStep >= 8) {
+    if (currentStep >= 7) {
       setChecking(false)
       hasCheckedRef.current = true // Mark as checked to prevent future runs
       return
@@ -56,7 +53,7 @@ export default function OnboardingPage() {
           const stepAtCheckTime = currentStep
           
           // CRITICAL: Never redirect if on final onboarding steps
-          if (stepAtCheckTime >= 8) {
+          if (stepAtCheckTime >= 7) {
             console.log('On final onboarding steps, skipping redirect check')
             return
           }
@@ -80,7 +77,7 @@ export default function OnboardingPage() {
           // 4. Testing mode is not enabled
           if (profile && !profileError && stepAtCheckTime < 4 && !isTestingMode) {
             // Final safety check - never redirect if somehow we got to final steps
-            if (currentStep >= 8) {
+            if (currentStep >= 7) {
               console.log('Step changed to final steps during check, aborting redirect')
               return
             }
@@ -116,16 +113,14 @@ export default function OnboardingPage() {
     )
   }
 
+  // Onboarding flow: 5 main steps + success
   const steps = [
-    { component: PhoneStep, step: 1 },
-    { component: NameAgeGenderStep, step: 2 },
-    { component: InterestsStep, step: 3 },
-    { component: ShowMeStep, step: 4 },
-    { component: LocationStep, step: 5 },
-    { component: PurposeStep, step: 6 },
-    { component: PhotosStep, step: 7 },
-    { component: WelcomeStep, step: 8 },
-    { component: SuccessStep, step: 9 },
+    { component: BasicProfileStep, step: 1 }, // Step 1: Basic Profile (Avatar, Age, Gender)
+    { component: InterestsStep, step: 2 },    // Step 2: Climbing Style & Grade
+    { component: LocationStep, step: 3 },     // Step 3: Gyms Selection
+    { component: AvailabilityStep, step: 4 }, // Step 4: Availability (Time & Days)
+    { component: PledgeStep, step: 5 },       // Step 5: Pledge (Community Agreement)
+    { component: SuccessStep, step: 6 },      // Step 6: Success / Welcome to the Crew
   ]
 
   const currentStepData = steps.find(s => s.step === currentStep)
@@ -135,7 +130,7 @@ export default function OnboardingPage() {
     console.warn(`Step ${currentStep} not found, defaulting to step 1`)
   }
   
-  const CurrentComponent = currentStepData?.component || PhoneStep
+  const CurrentComponent = currentStepData?.component || BasicProfileStep
 
   return <CurrentComponent />
 }

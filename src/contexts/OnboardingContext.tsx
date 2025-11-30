@@ -26,6 +26,7 @@ export type OnboardingData = {
   // Location
   homebase?: string
   radiusKm?: number
+  gym?: string[] // Selected gym IDs from onboarding
 
   // Agreements
   pledgeAccepted?: boolean

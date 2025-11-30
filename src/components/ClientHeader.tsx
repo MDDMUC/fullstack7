@@ -6,6 +6,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+// Routes where the header should be hidden (onboarding flows)
+const HIDDEN_HEADER_ROUTES = ['/dab', '/signup']
+
 export default function ClientHeader() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
@@ -15,6 +18,15 @@ export default function ClientHeader() {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (isOpen) setIsOpen(false)
   }, [pathname, isOpen])
+
+  // Hide header on onboarding routes
+  const shouldHideHeader = HIDDEN_HEADER_ROUTES.some(route => 
+    pathname === route || pathname.startsWith(`${route}/`)
+  )
+
+  if (shouldHideHeader) {
+    return null
+  }
 
   const links = [
     { href: '/gym-chat', label: 'Gym Chat' },

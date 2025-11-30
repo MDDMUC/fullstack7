@@ -4227,3 +4227,1961 @@ input[type=number] {
     justify-content: flex-start;
   }
 }
+
+/* ============================================
+   MOBILE ONBOARDING - EXACT FROM FIGMA
+   node 482-530 (step0 / signup)
+   
+   Tokens extracted via get_variable_defs:
+   - color/bg: #0c0e12
+   - color/card: #151927
+   - color/stroke: #1f2633
+   - color/accent: #5ce1e6
+   - color/accent2: #e68fff
+   - color/muted: #8ea0bd
+   - space/xs: 6px
+   - space/sm: 8px
+   - space/md: 12px
+   - space/lg: 16px
+   - space/mobilesafezonetop: 44px
+   - radius/md: 10px
+   - radius/lg: 14px
+   - button/padding/xs: 6px
+   - button/padding/md: 10px
+   - button/padding/xxl: 16px
+   - button/padding/xxxxl: 20px
+   ============================================ */
+
+/* Screen Container
+   content-stretch flex flex-col items-center justify-between relative size-full */
+.onb-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ========================================
+   BACKGROUND LAYERS - Exact from Figma
+   1. Base color: bg-[#0c0e12]
+   2. Video: mix-blend-screen opacity-[0.08]
+   3. Gradient: bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)]
+   ======================================== */
+.onb-bg-layers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Layer 1: Base background - bg-[#0c0e12] */
+.onb-bg-base {
+  position: absolute;
+  inset: 0;
+  background: #0c0e12;
+}
+
+/* Layer 2: Video background - mix-blend-screen opacity-[0.08] */
+.onb-bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: screen;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* Step 2 video - scale up to push top-right luma logo out of view */
+.onb-bg-video-step2 {
+  /* Scale up from bottom-left to push top-right out of view */
+  transform: scale(1.3);
+  transform-origin: bottom left;
+  /* Ensure it still covers fully */
+  object-fit: cover;
+  /* Extend beyond viewport to ensure no gaps */
+  width: 100%;
+  height: 100%;
+}
+
+/* Step 4 video - scale up to push top-right luma logo out of view */
+.onb-bg-video-step4 {
+  /* Scale up from bottom-left to push top-right out of view */
+  transform: scale(1.3);
+  transform-origin: bottom left;
+  /* Ensure it still covers fully */
+  object-fit: cover;
+  /* Extend beyond viewport to ensure no gaps */
+  width: 100%;
+  height: 100%;
+}
+
+/* Success step video - scale up to push top-right luma logo out of view */
+.onb-bg-video-success {
+  /* Scale up from bottom-left to push top-right out of view */
+  transform: scale(1.3);
+  transform-origin: bottom left;
+  /* Ensure it still covers fully */
+  object-fit: cover;
+  /* Extend beyond viewport to ensure no gaps */
+  width: 100%;
+  height: 100%;
+}
+
+/* Layer 3: Gradient overlay - bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.2)] */
+.onb-bg-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.2));
+}
+
+/* ========================================
+   LOGO WATERMARK
+   blur-[2px] filter h-[163px] w-[287px] opacity-20
+   Always positioned in top third of screen on mobile
+   ======================================== */
+.onb-logo-watermark {
+  position: absolute;
+  top: 15%; /* Top third of screen - consistent across all steps */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 287px;
+  height: 163px;
+  filter: blur(2px);
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.onb-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Tint the white SVG to match the muted color */
+  filter: brightness(0) saturate(100%) invert(68%) sepia(11%) saturate(548%) hue-rotate(175deg) brightness(91%) contrast(87%);
+}
+
+/* Content Container
+   basis-0 grow p-[16px] w-full
+   flex flex-col items-center justify-between */
+.onb-content {
+  flex: 1 0 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 1px;
+  min-width: 1px;
+  padding: 16px; /* space/lg */
+  position: relative;
+  width: 100%;
+}
+
+/* Text Block (title section)
+   flex flex-col gap-[8px] items-center justify-center
+   pb-[10px] pt-[44px] px-0 w-full */
+.onb-text-block {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  justify-content: center;
+  padding-top: 44px; /* space/mobilesafezonetop */
+  padding-bottom: 10px; /* radius/md */
+  padding-left: 0;
+  padding-right: 0;
+  width: 100%;
+}
+
+/* ============================================
+   STEP 1: HEADER SECTION - PIXEL PERFECT
+   Figma node: 516:238
+   basis-0 grow pt-[44px] pb-[10px] gap-[12px]
+   items-center justify-between
+   ============================================ */
+/* Old header class - keeping for backwards compatibility */
+.onb-step1-header {
+  flex: 1 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 44px;
+  padding-bottom: 10px;
+  width: 100%;
+  min-height: 1px;
+}
+
+/* DAB logo - 76x43px white - in text block flow */
+.onb-step1-logo {
+  width: 76px;
+  height: 43px;
+  flex-shrink: 0;
+}
+
+.onb-step1-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Make logo white #e9eef7 */
+  filter: brightness(0) invert(1);
+}
+
+/* Step 1 Title - Inter Extra Bold Italic 52px #5ce1e6
+   Figma: font-extrabold italic text-[52px] text-center leading-[normal] */
+.onb-step1-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* Extra Bold */
+  font-style: italic;
+  font-size: 44px; /* Reduced for mobile */
+  color: #5ce1e6; /* color/accent */
+  line-height: 1;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 500px) {
+  .onb-step1-title {
+    font-size: 52px; /* Original Figma size */
+    line-height: normal;
+  }
+}
+
+/* Step 1 Subtitle - Inter Medium 16px #e9eef7 */
+.onb-step1-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
+  font-size: 16px;
+  color: #e9eef7; /* color/text */
+  line-height: normal;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Title - Inter Extra Bold Italic 52px #5ce1e6
+   font-['Inter:Extra_Bold_Italic'] font-extrabold italic text-[52px]
+   text-[#5ce1e6] text-center leading-[0] w-full */
+.onb-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-style: italic;
+  font-size: 52px;
+  color: #5ce1e6; /* color/accent */
+  text-align: center;
+  line-height: normal;
+  width: 100%;
+  margin: 0;
+}
+
+/* Signup Card
+   bg-[#151927] border border-[#1f2633] rounded-[14px] w-full */
+.onb-signup-card {
+  background: #151927; /* color/card */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 14px; /* radius/lg */
+  width: 100%;
+  flex-shrink: 0; /* Don't shrink - stay at bottom */
+}
+
+/* Signup Inner Container
+   flex flex-col gap-[12px] items-start overflow-clip p-[20px]
+   rounded-[inherit] w-full */
+.onb-signup-inner {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  align-items: flex-start;
+  overflow: clip;
+  padding: 20px; /* button/padding/xxxxl */
+  border-radius: inherit;
+  width: 100%;
+}
+
+/* Header Block
+   flex flex-col gap-[8px] items-start leading-[0]
+   px-0 py-[10px] w-full */
+.onb-header-block {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: flex-start;
+  padding: 10px 0; /* py: radius/md */
+  width: 100%;
+}
+
+/* Header Title
+   font-extrabold text-[20px] text-white tracking-[-0.16px] */
+.onb-header-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: white;
+  letter-spacing: -0.16px;
+  line-height: normal;
+  margin: 0;
+  width: 100%;
+}
+
+/* Header Subtitle
+   font-normal text-[16px] text-[#8ea0bd] */
+.onb-header-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  margin: 0;
+  width: 100%;
+}
+
+/* Field Row Container
+   flex flex-col gap-[8px] items-start justify-center
+   overflow-clip w-full */
+.onb-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: flex-start;
+  justify-content: center;
+  overflow: clip;
+  width: 100%;
+}
+
+/* Google Button Wrapper
+   h-[46px] p-[2px] w-full */
+.onb-google-wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  height: 46px;
+  align-items: flex-start;
+  padding: 2px; /* space/xxxs */
+  width: 100%;
+}
+
+/* Google Button
+   bg-white border border-[#747775] rounded-[8px]
+   h-[40px] px-[12px] py-[10px] gap-[10px] */
+.onb-google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 40px;
+  padding: 10px 12px;
+  background: white;
+  border: 1px solid #747775;
+  border-radius: 8px; /* space/sm */
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.onb-google-btn:hover {
+  background: #f8f8f8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.onb-google-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.onb-google-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* Google Button Text
+   font-medium text-[14px] text-[#1f1f1f] whitespace-pre */
+.onb-google-btn span {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #1f1f1f;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+/* Divider "or"
+   flex items-center justify-between w-full */
+.onb-divider {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Divider Line - w-[139px] h-0, stroke: #8ea0bd */
+.onb-divider-line {
+  width: 139px;
+  height: 0;
+  border-top: 1px solid #8ea0bd;
+  flex-shrink: 0;
+}
+
+/* Divider Text
+   font-normal text-[16px] text-[#8ea0bd] */
+.onb-divider-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  white-space: nowrap;
+}
+
+/* Field Container
+   flex flex-col gap-[6px] items-start w-full */
+.onb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* button/padding/xs */
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Label
+   font-bold text-[15px] text-white */
+.onb-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: white;
+  line-height: normal;
+  width: 100%;
+}
+
+/* Input Wrapper */
+.onb-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Input Field
+   bg-[#0c0e12] border border-[#1f2633] rounded-[10px]
+   px-[16px] py-[10px] w-full
+   font-normal text-[15px] text-[#8ea0bd] (placeholder) */
+.onb-input {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #e9eef7; /* color/text */
+  line-height: normal;
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.onb-input::placeholder {
+  color: #8ea0bd; /* color/muted */
+}
+
+.onb-input:focus,
+.onb-input:focus-visible {
+  border-color: #5ce1e6; /* color/accent */
+  outline: none;
+  box-shadow: none;
+}
+
+/* Hide number input spinners */
+.onb-input::-webkit-outer-spin-button,
+.onb-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.onb-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Password Row - side by side
+   flex flex-wrap gap-[6px] items-start w-full */
+.onb-pw-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* space/xs */
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Half-width field
+   basis-0 grow min-h-px min-w-px */
+.onb-field-half {
+  flex: 1 0 0;
+  min-height: 1px;
+  min-width: 1px;
+}
+
+/* Error Message */
+.onb-error {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  color: #ff7b7b;
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* CTA Row
+   flex gap-[8px] items-center overflow-clip w-full */
+.onb-cta-row {
+  display: flex;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  overflow: clip;
+  width: 100%;
+}
+
+/* CTA Button
+   px-[16px] py-[10px] rounded-[10px] w-full
+   gradient background, font-bold text-[15px] text-[#0c0e12] */
+.onb-cta-btn {
+  flex: 1 0 0;
+  min-height: 1px;
+  min-width: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  background: linear-gradient(135deg, #5ce1e6 0%, #e68fff 100%);
+  border: none;
+  border-radius: 10px; /* radius/md */
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #0c0e12; /* color/bg */
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+  transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+
+.onb-cta-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(92, 225, 230, 0.3);
+}
+
+.onb-cta-btn:active {
+  transform: translateY(0);
+}
+
+.onb-cta-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Onboard background wrapper */
+.onboard-bg {
+  background: #0c0e12;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* ============================================
+   SCREEN 2: BASIC PROFILE - Exact from Figma
+   node 482-1122
+   ============================================ */
+
+/* Video background - Full bleed (extends beyond viewport)
+   h-[107.88%] left-[-9.22%] w-[145.87%] top-[-7.87%] */
+.onb-bg-video-fullbleed {
+  position: absolute;
+  top: -7.87%;
+  left: -9.22%;
+  width: 145.87%;
+  height: 107.88%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+/* Content positioned at bottom
+   basis-0 grow flex flex-col gap-[8px] items-center justify-end p-[16px] w-full */
+.onb-content-bottom {
+  justify-content: flex-end;
+  gap: 8px; /* space/sm */
+}
+
+/* Step 1 content - justify-between for header top, card bottom */
+.onb-content-step1 {
+  gap: 8px; /* space/sm */
+}
+
+/* ============================================
+   STEP 1: NEW LAYOUT - EXACTLY FROM FIGMA
+   Content: flex flex-col justify-between p-[16px]
+   Text block at TOP, card at BOTTOM
+   ============================================ */
+.onb-content-step1-new {
+  flex: 1 0 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between; /* Text at top, card at bottom - EXACTLY FROM FIGMA */
+  min-height: 1px;
+  min-width: 1px;
+  padding: 16px; /* space/lg */
+  position: relative;
+  width: 100%;
+}
+
+/* Step 5 - card only, no text block, so push to bottom */
+.onb-content-step5 {
+  justify-content: flex-end; /* Push card to bottom */
+}
+
+/* Text block - at TOP with safe area padding
+   Figma: pt-[44px] pb-[10px] gap-[8px] shrink-0 */
+.onb-step1-textblock {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* Reduced for mobile */
+  align-items: center;
+  flex-shrink: 0; /* Don't shrink - stay at top */
+  padding-top: 24px; /* Reduced safe area for mobile */
+  padding-bottom: 8px;
+  width: 100%;
+}
+
+@media (min-width: 500px) {
+  .onb-step1-textblock {
+    gap: 8px; /* space/sm */
+    padding-top: 44px; /* space/mobilesafezonetop */
+    padding-bottom: 10px; /* radius/md */
+  }
+}
+
+/* Avatar Upload Area
+   bg-[#151927] border border-[#1f2633] h-[200px] rounded-[14px] w-full
+   with inner container for centering content */
+.onb-avatar-upload {
+  position: relative;
+  width: 100%;
+  height: 100px; /* Reduced for mobile fit */
+  background: #151927; /* color/card */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 14px; /* radius/lg */
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 150ms ease;
+}
+
+@media (min-height: 700px) {
+  .onb-avatar-upload {
+    height: 160px;
+  }
+}
+
+@media (min-height: 850px) {
+  .onb-avatar-upload {
+    height: 200px; /* Original Figma size */
+  }
+}
+
+.onb-avatar-upload:hover {
+  border-color: #5ce1e6; /* color/accent */
+}
+
+.onb-avatar-upload:focus {
+  outline: none;
+  border-color: #5ce1e6;
+  box-shadow: 0 0 0 2px rgba(92, 225, 230, 0.12);
+}
+
+/* Inner container - flex flex-col gap-[12px] h-[200px] items-center justify-center
+   overflow-clip p-[20px] rounded-[inherit] w-full */
+.onb-avatar-upload-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  padding: 20px; /* button/padding/xxxxl */
+  border-radius: inherit;
+  width: 100%;
+}
+
+/* Avatar preview image */
+.onb-avatar-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* Placeholder content */
+.onb-avatar-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0; /* py: radius/md */
+  width: 100%;
+}
+
+/* Upload text - font-normal text-[15px] text-[#8ea0bd] text-center */
+.onb-avatar-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #8ea0bd; /* color/muted */
+  text-align: center;
+  line-height: normal;
+}
+
+/* Inset shadow overlay
+   shadow-[0px_4px_4px_0px_inset_rgba(0,0,0,0.25)] */
+.onb-avatar-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  border-radius: inherit;
+}
+
+/* Gender Selection Row
+   flex gap-[6px] items-start w-full */
+.onb-gender-select {
+  display: flex;
+  gap: 6px; /* space/xs */
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Gender Button
+   basis-0 grow bg-[#0c0e12] border border-[#1f2633] rounded-[10px]
+   px-[16px] py-[10px] font-normal text-[15px] text-[#8ea0bd] text-center */
+.onb-gender-btn {
+  flex: 1 0 0;
+  min-height: 1px;
+  min-width: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #8ea0bd; /* color/muted */
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.onb-gender-btn:hover {
+  border-color: #5ce1e6; /* color/accent */
+}
+
+/* Active/Selected state */
+.onb-gender-btn-active {
+  background: rgba(92, 225, 230, 0.08);
+  border-color: #5ce1e6; /* color/accent */
+  color: #5ce1e6; /* color/accent */
+}
+
+/* ============================================
+   STEP 2: CLIMBING STUFFS - Style Grid
+   Figma node: 483-764
+   flex-wrap grid with gap 6px, justify-between
+   ============================================ */
+
+/* Style Grid - content-start flex flex-wrap gap-[6px] items-start justify-between w-full */
+.onb-style-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* space/xs */
+  align-items: flex-start;
+  align-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* Style Button - shrink-0 (auto width based on content)
+   bg-[#0c0e12] border border-[#1f2633] rounded-[10px]
+   px-[16px] py-[10px] font-normal text-[15px] text-[#8ea0bd] */
+.onb-style-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+  flex-shrink: 0;
+}
+
+.onb-style-btn:hover {
+  border-color: #5ce1e6; /* color/accent */
+}
+
+.onb-style-btn:focus,
+.onb-style-btn:focus-visible {
+  outline: none;
+  border-color: #5ce1e6;
+}
+
+/* Style Button Active - selected state */
+.onb-style-btn-active {
+  background: rgba(92, 225, 230, 0.08);
+  border-color: #5ce1e6; /* color/accent */
+  color: #5ce1e6; /* color/accent */
+}
+
+/* ============================================
+   STEP 3: YOUR WALLS (GYMS) - PIXEL PERFECT
+   Figma node: 483-858
+   ============================================ */
+
+/* Field description - Inter Regular 16px #8ea0bd */
+.onb-field-description {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  margin: 0;
+  width: 100%;
+}
+
+/* Gym Grid - content-start flex flex-wrap gap-[6px] items-start w-full */
+.onb-gym-grid {
+  display: flex;
+  flex-direction: column; /* Stack cards vertically to fill horizontally */
+  gap: 6px; /* space/xs */
+  align-items: stretch; /* Make cards fill width */
+  width: 100%;
+}
+
+/* Gym Card - bg-[#0c0e12] border border-[#1f2633] rounded-[10px]
+   p-[10px] gap-[12px] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)] */
+.onb-gym-card {
+  display: flex;
+  gap: 12px; /* space/md */
+  align-items: center;
+  justify-content: flex-start; /* Left-align content */
+  padding: 10px; /* button/padding/md */
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+  width: 100%; /* Fill card horizontally */
+}
+
+.onb-gym-card:hover {
+  border-color: #5ce1e6; /* color/accent */
+}
+
+.onb-gym-card:focus,
+.onb-gym-card:focus-visible {
+  outline: none;
+  border-color: #5ce1e6;
+}
+
+/* Gym Card Active - selected state */
+.onb-gym-card-active {
+  background: rgba(92, 225, 230, 0.08);
+  border-color: #5ce1e6; /* color/accent */
+}
+
+/* Gym Image Wrapper - 60x60px rounded-[14px] */
+.onb-gym-img-wrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 14px; /* radius/lg */
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Gym Image */
+.onb-gym-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+}
+
+/* Gym Info - flex flex-col gap-[2px] items-start justify-center */
+.onb-gym-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* space/xxxs */
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  flex: 1; /* Allow to grow and fill available space */
+  min-width: 0; /* Allow text to wrap if needed */
+}
+
+/* Gym Name - Inter Bold 15px #e9eef7 */
+.onb-gym-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: #e9eef7; /* color/text */
+  line-height: normal;
+}
+
+/* Gym Location - Inter Medium 14px #e9eef7 */
+.onb-gym-location {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: #e9eef7; /* color/text */
+  line-height: normal;
+}
+
+/* Gym City - Inter Regular 12px #8ea0bd */
+.onb-gym-city {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 12px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+}
+
+/* Gym Loading/Empty states */
+.onb-gym-loading,
+.onb-gym-empty {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  padding: 20px;
+  text-align: center;
+  width: 100%;
+}
+
+/* ============================================
+   STEP 4: AVAILABILITY VIBE - PIXEL PERFECT
+   Figma node: 483-928
+   ============================================ */
+
+/* Time of day grid - flex-wrap gap-[4px] (space/xxs) 
+   Buttons fill the row - 3 per row */
+/* Time grid - flex-wrap gap-[4px] (space/xxs) from Figma */
+.onb-time-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px; /* space/xxs - EXACT FROM FIGMA */
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* Time button - fill card horizontally, 3 per row
+   Figma: min-w-[100px] px-[16px] py-[10px] */
+.onb-time-btn {
+  flex: 1 1 calc((100% - 8px) / 3); /* Fill card, 3 per row (2 gaps of 4px) */
+  min-width: 100px; /* Minimum width from Figma */
+  max-width: calc((100% - 8px) / 3); /* Prevent growing beyond 1/3 */
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: 15px; /* field/base */
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.onb-time-btn-active {
+  background: rgba(92, 225, 230, 0.08); /* color/accent with 8% opacity */
+  border-color: #5ce1e6; /* color/accent */
+  color: #5ce1e6; /* color/accent */
+}
+
+/* Days grid - flex row gap-[6px] (space/xs) */
+.onb-days-grid {
+  display: flex;
+  gap: 6px; /* space/xs */
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Day button - fill card horizontally, 2 per row
+   Figma: gap-[6px] (space/xs), 2 buttons side by side */
+.onb-day-btn {
+  flex: 1 1 0; /* Fill equally, grow to fill available space */
+  min-width: 0; /* Allow flex items to shrink below content size */
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: 15px; /* field/base */
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.onb-day-btn-active {
+  background: rgba(92, 225, 230, 0.08); /* color/accent with 8% opacity */
+  border-color: #5ce1e6; /* color/accent */
+  color: #5ce1e6; /* color/accent */
+}
+
+/* ============================================
+   STEP 5: PLEDGE - PIXEL PERFECT
+   Figma node: 484-1266
+   ============================================ */
+
+/* Header centered variant for pledge screen */
+.onb-header-center {
+  text-align: center;
+}
+
+.onb-header-subtitle-center {
+  text-align: center;
+}
+
+/* ============================================
+   STEP 5: PLEDGE - HEADER INSIDE CARD
+   ============================================ */
+/* Pledge inner container - centers items */
+.onb-pledge-inner-container {
+  align-items: center;
+}
+
+/* Pledge header - text-center py-[10px] gap-[8px] */
+.onb-pledge-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  text-align: center;
+  padding: 10px 0; /* py: radius/md */
+  width: 100%;
+}
+
+/* Pledge headline - 40px Inter Extra Bold Italic #5ce1e6
+   Figma: text-[40px] font-extrabold italic */
+.onb-pledge-headline {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* Extra Bold */
+  font-style: italic;
+  font-size: 40px;
+  color: #5ce1e6; /* color/accent */
+  line-height: normal;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+}
+
+/* Pledge subtitle - 16px Inter Medium #e9eef7 */
+.onb-pledge-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
+  font-size: 16px;
+  color: #e9eef7; /* color/text */
+  line-height: normal;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+}
+
+/* Pledge title - Inter ExtraBold 20px #5ce1e6 (accent) */
+.onb-pledge-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* Extra Bold */
+  font-size: 20px;
+  color: #5ce1e6; /* color/accent */
+  letter-spacing: -0.16px;
+  line-height: normal;
+  margin: 0;
+  width: 100%;
+}
+
+/* Pledge card - clickable, bg-[#151927] border border-[#1f2633] rounded-[14px] */
+.onb-pledge-card {
+  display: block;
+  width: 100%;
+  background: #151927; /* color/card */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 14px; /* radius/lg */
+  cursor: pointer;
+  transition: all 120ms ease;
+  text-align: left;
+  padding: 0;
+}
+
+.onb-pledge-card-active {
+  border-color: #5ce1e6; /* color/accent */
+  background: rgba(92, 225, 230, 0.04);
+}
+
+/* Pledge inner - px-[16px] py-[8px] gap-[12px] */
+.onb-pledge-inner {
+  display: flex;
+  gap: 12px; /* space/md */
+  align-items: flex-start;
+  padding: 8px 16px; /* py: space/sm, px: space/lg */
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* Pledge checkbox - w-[20px] h-[44px] */
+.onb-pledge-checkbox {
+  flex-shrink: 0;
+  width: 20px;
+  min-height: 44px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10px; /* Align with content top padding */
+}
+
+/* Pledge content - py-[10px] gap-[8px] */
+.onb-pledge-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  padding: 10px 0; /* py: radius/md */
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+/* Pledge item title - Inter ExtraBold 20px white */
+.onb-pledge-item-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* Extra Bold */
+  font-size: 20px;
+  color: #ffffff; /* white */
+  line-height: normal;
+  margin: 0;
+  text-align: left;
+}
+
+/* Pledge item description - Inter Medium 16px #8ea0bd */
+.onb-pledge-item-desc {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
+  font-size: 16px;
+  color: #8ea0bd; /* color/muted */
+  line-height: 1.4;
+  margin: 0;
+  white-space: normal;
+  word-wrap: break-word;
+  text-align: left;
+}
+
+/* Pledge tap text - Inter Regular 12px #5ce1e6 */
+.onb-pledge-tap {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: 12px;
+  color: #5ce1e6; /* color/accent */
+  line-height: normal;
+  text-align: left;
+}
+
+/* ============================================
+   STEP 6 (FINAL): SUCCESS - PIXEL PERFECT
+   Figma node: 484-1457
+   ============================================ */
+
+/* Success screen variant - gap 8px, justify-end */
+.onb-screen-success {
+  gap: 8px;
+}
+
+/* Success content - justify-between for headline top, card bottom */
+.onb-content-success {
+  justify-content: space-between;
+}
+
+/* ============================================
+   STEP 6: SUCCESS - EXACTLY FROM FIGMA
+   Content: gap-[44px] justify-end
+   ============================================ */
+.onb-content-success-new {
+  flex: 1 0 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end; /* Card at bottom */
+  gap: 44px; /* EXACT FROM FIGMA */
+  min-height: 1px;
+  min-width: 1px;
+  padding: 16px; /* space/lg */
+  position: relative;
+  width: 100%;
+}
+
+/* Success headline - pt-[60px] gap-[12px] items-center
+   Contains logo, title, subtitle */
+.onb-success-headline-new {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 60px; /* EXACT FROM FIGMA */
+  padding-bottom: 0;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* Success logo - 80x45px white (slightly larger than other steps) */
+.onb-success-logo {
+  width: 80px;
+  height: 45px;
+  flex-shrink: 0;
+}
+
+.onb-success-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  /* Make logo white #e9eef7 */
+  filter: brightness(0) invert(1);
+}
+
+/* Success headline - pt-[60px] gap-[12px] text-center */
+.onb-success-headline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  padding-top: 60px;
+  width: 100%;
+}
+
+/* Success title - Inter Extra Bold Italic 52px #5ce1e6 */
+.onb-success-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* Extra Bold */
+  font-style: italic;
+  font-size: 52px;
+  color: #5ce1e6; /* color/accent */
+  line-height: normal;
+  text-align: center;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* Success subtitle - Inter Regular 16px #8ea0bd */
+.onb-success-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: 16px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  text-align: center;
+  margin: 0;
+}
+
+/* Success emoji - 52px */
+.onb-success-emoji {
+  font-size: 52px;
+  line-height: 1;
+}
+
+/* Success subtitle new - 16px Inter Medium #E0E0E0 (greys/300) */
+.onb-success-subtitle-new {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium */
+  font-size: 16px;
+  color: #E0E0E0; /* greys/300 - EXACT FROM FIGMA */
+  line-height: normal;
+  text-align: center;
+  margin: 0;
+  width: 100%;
+}
+
+/* ============================================
+   SUCCESS STEP: CELEBRATORY ANIMATIONS
+   ============================================ */
+
+/* Logo animation - fade in + scale + bounce */
+.onb-success-logo-animate {
+  animation: successLogoEnter 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+@keyframes successLogoEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-20px);
+  }
+  60% {
+    transform: scale(1.1) translateY(0);
+  }
+  80% {
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Title animation - fade in + scale + bounce + glow */
+.onb-success-title-animate {
+  animation: successTitleEnter 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards,
+             successTitleGlow 2s ease-in-out 1.2s infinite;
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+}
+
+@keyframes successTitleEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  50% {
+    transform: scale(1.05) translateY(-5px);
+  }
+  70% {
+    transform: scale(0.98) translateY(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes successTitleGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(92, 225, 230, 0.3),
+                 0 0 20px rgba(92, 225, 230, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(92, 225, 230, 0.5),
+                 0 0 30px rgba(92, 225, 230, 0.3),
+                 0 0 40px rgba(92, 225, 230, 0.2);
+  }
+}
+
+/* Subtitle animation - fade in + slide up */
+.onb-success-subtitle-animate {
+  animation: successSubtitleEnter 0.8s ease-out 0.4s forwards;
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+@keyframes successSubtitleEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card animation - slide up + fade in */
+.onb-success-card-animate {
+  animation: successCardEnter 0.8s ease-out 0.6s forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@keyframes successCardEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================
+   CONFETTI ANIMATION
+   ============================================ */
+.onb-confetti-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.onb-confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  opacity: 0.9;
+  /* Each piece has different animation duration for variety */
+  animation: confettiFall 2.5s linear forwards;
+}
+
+/* Vary animation duration for different pieces */
+.onb-confetti-piece:nth-child(odd) {
+  animation-duration: 2s;
+}
+
+.onb-confetti-piece:nth-child(3n) {
+  animation-duration: 3s;
+}
+
+.onb-confetti-piece:nth-child(4n) {
+  animation-duration: 2.5s;
+}
+
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-10px) translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(110vh) translateX(calc(var(--drift, 0) * 50px)) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* Success card inner - gap-[12px] p-[20px] items-center justify-end */
+.onb-success-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  align-items: center;
+  justify-content: flex-end;
+  padding: 20px; /* button/padding/xxxxl */
+  border-radius: inherit;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ============================================
+   STEP 1: BASIC PROFILE - PIXEL PERFECT
+   Figma node: 482-1122
+   Extracted via get_variable_defs & get_design_context
+   ============================================ */
+
+/* SCREEN CONTAINER - Exact from Figma
+   content-stretch flex flex-col items-center justify-between relative size-full
+   Background color is on the container itself, not a child layer */
+.step1-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  /* Frame background - #0c0e12 (color/bg) */
+  background: #0c0e12;
+}
+
+/* ========================================
+   BACKGROUND - Video Only (Exact from Figma)
+   The Figma design has ONLY the video in an overflow-hidden container.
+   No separate base layer - the frame's fill provides the dark background.
+   ======================================== */
+
+/* Video container: absolute inset-0 overflow-hidden */
+.step1-bg-video-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Video: Exact positioning from Figma
+   absolute h-[107.88%] left-[-9.22%] top-[-7.87%] w-[145.87%] max-w-none */
+.step1-video {
+  position: absolute;
+  top: -7.87%;
+  left: -9.22%;
+  width: 145.87%;
+  height: 107.88%;
+  max-width: none;
+  object-fit: cover;
+}
+
+/* ========================================
+   DAB WATERMARK - Reusable Component
+   Figma node: 486:1605
+   Used across all onboarding screens
+   
+   EXACT FIGMA VALUES:
+   - Container: blur-[2px] filter opacity-20 h-[163px] w-[287px]
+   - Default position: left-[51px] (top varies by screen)
+   - Fill: Dark color to create silhouette effect
+   ======================================== */
+.dab-watermark {
+  position: absolute;
+  /* top and left are set via inline styles for flexibility */
+  width: 287px;
+  height: 163px;
+  filter: blur(2px);
+  opacity: 0.2;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.dab-watermark-svg {
+  width: 100%;
+  height: 100%;
+  fill: #0a0c10; /* Very dark color for silhouette effect */
+}
+
+/* Legacy class for backward compatibility */
+.step1-watermark {
+  position: absolute;
+  top: 92px;
+  left: 51px;
+  width: 287px;
+  height: 163px;
+  filter: blur(2px);
+  opacity: 0.2;
+  pointer-events: none;
+  user-select: none;
+  z-index: 2;
+}
+
+.step1-watermark-svg {
+  width: 100%;
+  height: 100%;
+  fill: #0a0c10;
+}
+
+/* CONTENT WRAPPER
+   basis-0 grow flex flex-col gap-[8px] items-center justify-end p-[16px] w-full */
+.step1-content {
+  flex: 1 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  justify-content: flex-end;
+  padding: 16px; /* space/lg */
+  position: relative;
+  width: 100%;
+  min-height: 1px;
+  min-width: 1px;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+/* TEXT BLOCK - Title container
+   basis-0 grow flex flex-col items-center justify-between
+   pt-[44px] pb-[10px] px-0 w-full */
+.step1-text-block {
+  flex: 1 0 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 44px; /* space/mobilesafezonetop */
+  padding-bottom: 10px; /* radius/md */
+  padding-left: 0;
+  padding-right: 0;
+  width: 100%;
+  min-height: 1px;
+  min-width: 1px;
+  box-sizing: border-box;
+}
+
+/* TITLE - "LET'S GO!"
+   font-['Inter:Extra_Bold_Italic'] font-extrabold italic
+   text-[52px] text-[#5ce1e6] text-center leading-[normal] */
+.step1-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-style: italic;
+  font-size: 52px;
+  color: #5ce1e6; /* color/accent */
+  text-align: center;
+  line-height: normal;
+  margin: 0;
+  width: 100%;
+}
+
+/* SIGNUP CARD
+   bg-[#151927] border border-[#1f2633] rounded-[14px] w-full */
+.step1-card {
+  background: #151927; /* color/card */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 14px; /* radius/lg */
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* CARD INNER
+   flex flex-col gap-[12px] overflow-clip p-[20px] rounded-[inherit] w-full */
+.step1-card-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  overflow: clip;
+  padding: 20px; /* button/padding/xxxxl */
+  border-radius: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* HEADER TEXT BLOCK
+   flex flex-col gap-[8px] py-[10px] px-0 w-full */
+.step1-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  padding: 10px 0; /* py: radius/md */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* HEADER TITLE
+   font-extrabold text-[20px] text-white tracking-[-0.16px] */
+.step1-header-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: white;
+  letter-spacing: -0.16px;
+  line-height: normal;
+  margin: 0;
+  width: 100%;
+}
+
+/* HEADER SUBTITLE
+   font-normal text-[16px] text-[#8ea0bd] */
+.step1-header-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  margin: 0;
+  width: 100%;
+}
+
+/* AVATAR UPLOAD AREA
+   bg-[#151927] border border-[#1f2633] h-[200px] rounded-[14px] w-full */
+.step1-avatar {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #151927; /* color/card */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 14px; /* radius/lg */
+  flex-shrink: 0;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.step1-avatar:hover {
+  border-color: #5ce1e6;
+}
+
+.step1-avatar:focus {
+  outline: none;
+  border-color: #5ce1e6;
+  box-shadow: 0 0 0 2px rgba(92, 225, 230, 0.12);
+}
+
+/* AVATAR INNER
+   flex flex-col gap-[12px] h-[200px] items-center justify-center
+   overflow-clip p-[20px] rounded-[inherit] w-full */
+.step1-avatar-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  padding: 20px; /* button/padding/xxxxl */
+  border-radius: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.step1-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+/* AVATAR PLACEHOLDER
+   flex flex-col gap-[8px] items-center justify-center py-[10px] px-0 w-full */
+.step1-avatar-placeholder {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0; /* py: radius/md */
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* AVATAR TEXT
+   font-normal text-[15px] text-[#8ea0bd] text-center */
+.step1-avatar-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #8ea0bd; /* color/muted */
+  text-align: center;
+  line-height: normal;
+}
+
+/* AVATAR INSET SHADOW
+   shadow-[0px_4px_4px_0px_inset_rgba(0,0,0,0.25)] */
+.step1-avatar-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  border-radius: inherit;
+}
+
+/* FIELD ROW
+   flex flex-col gap-[8px] items-start justify-center overflow-clip w-full */
+.step1-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space/sm */
+  align-items: flex-start;
+  justify-content: center;
+  overflow: clip;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* SINGLE FIELD
+   flex flex-col gap-[6px] items-start w-full */
+.step1-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* button/padding/xs */
+  align-items: flex-start;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* FIELD LABEL
+   font-bold text-[15px] text-white */
+.step1-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: white;
+  line-height: normal;
+  width: 100%;
+}
+
+/* INPUT WRAPPER */
+.step1-input-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* INPUT FIELD
+   bg-[#0c0e12] border border-[#1f2633] rounded-[10px]
+   px-[16px] py-[10px] font-normal text-[15px] text-[#8ea0bd] w-full */
+.step1-input {
+  width: 100%;
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #e9eef7;
+  line-height: normal;
+  box-sizing: border-box;
+  transition: border-color 150ms ease;
+}
+
+.step1-input::placeholder {
+  color: #8ea0bd; /* color/muted */
+}
+
+.step1-input:focus {
+  outline: none;
+  border-color: #5ce1e6; /* color/accent */
+  box-shadow: 0 0 0 2px rgba(92, 225, 230, 0.12);
+}
+
+/* GENDER SELECT ROW
+   flex gap-[6px] items-start w-full */
+.step1-gender-row {
+  display: flex;
+  gap: 6px; /* space/xs */
+  align-items: flex-start;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* GENDER BUTTON
+   basis-0 grow bg-[#0c0e12] border border-[#1f2633] rounded-[10px]
+   px-[16px] py-[10px] font-normal text-[15px] text-[#8ea0bd] text-center */
+.step1-gender-btn {
+  flex: 1 0 0;
+  min-height: 1px;
+  min-width: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  color: #8ea0bd; /* color/muted */
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.step1-gender-btn:hover {
+  border-color: #5ce1e6; /* color/accent */
+}
+
+/* GENDER BUTTON ACTIVE
+   border-[#5ce1e6] bg with accent tint, text-[#5ce1e6] */
+.step1-gender-btn-active {
+  background: rgba(92, 225, 230, 0.08);
+  border-color: #5ce1e6; /* color/accent */
+  color: #5ce1e6; /* color/accent */
+}
+
+/* CTA ROW
+   flex gap-[8px] items-center overflow-clip w-full */
+.step1-cta-row {
+  display: flex;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  overflow: clip;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* CTA BUTTON - Exact from Figma (node 475:11206)
+   button.cta.default component
+   rounded-[10px] px-[16px] py-[10px]
+   font-bold text-[15px] text-[#0c0e12] text-center
+   gradient: color/accent (#5ce1e6) to color/accent2 (#e68fff) */
+.step1-cta-btn {
+  flex: 1 0 0;
+  min-height: 1px;
+  min-width: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Gradient from Figma screenshot - cyan to pink */
+  background: linear-gradient(90deg, #5ce1e6 0%, #e68fff 100%);
+  border: none;
+  border-radius: 10px; /* radius/md */
+  padding: 10px 16px; /* py: button/padding/md (10px), px: button/padding/xxl (16px) */
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; /* button/base: Bold */
+  font-size: 15px; /* button/base: 15px */
+  line-height: normal;
+  color: #0c0e12; /* color/bg - dark text on gradient */
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: opacity 150ms ease, transform 100ms ease;
+}
+
+.step1-cta-btn:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.step1-cta-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.step1-cta-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

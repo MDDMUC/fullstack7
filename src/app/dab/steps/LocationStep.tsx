@@ -1,105 +1,218 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
-import BackButton from '../components/BackButton'
+import { supabase } from '@/lib/supabaseClient'
+
+/**
+ * Onboarding Step 3: Your Walls (Gyms)
+ * Figma node: 483-858
+ * 
+ * Gym data pulled dynamically from Supabase "gyms" table
+ * - name: gym name
+ * - area: city/location
+ */
+
+type Gym = {
+  id: string
+  name: string
+  area: string
+  image_url?: string | null
+}
 
 export default function LocationStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [homebase, setHomebase] = useState(data.homebase || '')
-  const [radius, setRadius] = useState<number>(data.radiusKm || 100)
-  const [homeFocused, setHomeFocused] = useState(false)
+  const [selectedGyms, setSelectedGyms] = useState<string[]>([])
+  const [gyms, setGyms] = useState<Gym[]>([])
+  const [loading, setLoading] = useState(true)
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (!homebase.trim()) return
-    updateData({ homebase, radiusKm: radius })
-    setCurrentStep(6)
+  // Fetch gyms from Supabase on mount
+  useEffect(() => {
+    async function fetchGyms() {
+      if (!supabase) {
+        console.warn('Supabase not configured')
+        setLoading(false)
+        return
+      }
+
+      try {
+        // First try with image_url column
+        let { data: gymData, error } = await supabase
+          .from('gyms')
+          .select('id, name, area, image_url')
+          .order('name', { ascending: true })
+
+        // If image_url column doesn't exist, fetch without it
+        if (error?.message?.includes('image_url does not exist')) {
+          const result = await supabase
+            .from('gyms')
+            .select('id, name, area')
+            .order('name', { ascending: true })
+          gymData = result.data
+          error = result.error
+        }
+
+        if (error) {
+          console.error('Error fetching gyms:', error.message)
+        } else if (gymData) {
+          setGyms(gymData)
+        }
+      } catch (err) {
+        console.error('Failed to fetch gyms:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchGyms()
+  }, [])
+
+  const handleGymToggle = (gymId: string) => {
+    setSelectedGyms(prev => 
+      prev.includes(gymId)
+        ? prev.filter(id => id !== gymId)
+        : [...prev, gymId]
+    )
   }
 
+  const handleContinue = () => {
+    // Validate homebase is required
+    if (!homebase || homebase.trim() === '') {
+      return // Don't proceed if homebase is empty
+    }
+    
+    updateData({ 
+      homebase: homebase.trim(),
+      gym: selectedGyms, // Store selected gym IDs
+    })
+    setCurrentStep(4)
+  }
+
+  const isValid = homebase.trim() !== ''
+
   return (
-    <div
-      className="onboard-screen flex flex-col gap-6 items-center justify-start px-4 sm:px-8 md:px-16 lg:px-24 py-10 sm:py-14 md:py-16 lg:py-20 w-full relative"
-      style={{ minHeight: 'calc(100vh - 72px)' }}
+    <div 
+      className="onb-screen"
+      data-name="onboarding / step3 / gyms"
+      data-node-id="483:858"
     >
-      <BackButton />
-      <div className="onboard-card flex flex-col items-center gap-4">
-        <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
-            Where do you climb?
-          </h1>
+      {/* ========================================
+          BACKGROUND LAYERS - Same as other screens
+          ======================================== */}
+      <div aria-hidden="true" className="onb-bg-layers">
+        <div className="onb-bg-base" />
+        <video
+          className="onb-bg-video"
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/hero-main.jpg"
+        >
+          <source src="/001.mp4" type="video/mp4" />
+        </video>
+        <div className="onb-bg-gradient" />
+      </div>
+
+      {/* ========================================
+          CONTENT
+          ======================================== */}
+      <div className="onb-content onb-content-bottom" data-node-id="483:859">
+        
+        {/* CARD */}
+        <div className="onb-signup-card" data-node-id="483:860">
+          <div className="onb-signup-inner">
+            
+            {/* Header */}
+            <div className="onb-header-block" data-node-id="483:861">
+              <h2 className="onb-header-title" data-node-id="483:862">Your Walls</h2>
+              <p className="onb-header-subtitle" data-node-id="483:863">
+                Pick your favorite gyms and see what's going on,
+              </p>
+            </div>
+
+            {/* Field row */}
+            <div className="onb-field-row" data-node-id="483:864">
+              
+              {/* Homebase field */}
+              <div className="onb-field" data-node-id="483:865">
+                <label className="onb-label" data-node-id="483:866">Homebase</label>
+                <div className="onb-input-wrapper" data-node-id="483:868">
+                  <input
+                    type="text"
+                    className="onb-input"
+                    placeholder="Start typing..."
+                    value={homebase}
+                    onChange={(e) => setHomebase(e.target.value)}
+                    data-node-id="I483:869;475:11322"
+                  />
+                </div>
+              </div>
+
+              {/* Gyms field */}
+              <div className="onb-field" data-node-id="483:879">
+                <label className="onb-label" data-node-id="483:880">Gyms</label>
+                <p className="onb-field-description" data-node-id="484:1264">
+                  Select all you want to follow or frequently climb at.
+                </p>
+                
+                {/* Gym grid - flex-wrap with gap 6px */}
+                <div className="onb-gym-grid" data-node-id="483:881">
+                  {loading ? (
+                    <p className="onb-gym-loading">Loading gyms...</p>
+                  ) : gyms.length === 0 ? (
+                    <p className="onb-gym-empty">No gyms found</p>
+                  ) : (
+                    gyms.map((gym) => {
+                      const isSelected = selectedGyms.includes(gym.id)
+                      return (
+                        <button
+                          key={gym.id}
+                          type="button"
+                          className={`onb-gym-card ${isSelected ? 'onb-gym-card-active' : ''}`}
+                          onClick={() => handleGymToggle(gym.id)}
+                          data-node-id={`gym-${gym.id}`}
+                        >
+                          {/* Gym image - pulls from Supabase, falls back to placeholder */}
+                          <div className="onb-gym-img-wrap">
+                            <img 
+                              src={gym.image_url || '/placeholder-gym.svg'}
+                              alt={gym.name}
+                              className="onb-gym-img"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/placeholder-gym.svg'
+                              }}
+                            />
+                          </div>
+                          
+                          {/* Gym info - name from Supabase, area as city */}
+                          <div className="onb-gym-info">
+                            <span className="onb-gym-name">{gym.name}</span>
+                            <span className="onb-gym-city">{gym.area}</span>
+                          </div>
+                        </button>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* CTA row */}
+            <div className="onb-cta-row" data-node-id="483:885">
+              <button
+                type="button"
+                className="onb-cta-btn"
+                onClick={handleContinue}
+                disabled={!isValid}
+                data-node-id="483:886"
+              >
+                Continue 3/5
+              </button>
+            </div>
+          </div>
         </div>
-
-        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
-          Only real people. Set your home base and search radius so we can suggest nearby climbers.
-        </p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 items-center justify-center w-full max-w-md">
-          <div
-            className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
-            style={{
-              background: '#0f131d',
-              border: `1px solid ${homeFocused ? 'var(--accent)' : 'var(--stroke)'}`,
-              boxShadow: homeFocused ? '0 0 0 2px rgba(92,225,230,0.18)' : 'none',
-            }}
-          >
-            <input
-              type="text"
-              value={homebase}
-              onChange={(e) => setHomebase(e.target.value)}
-              className="homebase-input"
-              style={{
-                color: 'var(--text)',
-                width: '100%',
-                height: '100%',
-                padding: '0 16px',
-                background: 'transparent',
-                border: '0',
-                outline: 'none',
-                fontSize: '16px',
-                borderRadius: '12px',
-              }}
-              placeholder="Homebase"
-              onFocus={() => setHomeFocused(true)}
-              onBlur={() => setHomeFocused(false)}
-              required
-            />
-          </div>
-
-          <div className="w-full">
-            <label className="flex justify-between text-sm mb-2" style={{ color: 'var(--muted)' }}>
-              <span>Search radius</span>
-              <span style={{ color: 'var(--accent)' }}>{radius} km</span>
-            </label>
-            <input
-              type="range"
-              min={10}
-              max={300}
-              step={10}
-              value={radius}
-              onChange={(e) => setRadius(Number(e.target.value))}
-              style={{
-                width: '100%',
-                accentColor: 'transparent',
-                background: 'linear-gradient(120deg, var(--accent), var(--accent-2))',
-                height: '6px',
-                borderRadius: '999px',
-                outline: 'none'
-              }}
-              className="range-gradient"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="cta w-full"
-            style={{ padding: '10px 16px', borderRadius: '10px' }}
-          >
-            <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-              CONTINUE 5/9
-            </span>
-          </button>
-        </form>
       </div>
     </div>
   )
