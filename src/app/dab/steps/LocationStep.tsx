@@ -38,10 +38,16 @@ export default function LocationStep() {
 
       try {
         // First try with image_url column
-        let { data: gymData, error } = await supabase
+        let gymData: Gym[] | null = null
+        let error: any = null
+        
+        const resultWithImage = await supabase
           .from('gyms')
           .select('id, name, area, image_url')
           .order('name', { ascending: true })
+        
+        gymData = resultWithImage.data
+        error = resultWithImage.error
 
         // If image_url column doesn't exist, fetch without it
         if (error?.message?.includes('image_url does not exist')) {
@@ -49,7 +55,8 @@ export default function LocationStep() {
             .from('gyms')
             .select('id, name, area')
             .order('name', { ascending: true })
-          gymData = result.data
+          // Map the data to include image_url as null
+          gymData = result.data?.map(gym => ({ ...gym, image_url: null })) || null
           error = result.error
         }
 

@@ -66,7 +66,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     'Climber'
 
   const tags = asTextArray(data.styles)
-  if (data.gender) tags.push(`gender:${data.gender}`)
+  // Gender is saved in its own column, not in tags
   if (data.interest) tags.push(`pref:${data.interest}`)
 
   const availabilityArray = asTextArray(data.availability)

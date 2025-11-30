@@ -50,15 +50,27 @@ const getChipClass = (tag: string): string => {
 }
 
 const organizeTagsAndChips = (profile: Profile) => {
-  const styleTags = profile.style ? profile.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean).slice(0, 2) : []
-  const gradeTag = profile.grade ? [profile.grade] : []
-  const tags = [...styleTags, ...gradeTag]
+  // Only show ONE style tag (first one)
+  const styleTag = profile.style ? profile.style.split(/[\\/,]/).map(s => s.trim()).filter(Boolean).slice(0, 1) : []
+  // Only show ONE grade tag (exclude "Pro" since it's shown as a chip)
+  const gradeTag = profile.grade && profile.grade !== 'Pro' ? [profile.grade] : []
+  const tags = [...styleTag, ...gradeTag]
   
   const allChips = stripPrivateTags(profile.tags) || []
   const specialChips: string[] = []
   const standardChips: string[] = []
   
+  // Filter out style and grade from chips to avoid duplicates
+  const styleValues = profile.style ? profile.style.split(/[\\/,]/).map(s => s.trim().toLowerCase()).filter(Boolean) : []
+  const gradeValue = profile.grade ? profile.grade.toLowerCase() : null
+  
   allChips.forEach(chip => {
+    const chipLower = chip.toLowerCase()
+    // Skip if this chip is a style or grade (already shown as tag)
+    if (styleValues.includes(chipLower) || (gradeValue && chipLower === gradeValue)) {
+      return
+    }
+    
     if (isSpecialChip(chip)) {
       specialChips.push(chip)
     } else {
@@ -97,9 +109,8 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
   const status = statusForProfile(profile)
   const live = status.live
   const showDot = status.variant !== 'offline' && status.variant !== 'new'
-  const effectiveChips = standardChips.length
-    ? standardChips
-    : ['Edelrid Ohm', 'Community', 'Beta friendly', 'Host', 'Women only']
+  // Only show chips from Supabase, no fallback
+  const effectiveChips = standardChips
 
   return (
     <div className="fc-card">
@@ -109,9 +120,16 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
           <div className="fc-pill fc-pill-joined">
             {formatJoinedAgo(profile.created_at).toLowerCase()}
           </div>
-          <div className={`fc-pill fc-pill-status ${status.variant === 'live' || status.variant === 'herenow' ? 'fc-pill-online' : ''}`}>
+          <div className={`fc-pill fc-pill-status ${
+            status.variant === 'live' || status.variant === 'herenow' ? 'fc-pill-online' : 
+            status.variant === 'offline' ? 'fc-pill-offline' :
+            status.variant === 'climb' ? 'fc-pill-climb' : ''
+          }`}>
             {showDot && (
-              <span className={`fc-status-dot ${live ? 'fc-status-dot-live' : ''}`} />
+              <span className={`fc-status-dot ${
+                live ? 'fc-status-dot-live' : 
+                status.variant === 'climb' ? 'fc-status-dot-climb' : ''
+              }`} />
             )}
             {status.label}
           </div>
@@ -152,6 +170,12 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
                   </span>
                 )
               })}
+              {/* Pro chip - check grade column */}
+              {profile.grade === 'Pro' && (
+                <span className="fc-chip fc-chip-pro">
+                  🔥 PRO
+                </span>
+              )}
               {/* Special chips (Founder, Belay Certified) */}
               {specialChips.map(chip => {
                 const lowerChip = chip.toLowerCase()
@@ -159,6 +183,7 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
                 const isFounder = lowerChip.includes('founder')
                 const isCrew = lowerChip.includes('crew')
                 const isBelay = lowerChip.includes('belay')
+                
                 if (isFounder) chipClass += ' fc-chip-founder'
                 else if (isCrew) chipClass += ' fc-chip-crew'
                 else if (isBelay) chipClass += ' fc-chip-belay'
@@ -246,9 +271,8 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
   const status = statusForProfile(profile)
   const live = status.live
   const showDot = status.variant !== 'offline' && status.variant !== 'new'
-  const effectiveChips = standardChips.length
-    ? standardChips
-    : ['Belays soft', 'Weekend warrior', 'Training on 4x4s']
+  // Only show chips from Supabase, no fallback
+  const effectiveChips = standardChips
 
   return (
     <div className="gpc">
@@ -276,9 +300,16 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
           <div className="gpc-right">
             {/* Status Pill at top */}
             <div className="gpc-pill-row">
-              <div className={`gpc-pill ${status.variant === 'live' || status.variant === 'herenow' ? 'online' : ''}`}>
+              <div className={`gpc-pill ${
+                status.variant === 'live' || status.variant === 'herenow' ? 'online' : 
+                status.variant === 'offline' ? 'offline' :
+                status.variant === 'climb' ? 'climb' : ''
+              }`}>
                 {showDot ? (
-                  <span className={`gpc-dot ${live ? 'is-live' : ''}`} />
+                  <span className={`gpc-dot ${
+                    live ? 'is-live' : 
+                    status.variant === 'climb' ? 'climb' : ''
+                  }`} />
                 ) : null}
                 {status.label}
               </div>
@@ -293,6 +324,12 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
                   </span>
                 )
               })}
+              {/* Pro chip - check grade column */}
+              {profile.grade === 'Pro' && (
+                <span className="gpc-chip pro">
+                  🔥 PRO
+                </span>
+              )}
               {specialChips.map(chip => {
                 const lowerChip = chip.toLowerCase()
                 const isFounder = lowerChip.includes('founder')

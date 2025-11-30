@@ -728,6 +728,39 @@ input[type=number] {
   font-weight: 700;
 }
 
+/* Offline Pill
+   Figma: bg-[#11141c] border border-[#e68fff] px-[8px] py-[6px] rounded-[8px]
+   text-[12px] Inter Regular text-[#e68fff] */
+.fc-pill-offline {
+  background: #11141c; /* color/panel */
+  border: 1px solid #e68fff; /* color/accent2 */
+  color: #e68fff; /* color/accent2 */
+  padding: 6px 8px; /* py: button/padding/xs, px: button/padding/sm */
+  border-radius: 8px; /* space/sm */
+  font-size: 12px; /* body/xs */
+  font-weight: 400; /* Regular */
+}
+
+/* Climbing Now Pill
+   Figma: bg-[#11141c] border border-[#ffd166] px-[8px] py-[6px] rounded-[8px]
+   text-[12px] Inter Regular text-[#ffd166] */
+.fc-pill-climb {
+  background: #11141c; /* color/panel */
+  border: 1px solid #ffd166; /* color/yellow */
+  color: #ffd166; /* color/yellow */
+  padding: 6px 8px; /* py: button/padding/xs, px: button/padding/sm */
+  border-radius: 8px; /* space/sm */
+  font-size: 12px; /* body/xs */
+  font-weight: 400; /* Regular */
+}
+
+/* Climbing Now Status Dot - yellow with pulse animation */
+.fc-status-dot-climb {
+  background: #ffd166; /* color/yellow */
+  box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.2);
+  animation: presencePulseYellow 2.4s ease-in-out infinite;
+}
+
 /* Status Dot - 8px with pulse animation */
 .fc-status-dot {
   width: 8px;
@@ -965,6 +998,19 @@ input[type=number] {
   background: #11141c;
   border: 1px solid #5ce1e6;
   color: #5ce1e6;
+}
+
+/* Pro Chip
+   Figma: bg-[#11141c] border border-[#ff7b7b] text-[#ff7b7b]
+   px-[8px] py-[6px] rounded-[8px] text-[12px] Inter Regular */
+.fc-chip-pro {
+  background: #11141c; /* color/panel */
+  border: 1px solid #ff7b7b; /* color/red */
+  color: #ff7b7b; /* color/red */
+  padding: 6px 8px; /* py: button/padding/xs, px: button/padding/sm */
+  border-radius: 8px; /* space/sm */
+  font-size: 12px; /* body/xs */
+  font-weight: 400; /* Regular */
 }
 
 /* Standard Chip
@@ -1957,6 +2003,12 @@ input[type=number] {
   100% { box-shadow: 0 0 0 4px rgba(92,225,230,0.12); transform: scale(1); }
 }
 
+@keyframes presencePulseYellow {
+  0% { box-shadow: 0 0 0 4px rgba(255,209,102,0.2); transform: scale(1); }
+  50% { box-shadow: 0 0 0 10px rgba(255,209,102,0.04); transform: scale(1.08); }
+  100% { box-shadow: 0 0 0 4px rgba(255,209,102,0.2); transform: scale(1); }
+}
+
 @keyframes statPulseUp {
   0% { text-shadow: 0 0 0 rgba(92,225,230,0.0); color: var(--text); }
   50% { text-shadow: 0 0 12px rgba(92,225,230,0.6); color: var(--accent); }
@@ -2695,6 +2747,39 @@ input[type=number] {
   color: #5ce1e6;
 }
 
+/* Offline Pill
+   Figma: bg-[#11141c] border border-[#e68fff] px-[8px] py-[6px] rounded-[8px]
+   text-[12px] Inter Regular text-[#e68fff] */
+.gpc-pill.offline {
+  background: #11141c; /* color/panel */
+  border: 1px solid #e68fff; /* color/accent2 */
+  color: #e68fff; /* color/accent2 */
+  padding: 6px 8px; /* py: button/padding/xs, px: button/padding/sm */
+  border-radius: 8px; /* space/sm */
+  font-size: 12px; /* body/xs */
+  font-weight: 400; /* Regular */
+}
+
+/* Climbing Now Pill
+   Figma: bg-[#11141c] border border-[#ffd166] px-[8px] py-[6px] rounded-[8px]
+   text-[12px] Inter Regular text-[#ffd166] */
+.gpc-pill.climb {
+  background: #11141c; /* color/panel */
+  border: 1px solid #ffd166; /* color/yellow */
+  color: #ffd166; /* color/yellow */
+  padding: 6px 8px; /* py: button/padding/xs, px: button/padding/sm */
+  border-radius: 8px; /* space/sm */
+  font-size: 12px; /* body/xs */
+  font-weight: 400; /* Regular */
+}
+
+/* Climbing Now Status Dot - yellow with pulse animation */
+.gpc-dot.climb {
+  background: #ffd166; /* color/yellow */
+  box-shadow: 0 0 0 4px rgba(255, 209, 102, 0.2);
+  animation: presencePulseYellow 2.4s ease-in-out infinite;
+}
+
 /* Status Dot - 8px pulsing */
 .gpc-dot {
   width: 8px;
@@ -2806,6 +2891,19 @@ input[type=number] {
   background: #11141c;
   border: 1px solid #5ce1e6;
   color: #5ce1e6;
+}
+
+/* Pro Chip
+   Figma: bg-[#11141c] border border-[#ff7b7b] text-[#ff7b7b]
+   px-[8px] py-[6px] rounded-[8px] text-[12px] Inter Regular */
+.gpc-chip.pro {
+  background: #11141c; /* color/panel */
+  border: 1px solid #ff7b7b; /* color/red */
+  color: #ff7b7b; /* color/red */
+  padding: 6px 8px; /* py: button/padding/xs, px: button/padding/sm */
+  border-radius: 8px; /* space/sm */
+  font-size: 12px; /* body/xs */
+  font-weight: 400; /* Regular */
 }
 
 /* Bio
@@ -4562,6 +4660,20 @@ input[type=number] {
   justify-content: center;
   overflow: clip;
   width: 100%;
+}
+
+/* Name and Age row - side by side with gap 8px */
+.onb-name-age-row {
+  display: flex;
+  gap: 8px; /* space/sm - EXACT FROM FIGMA */
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Half-width field for name and age */
+.onb-field-half {
+  flex: 1 1 0; /* Equal width, grow to fill space */
+  min-width: 0; /* Allow flex items to shrink */
 }
 
 /* Google Button Wrapper

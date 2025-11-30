@@ -15,6 +15,7 @@ import { useOnboarding } from '@/contexts/OnboardingContext'
 
 export default function BasicProfileStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
+  const [name, setName] = useState(data.username || '')
   const [age, setAge] = useState(data.age || '')
   const [gender, setGender] = useState<'Man' | 'Woman' | 'Other' | null>(
     data.gender === 'Man' || data.gender === 'Woman' || data.gender === 'Other' 
@@ -49,6 +50,7 @@ export default function BasicProfileStep() {
 
   const handleContinue = () => {
     updateData({
+      username: name.trim(),
       age: age,
       gender: gender || undefined,
       photo: imagePreview || undefined,
@@ -57,7 +59,7 @@ export default function BasicProfileStep() {
     setCurrentStep(2)
   }
 
-  const isValid = age.trim() !== '' && gender !== null
+  const isValid = name.trim() !== '' && age.trim() !== '' && gender !== null
 
   return (
     <div 
@@ -147,23 +149,41 @@ export default function BasicProfileStep() {
             {/* Field row */}
             <div className="onb-field-row" data-node-id="482:1312">
               
-              {/* Age field */}
-              <div className="onb-field" data-node-id="482:1318">
-                <label className="onb-label" data-node-id="482:1319">Age</label>
-                <div className="onb-input-wrapper" data-node-id="482:1320">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    className="onb-input"
-                    placeholder="Your age"
-                    value={age}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/\D/g, '').slice(0, 2)
-                      setAge(val)
-                    }}
-                    data-node-id="I482:1320;475:11322"
-                  />
+              {/* Name and Age row - side by side */}
+              <div className="onb-name-age-row" data-node-id="540:831">
+                {/* Name field */}
+                <div className="onb-field onb-field-half" data-node-id="482:1318">
+                  <label className="onb-label" data-node-id="482:1319">Name</label>
+                  <div className="onb-input-wrapper" data-node-id="482:1320">
+                    <input
+                      type="text"
+                      className="onb-input"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      data-node-id="I482:1320;475:11322"
+                    />
+                  </div>
+                </div>
+
+                {/* Age field */}
+                <div className="onb-field onb-field-half" data-node-id="540:826">
+                  <label className="onb-label" data-node-id="540:827">Age</label>
+                  <div className="onb-input-wrapper" data-node-id="540:828">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      className="onb-input"
+                      placeholder="Your age"
+                      value={age}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 2)
+                        setAge(val)
+                      }}
+                      data-node-id="I540:828;475:11322"
+                    />
+                  </div>
                 </div>
               </div>
 
