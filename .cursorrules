@@ -80,3 +80,4 @@ Save extracted Tailwind classes in `UI_SYSTEM_LIBRARY.md` for future reference.
 - Global CSS: `src/app/globals.css`
 - Landing Page Components: `src/components/LandingPage.tsx`
 
+
