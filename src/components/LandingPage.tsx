@@ -613,6 +613,121 @@ function GridProfilesRow({ profiles }: { profiles: Profile[] }) {
   )
 }
 
+// Activity feed messages pool
+const ACTIVITY_MESSAGES = [
+  "Steve 23, just joined in Berlin",
+  "3 new sessions just formed",
+  "9 climbers shared their schedule",
+  "1 climber just threw a dab at the gym",
+  "5 climbers just checked in",
+  "2 partner requests just got accepted",
+  "1 New thread @Boulderwelt West, Munich",
+  "New event just created: \"Moonboard Afterwork\"",
+  "6 active areas right now",
+  "Maya 27, just DABed in Munich",
+  "4 climbers are looking for partners",
+  "New check-in at Boulderwelt East",
+  "12 sessions happening right now",
+  "Alex 31, just joined in Hamburg",
+  "2 new events created today",
+  "8 climbers matched this hour",
+]
+
+interface ActivityItem {
+  id: number
+  message: string
+  state: 'entering' | 'active' | 'exiting' | 'hidden'
+}
+
+function AnimatedActivityFeed() {
+  const [items, setItems] = useState<ActivityItem[]>([])
+  const [messageIndex, setMessageIndex] = useState(0)
+  const [dabCount, setDabCount] = useState(9)
+  const maxVisible = 6
+
+  useEffect(() => {
+    // Initialize with first few items
+    const initialItems: ActivityItem[] = ACTIVITY_MESSAGES.slice(0, maxVisible).map((msg, i) => ({
+      id: Date.now() + i,
+      message: msg,
+      state: 'active' as const,
+    }))
+    setItems(initialItems)
+    setMessageIndex(maxVisible)
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Get next message
+      const nextMessage = ACTIVITY_MESSAGES[messageIndex % ACTIVITY_MESSAGES.length]
+      const newItem: ActivityItem = {
+        id: Date.now(),
+        message: nextMessage,
+        state: 'entering',
+      }
+
+      setItems(prev => {
+        // Add new item at the top
+        const updated = [newItem, ...prev]
+        
+        // Mark bottom item as exiting if we have too many
+        if (updated.length > maxVisible) {
+          updated[updated.length - 1] = { ...updated[updated.length - 1], state: 'exiting' }
+        }
+        
+        return updated
+      })
+
+      // Update dab count randomly
+      setDabCount(prev => Math.max(1, prev + Math.floor(Math.random() * 5) - 2))
+      setMessageIndex(prev => prev + 1)
+
+      // Transition entering item to active after animation
+      setTimeout(() => {
+        setItems(prev => prev.map(item => 
+          item.state === 'entering' ? { ...item, state: 'active' } : item
+        ))
+      }, 600)
+
+      // Remove exiting items after animation
+      setTimeout(() => {
+        setItems(prev => prev.filter(item => item.state !== 'exiting'))
+      }, 800)
+
+    }, 3000) // New item every 3 seconds
+
+    return () => clearInterval(interval)
+  }, [messageIndex])
+
+  return (
+    <div className="landing-activity-feed">
+      <div className="landing-activity-feed-inner">
+        {/* Stat Header */}
+        <div className="landing-activity-header">
+          <span className="landing-activity-number">{dabCount}</span>
+          <span className="landing-activity-label">climbers just DABed</span>
+        </div>
+        {/* Content Block */}
+        <div className="landing-activity-content">
+          <h3>Activity feed</h3>
+          <p>See what's going on right now</p>
+        </div>
+        {/* Activity List */}
+        <div className="landing-activity-list">
+          {items.slice(0, maxVisible).map((item) => (
+            <div 
+              key={item.id} 
+              className={`landing-activity-item landing-activity-item--${item.state}`}
+            >
+              {item.message}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function LandingpageSignup() {
   return (
     <section className="landing-signup">
@@ -684,32 +799,7 @@ function LandingpageSignup() {
         </div>
         {/* Right Side - Activity Feed */}
         <div className="landing-signup-right">
-          <div className="landing-activity-feed">
-            <div className="landing-activity-feed-inner">
-              {/* Stat Header */}
-              <div className="landing-activity-header">
-                <span className="landing-activity-number">9</span>
-                <span className="landing-activity-label">climbers just DABed</span>
-              </div>
-              {/* Content Block */}
-              <div className="landing-activity-content">
-                <h3>Activity feed</h3>
-                <p>See what's going on right now</p>
-              </div>
-              {/* Activity List */}
-              <div className="landing-activity-list">
-                <div className="landing-activity-item">Steve 23, just joined in Berlin</div>
-                <div className="landing-activity-item">3 new sessions just formed</div>
-                <div className="landing-activity-item">9 climbers shared their schedule</div>
-                <div className="landing-activity-item">1 climber just threw a dab at the gym</div>
-                <div className="landing-activity-item">5 climbers just checked in</div>
-                <div className="landing-activity-item">2 partner requests just got accepted</div>
-                <div className="landing-activity-item">1 New thread @Boulderwelt West, Munich</div>
-                <div className="landing-activity-item">New event just created: "Moonboard Afterwork"</div>
-                <div className="landing-activity-item">6 active areas right now</div>
-              </div>
-            </div>
-          </div>
+          <AnimatedActivityFeed />
         </div>
       </div>
     </section>

@@ -3955,15 +3955,6 @@ input[type=number] {
   width: 100%;
 }
 
-/* Activity List - flex flex-col gap-[6px] w-full */
-.landing-activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  align-items: flex-start;
-  width: 100%;
-}
-
 /* Activity Item - bg-[#11141c] border border-[#1f2633] rounded-[10px] px-[16px] py-[10px] */
 .landing-activity-item {
   width: 100%;
@@ -3978,6 +3969,87 @@ input[type=number] {
   line-height: normal;
   display: flex;
   align-items: center;
+  /* Animation transitions */
+  transition: 
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.5s ease-out,
+    border-color 0.6s ease-out,
+    box-shadow 0.6s ease-out,
+    background 0.6s ease-out;
+}
+
+/* Entering state - pop in with glow */
+.landing-activity-item--entering {
+  animation: activityPopIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  border-color: #5ce1e6;
+  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.5), inset 0 0 0 1px rgba(92, 225, 230, 0.2);
+  background: linear-gradient(135deg, rgba(92, 225, 230, 0.1) 0%, #11141c 100%);
+  color: #e9eef7;
+}
+
+/* Active state - default look */
+.landing-activity-item--active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  border-color: #1f2633;
+  box-shadow: none;
+  background: #11141c;
+  color: #8ea0bd;
+}
+
+/* Exiting state - fade out moving down */
+.landing-activity-item--exiting {
+  animation: activityFadeOut 0.8s ease-out forwards;
+}
+
+/* Pop in animation */
+@keyframes activityPopIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Fade out animation */
+@keyframes activityFadeOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    max-height: 50px;
+    margin-bottom: 6px;
+    padding: 10px 16px;
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(10px) scale(0.98);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    max-height: 0;
+    margin-bottom: 0;
+    padding: 0 16px;
+    overflow: hidden;
+  }
+}
+
+/* Activity list container - enable overflow for animations */
+.landing-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  width: 100%;
+  overflow: hidden;
+  min-height: 320px;
 }
 
 /* ============================================
