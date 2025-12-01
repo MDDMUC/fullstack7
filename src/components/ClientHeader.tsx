@@ -6,12 +6,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// Routes where the header should be hidden (onboarding flows)
+// Routes where the header should be hidden (onboarding flows and mobile home)
 const HIDDEN_HEADER_ROUTES = ['/dab', '/signup']
 
 export default function ClientHeader() {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     // Close the mobile nav when the route changes
@@ -19,10 +20,20 @@ export default function ClientHeader() {
     if (isOpen) setIsOpen(false)
   }, [pathname, isOpen])
 
-  // Hide header on onboarding routes
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Hide header on onboarding routes and mobile home page
   const shouldHideHeader = HIDDEN_HEADER_ROUTES.some(route => 
     pathname === route || pathname.startsWith(`${route}/`)
-  )
+  ) || (isMobile && pathname === '/home')
 
   if (shouldHideHeader) {
     return null

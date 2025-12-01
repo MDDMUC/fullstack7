@@ -9,6 +9,7 @@ import { sendSwipe } from '@/lib/swipes'
 import { listMatches, MatchWithProfiles } from '@/lib/matches'
 import { sendMessage, subscribeToThread, Message as ChatMessage, fetchMessages } from '@/lib/messages'
 import SwipeCard from '@/components/SwipeCard'
+import MobileHome from '@/components/MobileHome'
 
 type Profile = DbProfile & {
   distance?: string
@@ -48,9 +49,20 @@ export default function HomeScreen() {
     kind: 'none',
   })
   const messageUnsub = useMemo(() => ({ current: null as null | (() => void) }), [])
+  const [isMobile, setIsMobile] = useState(false)
 
   const current = useMemo(() => deck[0], [deck])
   const nextProfile = useMemo(() => deck[1], [deck])
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768) // Tablet breakpoint
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const fallbackAvatarFor = (profile?: Profile | null) => {
     const hint = (profile?.pronouns || (profile as any)?.gender || '').toString().toLowerCase()
@@ -292,6 +304,15 @@ export default function HomeScreen() {
     })
     setTimeout(() => setSwipeMeta({ direction: 0, kind: 'none' }), 180)
     recordSwipe(profile, actionType)
+  }
+
+  // Show mobile view on mobile devices
+  if (isMobile) {
+    return (
+      <RequireAuth>
+        <MobileHome />
+      </RequireAuth>
+    )
   }
 
   return (
