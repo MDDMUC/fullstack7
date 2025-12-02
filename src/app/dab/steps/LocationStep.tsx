@@ -23,9 +23,13 @@ type Gym = {
 export default function LocationStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [homebase, setHomebase] = useState(data.homebase || '')
-  const [selectedGyms, setSelectedGyms] = useState<string[]>([])
+  // Initialize selected gyms from data, filtering out 'outside' marker
+  const initialGyms = (data.gym || []).filter(id => id !== 'outside')
+  const [selectedGyms, setSelectedGyms] = useState<string[]>(initialGyms)
+  const [climbsOutside, setClimbsOutside] = useState((data.gym || []).includes('outside'))
   const [gyms, setGyms] = useState<Gym[]>([])
   const [loading, setLoading] = useState(true)
+  const [showMoreGyms, setShowMoreGyms] = useState(false)
 
   // Fetch gyms from Supabase on mount
   useEffect(() => {
@@ -83,15 +87,27 @@ export default function LocationStep() {
     )
   }
 
+  const handleOutsideToggle = () => {
+    setClimbsOutside(prev => !prev)
+  }
+
+  const visibleGyms = gyms.slice(0, 3)
+  const remainingGyms = gyms.slice(3)
+
   const handleContinue = () => {
     // Validate homebase is required
     if (!homebase || homebase.trim() === '') {
       return // Don't proceed if homebase is empty
     }
     
+    // If "I climb outside" is selected, add a special marker
+    const gymIds = climbsOutside 
+      ? [...selectedGyms, 'outside'] 
+      : selectedGyms
+    
     updateData({ 
       homebase: homebase.trim(),
-      gym: selectedGyms, // Store selected gym IDs
+      gym: gymIds, // Store selected gym IDs (including 'outside' if selected)
     })
     setCurrentStep(4)
   }
@@ -171,36 +187,106 @@ export default function LocationStep() {
                   ) : gyms.length === 0 ? (
                     <p className="onb-gym-empty">No gyms found</p>
                   ) : (
-                    gyms.map((gym) => {
-                      const isSelected = selectedGyms.includes(gym.id)
-                      return (
-                        <button
-                          key={gym.id}
-                          type="button"
-                          className={`onb-gym-card ${isSelected ? 'onb-gym-card-active' : ''}`}
-                          onClick={() => handleGymToggle(gym.id)}
-                          data-node-id={`gym-${gym.id}`}
-                        >
-                          {/* Gym image - pulls from Supabase, falls back to placeholder */}
-                          <div className="onb-gym-img-wrap">
-                            <img 
-                              src={gym.image_url || '/placeholder-gym.svg'}
-                              alt={gym.name}
-                              className="onb-gym-img"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/placeholder-gym.svg'
-                              }}
-                            />
-                          </div>
+                    <>
+                      {/* "I climb outside" option */}
+                      <button
+                        type="button"
+                        className={`onb-gym-card ${climbsOutside ? 'onb-gym-card-active' : ''}`}
+                        onClick={handleOutsideToggle}
+                        data-node-id="climb-outside"
+                      >
+                        <div className="onb-gym-img-wrap">
+                          <div className="onb-gym-outside-icon">🏔️</div>
+                        </div>
+                        <div className="onb-gym-info">
+                          <span className="onb-gym-name">I climb outside</span>
+                          <span className="onb-gym-city">Outdoor climbing</span>
+                        </div>
+                      </button>
+
+                      {/* First 3 gyms - always visible */}
+                      {visibleGyms.map((gym) => {
+                        const isSelected = selectedGyms.includes(gym.id)
+                        return (
+                          <button
+                            key={gym.id}
+                            type="button"
+                            className={`onb-gym-card ${isSelected ? 'onb-gym-card-active' : ''}`}
+                            onClick={() => handleGymToggle(gym.id)}
+                            data-node-id={`gym-${gym.id}`}
+                          >
+                            {/* Gym image - pulls from Supabase, falls back to placeholder */}
+                            <div className="onb-gym-img-wrap">
+                              <img 
+                                src={gym.image_url || '/placeholder-gym.svg'}
+                                alt={gym.name}
+                                className="onb-gym-img"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/placeholder-gym.svg'
+                                }}
+                              />
+                            </div>
+                            
+                            {/* Gym info - name from Supabase, area as city */}
+                            <div className="onb-gym-info">
+                              <span className="onb-gym-name">{gym.name}</span>
+                              <span className="onb-gym-city">{gym.area}</span>
+                            </div>
+                          </button>
+                        )
+                      })}
+
+                      {/* Dropdown for remaining gyms */}
+                      {remainingGyms.length > 0 && (
+                        <div className="onb-gym-dropdown-wrapper">
+                          <button
+                            type="button"
+                            className="onb-gym-dropdown-toggle"
+                            onClick={() => setShowMoreGyms(!showMoreGyms)}
+                            aria-expanded={showMoreGyms}
+                          >
+                            <span className="onb-gym-dropdown-text">
+                              {showMoreGyms ? 'Show less' : `Show ${remainingGyms.length} more gyms`}
+                            </span>
+                            <span className={`onb-gym-dropdown-arrow ${showMoreGyms ? 'onb-gym-dropdown-arrow-open' : ''}`}>
+                              ▼
+                            </span>
+                          </button>
                           
-                          {/* Gym info - name from Supabase, area as city */}
-                          <div className="onb-gym-info">
-                            <span className="onb-gym-name">{gym.name}</span>
-                            <span className="onb-gym-city">{gym.area}</span>
-                          </div>
-                        </button>
-                      )
-                    })
+                          {showMoreGyms && (
+                            <div className="onb-gym-dropdown-content">
+                              {remainingGyms.map((gym) => {
+                                const isSelected = selectedGyms.includes(gym.id)
+                                return (
+                                  <button
+                                    key={gym.id}
+                                    type="button"
+                                    className={`onb-gym-card ${isSelected ? 'onb-gym-card-active' : ''}`}
+                                    onClick={() => handleGymToggle(gym.id)}
+                                    data-node-id={`gym-${gym.id}`}
+                                  >
+                                    <div className="onb-gym-img-wrap">
+                                      <img 
+                                        src={gym.image_url || '/placeholder-gym.svg'}
+                                        alt={gym.name}
+                                        className="onb-gym-img"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).src = '/placeholder-gym.svg'
+                                        }}
+                                      />
+                                    </div>
+                                    <div className="onb-gym-info">
+                                      <span className="onb-gym-name">{gym.name}</span>
+                                      <span className="onb-gym-city">{gym.area}</span>
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

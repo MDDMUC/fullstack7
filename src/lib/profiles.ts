@@ -22,6 +22,7 @@ export type Profile = {
   goals?: string
   distance?: string
   lookingFor?: string
+  gym?: string[]
   onboardingprofiles?: any[]
 }
 
@@ -41,6 +42,7 @@ export const normalizeProfile = (profile: any): Profile => {
   const rawTags = toArray(ob.tags ?? profile.tags ?? profile.traits)
   const availability = toArray(ob.availability ?? profile.availability ?? profile.schedule).join(', ')
   const mainPhoto = ob.photo ?? profile.photo ?? ob.avatar_url ?? profile.avatar_url ?? profile.photo_url ?? null
+  const gym = toArray(ob.gym ?? profile.gym ?? (profile as any).gyms)
 
   return {
     id: profile.id ?? ob.id ?? crypto.randomUUID(),
@@ -70,6 +72,7 @@ export const normalizeProfile = (profile: any): Profile => {
       profile.intent ??
       profile.goals ??
       '',
+    gym,
   }
 }
 

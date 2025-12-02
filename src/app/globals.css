@@ -5319,6 +5319,90 @@ input[type=number] {
   width: 100%;
 }
 
+/* "I climb outside" icon wrapper */
+.onb-gym-outside-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  background: rgba(92, 225, 230, 0.08);
+  border-radius: inherit;
+}
+
+/* Gym Dropdown Wrapper */
+.onb-gym-dropdown-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+/* Gym Dropdown Toggle Button */
+.onb-gym-dropdown-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px; /* py: button-padding-md, px: button-padding-xxl */
+  background: #0c0e12; /* color/bg */
+  border: 1px solid #1f2633; /* color/stroke */
+  border-radius: 10px; /* radius/md */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 15px;
+  color: #8ea0bd; /* color/muted */
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.onb-gym-dropdown-toggle:hover {
+  border-color: #5ce1e6; /* color/accent */
+  color: #e9eef7; /* color/text */
+  background: rgba(92, 225, 230, 0.04);
+}
+
+.onb-gym-dropdown-toggle:focus,
+.onb-gym-dropdown-toggle:focus-visible {
+  outline: none;
+  border-color: #5ce1e6;
+}
+
+.onb-gym-dropdown-text {
+  flex: 1;
+  text-align: left;
+}
+
+.onb-gym-dropdown-arrow {
+  font-size: 12px;
+  transition: transform 200ms ease;
+  color: #5ce1e6; /* color/accent */
+}
+
+.onb-gym-dropdown-arrow-open {
+  transform: rotate(180deg);
+}
+
+/* Gym Dropdown Content */
+.onb-gym-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* space/xs */
+  margin-top: 6px; /* space/xs */
+  width: 100%;
+  animation: slideDown 200ms ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ============================================
    STEP 4: AVAILABILITY VIBE - PIXEL PERFECT
    Figma node: 483-928

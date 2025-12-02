@@ -69,6 +69,23 @@ const organizeTagsAndChips = (profile: Profile) => {
     }
   })
   
+  // Add "Outdoorclimber" chip if user has 'outside' in their gym array
+  // It should appear right after Belay Certified
+  const hasOutside = Array.isArray(profile.gym) && profile.gym.includes('outside')
+  if (hasOutside) {
+    // Find Belay Certified index
+    const belayIndex = specialChips.findIndex(chip => 
+      chip.toLowerCase().includes('belay') || chip.toLowerCase().includes('certified')
+    )
+    if (belayIndex >= 0) {
+      // Insert right after Belay Certified
+      specialChips.splice(belayIndex + 1, 0, 'Outdoorclimber')
+    } else {
+      // If no Belay Certified, add at the end of special chips
+      specialChips.push('Outdoorclimber')
+    }
+  }
+  
   return { tags, specialChips, standardChips }
 }
 
@@ -214,7 +231,10 @@ export default function MobileHome() {
                                     </div>
                                   )
                                 })}
-                                {specialChips.filter(c => c.toLowerCase().includes('belay') || c.toLowerCase().includes('certified')).map(chip => (
+                                {specialChips.filter(c => {
+                                  const lower = c.toLowerCase()
+                                  return lower.includes('belay') || lower.includes('certified') || lower.includes('outdoorclimber') || lower.includes('outdoor')
+                                }).map(chip => (
                                   <div key={`chip-${chip}`} className="mh-chip-belay">
                                     <div className="mh-chip-belay-inner">
                                       <div className="mh-chip-belay-border" />

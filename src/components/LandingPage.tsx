@@ -78,6 +78,23 @@ const organizeTagsAndChips = (profile: Profile) => {
     }
   })
   
+  // Add "Outdoorclimber" chip if user has 'outside' in their gym array
+  // It should appear right after Belay Certified
+  const hasOutside = Array.isArray(profile.gym) && profile.gym.includes('outside')
+  if (hasOutside) {
+    // Find Belay Certified index
+    const belayIndex = specialChips.findIndex(chip => 
+      chip.toLowerCase().includes('belay') || chip.toLowerCase().includes('certified')
+    )
+    if (belayIndex >= 0) {
+      // Insert right after Belay Certified
+      specialChips.splice(belayIndex + 1, 0, 'Outdoorclimber')
+    } else {
+      // If no Belay Certified, add at the end of special chips
+      specialChips.push('Outdoorclimber')
+    }
+  }
+  
   return { tags, specialChips, standardChips }
 }
 
@@ -176,17 +193,18 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
                   🔥 PRO
                 </span>
               )}
-              {/* Special chips (Founder, Belay Certified) */}
+              {/* Special chips (Founder, Belay Certified, Outdoorclimber) */}
               {specialChips.map(chip => {
                 const lowerChip = chip.toLowerCase()
                 let chipClass = 'fc-chip'
                 const isFounder = lowerChip.includes('founder')
                 const isCrew = lowerChip.includes('crew')
-                const isBelay = lowerChip.includes('belay')
+                const isBelay = lowerChip.includes('belay') || lowerChip.includes('certified')
+                const isOutdoor = lowerChip.includes('outdoorclimber') || lowerChip.includes('outdoor')
                 
                 if (isFounder) chipClass += ' fc-chip-founder'
                 else if (isCrew) chipClass += ' fc-chip-crew'
-                else if (isBelay) chipClass += ' fc-chip-belay'
+                else if (isBelay || isOutdoor) chipClass += ' fc-chip-belay'
                 
                 // Add emoji for founder/crew
                 const displayText = (isFounder || isCrew) ? `🤘${chip}` : chip
@@ -335,12 +353,13 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
                 const isFounder = lowerChip.includes('founder')
                 const isCrew = lowerChip.includes('crew')
                 const isBelay = lowerChip.includes('belay') || lowerChip.includes('certified')
+                const isOutdoor = lowerChip.includes('outdoorclimber') || lowerChip.includes('outdoor')
                 const isFounderOrCrew = isFounder || isCrew
                 const displayText = isFounderOrCrew ? `🤘${chip}` : chip
                 let chipClass = 'gpc-chip'
                 if (isFounder) chipClass += ' founder'
                 else if (isCrew) chipClass += ' crew'
-                else if (isBelay) chipClass += ' belay'
+                else if (isBelay || isOutdoor) chipClass += ' belay'
                 return (
                   <span key={`special-${chip}`} className={chipClass}>
                     {isFounderOrCrew ? <span>{displayText}</span> : displayText}
