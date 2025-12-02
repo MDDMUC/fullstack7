@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 // Routes where the header should be hidden (onboarding flows, preview pages, mobile home)
-const HIDDEN_HEADER_ROUTES = ['/dab', '/signup', '/dab-spline-preview']
+const HIDDEN_HEADER_ROUTES = ['/dab', '/signup']
 
 export default function ClientHeader() {
   const pathname = usePathname()
