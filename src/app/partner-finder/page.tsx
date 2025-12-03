@@ -119,8 +119,8 @@ export default function PartnerFinderPage() {
             your pace and stoke.
           </p>
           <div className="feature-actions">
-            <button className="cta" onClick={handleJoin}>Get started</button>
-            <button className="ghost" onClick={() => router.push('/gym-chat')}>Jump into a wall</button>
+            <button className="megabtn megabtn-cta" onClick={handleJoin}>Get started</button>
+            <button className="megabtn megabtn-ghost" onClick={() => router.push('/gym-chat')}>Jump into a wall</button>
           </div>
           <div className="pill-row">
             <span>Belay verification</span>

@@ -9,7 +9,7 @@ import { sendSwipe } from '@/lib/swipes'
 import { listMatches, MatchWithProfiles } from '@/lib/matches'
 import { sendMessage, subscribeToThread, Message as ChatMessage, fetchMessages } from '@/lib/messages'
 import SwipeCard from '@/components/SwipeCard'
-import MobileHome from '@/components/MobileHome'
+import MobileSwipeCardSilver from '@/components/MobileSwipeCardSilver'
 
 type Profile = DbProfile & {
   distance?: string
@@ -306,11 +306,11 @@ export default function HomeScreen() {
     recordSwipe(profile, actionType)
   }
 
-  // Show mobile view on mobile devices
+  // Show mobile view on mobile devices - Silver tier card
   if (isMobile) {
     return (
       <RequireAuth>
-        <MobileHome />
+        <MobileSwipeCardSilver />
       </RequireAuth>
     )
   }
@@ -444,11 +444,11 @@ export default function HomeScreen() {
                   }}
                 />
                 <div className="input-actions">
-                  <button className="ghost">GIF</button>
-                  <button className="ghost">Emoji</button>
+                  <button className="megabtn megabtn-ghost">GIF</button>
+                  <button className="megabtn megabtn-ghost">Emoji</button>
                 </div>
               </div>
-              <button className="cta" onClick={handleSend}>Send</button>
+              <button className="megabtn megabtn-cta" onClick={handleSend}>Send</button>
             </footer>
           </section>
 
@@ -511,8 +511,8 @@ export default function HomeScreen() {
               ) : null}
             </AnimatePresence>
             <div className="hero-actions hero-actions-wide">
-              <button className="ghost wide" onClick={() => handleSwipe('pass')}>Pass</button>
-              <button className="cta wide" onClick={() => handleSwipe('like')}><span className="dab-text">dab</span></button>
+              <button className="megabtn megabtn-ghost megabtn-full" onClick={() => handleSwipe('pass')}>Pass</button>
+              <button className="megabtn megabtn-cta megabtn-full" onClick={() => handleSwipe('like')}><span className="dab-text">dab</span></button>
             </div>
           </div>
         </section>

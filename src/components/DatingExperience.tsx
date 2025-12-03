@@ -303,8 +303,8 @@ export default function DatingExperience() {
               DAB isn’t for everyone. It’s for the ones who chase the set. Drop in, see who’s there, throw a dab. You’re not climbing alone anymore.
             </p>
             <div className="hero__actions">
-              <button className="cta" onClick={() => router.push('/signup')}>Get started</button>
-              <button className="ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
+              <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Get started</button>
+              <button className="megabtn megabtn-ghost" onClick={() => document.getElementById('profiles')?.scrollIntoView({ behavior: 'smooth' })}>Browse climbers</button>
             </div>
             <div className="badges">
               <span>Boulder, sport, trad, ice</span>
@@ -333,7 +333,7 @@ export default function DatingExperience() {
                     <p className="muted">We'll show new climbers as soon as they join.</p>
                   </div>
                   <div className="card-actions">
-                    <button className="cta" onClick={() => router.push('/signup')}>Invite friends</button>
+                    <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Invite friends</button>
                   </div>
                 </div>
               </div>
@@ -397,7 +397,7 @@ export default function DatingExperience() {
                     <option value="name">Name</option>
                   </select>
                 </label>
-                <button className="ghost" onClick={handleReset}>Reset</button>
+                <button className="megabtn megabtn-ghost" onClick={handleReset}>Reset</button>
               </div>
               <p id="filter-count" className="filter-count" aria-live="polite">
                 {loading ? 'Loading climbers…' : `${matchesCount} match${matchesCount === 1 ? '' : 'es'} available`}

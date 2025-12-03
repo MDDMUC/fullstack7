@@ -233,15 +233,15 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
           <p>{profile.bio || 'Looking for people to hit me up. Always keen to just hang and give a belay if neccessary. Let me know when you have time and hit me up xx.'}</p>
         </div>
 
-        {/* CTA Row */}
+        {/* CTA Row - using megabutton system */}
         <div className="fc-cta-row">
           <div className="fc-cta-wrapper">
-            <button className="fc-btn-pass" onClick={onPass} aria-label="pass">
+            <button className="megabtn megabtn-ghost megabtn-full" onClick={onPass} aria-label="pass">
               Pass
             </button>
           </div>
-          <div className="fc-cta-wrapper">
-            <button className="fc-btn-dab" onClick={onDab} aria-label="send a like">
+          <div className="fc-cta-wrapper megabtn-dab-wrapper">
+            <button className="megabtn megabtn-dab" onClick={onDab} aria-label="send a like">
               <img src="/dab-logo.svg" alt="DAB" />
             </button>
           </div>
@@ -264,8 +264,8 @@ function Hero({ featured }: { featured?: Profile }) {
             DAB isn't for everyone. It's for the ones who chase the set. Drop in, see who's there, throw a dab. You're not climbing alone anymore.
           </p>
           <div className="landing-hero-actions">
-            <button className="cta">Get Started</button>
-            <button className="ghost">Browse Climbers</button>
+            <button className="megabtn megabtn-cta">Get Started</button>
+            <button className="megabtn megabtn-ghost">Browse Climbers</button>
           </div>
           <div className="landing-hero-badges">
             <span>Stoke</span>
@@ -380,10 +380,10 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
           <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
         </div>
         
-        {/* CTA Row */}
+        {/* CTA Row - using megabutton system */}
         <div className="gpc-cta">
-          <button className="gpc-pass" onClick={onPass} aria-label="pass">Pass</button>
-          <button className="gpc-dab" onClick={onDab} aria-label="send a like">
+          <button className="megabtn megabtn-ghost megabtn-full" onClick={onPass} aria-label="pass">Pass</button>
+          <button className="megabtn megabtn-dab" onClick={onDab} aria-label="send a like">
             <img src="/dab-logo.svg" alt="DAB" />
           </button>
         </div>
@@ -847,8 +847,8 @@ function LandingpageSignup() {
                     </div>
                   </div>
                 </div>
-                {/* CTA - Figma: button.cta.default with gradient, shadow */}
-                <button className="landing-signup-submit" type="submit">Start Now</button>
+                {/* CTA - megabtn-cta */}
+                <button className="megabtn megabtn-cta megabtn-full" type="submit">Start Now</button>
               </div>
             </div>
           </div>

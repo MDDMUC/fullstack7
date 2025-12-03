@@ -482,6 +482,264 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+/* ============================================
+   MEGABUTTON SYSTEM - From Figma Component
+   Unified button styles matching Figma megabutton variants
+   ============================================ */
+
+/* Base Megabutton - shared properties */
+.megabtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: normal;
+}
+
+.megabtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------
+   BUTTON VARIANTS (Large - 15px font)
+   ---------------------------------------- */
+
+/* CTA Button - Gradient fill, dark text
+   Figma: button.cta - px-[16px] py-[10px] rounded-[10px]
+   background: gradient(120deg, #5ce1e6, #e68fff) */
+.megabtn-cta {
+  padding: 10px 16px;
+  background: linear-gradient(120deg, #5ce1e6, #e68fff);
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0c0e12;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+}
+
+.megabtn-cta:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0px 24px 70px 0px rgba(0, 0, 0, 0.5);
+}
+
+.megabtn-cta:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Ghost Button - Transparent, border only
+   Figma: button.ghost - border-[#1f2633] px-[16px] py-[10px] rounded-[10px] */
+.megabtn-ghost {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid #1f2633;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #e9eef7;
+}
+
+.megabtn-ghost:hover:not(:disabled) {
+  border-color: #5ce1e6;
+  color: #5ce1e6;
+}
+
+.megabtn-ghost:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Navlink Button - Dark fill, light text
+   Figma: button.navlink - bg-[#1f2633] px-[16px] py-[10px] rounded-[10px] */
+.megabtn-navlink {
+  padding: 10px 16px;
+  background: #1f2633;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #e9eef7;
+}
+
+.megabtn-navlink:hover:not(:disabled) {
+  background: #2a3344;
+}
+
+.megabtn-navlink:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* DAB Button - Transparent, cyan border, contains logo
+   Figma: button.dab - border-[#5ce1e6] px-[16px] py-[10px] rounded-[10px] h-[38px] */
+.megabtn-dab {
+  width: 100%;
+  height: 38px;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid #5ce1e6;
+  border-radius: 10px;
+}
+
+.megabtn-dab:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #e68fff;
+}
+
+.megabtn-dab:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* DAB Button wrapper glow */
+.megabtn-dab-wrapper {
+  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
+  border-radius: 10px;
+}
+
+.megabtn-dab-wrapper:hover {
+  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6);
+}
+
+/* DAB Button logo (cyan filter for transparent bg) */
+.megabtn-dab img {
+  height: 22px;
+  width: 36.5px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
+}
+
+/* DAB Button Filled - Gradient fill variant
+   Figma: button.dab with gradient background (silver tier cards) */
+.megabtn-dab-filled {
+  width: 100%;
+  height: 38px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #5ce1e6 0%, #e68fff 100%);
+  border: 1px solid #5ce1e6;
+  border-radius: 10px;
+}
+
+.megabtn-dab-filled:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
+}
+
+.megabtn-dab-filled:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* DAB Filled logo (dark filter for gradient bg) */
+.megabtn-dab-filled img {
+  height: 22px;
+  width: 36.5px;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(4%) sepia(10%) saturate(2000%) hue-rotate(180deg) brightness(95%) contrast(95%);
+}
+
+/* DAB Glow state */
+.megabtn-dab-glow {
+  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6) !important;
+}
+
+/* ----------------------------------------
+   PILL VARIANTS (Small - 12px font, 999px radius)
+   ---------------------------------------- */
+
+/* Pill Base - Status pills */
+.megabtn-pill {
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Pill Online - Cyan border + tinted bg
+   Figma: bg-[rgba(92,225,230,0.12)] border-[#5ce1e6] */
+.megabtn-pill-online {
+  background: rgba(92, 225, 230, 0.12);
+  border: 1px solid #5ce1e6;
+  color: #5ce1e6;
+}
+
+/* Pill Joined - Tinted bg, no border
+   Figma: bg-[rgba(92,225,230,0.08)] */
+.megabtn-pill-joined {
+  background: rgba(92, 225, 230, 0.08);
+  color: #5ce1e6;
+  font-weight: 400;
+}
+
+/* ----------------------------------------
+   TAG VARIANTS (Small - 12px font, 999px radius)
+   ---------------------------------------- */
+
+/* Tag Base - Category tags
+   Figma: button.tag - bg-[rgba(92,225,230,0.08)] px-[10px] py-[6px] rounded-[999px] */
+.megabtn-tag {
+  padding: 6px 10px;
+  background: rgba(92, 225, 230, 0.08);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5ce1e6;
+}
+
+/* Tag Grade - Pink/accent2 text
+   Figma: text-[#e68fff] */
+.megabtn-tag-grade {
+  color: #e68fff;
+}
+
+/* ----------------------------------------
+   CHIP VARIANTS (Small - 12px font, 8px radius)
+   ---------------------------------------- */
+
+/* Chip Base - Rectangular chips
+   Figma: button.chip - bg-[#11141c] px-[8px] py-[6px] rounded-[8px] */
+.megabtn-chip {
+  padding: 6px 8px;
+  background: #11141c;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* Chip Accent - Cyan border (Belay Certified)
+   Figma: border-[#5ce1e6] text-[#5ce1e6] */
+.megabtn-chip-accent {
+  border: 1px solid #5ce1e6;
+  color: #5ce1e6;
+}
+
+/* Chip Muted - Muted border (standard chips)
+   Figma: border-[#1f2633] text-[#8ea0bd] */
+.megabtn-chip-muted {
+  border: 1px solid #1f2633;
+  color: #8ea0bd;
+}
+
+/* Chip Pro - Red border (PRO badge)
+   Figma: border-[#ff7b7b] text-[#ff7b7b] */
+.megabtn-chip-pro {
+  border: 1px solid #ff7b7b;
+  color: #ff7b7b;
+}
+
+/* ----------------------------------------
+   SIZE MODIFIERS
+   ---------------------------------------- */
+
+/* Full width */
+.megabtn-full {
+  width: 100%;
+}
+
+/* ============================================
+   LEGACY BUTTON CLASSES (for backward compat)
+   ============================================ */
+
 .cta {
   background: linear-gradient(120deg, var(--accent), var(--accent-2));
   color: #0c0e12;
@@ -1127,6 +1385,54 @@ input[type=number] {
   width: 36.5px;
   object-fit: contain;
   filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
+}
+
+/* DAB Button Filled/Gradient Variant - for silver tier cards
+   Figma: bg-gradient(90deg, #5ce1e6, #e68fff) */
+.fc-btn-dab.fc-btn-dab-filled {
+  background: linear-gradient(90deg, #5ce1e6 0%, #e68fff 100%);
+}
+
+.fc-btn-dab.fc-btn-dab-filled img {
+  /* Dark logo on gradient background */
+  filter: brightness(0) saturate(100%) invert(4%) sepia(10%) saturate(2000%) hue-rotate(180deg) brightness(95%) contrast(95%);
+}
+
+/* Glow wrapper state for DAB button */
+.fc-btn-dab-glow-wrapper {
+  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6) !important;
+}
+
+/* Navlink Button (Next/Skip) - Figma button.navlink
+   Solid filled gray background, used in mobile swipe cards
+   Figma: bg-[#1f2633] px-[16px] py-[10px] rounded-[10px] font-bold text-[15px] text-[#e9eef7] */
+.fc-btn-navlink {
+  width: 100%;
+  padding: 10px 16px; /* py: btn-pad-md, px: btn-pad-xxl */
+  background: #1f2633; /* color-stroke as fill */
+  border: none;
+  color: #e9eef7; /* color-text */
+  font-size: 15px; /* button-base */
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  border-radius: 10px; /* radius-md */
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  line-height: normal;
+  text-align: center;
+}
+
+.fc-btn-navlink:hover:not(:disabled) {
+  background: #2a3344;
+}
+
+.fc-btn-navlink:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.fc-btn-navlink:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Responsive - smaller screens */
@@ -7225,5 +7531,429 @@ input[type=number] {
 
 .mh-nav-item.active .mh-nav-label {
   color: #5ce1e6;
+}
+
+/* ============================================
+   MOBILE SWIPE CARD - SILVER TIER VARIANT
+   From Figma node 571:506
+   ============================================ */
+
+/* Silver Card Container - neutral-50 bg (#FAFAFA), 4px silver border */
+.mh-silver-container {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #FAFAFA;
+}
+
+/* Silver Content Wrapper */
+.mh-silver-content {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* space-lg */
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 1px;
+  min-width: 1px;
+  padding: 16px 16px 0 16px; /* pt: space-lg, px: space-lg */
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Silver Card - 4px border #e6e6e6, 24px radius, shadow */
+.mh-silver-card {
+  position: relative;
+  flex: 1 1 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space-md */
+  align-items: center;
+  min-height: 1px;
+  min-width: 1px;
+  padding: 24px; /* space-xl */
+  background: transparent;
+  border: 4px solid #e6e6e6;
+  border-radius: 24px;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.mh-silver-card-exiting {
+  transform: translateY(-40px) scale(0.95);
+  opacity: 0;
+}
+
+/* Silver Card Header - DAB logo + chips */
+.mh-silver-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* DAB Logo in header - flipped */
+.mh-silver-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mh-silver-logo-inner {
+  transform: scaleY(-1);
+}
+
+.mh-silver-logo-svg {
+  width: 49.456px;
+  height: 28.805px;
+  display: block;
+}
+
+/* Header Status Row */
+.mh-silver-status-row {
+  display: flex;
+  gap: 12px; /* space-md */
+  align-items: flex-start;
+  justify-content: flex-end;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Silver Main Content Area */
+.mh-silver-main {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space-md */
+  align-items: flex-start;
+  min-height: 1px;
+  min-width: 1px;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* Silver Image Section - 4px silver border */
+.mh-silver-image-section {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  align-items: center;
+  min-height: 1px;
+  min-width: 1px;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mh-silver-image-wrapper {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 1px;
+  min-width: 1px;
+  position: relative;
+  border: 4px solid #e6e6e6;
+  border-radius: 14px; /* radius-lg */
+  flex-shrink: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Profile Image */
+.mh-silver-image {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 50%;
+  pointer-events: none;
+  border-radius: 10px; /* inner radius */
+  width: 100%;
+  height: 100%;
+}
+
+/* Gradient Overlay - from transparent to rgba(0,0,0,0.75) */
+.mh-silver-image-overlay {
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75));
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* space-xs */
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 32px 12px 12px 12px; /* pt: space-xxl, px/pb: space-md */
+  position: relative;
+  border-radius: 10px;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Name Row - 32px text */
+.mh-silver-name-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 32px;
+  white-space: nowrap;
+  color: white;
+  width: 100%;
+  position: relative;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.mh-silver-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  font-size: inherit;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.mh-silver-age {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: inherit;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+/* Location */
+.mh-silver-location-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mh-silver-location {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+  color: #8ea0bd; /* color-muted */
+  line-height: normal;
+  width: 100%;
+}
+
+/* Chips Row - wrapping */
+.mh-silver-chips-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space-md */
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mh-silver-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* Bio Section - 4px silver border, inset shadow */
+.mh-silver-bio {
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* space-sm */
+  align-items: center;
+  padding: 12px 16px; /* py: space-md, px: space-lg */
+  position: relative;
+  border: 4px solid #e6e6e6;
+  border-radius: 14px; /* radius-lg */
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mh-silver-bio-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px; /* body-sm */
+  color: #11141c; /* dark text on light-ish bg */
+  line-height: normal;
+  width: 100%;
+}
+
+/* Bio Inset Shadow Overlay */
+.mh-silver-bio-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 4px 4px 4px 0px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+}
+
+/* Silver Mobile Navbar */
+.mh-silver-navbar {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  position: relative;
+  box-shadow: 0px -4px 4px 0px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mh-silver-navbar-frame {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: flex-start;
+  min-height: 1px;
+  min-width: 1px;
+  padding: 12px 24px; /* py: space-md, px: space-xl */
+  background: #11141c; /* color-panel */
+  border-top-left-radius: 14px; /* radius-lg */
+  border-top-right-radius: 14px;
+  flex-shrink: 0;
+  height: 100px;
+  box-sizing: border-box;
+}
+
+.mh-silver-navbar-links {
+  flex: 1 1 0;
+  display: flex;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 1px;
+  min-width: 1px;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+/* Nav Item */
+.mh-silver-nav-item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  min-height: 1px;
+  min-width: 1px;
+  position: relative;
+  flex-shrink: 0;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.mh-silver-nav-item:hover {
+  opacity: 0.85;
+}
+
+.mh-silver-nav-item:active {
+  opacity: 0.7;
+}
+
+.mh-silver-nav-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mh-silver-nav-icon {
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mh-silver-nav-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 10px; /* body-xxs */
+  color: #5b687c; /* color-text-dark */
+  text-align: center;
+  line-height: normal;
+  height: 14px;
+  width: 73px;
+}
+
+.mh-silver-nav-item.active .mh-silver-nav-label {
+  color: #8ea0bd; /* color-muted for partners active */
+}
+
+/* Loading/Empty for Silver */
+.mh-silver-loading,
+.mh-silver-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  color: #11141c;
+  font-family: 'Inter', sans-serif;
+  background: #FAFAFA;
+}
+
+/* Toast for Silver */
+.mh-silver-toast {
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #5ce1e6, #e68fff);
+  color: #0c0e12;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  animation: toastSlideIn 0.3s ease, toastSlideOut 0.3s ease 2.7s forwards;
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes toastSlideOut {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
 }
 
