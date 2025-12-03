@@ -117,7 +117,7 @@ export default function ProfileSetup() {
               <span>Bio</span>
               <textarea name="bio" rows={3} defaultValue={profile?.bio} placeholder="Trad partner for desert season, training for alpine this summer." />
             </label>
-            <button className="cta wide" type="submit" disabled={loading} aria-busy={loading}>
+            <button className="megabtn megabtn-cta megabtn-full" type="submit" disabled={loading} aria-busy={loading}>
               {loading ? 'Saving…' : 'Save profile'}
             </button>
             {status && <p className="form-note" aria-live="polite">{status}</p>}

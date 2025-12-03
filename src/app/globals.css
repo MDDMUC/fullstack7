@@ -167,12 +167,12 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   z-index: 10;
   background: #0c0e12;
   box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
-  padding: 16px 32px;
+  padding: 18px 32px 16px 32px; /* Added 2px top padding to allow button hover transform */
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  overflow: clip;
+  overflow: visible; /* Changed from clip to visible to allow button hover transform */
 }
 
 /* Center Container
@@ -287,15 +287,16 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 }
 
 /* CTA Container
-   flex flex-wrap gap-[12px] items-center justify-center overflow-clip */
+   flex flex-wrap gap-[12px] items-center justify-center
+   Removed overflow-clip to allow button hover transform */
 .site-header-cta {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: center;
   justify-content: center;
-  overflow: clip;
   flex-shrink: 0;
+  padding-top: 2px; /* Allow space for hover transform */
 }
 
 /* ============================================
@@ -303,76 +304,9 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
    Ghost Button & CTA Button - Reusable
    ============================================ */
 
-/* Ghost Button - border style, transparent bg
-   Figma: h-[38px] w-[117px] border border-[#1f2633] px-[16px] py-[10px] rounded-[10px]
-   font-bold text-[15px] text-[#e9eef7] */
-.btn-ghost {
-  height: 38px;
-  min-width: 117px;
-  padding: 10px 16px;
-  border: 1px solid #1f2633;
-  border-radius: 10px;
-  background: transparent;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #e9eef7;
-  text-decoration: none;
-  text-align: center;
-  line-height: normal;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: border-color 120ms ease, color 120ms ease;
-}
+/* Old button classes (.btn-ghost, .btn-cta) removed - replaced by megabtn system */
 
-.btn-ghost:hover {
-  border-color: #5ce1e6;
-  color: #5ce1e6;
-  text-decoration: none;
-}
-
-.btn-ghost:focus {
-  outline: none;
-  border-color: #5ce1e6;
-}
-
-/* CTA Button - gradient bg, dark text
-   Figma: px-[16px] py-[10px] rounded-[10px] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)]
-   font-bold text-[15px] text-[#0c0e12] */
-.btn-cta {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 10px;
-  background: linear-gradient(120deg, #5ce1e6, #e68fff);
-  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: #0c0e12;
-  text-decoration: none;
-  text-align: center;
-  line-height: normal;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: transform 120ms ease, box-shadow 120ms ease;
-}
-
-.btn-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0px 24px 70px 0px rgba(0, 0, 0, 0.45);
-  text-decoration: none;
-  color: #0c0e12;
-}
-
-.btn-cta:focus {
-  outline: none;
-}
-
-/* Navbar specific aliases (for backwards compatibility) */
+/* Navbar specific classes - still in use in UserNav.tsx */
 .site-header-ghost {
   height: 38px;
   min-width: 117px;
@@ -1418,7 +1352,7 @@ input[type=number] {
    Figma: flex gap-[8px] items-center overflow-clip w-full */
 .fc-cta-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm); /* 8px - space/sm from UI library */
   align-items: center;
   width: 100%;
   overflow: clip;
@@ -1435,117 +1369,7 @@ input[type=number] {
   align-items: stretch;
 }
 
-/* DAB wrapper gets the glow shadow (Figma: outer element) */
-.fc-cta-wrapper:has(.fc-btn-dab) {
-  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
-  border-radius: 10px;
-}
-
-/* Pass Button
-   Figma: border border-[#1f2633] px-[16px] py-[10px] rounded-[10px] w-full
-          font-bold text-[15px] text-[#e9eef7] */
-.fc-btn-pass {
-  width: 100%;
-  padding: 10px 16px;
-  border: 1px solid #1f2633;
-  background: transparent;
-  color: #e9eef7;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: border-color 120ms ease, color 120ms ease;
-  line-height: normal;
-  text-align: center;
-}
-
-.fc-btn-pass:hover {
-  border-color: #5ce1e6;
-  color: #5ce1e6;
-}
-
-/* DAB Button (state=dab) - Figma node 476:13447
-   Outer wrapper: shadow-[0px_0px_20px_0px_rgba(92,225,230,0.4)]
-   Inner button: border border-[#5ce1e6] h-[38px] px-[16px] py-[10px] rounded-[10px]
-   Icon: h-[22px] w-[36.5px] */
-.fc-btn-dab {
-  width: 100%;
-  height: 38px;
-  padding: 10px 16px;
-  border: 1px solid #5ce1e6;
-  background: transparent;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: transform 120ms ease, border-color 120ms ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fc-btn-dab:hover {
-  transform: translateY(-1px);
-  border-color: #e68fff;
-}
-
-.fc-cta-wrapper:has(.fc-btn-dab):hover {
-  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6);
-}
-
-.fc-btn-dab img {
-  height: 22px;
-  width: 36.5px;
-  object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
-}
-
-/* DAB Button Filled/Gradient Variant - for silver tier cards
-   Figma: bg-gradient(90deg, #5ce1e6, #e68fff) */
-.fc-btn-dab.fc-btn-dab-filled {
-  background: linear-gradient(90deg, #5ce1e6 0%, #e68fff 100%);
-}
-
-.fc-btn-dab.fc-btn-dab-filled img {
-  /* Dark logo on gradient background */
-  filter: brightness(0) saturate(100%) invert(4%) sepia(10%) saturate(2000%) hue-rotate(180deg) brightness(95%) contrast(95%);
-}
-
-/* Glow wrapper state for DAB button */
-.fc-btn-dab-glow-wrapper {
-  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6) !important;
-}
-
-/* Navlink Button (Next/Skip) - Figma button.navlink
-   Solid filled gray background, used in mobile swipe cards
-   Figma: bg-[#1f2633] px-[16px] py-[10px] rounded-[10px] font-bold text-[15px] text-[#e9eef7] */
-.fc-btn-navlink {
-  width: 100%;
-  padding: 10px 16px; /* py: btn-pad-md, px: btn-pad-xxl */
-  background: #1f2633; /* color-stroke as fill */
-  border: none;
-  color: #e9eef7; /* color-text */
-  font-size: 15px; /* button-base */
-  font-weight: 700;
-  font-family: 'Inter', sans-serif;
-  border-radius: 10px; /* radius-md */
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
-  line-height: normal;
-  text-align: center;
-}
-
-.fc-btn-navlink:hover:not(:disabled) {
-  background: #2a3344;
-}
-
-.fc-btn-navlink:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.fc-btn-navlink:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* Old button classes removed - replaced by megabtn system */
 
 /* Responsive - smaller screens */
 @media (max-width: 480px) {
@@ -3353,7 +3177,7 @@ input[type=number] {
    Figma: flex gap-[8px] items-center overflow-clip w-full */
 .gpc-cta {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm); /* 8px - space/sm from UI library */
   align-items: center;
   width: 100%;
   overflow: clip;
@@ -4038,11 +3862,12 @@ input[type=number] {
   align-items: flex-start;
 }
 
-/* Text Block - gap-[8px] p-[20px] w-full */
+/* Text Block - gap-[8px] p-[20px] w-full
+   Using space/sm (8px) for gap and button/padding/xxxxl (20px) for padding per UI library */
 .landing-signup-text-block {
   display: flex;
-  gap: 8px;
-  padding: 20px;
+  gap: var(--space-sm); /* 8px - space/sm */
+  padding: var(--btn-pad-xxxxl); /* 20px - button/padding/xxxxl from UI library */
   width: 100%;
   overflow: clip;
 }
@@ -4053,7 +3878,7 @@ input[type=number] {
   min-height: 1px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-sm); /* 8px - space/sm from UI library */
   align-items: flex-start;
 }
 
@@ -4090,12 +3915,14 @@ input[type=number] {
   width: 100%;
 }
 
-/* Cards Section - flex flex-wrap gap-[8px] p-[20px] */
+/* Cards Section - flex flex-wrap gap-[8px] p-[20px]
+   Using space/sm (8px) for gap and button/padding/xxxxl (20px) for padding per UI library
+   Matches spacing of landing-signup-text-block above */
 .landing-signup-form-wrapper {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 20px;
+  gap: var(--space-sm); /* 8px - space/sm from UI library */
+  padding: var(--btn-pad-xxxxl); /* 20px - button/padding/xxxxl from UI library */
   width: 100%;
   align-items: flex-start;
   align-content: flex-start;
@@ -4366,12 +4193,13 @@ input[type=number] {
   transform: translateY(0);
 }
 
-/* Right Section - basis-0 grow p-[20px] self-stretch */
+/* Right Section - basis-0 grow p-[20px] self-stretch
+   Using button/padding/xxxxl (20px) for padding to match left side spacing */
 .landing-signup-right {
   flex: 1 0 0;
   min-width: 366px;
   min-height: 1px;
-  padding: 20px;
+  padding: var(--btn-pad-xxxxl); /* 20px - button/padding/xxxxl from UI library */
   display: flex;
   flex-direction: column;
   align-self: stretch;
@@ -5016,15 +4844,17 @@ input[type=number] {
 
 /* Signup Inner Container
    flex flex-col gap-[12px] items-start overflow-clip p-[20px]
-   rounded-[inherit] w-full */
+   rounded-[inherit] w-full
+   Using space/md (12px) for gap and button/padding/xxxxl (20px) for padding per UI library
+   Changed overflow to visible to allow button hover transform */
 .onb-signup-inner {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* space/md */
+  gap: var(--space-md); /* 12px - space/md from UI library */
   align-items: flex-start;
-  overflow: clip;
-  padding: 20px; /* button/padding/xxxxl */
+  overflow: visible; /* Changed from clip to visible to allow button hover transform */
+  padding: var(--btn-pad-xxxxl) var(--btn-pad-xxxxl) calc(var(--btn-pad-xxxxl) - 2px) var(--btn-pad-xxxxl); /* Added 2px bottom padding reduction to accommodate hover */
   border-radius: inherit;
   width: 100%;
 }
@@ -5036,9 +4866,9 @@ input[type=number] {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 8px; /* space/sm */
+  gap: var(--space-sm); /* 8px - space/sm from UI library */
   align-items: flex-start;
-  padding: 10px 0; /* py: radius/md */
+  padding: var(--btn-pad-md) 0; /* 10px - button/padding/md from UI library */
   width: 100%;
 }
 
@@ -5069,11 +4899,12 @@ input[type=number] {
 
 /* Field Row Container
    flex flex-col gap-[8px] items-start justify-center
-   overflow-clip w-full */
+   overflow-clip w-full
+   Using space/sm (8px) for gap per UI library */
 .onb-field-row {
   display: flex;
   flex-direction: column;
-  gap: 8px; /* space/sm */
+  gap: var(--space-sm); /* 8px - space/sm from UI library */
   align-items: flex-start;
   justify-content: center;
   overflow: clip;
@@ -5182,11 +5013,12 @@ input[type=number] {
 }
 
 /* Field Container
-   flex flex-col gap-[6px] items-start w-full */
+   flex flex-col gap-[6px] items-start w-full
+   Using button/padding/xs (6px) for gap per UI library */
 .onb-field {
   display: flex;
   flex-direction: column;
-  gap: 6px; /* button/padding/xs */
+  gap: var(--btn-pad-xs); /* 6px - button/padding/xs from UI library */
   align-items: flex-start;
   width: 100%;
 }
@@ -5258,7 +5090,7 @@ input[type=number] {
 .onb-pw-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px; /* space/xs */
+  gap: var(--space-xs); /* 6px - space/xs from UI library */
   align-items: flex-start;
   width: 100%;
 }
@@ -5287,10 +5119,10 @@ input[type=number] {
    flex gap-[8px] items-center overflow-clip w-full */
 .onb-cta-row {
   display: flex;
-  gap: 8px; /* space/sm */
+  gap: var(--space-sm); /* 8px - space/sm from UI library */
   align-items: center;
-  overflow: clip;
   width: 100%;
+  padding-top: 2px; /* Allow space for hover transform */
 }
 
 /* CTA Button

@@ -103,7 +103,7 @@ export default function LoginPage() {
                 <span>Password</span>
                 <input type="password" name="password" required minLength={8} placeholder="Your password" />
               </label>
-              <button className="cta wide" type="submit" disabled={loading} aria-busy={loading}>
+              <button className="megabtn megabtn-cta megabtn-full" type="submit" disabled={loading} aria-busy={loading}>
                 {loading ? 'Signing in…' : 'Log in'}
               </button>
               {status && (
