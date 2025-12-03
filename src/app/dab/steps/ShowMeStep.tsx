@@ -163,12 +163,10 @@ export default function ShowMeStep() {
         <button
           onClick={handleContinue}
           disabled={!selected.length}
-          className="cta w-full max-w-md"
-          style={{ padding: '10px 16px', borderRadius: '10px' }}
+          className="onb-cta-btn"
+          style={{ maxWidth: '400px' }}
         >
-          <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-            CONTINUE 4/9
-          </span>
+          Continue 4/9
         </button>
       </div>
     </div>

@@ -31,17 +31,28 @@ body {
      ======================================== */
   
   /* COLORS - Exact from Figma */
+  /* Backgrounds */
   --color-bg: #0c0e12;
   --color-panel: #11141c;
   --color-card: #151927;
-  --color-stroke: #1f2633;
+  --color-silver: #FAFAFA;
+  
+  /* Text */
+  --color-text: #e9eef7;
+  --color-text-highlight: #FFFFFF;
+  --color-text-muted: #8ea0bd;
+  --color-text-dark: #5b687c;
   --color-muted: #8ea0bd;
+  
+  /* Accents */
   --color-accent: #5ce1e6;
   --color-accent2: #e68fff;
-  --color-text: #e9eef7;
-  --color-yellow: #ffd166;
-  --color-red: #ff7b7b;
   --color-special: #ff9500;
+  --color-red: #ff7b7b;
+  --color-yellow: #ffd166;
+  
+  /* Borders */
+  --color-stroke: #1f2633;
 
   /* Legacy aliases */
   --bg: var(--color-bg);
@@ -58,6 +69,7 @@ body {
   --font-metalmania: 'Metal Mania', cursive;
 
   /* SPACING - Exact from Figma */
+  --space-xxxs: 2px;
   --space-xxs: 4px;
   --space-xs: 6px;
   --space-sm: 8px;
@@ -65,12 +77,14 @@ body {
   --space-lg: 16px;
   --space-xl: 24px;
   --space-xxl: 32px;
+  --space-safe-top: 44px;
 
   /* BUTTON PADDING - Exact from Figma */
   --btn-pad-xs: 6px;
   --btn-pad-sm: 8px;
   --btn-pad-md: 10px;
   --btn-pad-xxl: 16px;
+  --btn-pad-xxxl: 18px;
   --btn-pad-xxxxl: 20px;
 
   /* RADIUS - Exact from Figma */
@@ -725,6 +739,104 @@ input[type=number] {
 .megabtn-chip-pro {
   border: 1px solid #ff7b7b;
   color: #ff7b7b;
+}
+
+/* Chip Hover - Muted border highlight
+   Figma: button.chip state=hover */
+.megabtn-chip-hover {
+  border: 1px solid #8ea0bd;
+  color: #8ea0bd;
+}
+
+/* Chip Busy - Yellow/gold (away status)
+   Figma: button.chip state=busy */
+.megabtn-chip-busy {
+  border: 1px solid #ffd166;
+  color: #ffd166;
+}
+
+/* Chip Pink - Pink accent
+   Figma: button.chip state=pink */
+.megabtn-chip-pink {
+  border: 1px solid #e68fff;
+  color: #e68fff;
+}
+
+/* Chip Peaking - Red (peak activity)
+   Figma: button.chip state=peaking */
+.megabtn-chip-peaking {
+  border: 1px solid #ff7b7b;
+  color: #ff7b7b;
+}
+
+/* Chip Founder - Special gradient text
+   Figma: button.chip state=founder */
+.megabtn-chip-founder {
+  border: 1px solid #ff9500;
+}
+
+.megabtn-chip-founder span {
+  background: linear-gradient(90deg, #ffd166, #ff7b7b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Chip Crew - Special gradient text
+   Figma: button.chip state=crew */
+.megabtn-chip-crew {
+  border: 1px solid #ff9500;
+}
+
+.megabtn-chip-crew span {
+  background: linear-gradient(90deg, #ffd166, #ff7b7b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ----------------------------------------
+   INPUT FIELD STYLES
+   Figma: button.field - text input styling
+   ---------------------------------------- */
+
+.megabtn-field {
+  width: 100%;
+  padding: 10px 16px;
+  background: #0c0e12;
+  border: 1px solid #1f2633;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #e9eef7;
+  line-height: normal;
+  transition: border-color 120ms ease;
+}
+
+.megabtn-field::placeholder {
+  color: #8ea0bd;
+}
+
+.megabtn-field:focus {
+  border-color: #5ce1e6;
+  outline: none;
+}
+
+/* Activity Log Item - Read-only activity display
+   Figma: button.activitylog */
+.megabtn-activitylog {
+  width: 100%;
+  padding: 10px 16px;
+  background: #11141c;
+  border: 1px solid #1f2633;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #8ea0bd;
+  line-height: normal;
+  text-align: left;
 }
 
 /* ----------------------------------------
@@ -5194,7 +5306,7 @@ input[type=number] {
   box-sizing: border-box;
   width: 100%;
   padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
-  background: linear-gradient(135deg, #5ce1e6 0%, #e68fff 100%);
+  background: linear-gradient(120deg, #5ce1e6, #e68fff); /* Brand CTA gradient from UI library */
   border: none;
   border-radius: 10px; /* radius/md */
   cursor: pointer;

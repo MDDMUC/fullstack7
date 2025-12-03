@@ -192,12 +192,9 @@ export default function PhoneStep() {
           <button
             type="submit"
             disabled={loading || normalizedDigits(nationalNumber).length < 6}
-            className="cta w-full"
-            style={{ padding: '10px 16px', borderRadius: '10px' }}
+            className="onb-cta-btn"
           >
-            <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-              {loading ? 'Saving...' : 'Continue'}
-            </span>
+            {loading ? 'Saving...' : 'Continue'}
           </button>
         </form>
       </div>

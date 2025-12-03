@@ -185,7 +185,7 @@ export default function PartnerFinderPage() {
           />
         </label>
         <button
-          className="ghost"
+          className="megabtn megabtn-ghost"
           style={{ alignSelf: 'center', justifySelf: 'end', height: '100%' }}
           onClick={() => setFilters({ gym: 'All', style: 'All', day: 'All', belay: 'any', search: '' })}
         >
@@ -273,8 +273,8 @@ export default function PartnerFinderPage() {
             </div>
             <div className="session-actions">
               <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                <button className="ghost" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
-                <button className="cta" style={{ flex: 1 }} onClick={handleJoin}>I&apos;m in</button>
+                <button className="megabtn megabtn-ghost" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
+                <button className="megabtn megabtn-cta" style={{ flex: 1 }} onClick={handleJoin}>I&apos;m in</button>
               </div>
             </div>
           </article>
@@ -284,7 +284,7 @@ export default function PartnerFinderPage() {
           <div className="panel empty-state">
             <h3>No sessions match your filters.</h3>
             <p className="muted">Try broadening grade or day, or post your own slot.</p>
-            <button className="cta" onClick={handleJoin}>Post a session</button>
+            <button className="megabtn megabtn-cta" onClick={handleJoin}>Post a session</button>
           </div>
         ) : null}
       </section>

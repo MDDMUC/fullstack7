@@ -201,12 +201,9 @@ export default function WelcomeStep() {
           <button
             onClick={handleSubmit}
             disabled={!allAccepted || loading}
-            className="cta w-full"
-            style={{ padding: '10px 16px', borderRadius: '10px' }}
+            className="onb-cta-btn"
           >
-            <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-              {loading ? 'Saving...' : 'Agree & Finish 8/9'}
-            </span>
+            {loading ? 'Saving...' : 'Agree & Finish 8/9'}
           </button>
           {status && <p className="form-note error" aria-live="polite">{status}</p>}
         </div>

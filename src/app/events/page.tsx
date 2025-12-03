@@ -98,8 +98,8 @@ export default function EventsPage() {
             through the event.
           </p>
           <div className="feature-actions">
-            <button className="cta" onClick={() => router.push('/signup')}>Get started</button>
-            <button className="ghost" onClick={() => router.push('/gym-chat')}>Chat with hosts</button>
+            <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Get started</button>
+            <button className="megabtn megabtn-ghost" onClick={() => router.push('/gym-chat')}>Chat with hosts</button>
           </div>
           <div className="pill-row">
             <span>Gym & outdoor</span>
@@ -221,9 +221,9 @@ export default function EventsPage() {
                 <div className="progress-bar" style={{ width: `${fill}%` }} />
               </div>
               <div className="event-actions">
-                <button className="ghost" onClick={() => router.push('/gym-chat')}>Join Chat</button>
+                <button className="megabtn megabtn-ghost" onClick={() => router.push('/gym-chat')}>Join Chat</button>
                 <button
-                  className={`cta ${going[event.id] ? 'is-active' : ''}`}
+                  className={`megabtn megabtn-cta ${going[event.id] ? 'is-active' : ''}`}
                   onClick={() => handleRSVP(event.id)}
                 >
                   {going[event.id] ? 'Marked as going' : 'Join'}
@@ -237,7 +237,7 @@ export default function EventsPage() {
           <div className="panel empty-state">
             <h3>No events yet.</h3>
             <p className="muted">Host the first one and set the tone.</p>
-            <button className="cta" onClick={() => router.push('/signup')}>Host an event</button>
+            <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Host an event</button>
           </div>
         ) : null}
       </section>

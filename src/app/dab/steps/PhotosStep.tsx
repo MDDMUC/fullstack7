@@ -94,12 +94,9 @@ export default function PhotosStep() {
         <div className="w-full max-w-md">
           <button
             onClick={handleContinue}
-            className="cta w-full"
-            style={{ padding: '10px 16px', borderRadius: '10px' }}
+            className="onb-cta-btn"
           >
-            <span className="font-medium leading-4 text-base tracking-[1.25px] uppercase" style={{ color: '#0c0e12' }}>
-              CONTINUE 7/9
-            </span>
+            Continue 7/9
           </button>
         </div>
       </div>
