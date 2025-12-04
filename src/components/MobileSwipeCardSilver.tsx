@@ -5,6 +5,14 @@ import { fetchProfiles, Profile as DbProfile, fetchAllGyms, fetchAllGymsWithCiti
 import { sendSwipe } from '@/lib/swipes'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 
+// Icon colors matching UI library tokens
+// --color-text-dark: #5b687c (matches #5B687C used in Figma)
+// --color-accent: #5ce1e6 (for active states)
+// --color-accent2: #e68fff (for gradients)
+const ICON_COLOR_DARK = '#5b687c' // var(--color-text-dark)
+const ICON_COLOR_ACCENT = '#5ce1e6' // var(--color-accent)
+const ICON_COLOR_ACCENT2 = '#e68fff' // var(--color-accent2)
+
 type Profile = DbProfile & {
   distance?: string
   interest?: string
@@ -76,8 +84,8 @@ function DabLogoHeader({ className }: { className?: string }) {
     <svg className={className} fill="none" preserveAspectRatio="none" viewBox="0 0 37 22">
       <defs>
         <linearGradient id="dabGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#5ce1e6" />
-          <stop offset="100%" stopColor="#e68fff" />
+          <stop offset="0%" stopColor={ICON_COLOR_ACCENT} />
+          <stop offset="100%" stopColor={ICON_COLOR_ACCENT2} />
         </linearGradient>
       </defs>
       <g>
@@ -90,7 +98,7 @@ function DabLogoHeader({ className }: { className?: string }) {
 }
 
 // Nav Icons from Figma
-function AnnouncementIcon({ color = '#5B687C' }: { color?: string }) {
+function AnnouncementIcon({ color = ICON_COLOR_DARK }: { color?: string }) {
   return (
     <svg className="block size-full" viewBox="0 0 26 26" fill="none">
       <path 
@@ -109,7 +117,7 @@ function AnnouncementIcon({ color = '#5B687C' }: { color?: string }) {
   )
 }
 
-function ChatIcon({ color = '#5B687C' }: { color?: string }) {
+function ChatIcon({ color = ICON_COLOR_DARK }: { color?: string }) {
   return (
     <svg className="block size-full" viewBox="0 0 26 26" fill="none">
       <path 
@@ -124,7 +132,7 @@ function ChatIcon({ color = '#5B687C' }: { color?: string }) {
   )
 }
 
-function FaceIcon({ color = '#5B687C' }: { color?: string }) {
+function FaceIcon({ color = ICON_COLOR_DARK }: { color?: string }) {
   return (
     <svg className="block size-full" viewBox="0 0 26 26" fill="none">
       <circle cx="13" cy="13" r="9.75" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
@@ -135,7 +143,7 @@ function FaceIcon({ color = '#5B687C' }: { color?: string }) {
   )
 }
 
-function FlashIcon({ color = '#5CE1E6' }: { color?: string }) {
+function FlashIcon({ color = ICON_COLOR_ACCENT }: { color?: string }) {
   return (
     <svg className="block size-full" viewBox="0 0 26 26" fill="none">
       <path 
@@ -146,36 +154,73 @@ function FlashIcon({ color = '#5CE1E6' }: { color?: string }) {
   )
 }
 
-// New CTA Icons from Figma
-function XCircleIcon({ color = '#5B687C' }: { color?: string }) {
+// CTA Icons from Figma - Rebuilt from scratch using exact Figma structure
+// Converting Tailwind classes to inline styles exactly as shown in Figma
+
+// X Icon - Cancel Button (588-2946)
+// Figma exact structure:
+// - Outer: className="relative shrink-0 size-[24px]" data-node-id="I588:2946;603:2247"
+// - Inner: className="relative size-full" data-node-id="603:2247"
+// - img: className="block max-w-none size-full"
+function XCircleIcon({ className }: { className?: string }) {
   return (
-    <svg className="block size-full" viewBox="0 0 26 26" fill="none">
-      <circle cx="13" cy="13" r="9.75" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M10.5625 10.5625L15.4375 15.4375M15.4375 10.5625L10.5625 15.4375" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <div 
+      className={className} 
+      data-name="x" 
+      data-node-id="I588:2946;603:2247"
+      style={{ 
+        position: 'relative', 
+        flexShrink: 0, 
+        width: '24px', 
+        height: '24px' 
+      }}
+    >
+      {/* Figma: className="relative size-full" data-node-id="603:2247" */}
+      <div 
+        className="relative" 
+        data-name="x" 
+        data-node-id="603:2247"
+        style={{ 
+          width: '100%', 
+          height: '100%' 
+        }}
+      >
+        {/* Figma: className="block max-w-none size-full" - replaced img with SVG */}
+        <svg 
+          className="block" 
+          style={{ 
+            maxWidth: 'none', 
+            width: '100%', 
+            height: '100%' 
+          }} 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Simple X - no circle */}
+          <path d="M18 6L6 18M6 6L18 18" stroke={ICON_COLOR_ACCENT} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+    </div>
   )
 }
 
-function UserPlusIcon({ color = '#5B687C' }: { color?: string }) {
-  return (
-    <svg className="block size-full" viewBox="0 0 26 26" fill="none">
-      <path d="M13 8.125V17.875M8.125 13H17.875" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="13" cy="13" r="9.75" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function MessageTextSquareIcon({ color = '#5B687C' }: { color?: string }) {
-  return (
-    <svg className="block size-full" viewBox="0 0 26 26" fill="none">
-      <path d="M19.5 8.125H6.5C5.25979 8.125 4.25 9.13479 4.25 10.375V19.5L8.125 15.625H19.5C20.7402 15.625 21.75 14.6152 21.75 13.375V10.375C21.75 9.13479 20.7402 8.125 19.5 8.125Z" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9.75 12.25H16.25M9.75 15.375H13" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
+// UserPlus Icon - AddFriend Button (591-1346)
+// Figma exact code from 571:4255:
+// function UserPlus({ className }: { className?: string }) {
+//   return (
+//     <div className={className} data-name="user-plus-01" data-node-id="571:4255">
+//       <div className="absolute inset-[12.5%_8.33%]" data-name="Icon" data-node-id="571:4256">
+//         <div className="absolute inset-[-5.56%_-5%]">
+//           <img alt="" className="block max-w-none size-full" src={imgIcon} />
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
 
 // Top Nav Icons
-function ArrowLeftIcon({ color = '#5B687C' }: { color?: string }) {
+function ArrowLeftIcon({ color = ICON_COLOR_DARK }: { color?: string }) {
   return (
     <svg className="block size-full" viewBox="0 0 26 26" fill="none">
       <path d="M16.25 6.5L9.75 13L16.25 19.5" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
@@ -183,7 +228,7 @@ function ArrowLeftIcon({ color = '#5B687C' }: { color?: string }) {
   )
 }
 
-function UserIcon({ color = '#5B687C' }: { color?: string }) {
+function UserIcon({ color = ICON_COLOR_DARK }: { color?: string }) {
   return (
     <svg className="block size-full" viewBox="0 0 26 26" fill="none">
       <circle cx="13" cy="9.75" r="3.25" stroke={color} strokeWidth="1.625" strokeLinecap="round" strokeLinejoin="round" />
@@ -551,47 +596,53 @@ export default function MobileSwipeCardSilver() {
 
           {/* CTA Row - 3 icon buttons + DAB button */}
           <div className="fc-cta-row" data-name="cta row">
-            {/* Icon Buttons Row */}
+            {/* Icon Buttons Row - Figma: gap-[12px], each button wrapped in basis-0 grow container */}
             <div className="mh-silver-cta-icons">
-              {/* X Circle Button */}
-              <button
-                type="button"
-                className="mh-silver-cta-icon-btn"
-                onClick={handleNext}
-                disabled={isAnimating || currentIndex >= deck.length - 1}
-                data-name="button.cancel"
-              >
-                <XCircleIcon color="#5B687C" />
-              </button>
+              {/* Cancel Button - wrapped in basis-0 grow container */}
+              <div className="mh-silver-cta-button-wrapper">
+                <button
+                  type="button"
+                  className="megabtn megabtn-cardaction megabtn-cardaction-cancel"
+                  onClick={handleNext}
+                  disabled={isAnimating || currentIndex >= deck.length - 1}
+                  data-name="button.cardaction.cancel"
+                >
+                  <XCircleIcon className="overflow-clip relative shrink-0" />
+                </button>
+              </div>
               
-              {/* User Plus Button */}
-              <button
-                type="button"
-                className="mh-silver-cta-icon-btn"
-                onClick={() => {/* TODO: Add friend functionality */}}
-                disabled={isAnimating}
-                data-name="button.addfriend"
-              >
-                <UserPlusIcon color="#5B687C" />
-              </button>
+              {/* AddFriend Button - wrapped in basis-0 grow container */}
+              <div className="mh-silver-cta-button-wrapper">
+                <button
+                  type="button"
+                  className="megabtn megabtn-cardaction megabtn-cardaction-addfriend"
+                  onClick={() => {/* TODO: Add friend functionality */}}
+                  disabled={isAnimating}
+                  data-name="button.cardaction.addfriend"
+                >
+                  <img src="/addfriend-icon.svg" alt="Add friend" style={{ width: '28px', height: '28px', display: 'block' }} />
+                </button>
+              </div>
               
-              {/* Message Button */}
-              <button
-                type="button"
-                className="mh-silver-cta-icon-btn"
-                onClick={() => {/* TODO: Message functionality */}}
-                disabled={isAnimating}
-                data-name="button.message"
-              >
-                <MessageTextSquareIcon color="#5B687C" />
-              </button>
+              {/* Message Button - wrapped in basis-0 grow container */}
+              <div className="mh-silver-cta-button-wrapper">
+                <button
+                  type="button"
+                  className="megabtn megabtn-cardaction megabtn-cardaction-message"
+                  onClick={() => {/* TODO: Message functionality */}}
+                  disabled={isAnimating}
+                  data-name="button.cardaction.message"
+                >
+                  <img src="/message-icon.svg" alt="Message" style={{ width: '28px', height: '28px', display: 'block' }} />
+                </button>
+              </div>
             </div>
             
-            {/* DAB Button - megabtn-dab, flex: 1 0 0 */}
+            {/* DAB Button - megabtn-dab-filled (gradient variant from landing page), flex: 1 0 0 */}
             <div className={`fc-cta-wrapper ${dabGlow ? 'megabtn-dab-glow' : ''}`} style={{ flex: '1 0 0', minWidth: 0 }}>
               <button
                 type="button"
-                className="megabtn megabtn-dab"
+                className="megabtn megabtn-dab-filled"
                 onClick={handleDab}
                 disabled={isAnimating}
                 data-name="button.dab"
@@ -764,21 +815,22 @@ function TopNavigationBar({
         onClick={() => window.history.back()}
         data-name="arrow-block-left"
       >
-        <ArrowLeftIcon color="#5B687C" />
+        <ArrowLeftIcon color={ICON_COLOR_DARK} />
       </button>
       
       {/* City Field */}
       <div className="mh-silver-topnav-field-wrapper mh-silver-dropdown-container">
         <button
           type="button"
-          className="megabtn megabtn-field"
+          className={`onb-gym-dropdown-toggle ${showCityDropdown ? 'onb-gym-dropdown-toggle-open' : ''}`}
           onClick={(e) => {
             e.stopPropagation()
             onCityToggle()
           }}
           data-name="button.field.city"
         >
-          {selectedCity || 'City'}
+          <span className="onb-gym-dropdown-text">{selectedCity || 'City'}</span>
+          <span className={`onb-gym-dropdown-arrow ${showCityDropdown ? 'onb-gym-dropdown-arrow-open' : ''}`}>▼</span>
         </button>
         {selectedCity && (
           <button
@@ -806,7 +858,7 @@ function TopNavigationBar({
       <div className="mh-silver-topnav-field-wrapper mh-silver-dropdown-container">
         <button
           type="button"
-          className="megabtn megabtn-field"
+          className={`onb-gym-dropdown-toggle ${showGymDropdown ? 'onb-gym-dropdown-toggle-open' : ''}`}
           onClick={(e) => {
             e.stopPropagation()
             // Gymselect shows all gyms, but when city is selected, only gyms from that city are selectable
@@ -814,7 +866,8 @@ function TopNavigationBar({
           }}
           data-name="button.field.gym"
         >
-          {selectedGym ? availableGyms.find(g => g.id === selectedGym)?.name || 'Gymselect' : 'Gymselect'}
+          <span className="onb-gym-dropdown-text">{selectedGym ? availableGyms.find(g => g.id === selectedGym)?.name || 'Gym' : 'Gym'}</span>
+          <span className={`onb-gym-dropdown-arrow ${showGymDropdown ? 'onb-gym-dropdown-arrow-open' : ''}`}>▼</span>
         </button>
         {selectedGym && (
           <button
@@ -848,7 +901,7 @@ function TopNavigationBar({
         onClick={() => {/* TODO: Open user menu */}}
         data-name="user-01"
       >
-        <UserIcon color="#5B687C" />
+        <UserIcon color={ICON_COLOR_DARK} />
       </button>
     </div>
   )
@@ -878,7 +931,7 @@ function SilverMobileNavbar() {
             >
               <div className="mh-silver-nav-icon-wrapper">
                 <div className="mh-silver-nav-icon">
-                  <Icon color={activeNav === key ? '#5CE1E6' : '#5B687C'} />
+                  <Icon color={activeNav === key ? ICON_COLOR_ACCENT : ICON_COLOR_DARK} />
                 </div>
               </div>
               <span className="mh-silver-nav-label">{label}</span>

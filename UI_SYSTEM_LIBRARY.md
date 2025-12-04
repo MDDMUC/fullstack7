@@ -525,6 +525,10 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 | `.megabtn-navlink` | button.navlink | Dark fill `#1f2633` | 10px 16px | 10px |
 | `.megabtn-dab` | button.dab | Cyan border, logo | 10px 16px | 10px |
 | `.megabtn-dab-filled` | button.dab (filled) | Gradient fill, logo | 10px 16px | 10px |
+| `.megabtn-cardaction` | button.cardaction | Icon-only action button | 0px | 14px |
+| `.megabtn-cardaction-cancel` | button.cardaction cancel | Cancel/X icon variant | 0px | 14px |
+| `.megabtn-cardaction-addfriend` | button.cardaction addfriend | Add friend icon variant | 0px | 14px |
+| `.megabtn-cardaction-message` | button.cardaction message | Message icon variant | 0px | 14px |
 
 ```css
 /* CTA Button - Gradient */
@@ -576,6 +580,93 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
   border: 1px solid #5ce1e6;
   border-radius: 10px;
 }
+```
+
+### Cardaction Variants (Icon-only - 42px × 38px, 14px radius)
+
+**Cardaction buttons are icon-only action buttons used in card CTA rows. Each variant has 3 states: default, hover, and active/disabled.**
+
+| Class | Figma Node | Description | Size | Icon Size |
+|-------|------------|-------------|------|-----------|
+| `.megabtn-cardaction` | button.cardaction | Base cardaction button | 42px × 38px | 24px × 24px |
+| `.megabtn-cardaction-cancel` | button.cardaction cancel | Cancel/XCircle icon | 42px × 38px | 24px × 24px |
+| `.megabtn-cardaction-addfriend` | button.cardaction addfriend | UserPlus icon | 42px × 38px | 24px × 24px |
+| `.megabtn-cardaction-message` | button.cardaction message | MessageTextSquare icon | 42px × 38px | 24px × 24px |
+
+```css
+/* Cardaction Base - All cardaction buttons share this base
+   Figma: bg-[#11141c] h-[38px] w-[42px] rounded-[14px] */
+.megabtn-cardaction {
+  width: 42px;
+  height: 38px;
+  background: #11141c; /* var(--color-panel) */
+  border: none;
+  border-radius: 14px; /* var(--radius-lg) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+/* Cardaction Hover State */
+.megabtn-cardaction:hover:not(:disabled) {
+  background: #1a1f2a; /* Slightly lighter panel color */
+  transform: translateY(-1px);
+}
+
+/* Cardaction Active State */
+.megabtn-cardaction:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Cardaction Disabled State */
+.megabtn-cardaction:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Cardaction Icon - All icons are 24px × 24px
+   Figma: size-[24px] */
+.megabtn-cardaction svg,
+.megabtn-cardaction img {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+/* Cardaction Variants - All use same base styles, differentiated by icon */
+.megabtn-cardaction-cancel {
+  /* Uses base cardaction styles */
+}
+
+.megabtn-cardaction-addfriend {
+  /* Uses base cardaction styles */
+}
+
+.megabtn-cardaction-message {
+  /* Uses base cardaction styles */
+}
+```
+
+**Usage Example:**
+```jsx
+// Cancel Button
+<button className="megabtn megabtn-cardaction megabtn-cardaction-cancel" data-name="button.cardaction.cancel">
+  <XCircleIcon color="#5B687C" />
+</button>
+
+// AddFriend Button
+<button className="megabtn megabtn-cardaction megabtn-cardaction-addfriend" data-name="button.cardaction.addfriend">
+  <UserPlusIcon color="#5B687C" />
+</button>
+
+// Message Button
+<button className="megabtn megabtn-cardaction megabtn-cardaction-message" data-name="button.cardaction.message">
+  <MessageTextSquareIcon color="#5B687C" />
+</button>
 ```
 
 ### Pill Variants (Small - 12px font, 999px radius)
@@ -808,12 +899,23 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 // Full Width
 <button className="megabtn megabtn-cta megabtn-full">Submit</button>
 
-// DAB Button with Glow
-<div className="megabtn-dab-wrapper">
-  <button className="megabtn megabtn-dab">
+// DAB Button (CTA variant) - Used in card CTA rows
+<div className="fc-cta-wrapper">
+  <button className="megabtn megabtn-dab" data-name="button.dab">
     <img src="/dab-logo.svg" alt="DAB" />
   </button>
 </div>
+
+// Cardaction Buttons
+<button className="megabtn megabtn-cardaction megabtn-cardaction-cancel" data-name="button.cardaction.cancel">
+  <XCircleIcon color="#5B687C" />
+</button>
+<button className="megabtn megabtn-cardaction megabtn-cardaction-addfriend" data-name="button.cardaction.addfriend">
+  <UserPlusIcon color="#5B687C" />
+</button>
+<button className="megabtn megabtn-cardaction megabtn-cardaction-message" data-name="button.cardaction.message">
+  <MessageTextSquareIcon color="#5B687C" />
+</button>
 
 // Status Pill
 <span className="megabtn megabtn-pill megabtn-pill-online">Online</span>
