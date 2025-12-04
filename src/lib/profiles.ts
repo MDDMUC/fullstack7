@@ -255,7 +255,7 @@ export async function fetchGymsFromTable(client?: SupabaseClient, area?: string)
       query = query.eq('area', area)
     }
     
-    const { data, error } = await query
+    const { data, error } = await query as { data: any[] | null, error: any }
     
     if (error) {
       // Try to stringify the error to see what's in it
@@ -270,8 +270,9 @@ export async function fetchGymsFromTable(client?: SupabaseClient, area?: string)
       
       if (error && Object.keys(error).length === 0) {
         console.warn('Error object is empty - this might be a false positive, checking data...')
-        if (data && data.length > 0) {
+        if (data && Array.isArray(data) && data.length > 0) {
           console.log('Data exists despite error object, proceeding...')
+          // Continue processing with the data
         } else {
           return []
         }
@@ -316,7 +317,7 @@ export async function fetchAllGymsWithCities(client?: SupabaseClient): Promise<M
     // Try selecting all fields first to see if that works better
     const { data, error } = await c
       .from('onboardingprofiles')
-      .select('*')
+      .select('*') as { data: any[] | null, error: any }
     
     // Log the raw response for debugging
     if (error) {
@@ -334,8 +335,9 @@ export async function fetchAllGymsWithCities(client?: SupabaseClient): Promise<M
       if (error && Object.keys(error).length === 0) {
         console.warn('Error object is empty - this might be a false positive, checking data...')
         // If error is empty but we have data, continue processing
-        if (data && data.length > 0) {
+        if (data && Array.isArray(data) && data.length > 0) {
           console.log('Data exists despite error object, proceeding...')
+          // Continue processing with the data
         } else {
           return new Map()
         }
