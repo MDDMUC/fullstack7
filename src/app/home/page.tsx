@@ -1,14 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { fetchProfiles, Profile as DbProfile, normalizeProfile } from '@/lib/profiles'
 import { RequireAuth } from '@/components/RequireAuth'
 import { sendSwipe } from '@/lib/swipes'
 import { listMatches, MatchWithProfiles } from '@/lib/matches'
 import { sendMessage, subscribeToThread, Message as ChatMessage, fetchMessages } from '@/lib/messages'
-import SwipeCard from '@/components/SwipeCard'
 import MobileSwipeCardSilver from '@/components/MobileSwipeCardSilver'
 
 type Profile = DbProfile & {
@@ -44,25 +42,7 @@ export default function HomeScreen() {
   const [messageInput, setMessageInput] = useState('')
   const [userId, setUserId] = useState<string | null>(null)
   const [viewerHome, setViewerHome] = useState<string | null>(null)
-  const [swipeMeta, setSwipeMeta] = useState<{ direction: -1 | 0 | 1; kind: 'none' | 'pass' | 'like' | 'match' }>({
-    direction: 0,
-    kind: 'none',
-  })
   const messageUnsub = useMemo(() => ({ current: null as null | (() => void) }), [])
-  const [isMobile, setIsMobile] = useState(false)
-
-  const current = useMemo(() => deck[0], [deck])
-  const nextProfile = useMemo(() => deck[1], [deck])
-
-  // Detect mobile viewport
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768) // Tablet breakpoint
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   const fallbackAvatarFor = (profile?: Profile | null) => {
     const hint = (profile?.pronouns || (profile as any)?.gender || '').toString().toLowerCase()
@@ -115,7 +95,6 @@ export default function HomeScreen() {
     if (profile?.distance) return `${city}, ${profile.distance}`
     return city
   }
-  // Animation handled inside SwipeCard
 
   useEffect(() => {
     const load = async () => {
@@ -282,242 +261,11 @@ export default function HomeScreen() {
     }
   }
 
-  const recordSwipe = useCallback(async (profile?: Profile, actionType: 'like' | 'pass' = 'like') => {
-    if (!supabase || !profile) return
-    try {
-      await sendSwipe(profile.id, actionType)
-    } catch (err) {
-      console.warn('Swipe failed', err)
-    }
-  }, [])
 
-  const handleSwipe = (actionType: 'like' | 'pass' = 'like') => {
-    if (!current) return
-    const profile = current
-    const direction = actionType === 'pass' ? -1 : 1
-    const kind = actionType === 'like' ? 'match' : 'pass'
-    setSwipeMeta({ direction, kind })
-    setDeck(prev => {
-      if (!prev.length) return prev
-      const [first, ...rest] = prev
-      return [...rest, first]
-    })
-    setTimeout(() => setSwipeMeta({ direction: 0, kind: 'none' }), 180)
-    recordSwipe(profile, actionType)
-  }
-
-  // Show mobile view on mobile devices - Silver tier card
-  if (isMobile) {
-    return (
-      <RequireAuth>
-        <MobileSwipeCardSilver />
-      </RequireAuth>
-    )
-  }
-
+  // Use mobile card for both mobile and desktop - responsive sizing handled in CSS
   return (
     <RequireAuth>
-    <main className={`swipe-layout ${selectedMatch || selectedMessage ? 'has-detail' : ''}`}>
-      <aside className="swipe-sidebar">
-        <div className="sidebar-top">
-          <div className="avatar-chip">
-            <span className="avatar-dot" />
-            <span>You</span>
-          </div>
-          <div className="sidebar-actions">
-            <button title="Boost" className="pill-icon">Boost</button>
-            <button title="Explore" className="pill-icon">Explore</button>
-            <button title="Insights" className="pill-icon">Insights</button>
-            <button title="Safety" className="pill-icon">Safety</button>
-          </div>
-        </div>
-
-        <div className="sidebar-tabs">
-          <button className={activeTab === 'matches' ? 'active' : ''} onClick={() => setActiveTab('matches')}>Matches</button>
-          <button className={activeTab === 'messages' ? 'active' : ''} onClick={() => setActiveTab('messages')}>Messages</button>
-        </div>
-
-        {activeTab === 'matches' ? (
-          <div className="sidebar-grid">
-            {loadingMatches ? (
-              <p className="muted" style={{ gridColumn: '1 / -1' }}>Loading matches...</p>
-            ) : !matchRows.length ? (
-              <p className="muted" style={{ gridColumn: '1 / -1' }}>No matches yet.</p>
-            ) : (
-              matchRows.map(match => {
-                const other = (match.profiles ?? []).find(p => p.id !== userId)
-                const profile = other ? normalizeProfile(other) : null
-                const shortName = profile?.username?.split?.(' ')?.[0] || profile?.username || 'Match'
-                return (
-                  <button
-                    key={match.id}
-                    className={`match-card ${selectedMatchId === match.id ? 'is-active' : ''}`}
-                    onClick={() => openMatch(match.id)}
-                  >
-                    <img src={profile?.avatar_url ?? fallbackAvatarFor(profile)} alt={profile?.username ?? 'Match'} />
-                    <div className="match-meta">
-                      <span className="match-name">{shortName}</span>
-                    </div>
-                  </button>
-                )
-              })
-            )}
-          </div>
-        ) : (
-          <div className="messages-list">
-            {!messages.length ? (
-              <p className="muted">No messages yet.</p>
-            ) : (
-              messages.map(msg => (
-                <button
-                  key={msg.id}
-                  className={`message-row ${selectedMessage?.id === msg.id ? 'is-active' : ''}`}
-                  onClick={() => openMatch(msg.matchId ?? msg.id)}
-                >
-                  <img src={msg.avatar} alt={msg.name} className="message-avatar" />
-                  <div className="message-text">
-                    <div className="message-title">
-                      <span className="message-name">{msg.name.split(' ')[0] || msg.name}</span>
-                    </div>
-                    <p className="muted small">{msg.snippet}</p>
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        )}
-      </aside>
-
-      {selectedMatch || selectedMessage ? (
-        <>
-          <section className="chat-pane">
-            <header className="chat-header">
-              <div className="chat-match-info">
-                <img
-                  src={selectedProfile?.avatar_url ?? fallbackAvatarFor(selectedProfile)}
-                  alt={shortName(selectedProfile)}
-                  className="chat-avatar"
-                />
-                <div>
-                  <p className="sub">You matched with {shortName(selectedProfile)}</p>
-                  <small className="muted">Recently</small>
-                </div>
-              </div>
-              <div className="chat-actions">
-                <button className="ghost pill-icon" aria-label="More actions">...</button>
-                <button className="ghost pill-icon" aria-label="Close conversation" onClick={() => { setSelectedMatch(null); setSelectedMessage(null) }}>x</button>
-              </div>
-            </header>
-
-            <div className="chat-body">
-              <div className="chat-thread">
-                {threadMessages.length === 0 ? (
-                  <p className="muted">Start the conversation.</p>
-                ) : (
-                  threadMessages.map(msg => (
-                    <div key={msg.id} className="bubble-row">
-                      <div className={`bubble ${msg.user_id === userId ? 'you' : 'them'}`}>
-                        {msg.body}
-                      </div>
-                      <div className="bubble-meta">
-                        <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        {msg.user_id === userId ? <span>Sent</span> : null}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <footer className="chat-input">
-              <div className="input-shell">
-                <input
-                  type="text"
-                  placeholder="Type a message"
-                  value={messageInput}
-                  onChange={e => setMessageInput(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault()
-                      handleSend()
-                    }
-                  }}
-                />
-                <div className="input-actions">
-                  <button className="megabtn megabtn-ghost">GIF</button>
-                  <button className="megabtn megabtn-ghost">Emoji</button>
-                </div>
-              </div>
-              <button className="megabtn megabtn-cta" onClick={handleSend}>Send</button>
-            </footer>
-          </section>
-
-          <aside className="profile-pane">
-            <div className="profile-hero" style={{ backgroundImage: `url(${selectedProfile?.avatar_url ?? fallbackAvatarFor(selectedProfile)})` }} />
-            <div className="profile-pane-body">
-              <div className="profile-pane-header">
-                <h2>{shortName(selectedProfile)} <span>{selectedProfile?.age ?? ''}</span></h2>
-                <p className="muted">{formatLocation(selectedProfile, viewerHome)}</p>
-              </div>
-              <div className="profile-section">
-                <p className="eyebrow">Looking for</p>
-                <div className="pill-accent">{selectedProfile?.lookingFor || 'Long-term, open to short adventures'}</div>
-              </div>
-              <div className="profile-section">
-                <p className="eyebrow">About me</p>
-                <p className="muted">{selectedProfile?.bio || 'Climber and traveler. Into good coffee, morning sessions, and keeping things light but real.'}</p>
-              </div>
-              {selectedProfile?.tags?.length ? (
-                <div className="profile-tags">
-                  {selectedProfile.tags.map(tag => <span key={tag} className="tag ghost-tag">{tag}</span>)}
-                </div>
-              ) : null}
-            </div>
-          </aside>
-        </>
-      ) : (
-
-        <section className="swipe-stage">
-          <div className="phone-frame">
-            {nextProfile ? (
-              <div
-                className="hero-photo hero-photo-next"
-                style={{ backgroundImage: `url(${nextProfile.avatar_url ?? fallbackAvatarFor(nextProfile)})` }}
-              >
-                <div className="hero-overlay" />
-              </div>
-            ) : null}
-            <AnimatePresence mode="popLayout">
-              {current ? (
-                <SwipeCard
-                  key={current.id}
-                  swipeMeta={swipeMeta}
-                  onSwipeLeft={() => handleSwipe('pass')}
-                  onSwipeRight={() => handleSwipe('like')}
-                  >
-                  <div
-                    className="hero-photo"
-                    style={{ backgroundImage: `url(${current.avatar_url ?? fallbackAvatarFor(current)})` }}
-                  >
-                    <div className="hero-overlay" />
-                    <div className="hero-meta">
-                      <div>
-                        <h2>{shortName(current)} <span>{current?.age}</span></h2>
-                        <p>{formatLocation(current, viewerHome)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </SwipeCard>
-              ) : null}
-            </AnimatePresence>
-            <div className="hero-actions hero-actions-wide">
-              <button className="megabtn megabtn-ghost megabtn-full" onClick={() => handleSwipe('pass')}>Pass</button>
-              <button className="megabtn megabtn-cta megabtn-full" onClick={() => handleSwipe('like')}><span className="dab-text">dab</span></button>
-            </div>
-          </div>
-        </section>
-      )}
-    </main>
+      <MobileSwipeCardSilver />
     </RequireAuth>
   )
 }

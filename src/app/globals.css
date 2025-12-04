@@ -1349,13 +1349,14 @@ input[type=number] {
 }
 
 /* CTA Row
-   Figma: flex gap-[8px] items-center overflow-clip w-full */
+   Figma: flex gap-[8px] items-center overflow-clip w-full
+   Changed overflow: clip to visible to allow button hover transform */
 .fc-cta-row {
   display: flex;
   gap: var(--space-sm); /* 8px - space/sm from UI library */
   align-items: center;
   width: 100%;
-  overflow: clip;
+  overflow: visible; /* Changed from clip to allow button hover transform */
 }
 
 /* CTA Wrapper
@@ -7495,6 +7496,35 @@ input[type=number] {
   background: #FAFAFA;
 }
 
+/* Desktop responsive sizing - 6:9 aspect ratio */
+@media (min-width: 768px) {
+  .mh-silver-container {
+    padding: 0 var(--space-xl) var(--space-xl); /* No top padding - spacing handled by content margin */
+    min-height: 100vh;
+    justify-content: center;
+  }
+  
+  .mh-silver-content {
+    max-width: 600px;
+    height: min(calc(100vh - (var(--space-xl) * 2)), 960px); /* subtract top/bottom spacing */
+    aspect-ratio: 6 / 9;
+    width: auto;
+    justify-content: center;
+    /* Top margin accounts for navbar bottom padding (16px) + desired spacing (8px) = 24px total */
+    margin: var(--space-sm) auto 0; /* space-sm = 8px, navbar has 16px bottom padding = 24px total */
+  }
+  
+  .mh-silver-card {
+    height: 100%;
+    align-items: stretch;
+  }
+  
+  /* Hide mobile navbar on desktop since top navigation is available */
+  .mh-silver-navbar {
+    display: none !important;
+  }
+}
+
 /* Silver Content Wrapper */
 .mh-silver-content {
   flex: 1 1 0;
@@ -7858,6 +7888,13 @@ input[type=number] {
 
 .mh-silver-nav-item.active .mh-silver-nav-label {
   color: #8ea0bd; /* color-muted for partners active */
+}
+
+/* Hide mobile navbar on desktop since top navigation is available */
+@media (min-width: 768px) {
+  .mh-silver-navbar {
+    display: none !important;
+  }
 }
 
 /* Loading/Empty for Silver */

@@ -1058,6 +1058,107 @@ fc-card (420px, bg: #151927, border: 1px #1f2633, radius: 14px)
 
 ---
 
+## 🎴 Silver Card Component
+
+**Quick Reference for Mobile/Desktop Swipe Card (Silver Tier)**
+
+### Component Location
+- **Figma Node**: `571:506`
+- **Component File**: `src/components/MobileSwipeCardSilver.tsx`
+- **CSS Classes**: All prefixed with `.mh-silver-*`
+
+### Key Design Tokens
+
+| Element | Value | Usage |
+|---------|-------|-------|
+| **Container Background** | `#FAFAFA` | Full viewport background (greys/100) |
+| **Card Border** | `4px solid #e6e6e6` | Silver border on card and bio container |
+| **Card Radius** | `24px` | Main card border radius |
+| **Card Shadow** | `0px 20px 60px 0px rgba(0, 0, 0, 0.4)` | Card drop shadow |
+| **Bio Container** | `4px solid #e6e6e6` border, `14px` radius | Bio section styling |
+| **Bio Background** | `#FAFAFA` (inherits from container) | Bio text container |
+| **Bio Text Color** | `#11141c` | Dark text on light background |
+| **Bio Inset Shadow** | `inset 4px 4px 4px 0px rgba(0, 0, 0, 0.5)` | Inner shadow effect |
+
+### Desktop Responsive Behavior
+
+```css
+@media (min-width: 768px) {
+  /* Card sizing - 6:9 aspect ratio while filling available height */
+  .mh-silver-container {
+    padding: 0 var(--space-xl) var(--space-xl); /* No top padding - spacing handled by content margin */
+    min-height: 100vh;
+    justify-content: center;
+  }
+
+  .mh-silver-content {
+    max-width: 600px;
+    height: min(calc(100vh - (var(--space-xl) * 2)), 960px); /* subtract top/bottom spacing */
+    aspect-ratio: 6 / 9;
+    width: auto;
+    justify-content: center;
+    /* Top margin accounts for navbar bottom padding (16px) + desired spacing (8px) = 24px total */
+    margin: var(--space-sm) auto 0; /* space-sm = 8px, navbar has 16px bottom padding = 24px total */
+  }
+  
+  .mh-silver-card {
+    height: 100%;
+    align-items: stretch;
+  }
+  
+  /* Hide mobile navbar on desktop */
+  .mh-silver-navbar {
+    display: none !important;
+  }
+}
+```
+
+### Main CSS Classes
+
+| Class | Purpose | Key Styles |
+|-------|---------|------------|
+| `.mh-silver-container` | Full viewport wrapper | `bg: #FAFAFA`, full height |
+| `.mh-silver-content` | Content wrapper | `gap: 16px`, `padding: 16px` |
+| `.mh-silver-card` | Main card container | `border: 4px #e6e6e6`, `radius: 24px`, `padding: 24px` |
+| `.mh-silver-bio` | Bio text container | `border: 4px #e6e6e6`, `radius: 14px`, `padding: 12px 16px` |
+| `.mh-silver-bio-text` | Bio text | `font-size: 14px`, `color: #11141c` |
+| `.mh-silver-navbar` | Mobile navbar | Hidden on desktop (`@media min-width: 768px`) |
+
+### Gradient Usage
+
+- **DAB Logo**: `linear-gradient(90deg, #5ce1e6, #e68fff)` (brand horizontal gradient)
+- **DAB Button**: `linear-gradient(90deg, #5ce1e6, #e68fff)` (filled variant)
+- **Image Overlay**: `linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.75))`
+
+### Component Structure
+
+```
+.mh-silver-container
+└── .mh-silver-content
+    ├── .mh-silver-card
+    │   ├── .mh-silver-header (logo + status chips)
+    │   ├── .mh-silver-main
+    │   │   ├── .mh-silver-image-section
+    │   │   └── .mh-silver-bio (with silver border)
+    │   └── .mh-silver-cta-row (Next + DAB buttons)
+    └── .mh-silver-navbar (hidden on desktop)
+```
+
+### Implementation Notes
+
+1. **Card fills vertically on desktop** - Desktop media query sets `.mh-silver-content` height to `calc(100vh - 96px)` and `.mh-silver-card` to `height: 100%` while preserving the `6 / 9` aspect ratio
+2. **Silver border consistency** - Both card container (`.mh-silver-card`) and bio container (`.mh-silver-bio`) use `4px solid #e6e6e6`
+3. **Background color** - Card uses `transparent` background, inheriting `#FAFAFA` from container
+4. **Bio container** - Has both silver border AND inset shadow for depth effect
+5. **Desktop navbar** - Automatically hidden via CSS media query
+6. **CTA Row overflow** - `.fc-cta-row` **must** use `overflow: visible` (not `clip`) so the DAB button hover lift/box-shadow is never cut off on desktop
+
+### Full Documentation
+
+See detailed section: [Mobile Home Swipe Card - Silver Tier](#mobile-home-swipe-card---silver-tier-node-571506)
+
+---
+
 ## Patterns
 
 ### Status Dot (Pulsating)
