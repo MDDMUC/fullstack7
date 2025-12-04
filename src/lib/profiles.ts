@@ -28,8 +28,47 @@ export type Profile = {
 
 const toArray = (value: any): string[] => {
   if (!value) return []
-  if (Array.isArray(value)) return value.filter(Boolean).map(String)
-  if (typeof value === 'string') return value.split(',').map(v => v.trim()).filter(Boolean)
+  if (Array.isArray(value)) {
+    // Handle array - flatten nested arrays and parse JSON strings
+    return value
+      .filter(Boolean)
+      .map(v => {
+        const str = String(v).trim()
+        // If it's a JSON array string (e.g., '["uuid"]'), parse it
+        if (str.startsWith('[') && str.endsWith(']')) {
+          try {
+            const parsed = JSON.parse(str)
+            if (Array.isArray(parsed)) {
+              return parsed.map(p => String(p).trim()).filter(Boolean)
+            }
+            return [String(parsed).trim()]
+          } catch {
+            return [str]
+          }
+        }
+        return [str]
+      })
+      .flat()
+      .filter(Boolean)
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    // Check if it's a JSON array string
+    if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        if (Array.isArray(parsed)) {
+          return parsed.map(p => String(p).trim()).filter(Boolean)
+        }
+        return [String(parsed).trim()]
+      } catch {
+        // If parsing fails, treat as comma-separated
+        return trimmed.split(',').map(v => v.trim()).filter(Boolean)
+      }
+    }
+    // Normal comma-separated string
+    return trimmed.split(',').map(v => v.trim()).filter(Boolean)
+  }
   return []
 }
 
@@ -190,4 +229,219 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
   )
 
   return resolved
+}
+
+export type Gym = {
+  id: string
+  name: string
+  area?: string
+}
+
+/**
+ * Fetch gyms from the gyms table filtered by area (city)
+ * @param area Optional area/city filter - if provided, only returns gyms from that area
+ * @returns Array of gym objects with id and name
+ */
+export async function fetchGymsFromTable(client?: SupabaseClient, area?: string): Promise<Gym[]> {
+  try {
+    const c = client ?? requireSupabase()
+    
+    let query = c
+      .from('gyms')
+      .select('id, name, area')
+      .order('name', { ascending: true })
+    
+    if (area) {
+      query = query.eq('area', area)
+    }
+    
+    const { data, error } = await query
+    
+    if (error) {
+      // Try to stringify the error to see what's in it
+      try {
+        const errorStr = JSON.stringify(error, Object.getOwnPropertyNames(error))
+        console.error('Failed to fetch gyms from table - error (stringified):', errorStr)
+      } catch (e) {
+        console.error('Failed to fetch gyms from table - error (raw):', error)
+        console.error('Error type:', typeof error)
+        console.error('Error keys:', Object.keys(error || {}))
+      }
+      
+      if (error && Object.keys(error).length === 0) {
+        console.warn('Error object is empty - this might be a false positive, checking data...')
+        if (data && data.length > 0) {
+          console.log('Data exists despite error object, proceeding...')
+        } else {
+          return []
+        }
+      } else {
+        return []
+      }
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn('No gyms returned from gyms table')
+      return []
+    }
+    
+    // Return gym objects with id and name
+    return data
+      .filter((row: any) => row.id && row.name)
+      .map((row: any) => ({
+        id: String(row.id),
+        name: String(row.name).trim(),
+        area: row.area ? String(row.area).trim() : undefined
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  } catch (err) {
+    console.error('Exception in fetchGymsFromTable:', err)
+    if (err instanceof Error) {
+      console.error('Error message:', err.message)
+      console.error('Error stack:', err.stack)
+    }
+    return []
+  }
+}
+
+/**
+ * Fetch all unique gyms from onboardingprofiles table with their cities
+ * Returns a map of gym name to array of cities where that gym exists
+ * @deprecated Use fetchGymsFromTable instead
+ */
+export async function fetchAllGymsWithCities(client?: SupabaseClient): Promise<Map<string, string[]>> {
+  try {
+    const c = client ?? requireSupabase()
+    
+    // Try selecting all fields first to see if that works better
+    const { data, error } = await c
+      .from('onboardingprofiles')
+      .select('*')
+    
+    // Log the raw response for debugging
+    if (error) {
+      // Try to stringify the error to see what's in it
+      try {
+        const errorStr = JSON.stringify(error, Object.getOwnPropertyNames(error))
+        console.error('Failed to fetch gyms - error (stringified):', errorStr)
+      } catch (e) {
+        console.error('Failed to fetch gyms - error (raw):', error)
+        console.error('Error type:', typeof error)
+        console.error('Error keys:', Object.keys(error || {}))
+      }
+      
+      // Check if it's actually an error or just an empty object
+      if (error && Object.keys(error).length === 0) {
+        console.warn('Error object is empty - this might be a false positive, checking data...')
+        // If error is empty but we have data, continue processing
+        if (data && data.length > 0) {
+          console.log('Data exists despite error object, proceeding...')
+        } else {
+          return new Map()
+        }
+      } else {
+        return new Map()
+      }
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn('No data returned from gyms query')
+      return new Map()
+    }
+    
+    console.log('Successfully fetched', data.length, 'profiles for gym extraction')
+    
+    const gymCityMap = new Map<string, Set<string>>()
+    let processedCount = 0
+    
+    ;(data || []).forEach(row => {
+      if (row.gym && Array.isArray(row.gym) && row.city) {
+        processedCount++
+        row.gym.forEach((g: string) => {
+          if (g && typeof g === 'string') {
+            const gymName = g.trim()
+            if (gymName) {
+              if (!gymCityMap.has(gymName)) {
+                gymCityMap.set(gymName, new Set())
+              }
+              gymCityMap.get(gymName)!.add(row.city)
+            }
+          }
+        })
+      }
+    })
+    
+    console.log('Processed', processedCount, 'profiles with gym data')
+    
+    // Convert Set to Array
+    const result = new Map<string, string[]>()
+    gymCityMap.forEach((cities, gym) => {
+      result.set(gym, Array.from(cities))
+    })
+    
+    console.log('Extracted', result.size, 'unique gyms')
+    return result
+  } catch (err) {
+    console.error('Exception in fetchAllGymsWithCities:', err)
+    if (err instanceof Error) {
+      console.error('Error message:', err.message)
+      console.error('Error stack:', err.stack)
+    }
+    return new Map()
+  }
+}
+
+/**
+ * Fetch all unique gyms from onboardingprofiles table
+ * @param city Optional city filter - if provided, only returns gyms from profiles in that city
+ */
+export async function fetchAllGyms(client?: SupabaseClient, city?: string): Promise<string[]> {
+  try {
+    const c = client ?? requireSupabase()
+    
+    let query = c
+      .from('onboardingprofiles')
+      .select('gym, city')
+    
+    if (city) {
+      query = query.eq('city', city)
+    }
+    
+    const { data, error } = await query
+    
+    if (error) {
+      console.error('Failed to fetch gyms - error details:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        fullError: error
+      })
+      return []
+    }
+    
+    if (!data) {
+      console.warn('No data returned from gyms query')
+      return []
+    }
+    
+    const gyms = new Set<string>()
+    ;(data || []).forEach(row => {
+      if (row.gym && Array.isArray(row.gym)) {
+        row.gym.forEach((g: string) => {
+          if (g && typeof g === 'string') {
+            const trimmed = g.trim()
+            if (trimmed) {
+              gyms.add(trimmed)
+            }
+          }
+        })
+      }
+    })
+    
+    return Array.from(gyms).sort()
+  } catch (err) {
+    console.error('Exception in fetchAllGyms:', err)
+    return []
+  }
 }

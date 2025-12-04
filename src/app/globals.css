@@ -1353,7 +1353,7 @@ input[type=number] {
    Changed overflow: clip to visible to allow button hover transform */
 .fc-cta-row {
   display: flex;
-  gap: var(--space-sm); /* 8px - space/sm from UI library */
+  gap: var(--space-md); /* 12px - matches Figma gap-12px */
   align-items: center;
   width: 100%;
   overflow: visible; /* Changed from clip to allow button hover transform */
@@ -7483,7 +7483,7 @@ input[type=number] {
    From Figma node 571:506
    ============================================ */
 
-/* Silver Card Container - neutral-50 bg (#FAFAFA), 4px silver border */
+/* Silver Card Container - silver gradient background */
 .mh-silver-container {
   position: relative;
   width: 100%;
@@ -7492,8 +7492,9 @@ input[type=number] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  background: #FAFAFA;
+  justify-content: flex-start;
+  /* Silver gradient background - subtle gradient from #FAFAFA */
+  background: linear-gradient(180deg, #FAFAFA 0%, #F5F5F5 100%);
 }
 
 /* Desktop responsive sizing - 6:9 aspect ratio */
@@ -7502,6 +7503,11 @@ input[type=number] {
     padding: 0 var(--space-xl) var(--space-xl); /* No top padding - spacing handled by content margin */
     min-height: 100vh;
     justify-content: center;
+  }
+  
+  /* Hide top navigation on desktop since main navbar is available */
+  .mh-silver-topnav {
+    display: none !important;
   }
   
   .mh-silver-content {
@@ -7525,17 +7531,193 @@ input[type=number] {
   }
 }
 
+/* Top Navigation Bar - Figma: gap-16px, padding-16px, full width */
+.mh-silver-topnav {
+  display: flex;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  padding: var(--space-lg); /* 16px */
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.mh-silver-topnav-back,
+.mh-silver-topnav-user {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mh-silver-topnav-field-wrapper {
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+}
+
+.mh-silver-dropdown-container {
+  position: relative;
+}
+
+/* Field Button - matches Figma button.field */
+.megabtn-field {
+  width: 100%;
+  padding: var(--btn-pad-md) var(--btn-pad-xxl); /* 10px 16px */
+  background: var(--color-bg); /* #0c0e12 */
+  border: 1px solid var(--color-stroke); /* #1f2633 */
+  border-radius: var(--radius-md); /* 10px */
+  font-family: var(--font-inter);
+  font-size: 15px; /* field/base */
+  font-weight: 400;
+  color: var(--color-muted); /* #8ea0bd */
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+
+.megabtn-field:hover {
+  border-color: var(--color-accent); /* #5ce1e6 */
+}
+
+.megabtn-field:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Filter Clear Button */
+.mh-silver-filter-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  color: var(--color-muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 1;
+}
+
+.mh-silver-filter-clear:hover {
+  color: var(--color-text);
+}
+
+.mh-silver-topnav-field-wrapper {
+  position: relative;
+}
+
+/* Dropdown Menu */
+.mh-silver-dropdown-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  background: transparent;
+}
+
+.mh-silver-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: var(--color-bg); /* #0c0e12 */
+  border: 1px solid var(--color-stroke); /* #1f2633 */
+  border-radius: var(--radius-md); /* 10px */
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.4);
+  max-height: 200px;
+  overflow-y: auto;
+  min-width: 100%;
+}
+
+.mh-silver-dropdown-menu.mh-silver-dropdown-right {
+  left: auto;
+  right: 0;
+}
+
+.mh-silver-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: var(--btn-pad-md) var(--btn-pad-xxl); /* 10px 16px */
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-stroke);
+  color: var(--color-text); /* #e9eef7 */
+  font-family: var(--font-inter);
+  font-size: 15px; /* field/base */
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.mh-silver-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.mh-silver-dropdown-item:hover {
+  background: var(--color-panel); /* #11141c */
+}
+
+.mh-silver-dropdown-item:active {
+  background: var(--color-card); /* #151927 */
+}
+
+.mh-silver-dropdown-empty {
+  color: var(--color-muted);
+  text-align: center;
+  cursor: default;
+}
+
+.mh-silver-dropdown-empty:hover {
+  background: transparent;
+}
+
+/* Empty State - No profiles matching filters */
+.mh-silver-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.mh-silver-empty-state p {
+  font-family: var(--font-inter);
+  font-size: 16px; /* body/base */
+  font-weight: 500;
+  color: var(--color-text-muted); /* #8ea0bd */
+  margin: 0;
+}
+
 /* Silver Content Wrapper */
 .mh-silver-content {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: 16px; /* space-lg */
+  gap: var(--space-lg); /* 16px */
   align-items: center;
   justify-content: flex-end;
   min-height: 1px;
   min-width: 1px;
-  padding: 16px 16px 0 16px; /* pt: space-lg, px: space-lg */
+  padding: 0 var(--space-lg) var(--space-lg); /* No top padding, px: space-lg, pb: space-lg */
   position: relative;
   width: 100%;
   box-sizing: border-box;
@@ -7566,39 +7748,20 @@ input[type=number] {
   opacity: 0;
 }
 
-/* Silver Card Header - DAB logo + chips */
+/* Silver Card Header - Status chips only (no logo) */
 .mh-silver-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end; /* Right align since no logo */
   position: relative;
   flex-shrink: 0;
   width: 100%;
 }
 
-/* DAB Logo in header - flipped */
-.mh-silver-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.mh-silver-logo-inner {
-  transform: scaleY(-1);
-}
-
-.mh-silver-logo-svg {
-  width: 49.456px;
-  height: 28.805px;
-  display: block;
-}
-
 /* Header Status Row */
 .mh-silver-status-row {
   display: flex;
-  gap: 12px; /* space-md */
+  gap: var(--space-md); /* 12px */
   align-items: flex-start;
   justify-content: flex-end;
   position: relative;
@@ -7787,15 +7950,61 @@ input[type=number] {
   border-radius: 10px;
 }
 
-/* Silver Mobile Navbar */
+/* CTA Icon Buttons Row - Figma: gap-12px, 3 buttons, flex: 1 0 0 */
+.mh-silver-cta-icons {
+  display: flex;
+  gap: var(--space-md); /* 12px */
+  align-items: center;
+  flex: 1 0 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* CTA Icon Button - Figma: 42px wide, 38px high, rounded-14px, bg #11141c */
+.mh-silver-cta-icon-btn {
+  width: 42px;
+  height: 38px;
+  background: var(--color-panel); /* #11141c */
+  border: none;
+  border-radius: var(--radius-lg); /* 14px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.mh-silver-cta-icon-btn:hover:not(:disabled) {
+  background: #1a1f2a;
+  transform: translateY(-1px);
+}
+
+.mh-silver-cta-icon-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.mh-silver-cta-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mh-silver-cta-icon-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Silver Mobile Navbar - spans full width */
 .mh-silver-navbar {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm); /* 8px */
   align-items: flex-start;
   position: relative;
   box-shadow: 0px -4px 4px 0px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
-  width: 100%;
+  width: 100%; /* Full width instead of fixed 390px */
+  box-sizing: border-box;
 }
 
 .mh-silver-navbar-frame {
