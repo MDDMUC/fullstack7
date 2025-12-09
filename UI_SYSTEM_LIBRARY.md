@@ -1,6 +1,79 @@
+---
+
+## 📱 Mobile Home Screen (node 633:14303) — Supersedes prior usercard/mobile docs
+
+- **Figma Frame**: `/ home` `633:14303` (02_COMPONENTS)
+- **Code**: `src/app/home/page.tsx`
+- **Styles**: `src/app/globals.css` (`.home-*`), uses existing megabtn tokens
+- **Extraction**: `get_variable_defs`, `get_design_context` (forceCode:true), `get_screenshot`
+
+### Key Token Values (exact)
+
+| Element | Value |
+| --- | --- |
+| Page padding | 16px |
+| Filters | bg `#e9eef7`, border `1px solid #8ea0bd`, radius `10px`, padding `10px 12px`, text `15px 400` muted |
+| Card | bg `#0c0e12`, border `4px solid #5ce1e6`, radius `14px`, padding `24px`, gap `12px`, shadow `0px 20px 60px rgba(0,0,0,0.4)` |
+| Image wrapper | height `500px`, padding `4px`, border `4px solid #5ce1e6`, radius `14px` |
+| Overlay | gradient to bottom (`rgba(0,0,0,0)` → `rgba(0,0,0,0.75)`), padding `32px 12px 12px 12px`, gap `6px`, radius `14px` |
+| Name/age | `32px` heading/md, weights 800/400, color `#fff`, gap `8px` |
+| Location | `16px 500`, color `#e9eef7` |
+| Tags | `.megabtn-tag` bg `rgba(92,225,230,0.08)`, text `#5ce1e6`, radius `999px`, padding `6px 10px`; grade text `#e68fff` |
+| Chips | `.megabtn-chip` bg `#151927` in overlay, border `#5ce1e6` (accent) or `#1f2633` (muted), padding `8px x 6px`, radius `8px`, text `12px` |
+| Bio | bg `#1f2633`, padding `12px 16px`, radius `14px`, text `14px 500` color `#8ea0bd`, inset shadow `inset 4px 4px 4px rgba(0,0,0,0.5)` |
+| CTA row | gap `12px` |
+| Next button | bg `#151927`, radius `10px`, padding `10px 16px`, text `15px 700` color `#e9eef7` |
+| Dab button | border `1px solid #5ce1e6`, radius `10px`, height `38px`, padding `10px 16px`, logo 22×36.5 rotated 180° + flipY |
+| Bottom nav | bg `#e9eef7`, radius top `14px`, padding `12px 24px`, icon `26px`, label `10px 400` color `#1f2633`, active color `#5ce1e6`, unread dot `6px` cyan |
+
+### CSS Classes (home)
+
+`home-screen`, `home-content`, `home-filters`, `filter-pill`, `home-card`, `home-card-header`, `home-image-wrapper`, `home-image-overlay`, `home-name-row`, `home-name`, `home-age`, `home-location`, `home-chips-row`, `home-bio`, `home-bio-text`, `home-bio-shadow`, `home-cta-row`, `home-btn-next`, `home-btn-dab`, `home-bottom-nav`, `home-bottom-row`, `home-bottom-item`, `home-bottom-active`, `home-bottom-icon`, `home-bottom-label`, `home-bottom-dot`.
+
+### Structure
+
+```
+home-screen
+└─ home-content (max-w 420, gap 16)
+   ├─ home-filters (city, style, gym, time)
+   ├─ home-card (bg #0c0e12, border 4px #5ce1e6, radius 14, p24, gap 12)
+   │  ├─ header: PRO chip, Online pill
+   │  ├─ main:
+   │  │  ├─ image wrapper h500, p4, border 4px cyan, radius 14
+   │  │  │   └─ overlay gradient, pt32 pb12 px12 gap6, name/age, location, chips
+   │  │  └─ bio bg stroke, p12x16, inset shadow
+   │  └─ cta row gap12: next (panel), dab (border)
+   └─ bottom nav bg #e9eef7 radius-top 14 p12x24: profile, events, chats (dot), dab active
+```
 # DAB UI System Library
 
 This document serves as a comprehensive reference for the DAB design system, with **EXACT values extracted directly from Figma**.
+
+---
+
+## 🚨 CRITICAL: NEVER CREATE YOUR OWN ICONS OR SVGs
+
+**ABSOLUTE RULE - NO EXCEPTIONS:**
+
+- ❌ **NEVER** create, design, or improvise icons or SVG graphics
+- ❌ **NEVER** use placeholder SVGs or guessed icon paths
+- ❌ **NEVER** use icon libraries (Heroicons, etc.) unless explicitly specified in Figma
+- ✅ **ALWAYS** use exact SVG files provided by the user (typically in `/public/icons/`)
+- ✅ **ALWAYS** ask the user to provide SVG files if they're not available
+- ✅ **ALWAYS** reference SVG files directly: `<img src="/icons/filename.svg" />`
+
+**If you don't find a component or don't know how it looks:**
+1. **STOP** - Do not create anything
+2. **ASK** the user to provide the SVG file locally
+3. **WAIT** for the user to provide the exact file
+4. **USE** only the provided file
+
+**This rule applies to:**
+- Navigation icons
+- Button icons
+- Status indicators
+- Decorative elements
+- Any visual graphic element
 
 ---
 
@@ -122,7 +195,8 @@ bg-[#value] border border-[#value] rounded-[Xpx] ...
 | button/padding/md | 10px | 10px |
 | button/padding/xxl | 16px | 16px |
 | button/padding/xxxxl | 20px | 20px |
-| radius/sm | 8px | 8px |
+| radius/sm | 6px | 6px |
+| space/sm (as radius) | 8px | 8px (chips use this) |
 | radius/md | 10px | 10px |
 | radius/lg | 14px | 14px |
 | radius/circle | 999px | 999px |
@@ -188,11 +262,15 @@ All values in this document are extracted from Figma file `DAB-Build` using the 
 | Token | Value | Usage |
 |-------|-------|-------|
 | `color/accent` | `#5ce1e6` | Primary accent (cyan) |
+| `color/primary` | `#5ce1e6` | Primary color (alias for accent) |
 | `color/brand/primary` | `#5CE1E6` | Brand primary (alias) |
 | `color/accent2` | `#e68fff` | Secondary accent (pink/purple) |
+| `color/secondary` | `#e68fff` | Secondary color (alias for accent2) |
 | `color/special` | `#ff9500` | Special/founder (orange) |
 | `color/red` | `#ff7b7b` | Error/PRO badge/peaking state (red) |
 | `color/yellow` | `#ffd166` | Warning/busy state (gold/yellow) |
+| `color/white` | `#ffffff` | White text/backgrounds |
+| `color/darker` | `#5b687c` | Darker text (inactive states) |
 
 #### Border/Stroke Colors
 | Token | Value | Usage |
@@ -217,10 +295,14 @@ All values in this document are extracted from Figma file `DAB-Build` using the 
   
   /* Accents */
   --color-accent: #5ce1e6;
+  --color-primary: #5ce1e6;  /* alias */
   --color-accent2: #e68fff;
+  --color-secondary: #e68fff;  /* alias */
   --color-special: #ff9500;
   --color-red: #ff7b7b;
   --color-yellow: #ffd166;
+  --color-white: #ffffff;
+  --color-darker: #5b687c;
   
   /* Borders */
   --color-stroke: #1f2633;
@@ -289,14 +371,18 @@ All values in this document are extracted from Figma file `DAB-Build` using the 
 
 | Token | Value | CSS Variable | Usage |
 |-------|-------|--------------|-------|
-| `space/sm` (as radius) | `8px` | `--radius-sm` | Chips |
+| `radius/sm` | `6px` | `--radius-sm` | Small radius (from token) |
+| `space/sm` (as radius) | `8px` | `--radius-chip` | Chips use space/sm as radius |
 | `radius/md` | `10px` | `--radius-md` | Buttons, inputs |
 | `radius/lg` | `14px` | `--radius-lg` | Cards, images |
 | `radius/circle` | `999px` | `--radius-circle` | Pills, tags, avatars |
 
+**Note**: Chips use `space/sm` (8px) as their border radius, not `radius/sm` (6px).
+
 ```css
 :root {
-  --radius-sm: 8px;
+  --radius-sm: 6px;
+  --radius-chip: 8px;  /* space/sm used as radius for chips */
   --radius-md: 10px;
   --radius-lg: 14px;
   --radius-circle: 999px;
@@ -311,10 +397,12 @@ All values in this document are extracted from Figma file `DAB-Build` using the 
 |-------|------|-------|-------|
 | `shadow/base` | DROP_SHADOW | `0px 20px 60px rgba(0,0,0,0.4)` | Card shadows |
 | `shadow/hover` | DROP_SHADOW | `0px 24px 70px rgba(0,0,0,0.45)` | Hover state |
-| `shadow/small` | DROP_SHADOW | `0px 2px 2px rgba(0,0,0,0.4)` | Small elements |
+| `shadow/small` | DROP_SHADOW | `0px 2px 2px rgba(0,0,0,0.4)` | Small elements, button hover |
+| `shadow/glow` | DROP_SHADOW | `0px 0px 20px rgba(92,225,230,0.4)` | Accent glow |
+| `shadow/superglow` | DROP_SHADOW | `0px 0px 10px 10px rgba(92,225,230,0.4)` | Accent super glow |
 | `shadow/inner` | INNER_SHADOW | `inset 4px 4px 4px rgba(0,0,0,0.5)` | Inset effects |
-| `shadow/superglow` | DROP_SHADOW | `0px 0px 10px 10px rgba(92,225,230,0.4)` | Accent glow |
 | `shadow/navbarmobile` | DROP_SHADOW | `0px -4px 4px rgba(0,0,0,0.25)` | Mobile navbar |
+| `inner/lightfill` | INNER_SHADOW | `inset 0px 0px 0px 4px rgba(92,225,230,0.08)` | Light fill inner effect |
 
 ```css
 :root {
@@ -325,12 +413,14 @@ All values in this document are extracted from Figma file `DAB-Build` using the 
   --shadow-navbar-mobile: 0px -4px 4px 0px rgba(0, 0, 0, 0.25);
   
   /* Glow Effects */
+  --shadow-glow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
   --shadow-superglow: 0px 0px 10px 10px rgba(92, 225, 230, 0.4);
   --shadow-dab-glow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
   --shadow-dab-glow-hover: 0px 0px 30px 0px rgba(92, 225, 230, 0.6);
   
   /* Inner Shadows */
   --shadow-inner: inset 4px 4px 4px 0px rgba(0, 0, 0, 0.5);
+  --inner-lightfill: inset 0px 0px 0px 4px rgba(92, 225, 230, 0.08);
 }
 ```
 
@@ -518,20 +608,20 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 
 ### Button Variants (Large - 15px font)
 
-| Class | Figma Node | Description | Padding | Radius |
-|-------|------------|-------------|---------|--------|
-| `.megabtn-cta` | button.cta | Gradient fill, dark text | 10px 16px | 10px |
-| `.megabtn-ghost` | button.ghost | Transparent, border | 10px 16px | 10px |
-| `.megabtn-navlink` | button.navlink | Dark fill `#1f2633` | 10px 16px | 10px |
-| `.megabtn-dab` | button.dab | Cyan border, logo | 10px 16px | 10px |
-| `.megabtn-dab-filled` | button.dab (filled) | Gradient fill, logo | 10px 16px | 10px |
-| `.megabtn-cardaction` | button.cardaction | Icon-only action button | 0px | 14px |
-| `.megabtn-cardaction-cancel` | button.cardaction cancel | Cancel/X icon variant | 0px | 14px |
-| `.megabtn-cardaction-addfriend` | button.cardaction addfriend | Add friend icon variant | 0px | 14px |
-| `.megabtn-cardaction-message` | button.cardaction message | Message icon variant | 0px | 14px |
+| Class | Figma Node | Description | Padding | Radius | States |
+|-------|------------|-------------|---------|--------|--------|
+| `.megabtn-cta` | button.cta | Gradient fill, dark text | 10px 16px | 10px | Default: gradient + shadow/base, Hover: border + shadow/small |
+| `.megabtn-ghost` | button.ghost | Transparent, muted border | 10px 16px | 10px | Border: #8ea0bd (muted) |
+| `.megabtn-navlink` | button.navlink | Dark fill `#1f2633` | 10px 16px | 10px | Background: #1f2633, text: muted |
+| `.megabtn-dab` | button.dab | Cyan border, logo | 10px 16px | 10px | Default: border only, Hover: border + shadow/small |
+| `.megabtn-dab-filled` | button.dab (filled) | Gradient fill, logo | 10px 16px | 10px | Gradient background variant |
+| `.megabtn-cardaction` | button.cardaction | Icon-only action button | 0px | 14px | 42px × 38px, bg: #11141c |
+| `.megabtn-cardaction-cancel` | button.cardaction cancel | Cancel/X icon variant | 0px | 14px | Same as base |
+| `.megabtn-cardaction-addfriend` | button.cardaction addfriend | Add friend icon variant | 0px | 14px | Same as base |
+| `.megabtn-cardaction-message` | button.cardaction message | Message icon variant | 0px | 14px | Same as base |
 
 ```css
-/* CTA Button - Gradient */
+/* CTA Button - Gradient (Default State) */
 .megabtn-cta {
   padding: 10px 16px;
   background: linear-gradient(120deg, #5ce1e6, #e68fff);
@@ -540,13 +630,21 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
   font-weight: 700;
   color: #0c0e12;
   box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  border: none;
+}
+
+/* CTA Button - Hover State */
+.megabtn-cta:hover {
+  background: transparent;
+  border: 1px solid #5ce1e6;
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4);
 }
 
 /* Ghost Button */
 .megabtn-ghost {
   padding: 10px 16px;
   background: transparent;
-  border: 1px solid #1f2633;
+  border: 1px solid #8ea0bd;  /* muted color, not stroke */
   border-radius: 10px;
   font-size: 15px;
   font-weight: 700;
@@ -563,13 +661,18 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
   color: #e9eef7;
 }
 
-/* DAB Button (outline) */
+/* DAB Button (outline) - Default State */
 .megabtn-dab {
   height: 38px;
   padding: 10px 16px;
   background: transparent;
   border: 1px solid #5ce1e6;
   border-radius: 10px;
+}
+
+/* DAB Button - Hover State */
+.megabtn-dab:hover {
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4);
 }
 
 /* DAB Button (filled) */
@@ -673,26 +776,26 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 
 | Class | Figma State | Description | Background | Border |
 |-------|-------------|-------------|------------|--------|
-| `.megabtn-pill` | default | Default pill | `rgba(92,225,230,0.08)` | 1px `#1f2633` |
-| `.megabtn-pill-joined` | joined | Joined indicator | `rgba(92,225,230,0.08)` | none |
-| `.megabtn-pill-online` | focus | Online status | `rgba(92,225,230,0.12)` | 1px `#5ce1e6` |
+| `.megabtn-pill` | default | Default pill | `rgba(92,225,230,0.2)` | none |
+| `.megabtn-pill-joined` | joined | Joined indicator | `rgba(92,225,230,0.4)` | none |
+| `.megabtn-pill-online` | focus | Online status | `rgba(92,225,230,0.2)` | 1px `#5ce1e6` |
 
 ```css
 /* Default Pill */
 .megabtn-pill {
   padding: 6px 10px;
-  background: rgba(92, 225, 230, 0.08);
-  border: 1px solid #1f2633;
+  background: rgba(92, 225, 230, 0.2);  /* 0.2 opacity, not 0.08 */
+  border: none;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
   color: #5ce1e6;
 }
 
-/* Joined Pill (no border) */
+/* Joined Pill (no border, higher opacity) */
 .megabtn-pill-joined {
   padding: 6px 10px;
-  background: rgba(92, 225, 230, 0.08);
+  background: rgba(92, 225, 230, 0.4);  /* 0.4 opacity */
   border-radius: 999px;
   font-size: 12px;
   font-weight: 400;
@@ -702,7 +805,7 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 /* Online Pill (focus state - with border) */
 .megabtn-pill-online {
   padding: 6px 10px;
-  background: rgba(92, 225, 230, 0.12);
+  background: rgba(92, 225, 230, 0.2);  /* 0.2 opacity */
   border: 1px solid #5ce1e6;
   border-radius: 999px;
   font-size: 12px;
@@ -737,42 +840,45 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 
 ### Chip Variants (Small - 12px font, 8px radius)
 
-| Class | Figma State | Description | Border Color | Text Color |
-|-------|-------------|-------------|--------------|------------|
-| `.megabtn-chip-muted` | default | Standard chips | `#1f2633` | `#8ea0bd` |
-| `.megabtn-chip-hover` | hover | Hover state | `#8ea0bd` | `#8ea0bd` |
-| `.megabtn-chip-accent` | focus | Belay Certified | `#5ce1e6` | `#5ce1e6` |
-| `.megabtn-chip-busy` | busy | Busy/away status | `#ffd166` | `#ffd166` |
-| `.megabtn-chip-pink` | pink | Pink accent | `#e68fff` | `#e68fff` |
-| `.megabtn-chip-peaking` | peaking | Peak activity | `#ff7b7b` | `#ff7b7b` |
-| `.megabtn-chip-pro` | pro | PRO badge | `#ff7b7b` | `#ff7b7b` |
-| `.megabtn-chip-founder` | founder | Founder badge | `#ff9500` | gradient text |
-| `.megabtn-chip-crew` | crew | Crew badge | `#ff9500` | gradient text |
+| Class | Figma State | Description | Background | Border Color | Text Color |
+|-------|-------------|-------------|------------|--------------|------------|
+| `.megabtn-chip-muted` | default | Standard chips | `#0c0e12` | `#8ea0bd` | `#e9eef7` |
+| `.megabtn-chip-hover` | hover | Hover state | `#11141c` | `#8ea0bd` | `#e9eef7` |
+| `.megabtn-chip-accent` | focus | Belay Certified | `#0c0e12` | `#5ce1e6` | `#5ce1e6` |
+| `.megabtn-chip-busy` | busy | Busy/away status | `#0c0e12` | `#ffd166` | `#ffd166` |
+| `.megabtn-chip-pink` | pink | Pink accent | `#0c0e12` | `#e68fff` | `#e68fff` |
+| `.megabtn-chip-peaking` | peaking | Peak activity | `#0c0e12` | `#ff7b7b` | `#ff7b7b` |
+| `.megabtn-chip-pro` | pro | PRO badge | `#0c0e12` | `#ff7b7b` | `#ff7b7b` |
+| `.megabtn-chip-founder` | founder | Founder badge | `#0c0e12` | `#ff9500` | gradient text |
+| `.megabtn-chip-crew` | crew | Crew badge | `#0c0e12` | `#ff9500` | gradient text |
 
 ```css
 /* Chip Base */
 .megabtn-chip {
   padding: 6px 8px;
-  background: #11141c;
-  border-radius: 8px;
+  background: #0c0e12;  /* bg color, not panel */
+  border-radius: 8px;  /* space/sm used as radius */
   font-size: 12px;
   font-weight: 400;
 }
 
 /* Default/Muted Chip */
 .megabtn-chip-muted {
-  border: 1px solid #1f2633;
-  color: #8ea0bd;
+  background: #0c0e12;
+  border: 1px solid #8ea0bd;  /* muted border, not stroke */
+  color: #e9eef7;  /* white text, not muted */
 }
 
 /* Hover State */
 .megabtn-chip-hover {
+  background: #11141c;  /* panel bg on hover */
   border: 1px solid #8ea0bd;
-  color: #8ea0bd;
+  color: #e9eef7;
 }
 
 /* Accent/Focus Chip (Belay Certified) */
 .megabtn-chip-accent {
+  background: #0c0e12;
   border: 1px solid #5ce1e6;
   color: #5ce1e6;
 }
@@ -2340,8 +2446,332 @@ font-['Inter:Regular',sans-serif] font-normal h-[14px] text-[#5b687c] text-[10px
 
 ---
 
-*Last Updated: 2025-12-03*
+*Last Updated: 2025-01-XX (Major Update)*
 *Source: Figma file `DAB-Build` via MCP tools*
-*Nodes referenced: 465:38, 470:1116, 475:11205, 476:13448, 482:530, 482:1122, 571:506*
-*All tokens extracted using `get_variable_defs` and `get_design_context`*
+*Nodes referenced: 626:1154 (02_COMPONENTS page), 636:2049 (usercard-mobile), 634:16523, 475:11205, 475:11238, 475:11311, 476:13447, 475:11248, 475:11301, 456:4115, 592:2085, 634:15800, 470:1116, and more*
+*All tokens extracted using `get_variable_defs` and `get_design_context` with forceCode:true*
+
+---
+
+## 🎴 User Card Mobile Component (Cyan Border Variant)
+
+**Component Location:**
+- **Figma Node**: `636:2049` (usercard-mobile frame), `634:16523` (Property 1=Default)
+- **Component File**: `src/components/MobileSwipeCardSilver.tsx`
+- **CSS Classes**: All prefixed with `.uc-mobile-*`
+
+### Key Design Tokens (Exact from Figma)
+
+| Element | Value | Usage |
+|---------|-------|-------|
+| **Card Container** | `bg: #0c0e12`, `border: 4px solid #5ce1e6`, `radius: 14px` | Main card with cyan border |
+| **Card Size** | `width: 358px`, `height: 724px` | Fixed dimensions |
+| **Card Padding** | `24px` (space/xl) | Inner padding |
+| **Card Gap** | `12px` (space/md) | Gap between sections |
+| **Card Shadow** | `0px 20px 60px 0px rgba(0, 0, 0, 0.4)` | shadow/base |
+| **Image Wrapper Border** | `4px solid #5ce1e6` | Cyan border on image |
+| **Image Wrapper Padding** | `4px` (space/xxs) | Padding inside border |
+| **Image Height** | `500px` | Fixed height |
+| **Name Font** | `32px`, `800 weight` (heading/md) | Name text size |
+| **Age Font** | `32px`, `400 weight` | Age text size |
+| **Location Font** | `16px`, `500 weight` (body/base) | Location text |
+| **Location Color** | `#e9eef7` (color/text) | Location text color |
+| **Chips Gap** | `6px` | Gap between chips in overlay |
+| **Chip Background** | `#151927` (color/card) | Chips in overlay use card bg |
+| **Bio Background** | `#1f2633` (color/stroke) | Bio section background |
+| **Bio Padding** | `12px 16px` (space/md, space/lg) | Bio padding |
+| **Bio Font** | `14px`, `500 weight` (body/sm) | Bio text size |
+| **Bio Text Color** | `#8ea0bd` (color/muted) | Bio text color |
+| **Bio Text Width** | `278px` | Exact width from Figma |
+| **Bio Inset Shadow** | `inset 4px 4px 4px 0px rgba(0, 0, 0, 0.5)` | shadow/inner |
+| **CTA Row Gap** | `12px` (space/md) | Gap between buttons |
+| **Next Button** | `bg: #11141c` (color/panel) | Panel background |
+| **DAB Button** | `border: 1px solid #5ce1e6` | Border only (no fill) |
+
+### Structure
+
+```
+uc-mobile-card (358px × 724px, bg: #0c0e12, border: 4px #5ce1e6, radius: 14px, p: 24px, gap: 12px)
+├── uc-mobile-header (justify-between)
+│   ├── PRO chip (left) - megabtn-chip megabtn-chip-pro
+│   └── Online pill (right) - megabtn-pill megabtn-pill-online
+├── uc-mobile-main (flex-col, gap: 12px)
+│   ├── uc-mobile-image-section (h: 500px)
+│   │   └── uc-mobile-image-wrapper (border: 4px #5ce1e6, p: 4px, radius: 14px)
+│   │       ├── uc-mobile-image (absolute, cover)
+│   │       └── uc-mobile-image-overlay (gradient, p: 32px 12px 12px 12px, gap: 6px)
+│   │           ├── uc-mobile-name-row (32px font, gap: 8px)
+│   │           │   ├── uc-mobile-name (32px, 800 weight, white)
+│   │           │   └── uc-mobile-age (32px, 400 weight, white)
+│   │           ├── uc-mobile-location-row (16px, #e9eef7)
+│   │           └── uc-mobile-chips-section
+│   │               └── uc-mobile-chips-row (flex-wrap, gap: 6px)
+│   │                   ├── Style tags (Boulder, Sport) - megabtn-tag
+│   │                   ├── Grade tag (Advanced) - megabtn-tag megabtn-tag-grade
+│   │                   ├── Belay Certified - megabtn-chip megabtn-chip-accent megabtn-chip-card-bg
+│   │                   └── Standard chips - megabtn-chip megabtn-chip-muted megabtn-chip-card-bg
+│   └── uc-mobile-bio (bg: #1f2633, p: 12px 16px, radius: 14px)
+│       ├── uc-mobile-bio-text (14px, #8ea0bd, width: 278px)
+│       └── uc-mobile-bio-shadow (inset shadow)
+└── uc-mobile-cta-row (gap: 12px)
+    ├── Next button (flex: 1) - megabtn-navlink (bg: #11141c)
+    └── DAB button (flex: 1) - megabtn-dab (border only)
+```
+
+### CSS Values (Exact from Figma node 634:16523)
+
+```css
+/* USER CARD CONTAINER */
+.uc-mobile-card {
+  width: 358px;
+  height: 724px;
+  background: #0c0e12; /* color/bg */
+  border: 4px solid #5ce1e6; /* 4px cyan border */
+  border-radius: 14px; /* radius/lg */
+  padding: 24px; /* space/xl */
+  gap: 12px; /* space/md */
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4); /* shadow/base */
+}
+
+/* HEADER ROW */
+.uc-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* IMAGE SECTION - 500px height */
+.uc-mobile-image-section {
+  height: 500px;
+  width: 100%;
+}
+
+/* IMAGE WRAPPER - 4px cyan border, 4px padding */
+.uc-mobile-image-wrapper {
+  border: 4px solid #5ce1e6;
+  border-radius: 14px; /* radius/lg */
+  padding: 4px; /* space/xxs - padding inside border */
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+/* IMAGE OVERLAY */
+.uc-mobile-image-overlay {
+  background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.75));
+  padding: 32px 12px 12px 12px; /* pt: space/xxl, px/pb: space/md */
+  gap: 6px; /* space/xs */
+  border-radius: 14px; /* radius/lg */
+}
+
+/* NAME ROW - 32px font, gap 8px */
+.uc-mobile-name-row {
+  font-size: 32px; /* heading/md */
+  gap: 8px; /* space/sm */
+  color: #ffffff; /* color/white */
+}
+
+.uc-mobile-name {
+  font-weight: 800; /* Extra Bold */
+}
+
+.uc-mobile-age {
+  font-weight: 400; /* Regular */
+}
+
+/* LOCATION - 16px, text color */
+.uc-mobile-location {
+  font-size: 16px; /* body/base */
+  font-weight: 500; /* Medium */
+  color: #e9eef7; /* color/text */
+}
+
+/* CHIPS ROW - gap 6px */
+.uc-mobile-chips-row {
+  gap: 6px; /* 6px gap between chips */
+  flex-wrap: wrap;
+}
+
+/* Chips in overlay use card background */
+.megabtn-chip-card-bg {
+  background: #151927; /* color/card */
+}
+
+/* BIO SECTION - stroke color background */
+.uc-mobile-bio {
+  background: #1f2633; /* color/stroke */
+  padding: 12px 16px; /* py: space/md, px: space/lg */
+  border-radius: 14px; /* radius/lg */
+  position: relative;
+}
+
+.uc-mobile-bio-text {
+  font-size: 14px; /* body/sm */
+  font-weight: 500; /* Medium */
+  color: #8ea0bd; /* color/muted */
+  width: 278px; /* exact width from Figma */
+}
+
+.uc-mobile-bio-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 4px 4px 4px 0px rgba(0, 0, 0, 0.5); /* shadow/inner */
+  border-radius: 14px; /* radius/lg */
+}
+
+/* CTA ROW - gap 12px */
+.uc-mobile-cta-row {
+  gap: 12px; /* space/md */
+  width: 100%;
+}
+
+.uc-mobile-cta-button-wrapper {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+/* NEXT BUTTON - panel background */
+.megabtn-navlink {
+  background: #11141c; /* color/panel */
+  color: #e9eef7; /* color/text */
+}
+
+/* DAB BUTTON - border only */
+.megabtn-dab {
+  border: 1px solid #5ce1e6;
+  background: transparent;
+}
+```
+
+### Tailwind Classes (Exact from Figma)
+
+```tailwind
+/* CARD CONTAINER */
+bg-[var(--color\/bg,#0c0e12)] border-4 border-[#5ce1e6] border-solid
+flex flex-col gap-[var(--space\/md,12px)] items-center
+p-[var(--space\/xl,24px)] rounded-[var(--radius\/lg,14px)]
+shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)]
+h-[724px] w-[358px]
+
+/* HEADER */
+flex items-center justify-between w-full
+
+/* IMAGE SECTION */
+flex h-[500px] items-center w-full
+
+/* IMAGE WRAPPER */
+border-4 border-[#5ce1e6] border-solid
+p-[var(--space\/xxs,4px)] rounded-[var(--radius\/lg,14px)]
+basis-0 grow h-full
+
+/* IMAGE OVERLAY */
+bg-gradient-to-b from-[rgba(0,0,0,0)] to-[rgba(0,0,0,0.75)]
+flex flex-col gap-[var(--space\/xs,6px)] items-start justify-end
+pb-[var(--space\/md,12px)] pt-[var(--space\/xxl,32px)] px-[var(--space\/md,12px)]
+rounded-[var(--radius\/lg,14px)]
+
+/* NAME ROW */
+flex gap-[8px] items-center text-[32px] text-white
+
+/* LOCATION */
+text-[16px] text-[color:var(--color\/text,#e9eef7)]
+
+/* CHIPS ROW */
+flex flex-wrap gap-[6px] items-start overflow-clip w-full
+
+/* CHIP (in overlay) */
+bg-[var(--color\/card,#151927)] border border-[var(--color\/primary,#5ce1e6)]
+px-[var(--button\/padding\/sm,8px)] py-[var(--button\/padding\/xs,6px)]
+rounded-[var(--space\/sm,8px)] text-[12px]
+
+/* BIO SECTION */
+bg-[var(--color\/stroke,#1f2633)] flex flex-col gap-[var(--space\/sm,0px)]
+px-[var(--space\/lg,16px)] py-[var(--space\/md,12px)]
+rounded-[var(--radius\/lg,14px)] w-full
+
+/* BIO TEXT */
+text-[14px] text-[color:var(--color\/muted,#8ea0bd)] w-[278px]
+
+/* BIO SHADOW */
+absolute inset-0 pointer-events-none
+shadow-[4px_4px_4px_0px_inset_rgba(0,0,0,0.5)]
+
+/* CTA ROW */
+flex gap-[var(--space\/md,12px)] items-center overflow-clip w-full
+
+/* NEXT BUTTON */
+bg-[var(--color\/panel,#11141c)] px-[var(--button\/padding\/xxl,16px)]
+py-[var(--button\/padding\/md,10px)] rounded-[var(--radius\/md,10px)]
+text-[15px] text-[color:var(--color\/text,#e9eef7)] w-full
+
+/* DAB BUTTON */
+border border-[var(--color\/primary,#5ce1e6)] h-[38px]
+px-[var(--button\/padding\/xxl,16px)] py-[var(--button\/padding\/md,10px)]
+rounded-[var(--radius\/md,10px)] w-full
+```
+
+### CSS Classes Reference
+
+| Class | Purpose | Key Styles |
+|-------|---------|------------|
+| `.uc-mobile-card` | Main card container | `358px × 724px`, `4px cyan border`, `bg: #0c0e12` |
+| `.uc-mobile-header` | Header row | `justify-between` |
+| `.uc-mobile-main` | Main content area | `flex-col`, `gap: 12px` |
+| `.uc-mobile-image-section` | Image section wrapper | `height: 500px` |
+| `.uc-mobile-image-wrapper` | Image container | `4px cyan border`, `padding: 4px` |
+| `.uc-mobile-image` | Profile image | `absolute`, `cover` |
+| `.uc-mobile-image-overlay` | Gradient overlay | `gradient`, `p: 32px 12px 12px 12px` |
+| `.uc-mobile-name-row` | Name + age row | `32px font`, `gap: 8px` |
+| `.uc-mobile-name` | Name text | `32px`, `800 weight` |
+| `.uc-mobile-age` | Age text | `32px`, `400 weight` |
+| `.uc-mobile-location-row` | Location container | `16px font` |
+| `.uc-mobile-location` | Location text | `#e9eef7` color |
+| `.uc-mobile-chips-section` | Chips container | `flex-col` |
+| `.uc-mobile-chips-row` | Wrapping chips row | `gap: 6px`, `flex-wrap` |
+| `.uc-mobile-bio` | Bio section | `bg: #1f2633`, `p: 12px 16px` |
+| `.uc-mobile-bio-text` | Bio text | `14px`, `#8ea0bd`, `width: 278px` |
+| `.uc-mobile-bio-shadow` | Inset shadow overlay | `inset 4px 4px 4px rgba(0,0,0,0.5)` |
+| `.uc-mobile-cta-row` | CTA buttons row | `gap: 12px` |
+| `.uc-mobile-cta-button-wrapper` | Button wrapper | `flex: 1 0 0` |
+
+### Implementation Notes
+
+1. **Cyan Border**: Card and image wrapper both use `4px solid #5ce1e6` (not silver)
+2. **Image Padding**: Image wrapper has `4px` padding inside the border
+3. **Name Size**: Name and age both use `32px` font (heading/md size)
+4. **Location Color**: Location uses `#e9eef7` (text color), not muted
+5. **Chip Background**: Chips in overlay use `#151927` (card bg) with `.megabtn-chip-card-bg` modifier
+6. **Bio Background**: Bio uses `#1f2633` (stroke color) as background, not silver
+7. **Bio Text Width**: Bio text has exact width of `278px` from Figma
+8. **CTA Buttons**: Next button uses panel bg, DAB button is border-only (not gradient)
+
+---
+
+## 🆕 Major Updates (2025-01-XX)
+
+### New Tokens Added
+- `color/primary` (#5ce1e6) - alias for accent
+- `color/secondary` (#e68fff) - alias for accent2
+- `color/white` (#ffffff) - white text/backgrounds
+- `color/darker` (#5b687c) - darker inactive text
+- `shadow/glow` - accent glow effect
+- `inner/lightfill` - light fill inner shadow
+
+### Corrected Values
+- **Pill opacity**: Default is 0.2 (not 0.08), Joined is 0.4 (not 0.08)
+- **Chip backgrounds**: Use `color/bg` (#0c0e12) not `color/panel` for default state
+- **Chip text**: Default chips use white text (#e9eef7) not muted
+- **Ghost button**: Border uses `color/muted` (#8ea0bd) not `color/stroke`
+- **Button hover states**: CTA and DAB buttons use border + small shadow on hover
+- **Chip hover**: Uses panel background (#11141c) with muted border
+- **Chip focus**: Uses panel background with accent border and accent text
+- **Radius/sm**: Token value is 6px, but chips use space/sm (8px) as radius
+
+### Component Updates
+- All button variants now include hover state specifications
+- Chip variants updated with correct background colors and text colors
+- Pill variants updated with correct opacity values
+- Filter mobile button documented (white bg with muted border)
 

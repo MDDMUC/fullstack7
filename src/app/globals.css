@@ -505,16 +505,21 @@ input[type=number] {
 /* Navlink Button - Dark fill, light text
    Figma: button.navlink - bg-[#1f2633] px-[16px] py-[10px] rounded-[10px] */
 .megabtn-navlink {
-  padding: 10px 16px;
-  background: #1f2633;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #e9eef7;
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
+  background: #11141c; /* color/panel */
+  border-radius: 10px; /* radius/md */
+  font-size: 15px; /* button/base */
+  font-weight: 700; /* button/base */
+  color: #e9eef7; /* color/text */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .megabtn-navlink:hover:not(:disabled) {
-  background: #2a3344;
+  background: #1a1f2a; /* Slightly lighter panel */
 }
 
 .megabtn-navlink:active:not(:disabled) {
@@ -526,10 +531,13 @@ input[type=number] {
 .megabtn-dab {
   width: 100%;
   height: 38px;
-  padding: 10px 16px;
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
   background: transparent;
-  border: 1px solid #5ce1e6;
-  border-radius: 10px;
+  border: 1px solid #5ce1e6; /* color/primary */
+  border-radius: 10px; /* radius/md */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .megabtn-dab:hover:not(:disabled) {
@@ -607,12 +615,12 @@ input[type=number] {
   font-weight: 700;
 }
 
-/* Pill Online - Cyan border + tinted bg
-   Figma: bg-[rgba(92,225,230,0.12)] border-[#5ce1e6] */
+/* Pill Online - Panel bg + cyan border
+   Figma: bg-[var(--color/panel,#11141c)] border-[var(--color/primary,#5ce1e6)] */
 .megabtn-pill-online {
-  background: rgba(92, 225, 230, 0.12);
-  border: 1px solid #5ce1e6;
-  color: #5ce1e6;
+  background: #11141c; /* color/panel */
+  border: 1px solid #5ce1e6; /* color/primary */
+  color: #5ce1e6; /* color/primary */
 }
 
 /* Pill Joined - Tinted bg, no border
@@ -649,10 +657,12 @@ input[type=number] {
    ---------------------------------------- */
 
 /* Chip Base - Rectangular chips
-   Figma: button.chip - bg-[#11141c] px-[8px] py-[6px] rounded-[8px] */
+   Figma: button.chip - bg varies by context
+   Default: bg-[#0c0e12] (color/bg) for standalone chips
+   Overlay: bg-[#151927] (color/card) for chips in image overlays */
 .megabtn-chip {
   padding: 6px 8px;
-  background: #11141c;
+  background: #0c0e12; /* color/bg - default */
   border-radius: 8px;
   font-size: 12px;
   font-weight: 400;
@@ -672,11 +682,17 @@ input[type=number] {
   color: #8ea0bd;
 }
 
-/* Chip Pro - Red border (PRO badge)
-   Figma: border-[#ff7b7b] text-[#ff7b7b] */
+/* Chip variants with card background (for use in image overlays)
+   Figma: bg-[var(--color\/card,#151927)] - chips in overlay use card bg */
+.megabtn-chip-card-bg {
+  background: #151927 !important; /* color/card - override default */
+}
+
+/* Chip Pro - Orange border (PRO badge)
+   Figma: border-[var(--color/special,#ff9500)] text-[var(--color/special,#ff9500)] */
 .megabtn-chip-pro {
-  border: 1px solid #ff7b7b;
-  color: #ff7b7b;
+  border: 1px solid #ff9500; /* color/special */
+  color: #ff9500; /* color/special */
 }
 
 /* Chip Hover - Muted border highlight
@@ -7966,259 +7982,374 @@ div.mh-silver-card[data-name="card2"] {
   border-radius: 10px;
 }
 
-/* CTA Icon Buttons Row - Figma: gap-[12px], 3 buttons, flex: 1 0 0 */
-.mh-silver-cta-icons {
-  display: flex;
-  gap: var(--space-md); /* 12px */
-  align-items: center;
-  flex: 1 0 0;
-  min-width: 0;
-  min-height: 0;
-}
+/* ============================================
+   USER CARD MOBILE (Cyan Border Variant)
+   Figma: usercard-mobile (node 636:2049)
+   Exact values extracted from get_design_context
+   ============================================ */
 
-/* CTA Button Wrapper - Figma: basis-0 content-stretch flex flex-col grow items-start */
-.mh-silver-cta-button-wrapper {
-  flex: 1 0 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
-  min-height: 0;
-  position: relative;
-  flex-shrink: 0;
-}
-
-/* ----------------------------------------
-   CARDACTION BUTTONS
-   Figma: button.cardaction - Icon-only action buttons for card CTA row
-   ---------------------------------------- */
-
-/* Cardaction Base - All cardaction buttons share this base
-   Figma: bg-[#11141c] h-[38px] w-[42px] rounded-[14px] */
-/* Cardaction Button - Exact from Figma megabutton component
-   Figma: bg-[#11141c] h-[38px] w-[42px] rounded-[var(--radius\/lg,14px)]
-   Variables: color/bg/panel: #11141C, radius/lg: 14 */
-.megabtn-cardaction {
-  width: 42px; /* Figma: w-[42px] */
-  height: 38px; /* Figma: h-[38px] */
-  background: #11141c; /* Figma: bg-[#11141c] - color/bg/panel */
-  border: none;
-  border-radius: 14px; /* Figma: rounded-[var(--radius\/lg,14px)] - radius/lg */
+/* User Card Container - 4px cyan border, dark bg */
+.home-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #e9eef7; /* color/text used as page bg per Figma */
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  padding: 0;
-  flex-shrink: 0;
-  transition: background 120ms ease, transform 120ms ease;
-  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4); /* shadow/small - exact from UI library */
-}
-
-/* Cardaction Hover State */
-.megabtn-cardaction:hover:not(:disabled) {
-  background: var(--color-card); /* #151927 - lighter shade for hover feedback */
-  transform: translateY(-1px);
-  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4); /* Keep small shadow on hover */
-}
-
-/* Cardaction Active State */
-.megabtn-cardaction:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* Cardaction Disabled State */
-.megabtn-cardaction:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Cardaction Icon - All icons are 24px × 24px
-   Figma: size-[24px] */
-.megabtn-cardaction svg,
-.megabtn-cardaction img {
-  width: 24px;
-  height: 24px;
-  display: block;
-}
-
-/* Cardaction Cancel Variant
-   Figma: button.cardaction cancel - XCircle icon */
-.megabtn-cardaction-cancel {
-  /* Uses base cardaction styles */
-}
-
-/* Cardaction AddFriend Variant
-   Figma: button.cardaction addfriend - UserPlus icon */
-.megabtn-cardaction-addfriend {
-  /* Uses base cardaction styles */
-}
-
-/* Cardaction Message Variant
-   Figma: button.cardaction message - MessageTextSquare icon */
-.megabtn-cardaction-message {
-  /* Uses base cardaction styles */
-}
-
-/* Silver Mobile Navbar - spans full width, no gap to bottom */
-.mh-silver-navbar {
-  display: flex;
-  gap: 0; /* No gap between navbar and frame */
-  align-items: flex-start;
-  position: relative;
-  flex-shrink: 0;
-  width: 100vw !important; /* Full viewport width */
-  max-width: 100vw !important; /* Ensure no max-width constraint */
+  padding: 16px; /* space/lg */
   box-sizing: border-box;
-  margin-bottom: 0; /* No gap to bottom screen */
-  padding: 0 !important; /* No padding on navbar container */
-  margin-left: 0 !important; /* No left margin */
-  margin-right: 0 !important; /* No right margin */
-  left: 0; /* Ensure it starts at left edge */
-  right: 0; /* Ensure it extends to right edge */
-  overflow: hidden; /* Clip shadow to rounded corners */
 }
 
-.mh-silver-navbar-frame {
-  flex: 1 1 0;
+.home-content {
+  width: 100%;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  align-items: flex-start;
-  min-height: 1px;
-  min-width: 1px;
-  padding: 12px 0 !important; /* py: space-md, px: 0 - no horizontal padding to span full width */
-  background: #11141c; /* color-panel */
-  border-top-left-radius: 14px; /* radius-lg */
-  border-top-right-radius: 14px;
-  box-shadow: 0px -4px 4px 0px rgba(0, 0, 0, 0.25); /* Shadow on frame to respect rounded corners */
-  flex-shrink: 0;
-  height: 100px;
-  box-sizing: border-box;
-  width: 100% !important; /* Ensure full width */
-  max-width: 100% !important; /* No max-width constraint */
-  margin: 0 !important; /* No margin */
+  gap: 16px; /* space/lg */
+  align-items: center;
+  justify-content: flex-end;
 }
 
-.mh-silver-navbar-links {
-  flex: 1 1 0;
+.home-filters {
   display: flex;
-  flex-grow: 1;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 1px;
-  min-width: 1px;
-  position: relative;
-  flex-shrink: 0;
+  gap: 6px; /* space/xs */
   width: 100%;
 }
 
-/* Nav Item */
-.mh-silver-nav-item {
+.filter-pill {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px; /* py: button/padding/md, px: space/md */
+  background: #e9eef7; /* color/text */
+  border: 1px solid #8ea0bd; /* color/muted */
+  border-radius: 10px; /* radius/md */
+  font-family: 'Inter', sans-serif;
+  font-size: 15px; /* field/base */
+  font-weight: 400;
+  color: #8ea0bd;
+  height: 44px;
+}
+
+.filter-pill-icon {
+  width: 16px;
+  height: 16px;
+  color: #8ea0bd;
+}
+
+.filter-pill-label {
+  text-transform: lowercase;
+}
+
+.home-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  padding: 24px; /* space/xl */
+  background: #0c0e12; /* color/bg */
+  border: 4px solid #5ce1e6; /* color/primary */
+  border-radius: 14px; /* radius/lg */
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4); /* shadow/base */
+  box-sizing: border-box;
+}
+
+.home-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.home-card-main {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+}
+
+.home-image-wrapper {
+  position: relative;
+  display: flex;
+  height: 500px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px; /* space/xxs */
+  border: 4px solid #5ce1e6;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.home-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  border-radius: 14px;
+  max-width: none;
+}
+
+.home-image-overlay {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px; /* space/xs */
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 32px 12px 12px 12px; /* pt: space/xxl, px: space/md, pb: space/md */
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75));
+  border-radius: 14px;
+  box-sizing: border-box;
+}
+
+.home-name-row {
+  display: flex;
+  gap: 8px; /* space-sm */
+  align-items: center;
+  font-size: 32px; /* heading/md */
+  color: #ffffff; /* color/white */
+  line-height: normal;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.home-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+}
+
+.home-age {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+}
+
+.home-location {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/base */
+  font-size: 16px;
+  color: #e9eef7; /* color/text */
+  line-height: normal;
+}
+
+.home-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* space/xs */
+  width: 100%;
+}
+
+.home-bio {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+  padding: 12px 16px; /* py: space/md, px: space/lg */
+  background: #1f2633; /* color/stroke */
+  border-radius: 14px; /* radius/lg */
+  box-sizing: border-box;
+}
+
+.home-bio-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px; /* body/sm */
+  color: #8ea0bd; /* color/muted */
+  line-height: normal;
+  width: 100%;
+  max-width: 278px;
+}
+
+.home-bio-shadow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 14px;
+  box-shadow: inset 4px 4px 4px 0px rgba(0, 0, 0, 0.5); /* shadow/inner */
+}
+
+.home-cta-row {
+  display: flex;
+  gap: 12px; /* space/md */
+  align-items: center;
+  width: 100%;
+}
+
+.home-btn-next {
+  flex: 1 0 0;
+  padding: 10px 16px; /* button/padding */
+  background: #151927; /* color/card */
+  border-radius: 10px; /* radius/md */
+  border: none;
+  color: #e9eef7; /* color/text */
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; /* button/base */
+  font-size: 15px; /* button/base */
+}
+
+.home-btn-dab {
+  flex: 1 0 0;
+  padding: 10px 16px;
+  height: 38px;
+  background: transparent;
+  border: 1px solid #5ce1e6; /* color/primary */
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-dab-logo {
+  height: 22px;
+  width: 36.5px;
+  object-fit: contain;
+  transform: rotate(180deg) scaleY(-1);
+}
+
+/* Mobile Navbar - Exact from Figma node 628:4634 */
+/* Container: bg-[var(--color/text,#e9eef7)] h-[100px] px-[var(--space/xl,24px)] py-[var(--space/md,12px)] rounded-tl-[var(--radius/lg,14px)] rounded-tr-[var(--radius/lg,14px)] */
+.home-bottom-nav {
+  width: 100%;
+  background: #e9eef7; /* color/text */
+  height: 100px; /* h-[100px] */
+  padding: 12px 24px; /* py: space/md (12px), px: space/xl (24px) */
+  border-top-left-radius: 14px; /* radius/lg */
+  border-top-right-radius: 14px; /* radius/lg */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Links row: flex grow items-center justify-between */
+.home-bottom-row {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Nav item: flex flex-col gap-[8px] grow items-center justify-center */
+.home-bottom-item {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex-grow: 1;
+  gap: 8px; /* gap-[8px] */
   align-items: center;
   justify-content: center;
-  min-height: 1px;
-  min-width: 1px;
+  min-width: 0;
+  min-height: 0;
   position: relative;
   flex-shrink: 0;
   height: 100%;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: opacity 0.15s ease;
 }
 
-.mh-silver-nav-item:hover {
-  opacity: 0.85;
+.home-bottom-item-chat {
+  position: relative;
 }
 
-.mh-silver-nav-item:active {
-  opacity: 0.7;
-}
-
-.mh-silver-nav-icon-wrapper {
+/* Icon container: h-[40px] items-center justify-center */
+.home-bottom-icon-container {
   display: flex;
+  height: 40px; /* h-[40px] */
   align-items: center;
   justify-content: center;
-  height: 40px;
-  position: relative;
-  flex-shrink: 0;
   width: 100%;
-}
-
-.mh-silver-nav-icon {
-  width: 26px;
-  height: 26px;
-  overflow: hidden;
   position: relative;
   flex-shrink: 0;
 }
 
-.mh-silver-nav-label {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  font-size: 10px; /* body-xxs */
-  color: #5b687c; /* color-text-dark */
+/* Icon wrapper: size-[26px] overflow-clip relative */
+.home-nav-icon-wrapper {
+  width: 26px; /* size-[26px] */
+  height: 26px;
+  overflow: hidden; /* overflow-clip */
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Icon inner containers with exact Figma positioning */
+/* Face icon: absolute inset-[8.33%] */
+.home-nav-icon-inner-face {
+  position: absolute;
+  inset: 8.33%; /* inset-[8.33%] */
+}
+
+/* Announcement icon: absolute inset-[12.02%_8.33%_12.5%_8.33%] */
+.home-nav-icon-inner-announcement {
+  position: absolute;
+  inset: 12.02% 8.33% 12.5% 8.33%; /* inset-[12.02%_8.33%_12.5%_8.33%] */
+}
+
+/* Message chat square icon: absolute inset-[8.33%] */
+.home-nav-icon-inner-message {
+  position: absolute;
+  inset: 8.33%; /* inset-[8.33%] */
+}
+
+/* Flash icon: absolute inset-[8.33%_14.86%] */
+.home-nav-icon-inner-flash {
+  position: absolute;
+  inset: 8.33% 14.86%; /* inset-[8.33%_14.86%] */
+}
+
+/* Flash icon inner - negative inset makes icon larger: inset-[-4.62%_-5.47%] */
+.home-nav-icon-inner-flash-2 {
+  position: absolute;
+  inset: -4.62% -5.47%; /* inset-[-4.62%_-5.47%] - negative values make icon larger */
+  width: calc(100% + 10.94%); /* Compensate for negative inset (5.47% * 2) */
+  height: calc(100% + 9.24%); /* Compensate for negative inset (4.62% * 2) */
+}
+
+/* Icon image: block max-w-none size-full */
+.home-nav-icon-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* Notification dot: absolute left-[52px] size-[6px] top-[5px] */
+.home-bottom-dot {
+  position: absolute;
+  left: 52px; /* left-[52px] */
+  top: 5px; /* top-[5px] */
+  width: 6px; /* size-[6px] */
+  height: 6px;
+  border-radius: 999px;
+  background: #5ce1e6; /* color/primary - rgba(92, 225, 230, 1) */
+}
+
+/* Label: h-[14px] text-[10px] text-[color:var(--color/stroke,#1f2633)] w-[73px] */
+.home-bottom-label {
+  font-family: 'Inter', sans-serif; /* Inter:Regular */
+  font-weight: 400; /* Regular */
+  font-size: 10px; /* text-[10px] - body/xxs */
+  height: 14px; /* h-[14px] */
+  width: 73px; /* w-[73px] */
+  color: #1f2633; /* color/stroke */
   text-align: center;
   line-height: normal;
-  height: 14px;
-  width: 73px;
-}
-
-.mh-silver-nav-item.active .mh-silver-nav-label {
-  color: #8ea0bd; /* color-muted for partners active */
-}
-
-/* Hide mobile navbar on desktop since top navigation is available */
-@media (min-width: 768px) {
-  .mh-silver-navbar {
-    display: none !important;
-  }
-}
-
-/* Loading/Empty for Silver */
-.mh-silver-loading,
-.mh-silver-empty {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  min-height: 100vh;
-  min-height: 100dvh;
-  color: #11141c;
-  font-family: 'Inter', sans-serif;
-  background: #FAFAFA;
+  flex-shrink: 0;
 }
 
-/* Toast for Silver */
-.mh-silver-toast {
-  position: fixed;
-  bottom: 140px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(90deg, #5ce1e6, #e68fff);
-  color: #0c0e12;
-  padding: 12px 24px;
-  border-radius: 999px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
-  animation: toastSlideIn 0.3s ease, toastSlideOut 0.3s ease 2.7s forwards;
-}
-
-@keyframes toastSlideIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-@keyframes toastSlideOut {
-  from { opacity: 1; transform: translateX(-50%) translateY(0); }
-  to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+/* Active state (dab): text-[color:var(--color/primary,#5ce1e6)] */
+.home-bottom-active .home-bottom-label {
+  color: #5ce1e6; /* color/primary */
 }
 
