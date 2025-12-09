@@ -1,3 +1,321 @@
+/* ========================================
+   PROFILE SCREEN - Exact from Figma node 633:14002
+   ======================================== */
+.profile-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-white); /* Figma main container background */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+/* Hard override to ensure white bg on profile page (matches Figma) */
+.profile-screen--white {
+  background: var(--color-white) !important;
+}
+
+.profile-content {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  padding: var(--space-lg);
+  padding-bottom: 0; /* avoid gap above sticky bottom nav */
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  min-height: 0; /* allow child flex items to size correctly */
+  background: var(--color-white); /* ensure page base matches Figma */
+}
+
+.profile-card {
+  width: 100%;
+  background: var(--color-white);
+  border-radius: 24px;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4); /* shadow/base */
+  padding: var(--space-xl); /* 24px */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md); /* 12px */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.profile-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.profile-pro-icon {
+  width: 15px;
+  height: 15px;
+  margin-right: 4px;
+}
+
+.profile-hero {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xxs); /* 4px */
+  border: 4px solid transparent;
+  background:
+    linear-gradient(var(--color-panel), var(--color-panel)) padding-box,
+    linear-gradient(90deg, var(--color-accent), var(--color-accent2)) border-box;
+  border-radius: var(--radius-lg); /* 14px */
+  overflow: hidden;
+}
+
+.profile-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+  border-radius: var(--radius-lg);
+  max-width: none;
+}
+
+.profile-hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs); /* 6px */
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: var(--space-md); /* 12px */
+  padding-top: var(--space-xxl); /* 32px */
+  padding-bottom: var(--space-md); /* 12px */
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.75) 100%);
+}
+
+.profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 32px;
+  color: #ffffff;
+  line-height: normal;
+  width: 100%;
+}
+
+.profile-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* heading/md */
+}
+
+.profile-age {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+}
+
+.profile-location {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/base */
+  font-size: 16px;
+  color: var(--color-text);
+  line-height: normal;
+}
+
+.profile-tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs); /* 6px */
+  width: 100%;
+}
+
+.profile-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs); /* 6px */
+  width: 100%;
+}
+
+.profile-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md); /* 12px */
+  width: 100%;
+}
+
+.profile-form-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm); /* 8px */
+  min-width: 0;
+}
+
+.profile-dropdown {
+  background: var(--color-panel);
+  height: 38px;
+  border-radius: var(--radius-md); /* 10px */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--btn-pad-md) var(--btn-pad-xxl);
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--color-text);
+}
+
+.profile-dropdown-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; /* button/base */
+  font-size: 15px;
+  line-height: 1;
+}
+
+.profile-dropdown-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.profile-cta-row {
+  display: flex;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  width: 100%;
+}
+
+.profile-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--color-muted);
+  opacity: 0.6;
+}
+
+.profile-btn-cancel,
+.profile-btn-save {
+  flex: 1 1 0;
+  height: 38px;
+  border-radius: var(--radius-md); /* 10px */
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; /* button/base */
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.profile-btn-cancel {
+  background: #151927;
+  color: var(--color-text);
+}
+
+.profile-btn-save {
+  background: linear-gradient(90deg, #56e0e6 0%, #ec8fff 100%);
+  color: var(--color-bg);
+}
+
+.profile-bottom-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--color-text);
+  width: 100%;
+  max-width: 420px;
+  height: 100px;
+  padding: var(--space-md) var(--space-xl);
+  border-top-left-radius: var(--radius-lg);
+  border-top-right-radius: var(--radius-lg);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  margin-top: auto; /* push to bottom when content is short */
+}
+
+.profile-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.profile-bottom-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.profile-bottom-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  position: relative;
+}
+
+.profile-nav-icon-wrapper {
+  overflow: clip;
+  position: relative;
+  width: 26px;
+  height: 26px;
+}
+
+.profile-nav-icon-inner-face,
+.profile-nav-icon-inner-announcement,
+.profile-nav-icon-inner-message,
+.profile-nav-icon-inner-flash {
+  position: absolute;
+  inset: 8.33%;
+}
+
+.profile-nav-icon-inner-announcement {
+  inset: 12.02% 8.33% 12.5% 8.33%;
+}
+
+.profile-nav-icon-inner-flash {
+  inset: 8.33% 14.86%;
+}
+
+.profile-nav-icon-inner-flash-2 {
+  position: absolute;
+  inset: -4.62% -5.47%;
+}
+
+.profile-nav-icon-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+.profile-bottom-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 10px;
+  color: var(--color-stroke);
+  text-align: center;
+}
+
+.profile-bottom-active .profile-bottom-label {
+  color: var(--color-accent);
+}
+
+.profile-bottom-dot {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
+}
 @import "tailwindcss";
 
 :root {
@@ -24,6 +342,765 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ========================================
+   EVENTS SCREEN - Exact from Figma node 633:14033
+   ======================================== */
+.events-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-text); /* color/text */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.events-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-lg); /* 16px */
+  padding-bottom: 0;
+  position: relative;
+  flex: 1 1 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.events-topnav {
+  display: flex;
+  gap: var(--space-xs); /* 6px */
+  align-items: center;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: transparent;
+  width: 100%;
+  max-width: 358px;
+  flex-shrink: 0;
+  padding-bottom: var(--space-lg); /* 16px */
+}
+
+.events-filter-pill {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  border-radius: var(--radius-lg); /* 14px */
+  flex-shrink: 0;
+}
+
+.events-filter-pill-inner {
+  background: var(--color-text); /* color/text */
+  border: 1px solid var(--color-muted); /* color/muted */
+  border-style: solid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--btn-pad-md) var(--space-md); /* 10px 12px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.events-filter-text {
+  font-family: 'Inter', sans-serif; /* Inter:Regular */
+  font-weight: 400; /* Regular */
+  font-size: 15px; /* field/base */
+  color: var(--color-muted);
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.events-filter-chevron {
+  height: 7.41px;
+  position: relative;
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.events-chevron-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+.events-card {
+  flex: 1 1 0;
+  background: var(--color-white); /* color/white */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md); /* 12px */
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--space-xl); /* 24px */
+  position: relative;
+  border-radius: 24px;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4); /* shadow/base */
+  width: 100%;
+}
+
+.events-createbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  flex-shrink: 0;
+  height: 44px;
+}
+
+.events-createbar-left,
+.events-createbar-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.events-createbar-plus {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.events-createbar-plus-inner {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+}
+
+.events-createbar-icon {
+  position: absolute;
+  inset: 20.83%;
+}
+
+.events-createbar-stroke {
+  position: absolute;
+  inset: -7.14%;
+}
+
+.events-createbar-stroke img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.events-createbar-center {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0 var(--space-md);
+}
+
+.events-createbar-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/base */
+  font-size: 16px;
+  color: var(--color-panel);
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.events-createbar-right {
+  padding: 8px;
+}
+
+.events-createbar-ghost {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.events-createbar-ghost-inner {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  overflow: hidden;
+}
+
+.events-createbar-ghost-frame {
+  position: absolute;
+  inset: 0;
+}
+
+.events-createbar-ghost-img {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28.015px;
+}
+
+.events-createbar-ghost-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.events-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0; /* Figma: gap-[var(--space/sm,0px)] */
+  height: 160px;
+  min-height: 160px;
+  width: 100%;
+  padding: var(--space-lg); /* 16px */
+  border-radius: var(--radius-lg); /* 14px */
+  overflow: hidden;
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4); /* shadow/small */
+}
+
+.events-tile-img,
+.chat-tile-img {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+.events-tile-img-el {
+  position: absolute;
+  height: 127.73%;
+  width: 103.97%;
+  left: -1.79%;
+  top: -18.61%;
+  max-width: none;
+}
+
+.chat-tile-img-el {
+  position: absolute;
+  height: 127.73%;
+  width: 103.97%;
+  left: -1.79%;
+  top: -10.39%;
+  max-width: none;
+}
+
+.events-tile-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(17, 20, 28, 0) 40%, var(--color-bg) 100%);
+  pointer-events: none;
+}
+
+.events-tile-overlay-primary {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(17, 20, 28, 0) 40%, var(--color-primary) 100%);
+  pointer-events: none;
+}
+
+.events-tile-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs); /* 4px */
+  align-items: flex-start;
+  justify-content: flex-end;
+  width: 100%;
+  text-align: left;
+}
+
+.events-tile-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* heading/sm */
+  font-size: 20px;
+  color: var(--color-text);
+  line-height: 1;
+  margin: 0;
+  text-align: left;
+}
+
+.events-tile-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/base */
+  font-size: 16px;
+  color: var(--color-text);
+  line-height: 1;
+  margin: 0;
+  text-align: left;
+}
+
+.events-tile-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* body/xs */
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.events-tile-loc {
+  margin: 0;
+}
+
+.events-tile-att {
+  margin: 0;
+  font-size: 10px; /* body/xxs */
+}
+
+.events-bottom-nav {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--color-text); /* color/text */
+  width: 100%;
+  max-width: 420px;
+  height: 100px;
+  padding: var(--space-md) var(--space-xl); /* 12px 24px */
+  border-top-left-radius: var(--radius-lg); /* 14px */
+  border-top-right-radius: var(--radius-lg); /* 14px */
+  box-sizing: border-box;
+}
+
+/* EVENTS DETAIL - Exact from Figma node 633:14061 */
+.events-detail-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background: linear-gradient(180deg, #e9eef7 0%, #f2c996 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0;
+}
+
+.events-detail-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--space-lg);
+  padding-bottom: 0;
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.events-detail-card {
+  width: 100%;
+  background: linear-gradient(149.514deg, rgba(0, 0, 0, 0) 0%, rgba(255, 149, 0, 0.5) 100%), #ffffff;
+  border-radius: 24px;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.events-detail-backbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 44px;
+}
+
+.events-detail-back-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.events-detail-back-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.events-detail-back-text {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/base */
+  font-size: 16px;
+  color: var(--color-panel);
+}
+
+.events-detail-dots {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.events-detail-dots-img {
+  width: 28px;
+  height: 28px;
+}
+
+.events-detail-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-xxs); /* 4px */
+  height: 160px;
+  width: 100%;
+  border-radius: var(--radius-lg); /* 14px */
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  padding: var(--space-lg); /* 16px */
+}
+
+.events-detail-hero-img {
+  position: absolute;
+  height: 127.73%;
+  width: 103.97%;
+  left: -1.79%;
+  top: -18.61%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 50%;
+  border-radius: var(--radius-lg);
+}
+
+.events-detail-hero-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(17, 20, 28, 0) 40%, var(--color-bg) 100%);
+}
+
+.events-detail-hero-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs); /* 4px */
+  align-items: flex-start;
+  justify-content: flex-end;
+  width: 100%;
+  z-index: 1;
+}
+
+.events-detail-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* heading/sm */
+  font-size: 20px;
+  color: var(--color-text);
+  line-height: 1;
+  margin: 0;
+}
+
+.events-detail-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/base */
+  font-size: 16px;
+  color: var(--color-text);
+  line-height: 1;
+  margin: 0;
+}
+
+.events-detail-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  color: var(--color-muted);
+  line-height: 1;
+}
+
+.events-detail-info-loc {
+  font-size: 12px; /* body/xs */
+  margin: 0;
+}
+
+.events-detail-info-att {
+  font-size: 10px; /* body/xxs */
+  margin: 0;
+}
+
+.events-detail-block {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4); /* shadow/small */
+  padding: var(--space-md); /* 12px */
+  display: flex;
+  gap: var(--space-md);
+  width: 100%;
+}
+
+.events-detail-block-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs); /* 6px */
+  color: #5b687c; /* color/darker */
+}
+
+.events-detail-block-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 800; /* heading/xxs */
+  font-size: 12px;
+  line-height: 1;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.events-detail-block-body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/sm */
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  color: #5b687c;
+}
+
+.events-detail-cta-row {
+  display: flex;
+  gap: var(--space-lg); /* 16px */
+  width: 100%;
+  align-items: center;
+}
+
+.events-detail-btn {
+  flex: 1 1 0;
+  height: 38px;
+  border-radius: var(--radius-md); /* 10px */
+  font-family: 'Inter', sans-serif;
+  font-weight: 700; /* button/base */
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.events-detail-btn-chat {
+  background: #151927; /* color/card */
+  color: var(--color-text);
+}
+
+.events-detail-btn-join {
+  background: linear-gradient(90deg, #5ce1e6 0%, #e68fff 100%);
+  color: var(--color-bg);
+}
+
+/* EVENTS CREATE - Exact from Figma node 633:14092 */
+.events-create-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background: linear-gradient(180deg, #e9eef7 0%, #f2c996 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0;
+}
+
+.events-create-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--space-lg);
+  padding-bottom: 0;
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.events-create-card {
+  width: 100%;
+  background: var(--color-white);
+  border-radius: 24px;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.events-create-hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-xxs); /* 4px */
+  height: 120px;
+  width: 100%;
+  border-radius: var(--radius-lg); /* 14px */
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  padding: var(--space-lg); /* 16px */
+  background: linear-gradient(180deg, #f5f5f5 0%, #11141c 100%);
+}
+
+.events-create-hero-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(17, 20, 28, 0) 40%, var(--color-bg) 100%);
+}
+
+.events-create-hero-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs); /* 4px */
+  align-items: flex-start;
+  justify-content: flex-end;
+  width: 100%;
+  z-index: 1;
+}
+
+.events-create-field-placeholder {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/sm */
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--color-muted);
+}
+.events-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.events-bottom-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.events-bottom-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  width: 40px;
+  position: relative;
+}
+
+.events-nav-icon-wrapper {
+  overflow: clip;
+  position: relative;
+  width: 26px;
+  height: 26px;
+}
+
+.events-nav-icon-inner-face,
+.events-nav-icon-inner-announcement,
+.events-nav-icon-inner-message,
+.events-nav-icon-inner-flash {
+  position: absolute;
+  inset: 8.33%;
+}
+
+.events-nav-icon-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+.events-nav-icon-inner-announcement {
+  inset: 12.02% 8.33% 12.5% 8.33%;
+}
+
+.events-nav-icon-inner-flash {
+  inset: 8.33% 14.86%;
+}
+
+.events-nav-icon-inner-flash-2 {
+  position: absolute;
+  inset: -4.62% -5.47%;
+}
+
+.events-bottom-label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 10px; /* body/xxs */
+  color: var(--color-stroke); /* color/stroke */
+  text-align: center;
+}
+
+.events-bottom-active .events-bottom-label {
+  color: var(--color-accent); /* color/primary */
+}
+
+.events-bottom-active .events-nav-icon-inner-announcement > div {
+  --stroke-0: rgba(92, 225, 230, 1);
+}
+
+.events-bottom-dot {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-accent); /* color/primary */
+}
 :root {
   /* ========================================
      FIGMA DESIGN TOKENS - EXACT VALUES
@@ -35,6 +1112,7 @@ body {
   --color-bg: #0c0e12;
   --color-panel: #11141c;
   --color-card: #151927;
+  --color-white: #ffffff;
   --color-silver: #FAFAFA;
   
   /* Text */
@@ -305,7 +1383,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
    Ghost Button & CTA Button - Reusable
    ============================================ */
 
-/* Old button classes (.btn-ghost, .btn-cta) removed - replaced by megabtn system */
+/* Old button classes removed - replaced by Figma button component system */
 
 /* Navbar specific classes - still in use in UserNav.tsx */
 .site-header-ghost {
@@ -432,375 +1510,293 @@ input[type=number] {
 }
 
 /* ============================================
-   MEGABUTTON SYSTEM - From Figma Component
-   Unified button styles matching Figma megabutton variants
+   BUTTON COMPONENT SYSTEM - From Figma Library
+   Exact component names: button.chip, button.tag, button.pill, button.dab, button.navlink
    ============================================ */
 
-/* Base Megabutton - shared properties */
-.megabtn {
+/* Base Button - shared properties for all button components */
+.button-chip,
+.button-tag,
+.button-pill,
+.button-navlink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: 'Inter', sans-serif;
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease, background 120ms ease;
-  border: none;
   text-decoration: none;
   white-space: nowrap;
   line-height: normal;
 }
 
-.megabtn:disabled {
+.button-chip:disabled,
+.button-tag:disabled,
+.button-pill:disabled,
+.button-navlink:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* button-dab removed from shared styles - uses exact Figma component structure instead */
 
 /* ----------------------------------------
    BUTTON VARIANTS (Large - 15px font)
    ---------------------------------------- */
 
-/* CTA Button - Gradient fill, dark text
-   Figma: button.cta - px-[16px] py-[10px] rounded-[10px]
-   background: gradient(120deg, #5ce1e6, #e68fff) */
-.megabtn-cta {
-  padding: 10px 16px;
-  background: linear-gradient(120deg, #5ce1e6, #e68fff);
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #0c0e12;
-  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
-}
+/* OLD MEGABTN REFERENCES REMOVED - Use button components from Figma instead */
 
-.megabtn-cta:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0px 24px 70px 0px rgba(0, 0, 0, 0.5);
-}
+/* ----------------------------------------
+   BUTTON.NAVLINK VARIANTS (Large - 15px font)
+   Figma component: button.navlink
+   ---------------------------------------- */
 
-.megabtn-cta:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* Ghost Button - Transparent, border only
-   Figma: button.ghost - border-[#1f2633] px-[16px] py-[10px] rounded-[10px] */
-.megabtn-ghost {
-  padding: 10px 16px;
-  background: transparent;
-  border: 1px solid #1f2633;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #e9eef7;
-}
-
-.megabtn-ghost:hover:not(:disabled) {
-  border-color: #5ce1e6;
-  color: #5ce1e6;
-}
-
-.megabtn-ghost:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* Navlink Button - Dark fill, light text
-   Figma: button.navlink - bg-[#1f2633] px-[16px] py-[10px] rounded-[10px] */
-.megabtn-navlink {
+/* Navlink Default - property2="default"
+   Figma: px-[16px] py-[10px] rounded-[10px] text-[color:var(--color/muted,#8ea0bd)] */
+.button-navlink {
   padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
-  background: #11141c; /* color/panel */
+  background: transparent;
+  border: none;
   border-radius: 10px; /* radius/md */
   font-size: 15px; /* button/base */
-  font-weight: 700; /* button/base */
-  color: #e9eef7; /* color/text */
-  width: 100%;
-  height: 100%;
+  font-weight: 700; /* button/base - Bold */
+  color: #8ea0bd; /* color/muted - EXACT from Figma */
   display: flex;
   align-items: center;
   justify-content: center;
+  /* width and height controlled by flex in button-row context */
 }
 
-.megabtn-navlink:hover:not(:disabled) {
-  background: #1a1f2a; /* Slightly lighter panel */
+/* Navlink Hover - property2="hover"
+   Figma: bg-[#151927] text-[color:var(--color/text,#e9eef7)] */
+.button-navlink-hover {
+  background: #151927; /* color/card - EXACT from Figma */
+  color: #e9eef7; /* color/text - EXACT from Figma */
 }
 
-.megabtn-navlink:active:not(:disabled) {
+.button-navlink:active:not(:disabled) {
   transform: scale(0.98);
-}
-
-/* DAB Button - Transparent, cyan border, contains logo
-   Figma: button.dab - border-[#5ce1e6] px-[16px] py-[10px] rounded-[10px] h-[38px] */
-.megabtn-dab {
-  width: 100%;
-  height: 38px;
-  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
-  background: transparent;
-  border: 1px solid #5ce1e6; /* color/primary */
-  border-radius: 10px; /* radius/md */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.megabtn-dab:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: #e68fff;
-}
-
-.megabtn-dab:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* DAB Button wrapper glow */
-.megabtn-dab-wrapper {
-  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
-  border-radius: 10px;
-}
-
-.megabtn-dab-wrapper:hover {
-  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6);
-}
-
-/* DAB Button logo (cyan filter for transparent bg) - rotated 180deg and flipped vertically
-   Figma: rotate-[180deg] scale-y-[-100%] */
-.megabtn-dab img {
-  height: 22px;
-  width: 36.5px;
-  object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
-  transform: rotate(180deg) scaleY(-1); /* Figma: rotate-[180deg] scale-y-[-100%] */
-}
-
-/* DAB Button Filled - Gradient fill variant
-   Figma: button.dab with gradient background (silver tier cards) */
-.megabtn-dab-filled {
-  width: 100%;
-  height: 38px;
-  padding: 10px 16px;
-  background: linear-gradient(90deg, #5ce1e6 0%, #e68fff 100%);
-  border: 1px solid #5ce1e6;
-  border-radius: 10px;
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4); /* shadow/small */
-}
-
-.megabtn-dab-filled:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.4); /* Keep small shadow on hover */
-}
-
-.megabtn-dab-filled:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-/* DAB Filled logo (dark filter for gradient bg) */
-.megabtn-dab-filled img {
-  height: 22px;
-  width: 36.5px;
-  object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(4%) sepia(10%) saturate(2000%) hue-rotate(180deg) brightness(95%) contrast(95%);
-}
-
-/* DAB Glow state */
-.megabtn-dab-glow {
-  box-shadow: 0px 0px 30px 0px rgba(92, 225, 230, 0.6) !important;
 }
 
 /* ----------------------------------------
-   PILL VARIANTS (Small - 12px font, 999px radius)
+   BUTTON.DAB VARIANTS
+   Figma component: button.dab
    ---------------------------------------- */
 
-/* Pill Base - Status pills */
-.megabtn-pill {
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
+/* DAB Button - Uses SVG files from /public/icons/
+   CRITICAL: ALWAYS use button.dab-default.svg, button.dab-hover.svg, button.dab-focus.svg
+   NEVER create or improvise DAB button designs */
+.button-dab {
+  width: 100%;
+  height: 38px; /* exact from Figma */
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-/* Pill Online - Panel bg + cyan border
-   Figma: bg-[var(--color/panel,#11141c)] border-[var(--color/primary,#5ce1e6)] */
-.megabtn-pill-online {
-  background: #11141c; /* color/panel */
+/* DAB Button images - stacked states (117x38) */
+.button-dab-img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 117px;
+  height: 38px;
+  display: block;
+  pointer-events: none;
+  object-fit: contain;
+}
+
+.button-dab-hover,
+.button-dab-focus {
+  opacity: 0;
+}
+
+.button-dab:hover .button-dab-default {
+  opacity: 0;
+}
+
+.button-dab:hover .button-dab-hover {
+  opacity: 1;
+}
+
+.button-dab:focus .button-dab-default,
+.button-dab:active .button-dab-default {
+  opacity: 0;
+}
+
+.button-dab:focus .button-dab-hover,
+.button-dab:active .button-dab-hover {
+  opacity: 0;
+}
+
+.button-dab:focus .button-dab-focus,
+.button-dab:active .button-dab-focus {
+  opacity: 1;
+}
+
+/* ----------------------------------------
+   BUTTON.PILL VARIANTS (Small - 12px font, 999px radius)
+   Figma component: button.pill
+   ---------------------------------------- */
+
+/* Pill Base - property2="default"
+   Figma: bg-[rgba(92,225,230,0.2)] px-[10px] py-[6px] rounded-[999px] */
+.button-pill {
+  padding: 6px 10px; /* py: button/padding/xs (6px), px: button/padding/md (10px) */
+  background: rgba(92, 225, 230, 0.2); /* EXACT from Figma */
+  border-radius: 999px; /* radius/circle */
+  font-size: 12px; /* pill/base */
+  font-weight: 700; /* Bold */
+  color: #5ce1e6; /* color/primary */
+  border: none;
+}
+
+/* Pill Focus - property2="focus"
+   Figma: bg-[rgba(92,225,230,0.2)] border border-[var(--color/primary,#5ce1e6)] */
+.button-pill-focus {
+  background: rgba(92, 225, 230, 0.2); /* Same as base */
+  border: 1px solid #5ce1e6; /* color/primary - EXACT from Figma */
+  color: #5ce1e6; /* color/primary */
+}
+
+/* Online Now Pill - with pulsing dot */
+.button-pill-online-now {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px; /* space/xs - gap between dot and text */
+}
+
+/* Pulsing dot indicator */
+.button-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5ce1e6; /* color/primary */
+  display: inline-block;
+  animation: pulse-dot 2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+/* OLD MEGABTN REFERENCES REMOVED - Use button components from Figma instead */
+
+/* ----------------------------------------
+   BUTTON.TAG VARIANTS (Small - 12px font, 999px radius)
+   Figma component: button.tag
+   ---------------------------------------- */
+
+/* Tag Base - property2="style"
+   Figma: bg-[rgba(92,225,230,0.08)] px-[10px] py-[6px] rounded-[999px] */
+.button-tag {
+  padding: 6px 10px; /* py: button/padding/xs (6px), px: button/padding/md (10px) */
+  background: rgba(92, 225, 230, 0.08); /* EXACT from Figma */
+  border-radius: 999px; /* radius/circle */
+  font-size: 12px; /* pill/base */
+  font-weight: 700; /* Bold */
+  color: #5ce1e6; /* color/primary */
+  border: none;
+}
+
+/* Tag Grade - property2="grade"
+   Figma: text-[color:var(--color/secondary,#e68fff)] */
+.button-tag-grade {
+  color: #e68fff; /* color/secondary - EXACT from Figma */
+}
+
+/* ----------------------------------------
+   BUTTON.CHIP VARIANTS (Small - 12px font, 8px radius)
+   Figma component: button.chip
+   ---------------------------------------- */
+
+/* Chip Base - state="default"
+   Figma: bg-[var(--color/card,#151927)] border border-[var(--color/stroke,#1f2633)] */
+.button-chip {
+  padding: 6px 8px; /* py: button/padding/xs (6px), px: button/padding/sm (8px) */
+  background: #151927; /* color/card - EXACT from Figma */
+  border: 1px solid #1f2633; /* color/stroke - EXACT from Figma */
+  border-radius: 8px; /* space/sm - NOT radius/md! */
+  font-size: 12px; /* body/xs */
+  font-weight: 400; /* Regular */
+  color: #8ea0bd; /* color/muted - EXACT from Figma */
+}
+
+/* Chip Pro - state="pro" - SPECIAL STYLING
+   Figma: bg-[var(--color/bg,#0c0e12)] border border-[var(--color/red,#ff7b7b)] */
+.button-chip-pro {
+  background: #0c0e12; /* color/bg - EXACT from Figma */
+  border: 1px solid #ff7b7b; /* color/red - EXACT from Figma */
+  color: #ff7b7b; /* color/red - EXACT from Figma */
+}
+
+/* Chip Founder - state="founder" - SPECIAL STYLING with gradient text
+   Figma: bg-[var(--color/bg,#0c0e12)] border border-[var(--color/special,#ff9500)] */
+.button-chip-founder {
+  background: #0c0e12; /* color/bg - EXACT from Figma */
+  border: 1px solid #ff9500; /* color/special - EXACT from Figma */
+  color: transparent; /* Text uses gradient */
+}
+
+.button-chip-founder span {
+  background: linear-gradient(90deg, #ffd166, #ff7b7b); /* Gold to red gradient - EXACT from Figma */
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Chip Crew - state="crew" - SPECIAL STYLING with gradient text
+   Figma: bg-[var(--color/bg,#0c0e12)] border border-[var(--color/special,#ff9500)] */
+.button-chip-crew {
+  background: #0c0e12; /* color/bg - EXACT from Figma */
+  border: 1px solid #ff9500; /* color/special - EXACT from Figma */
+  color: transparent; /* Text uses gradient */
+}
+
+.button-chip-crew span {
+  background: linear-gradient(90deg, #ffd166, #ff7b7b); /* Gold to red gradient - EXACT from Figma */
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Chip Focus - state="focus"
+   Figma: bg-[var(--color/panel,#11141c)] border border-[var(--color/primary,#5ce1e6)] */
+.button-chip-focus {
+  background: #11141c; /* color/panel - EXACT from Figma */
   border: 1px solid #5ce1e6; /* color/primary */
   color: #5ce1e6; /* color/primary */
 }
 
-/* Pill Joined - Tinted bg, no border
-   Figma: bg-[rgba(92,225,230,0.08)] */
-.megabtn-pill-joined {
-  background: rgba(92, 225, 230, 0.08);
-  color: #5ce1e6;
-  font-weight: 400;
+/* Chip Belay Certified - special styling for Belay Certified
+   Figma: bg-[var(--color/bg,#0c0e12)] border border-[var(--color/primary,#5ce1e6)] 
+   Note: Belay Certified uses pill shape (fully rounded) not chip shape */
+.button-chip-belay {
+  background: #0c0e12; /* color/bg - EXACT from Figma */
+  border: 1px solid #5ce1e6; /* color/primary */
+  color: #5ce1e6; /* color/primary */
+  border-radius: 999px; /* radius/circle - pill shape, not chip shape! */
 }
 
-/* ----------------------------------------
-   TAG VARIANTS (Small - 12px font, 999px radius)
-   ---------------------------------------- */
+/* OLD MEGABTN CHIP REFERENCES REMOVED - Use button-chip components from Figma instead */
 
-/* Tag Base - Category tags
-   Figma: button.tag - bg-[rgba(92,225,230,0.08)] px-[10px] py-[6px] rounded-[999px] */
-.megabtn-tag {
-  padding: 6px 10px;
-  background: rgba(92, 225, 230, 0.08);
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #5ce1e6;
-}
-
-/* Tag Grade - Pink/accent2 text
-   Figma: text-[#e68fff] */
-.megabtn-tag-grade {
-  color: #e68fff;
-}
-
-/* ----------------------------------------
-   CHIP VARIANTS (Small - 12px font, 8px radius)
-   ---------------------------------------- */
-
-/* Chip Base - Rectangular chips
-   Figma: button.chip - bg varies by context
-   Default: bg-[#0c0e12] (color/bg) for standalone chips
-   Overlay: bg-[#151927] (color/card) for chips in image overlays */
-.megabtn-chip {
-  padding: 6px 8px;
-  background: #0c0e12; /* color/bg - default */
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 400;
-}
-
-/* Chip Accent - Cyan border (Belay Certified)
-   Figma: border-[#5ce1e6] text-[#5ce1e6] */
-.megabtn-chip-accent {
-  border: 1px solid #5ce1e6;
-  color: #5ce1e6;
-}
-
-/* Chip Muted - Muted border (standard chips)
-   Figma: border-[#1f2633] text-[#8ea0bd] */
-.megabtn-chip-muted {
-  border: 1px solid #1f2633;
-  color: #8ea0bd;
-}
-
-/* Chip variants with card background (for use in image overlays)
-   Figma: bg-[var(--color\/card,#151927)] - chips in overlay use card bg */
-.megabtn-chip-card-bg {
-  background: #151927 !important; /* color/card - override default */
-}
-
-/* Chip Pro - Orange border (PRO badge)
-   Figma: border-[var(--color/special,#ff9500)] text-[var(--color/special,#ff9500)] */
-.megabtn-chip-pro {
-  border: 1px solid #ff9500; /* color/special */
-  color: #ff9500; /* color/special */
-}
-
-/* Chip Hover - Muted border highlight
-   Figma: button.chip state=hover */
-.megabtn-chip-hover {
-  border: 1px solid #8ea0bd;
-  color: #8ea0bd;
-}
-
-/* Chip Busy - Yellow/gold (away status)
-   Figma: button.chip state=busy */
-.megabtn-chip-busy {
-  border: 1px solid #ffd166;
-  color: #ffd166;
-}
-
-/* Chip Pink - Pink accent
-   Figma: button.chip state=pink */
-.megabtn-chip-pink {
-  border: 1px solid #e68fff;
-  color: #e68fff;
-}
-
-/* Chip Peaking - Red (peak activity)
-   Figma: button.chip state=peaking */
-.megabtn-chip-peaking {
-  border: 1px solid #ff7b7b;
-  color: #ff7b7b;
-}
-
-/* Chip Founder - Special gradient text
-   Figma: button.chip state=founder */
-.megabtn-chip-founder {
-  border: 1px solid #ff9500;
-}
-
-.megabtn-chip-founder span {
-  background: linear-gradient(90deg, #ffd166, #ff7b7b);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Chip Crew - Special gradient text
-   Figma: button.chip state=crew */
-.megabtn-chip-crew {
-  border: 1px solid #ff9500;
-}
-
-.megabtn-chip-crew span {
-  background: linear-gradient(90deg, #ffd166, #ff7b7b);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* ----------------------------------------
-   INPUT FIELD STYLES
-   Figma: button.field - text input styling
-   ---------------------------------------- */
-
-.megabtn-field {
-  width: 100%;
-  padding: 10px 16px;
-  background: #0c0e12;
-  border: 1px solid #1f2633;
-  border-radius: 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  color: #e9eef7;
-  line-height: normal;
-  transition: border-color 120ms ease;
-}
-
-.megabtn-field::placeholder {
-  color: #8ea0bd;
-}
-
-.megabtn-field:focus {
-  border-color: #5ce1e6;
-  outline: none;
-}
-
-/* Activity Log Item - Read-only activity display
-   Figma: button.activitylog */
-.megabtn-activitylog {
-  width: 100%;
-  padding: 10px 16px;
-  background: #11141c;
-  border: 1px solid #1f2633;
-  border-radius: 10px;
-  font-family: 'Inter', sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  color: #8ea0bd;
-  line-height: normal;
-  text-align: left;
-}
-
-/* ----------------------------------------
-   SIZE MODIFIERS
-   ---------------------------------------- */
-
-/* Full width */
-.megabtn-full {
-  width: 100%;
-}
+/* OLD MEGABTN FIELD/ACTIVITYLOG REFERENCES REMOVED - Use button components from Figma instead */
 
 /* ============================================
    LEGACY BUTTON CLASSES (for backward compat)
@@ -1390,7 +2386,7 @@ input[type=number] {
   align-items: stretch;
 }
 
-/* Old button classes removed - replaced by megabtn system */
+/* Old button classes removed - replaced by Figma button component system */
 
 /* Responsive - smaller screens */
 @media (max-width: 480px) {
@@ -1911,6 +2907,15 @@ input[type=number] {
   flex-direction: column;
   gap: var(--grid-md);
   box-shadow: var(--shadow-elevated), var(--shadow-lightfill);
+}
+
+/* Override for profile page card to stay white per Figma */
+.profile-card--white {
+  background: var(--color-white) !important;
+  border: none !important;
+  border-radius: 24px !important;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4) !important;
+  padding: var(--space-xl) !important;
 }
 
 .profile-card.featured-climber-card {
@@ -7595,30 +8600,7 @@ input[type=number] {
   position: relative;
 }
 
-/* Field Button - matches Figma button.field */
-.megabtn-field {
-  width: 100%;
-  padding: var(--btn-pad-md) var(--btn-pad-xxl); /* 10px 16px */
-  background: var(--color-bg); /* #0c0e12 */
-  border: 1px solid var(--color-stroke); /* #1f2633 */
-  border-radius: var(--radius-md); /* 10px */
-  font-family: var(--font-inter);
-  font-size: 15px; /* field/base */
-  font-weight: 400;
-  color: var(--color-muted); /* #8ea0bd */
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 120ms ease;
-}
-
-.megabtn-field:hover {
-  border-color: var(--color-accent); /* #5ce1e6 */
-}
-
-.megabtn-field:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+/* OLD MEGABTN FIELD REFERENCES REMOVED - Use button components from Figma instead */
 
 /* Filter Clear Button */
 .mh-silver-filter-clear {
@@ -7992,28 +8974,42 @@ div.mh-silver-card[data-name="card2"] {
 .home-screen {
   min-height: 100vh;
   min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
   background: #e9eef7; /* color/text used as page bg per Figma */
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 16px; /* space/lg */
+  justify-content: flex-start;
+  padding: 0;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 .home-content {
   width: 100%;
   max-width: 420px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 16px; /* space/lg */
   align-items: center;
   justify-content: flex-end;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px 16px 0 16px; /* pt: space/lg, px: space/lg, pb: 0 */
+  box-sizing: border-box;
 }
 
 .home-filters {
   display: flex;
   gap: 6px; /* space/xs */
   width: 100%;
+  flex-shrink: 0;
+  max-width: 358px;
+  padding: 0;
+  overflow: hidden;
 }
 
 .filter-pill {
@@ -8045,15 +9041,19 @@ div.mh-silver-card[data-name="card2"] {
 
 .home-card {
   width: 100%;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* space/md */
-  padding: 24px; /* space/xl */
+  gap: var(--space-md); /* 12px - space/md token */
+  padding: var(--space-xl); /* 24px - space/xl token */
   background: #0c0e12; /* color/bg */
   border: 4px solid #5ce1e6; /* color/primary */
   border-radius: 14px; /* radius/lg */
   box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4); /* shadow/base */
   box-sizing: border-box;
+  min-height: 0;
+  overflow: hidden;
+  flex-shrink: 1;
 }
 
 .home-card-header {
@@ -8061,24 +9061,48 @@ div.mh-silver-card[data-name="card2"] {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  flex-shrink: 0;
+}
+
+.home-card-header-left {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.home-card-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .home-card-main {
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: 12px; /* space/md */
+  min-height: 0;
+  gap: var(--space-md); /* 12px - space/md token */
 }
+
 
 .home-image-wrapper {
   position: relative;
   display: flex;
-  height: 500px;
+  flex-direction: column;
+  justify-content: flex-end;
   align-items: center;
-  justify-content: center;
-  padding: 4px; /* space/xxs */
+  gap: 8px; /* Figma: gap-[8px] */
+  flex: 1 0 0;
+  min-height: 0;
+  align-self: stretch;
+  padding: var(--space-xxs); /* 4px */
   border: 4px solid #5ce1e6;
-  border-radius: 14px;
+  border-radius: 14px; /* radius/lg */
+  background: lightgray 50% / cover no-repeat; /* fallback */
   overflow: hidden;
+  box-shadow: inset 4px 4px 4px rgba(0, 0, 0, 0.5); /* inner shadow */
 }
 
 .home-image {
@@ -8093,7 +9117,8 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 .home-image-overlay {
-  position: relative;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   gap: 6px; /* space/xs */
@@ -8105,6 +9130,7 @@ div.mh-silver-card[data-name="card2"] {
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75));
   border-radius: 14px;
   box-sizing: border-box;
+  pointer-events: none; /* gradient only; text layers are positioned above */
 }
 
 .home-name-row {
@@ -8149,10 +9175,12 @@ div.mh-silver-card[data-name="card2"] {
   flex-direction: column;
   gap: 0;
   align-items: center;
-  padding: 12px 16px; /* py: space/md, px: space/lg */
+  padding: var(--space-md) var(--space-lg); /* py: space/md (12px), px: space/lg (16px) - tokens */
   background: #1f2633; /* color/stroke */
   border-radius: 14px; /* radius/lg */
   box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden; /* Ensure shadow is clipped to rounded corners */
 }
 
 .home-bio-text {
@@ -8163,58 +9191,64 @@ div.mh-silver-card[data-name="card2"] {
   line-height: normal;
   width: 100%;
   max-width: 278px;
+  position: relative; /* Ensure text is above shadow */
+  z-index: 1;
 }
 
 .home-bio-shadow {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  border-radius: 14px;
+  border-radius: 14px; /* Match container border-radius exactly */
   box-shadow: inset 4px 4px 4px 0px rgba(0, 0, 0, 0.5); /* shadow/inner */
+  overflow: hidden; /* Clip shadow to rounded corners */
 }
 
-.home-cta-row {
+/* Button Row Container - EXACT from Figma node 634:16494
+   Figma: content-stretch flex gap-[var(--space/md,12px)] items-center relative size-full */
+.button-row {
   display: flex;
-  gap: 12px; /* space/md */
-  align-items: center;
+  gap: var(--space-md); /* 12px - space/md token (EXACT from Figma) */
+  align-items: stretch; /* stretch children to equal height/width */
+  width: 100%;
+  flex-shrink: 0;
+  margin-top: var(--space-md);
+}
+
+/* Button Row Wrapper - EXACT from Figma
+   Figma: basis-0 flex flex-row grow items-center self-stretch shrink-0
+   Each button is wrapped in this to achieve equal width distribution */
+.button-row-wrapper {
+  flex: 1 1 0; /* Equal flex basis - both wrappers get equal width */
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  align-self: stretch;
+  min-width: 0;
   width: 100%;
 }
 
-.home-btn-next {
-  flex: 1 0 0;
-  padding: 10px 16px; /* button/padding */
-  background: #151927; /* color/card */
-  border-radius: 10px; /* radius/md */
-  border: none;
-  color: #e9eef7; /* color/text */
-  font-family: 'Inter', sans-serif;
-  font-weight: 700; /* button/base */
-  font-size: 15px; /* button/base */
-}
-
-.home-btn-dab {
-  flex: 1 0 0;
-  padding: 10px 16px;
-  height: 38px;
-  background: transparent;
-  border: 1px solid #5ce1e6; /* color/primary */
-  border-radius: 10px;
+/* Button Row buttons - fill their wrapper containers */
+.button-row-wrapper .button-navlink,
+.button-row-wrapper .button-dab {
+  flex: 1 1 0; /* Equal flex - both buttons same width */
+  width: 100%;
+  height: 38px; /* exact height from Figma */
+  min-width: 0;
+  max-width: 100%;
+  padding: 0; /* remove any extra internal spacing from flex sizing */
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
-
-.home-dab-logo {
-  height: 22px;
-  width: 36.5px;
-  object-fit: contain;
-  transform: rotate(180deg) scaleY(-1);
-}
+/* Legacy class name - removed to prevent conflicts */
 
 /* Mobile Navbar - Exact from Figma node 628:4634 */
 /* Container: bg-[var(--color/text,#e9eef7)] h-[100px] px-[var(--space/xl,24px)] py-[var(--space/md,12px)] rounded-tl-[var(--radius/lg,14px)] rounded-tr-[var(--radius/lg,14px)] */
 .home-bottom-nav {
   width: 100%;
+  max-width: 420px;
   background: #e9eef7; /* color/text */
   height: 100px; /* h-[100px] */
   padding: 12px 24px; /* py: space/md (12px), px: space/xl (24px) */
@@ -8224,8 +9258,10 @@ div.mh-silver-card[data-name="card2"] {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  position: relative;
   flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 /* Links row: flex grow items-center justify-between */
@@ -8254,6 +9290,8 @@ div.mh-silver-card[data-name="card2"] {
   position: relative;
   flex-shrink: 0;
   height: 100%;
+  text-decoration: none;
+  color: inherit;
 }
 
 .home-bottom-item-chat {
@@ -8353,3 +9391,596 @@ div.mh-silver-card[data-name="card2"] {
   color: #5ce1e6; /* color/primary */
 }
 
+/* ========================================
+   CHATS SCREEN - Exact from Figma node 633:14116
+   ======================================== */
+
+/* Screen container: bg-[var(--color/text,#e9eef7)] */
+.chats-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-white); /* color/white as in Figma main container */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Content wrapper: gap-[var(--space/lg,16px)] pb-0 pt-[var(--space/lg,16px)] px-[var(--space/lg,16px)] */
+.chats-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* space/lg */
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 16px 0 16px; /* pt: space/lg, px: space/lg, pb: 0 */
+  padding-bottom: 0; /* No bottom padding as navbar is sticky */
+  position: relative;
+  flex: 1 1 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Top Navigation: gap-[var(--space/xs,6px)] w-[358px] - STICKY TOP */
+.chats-topnav {
+  display: flex;
+  gap: 6px; /* space/xs */
+  align-items: center;
+  overflow: hidden;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: transparent; /* transparent so page background shows through */
+  width: 100%;
+  max-width: 358px;
+  flex-shrink: 0;
+  padding-bottom: 16px; /* Add spacing below */
+}
+
+/* Filter Pill: bg-[var(--color/text,#e9eef7)] border border-[var(--color/muted,#8ea0bd)] px-[var(--space/md,12px)] py-[var(--btn-pad-md,10px)] rounded-[var(--radius/md,10px)] */
+.chats-filter-pill {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  border-radius: 14px; /* radius/lg */
+  flex-shrink: 0;
+}
+
+.chats-filter-pill-inner {
+  background: var(--color-text); /* color/text */
+  border: 1px solid var(--color-muted); /* color/muted */
+  border-style: solid;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px; /* py: button/padding/md, px: space/md */
+  position: relative;
+  border-radius: 10px; /* radius/md */
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.chats-filter-text {
+  font-family: 'Inter', sans-serif; /* Inter:Regular */
+  font-weight: 400; /* Regular */
+  font-size: 15px; /* field/base */
+  color: #8ea0bd; /* color/muted */
+  white-space: nowrap;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chats-filter-chevron {
+  height: 7.41px;
+  position: relative;
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.chats-chevron-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+
+/* Chat Card: bg-[var(--color/white,#ffffff)] rounded-[24px] p-[var(--space/xl,24px)] gap-[var(--space/md,12px)] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)] */
+.chats-card {
+  flex: 1 1 0;
+  background: #ffffff; /* color/white */
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* space/md */
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto; /* scrollbar inside the card */
+  overflow-x: hidden;
+  padding: 24px; /* space/xl */
+  position: relative;
+  border-radius: 24px;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4); /* shadow/base */
+  width: 100%;
+  flex-shrink: 1;
+}
+
+/* Chat Preview: gap-[var(--space/xs,0px)] h-[60px] */
+.chats-preview {
+  display: flex;
+  gap: 0px; /* space/xs = 0px */
+  height: 60px;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.chats-preview-cont {
+  flex: 1 1 0;
+  display: flex;
+  gap: 8px; /* space/sm */
+  align-items: center;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Avatar: rounded-[var(--radius/md,10px)] size-[60px] */
+.chats-avatar-wrapper {
+  position: relative;
+  border-radius: 10px; /* radius/md */
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  background: var(--color-card); /* color/card */
+  border: 1px solid var(--color-stroke); /* stroke */
+  overflow: hidden;
+}
+
+.chats-avatar-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 10px; /* radius/md */
+  background: var(--color-card); /* color/card */
+}
+
+.chats-avatar-img {
+  position: absolute;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 50%;
+  border-radius: 10px; /* radius/md */
+  width: 100%;
+  height: 100%;
+}
+
+/* Text container: gap-[var(--space/xs,6px)] */
+.chats-text {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs); /* 6px token */
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  line-height: normal;
+  position: relative;
+  white-space: normal;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+/* Title: font-['Inter:Extra_Bold'] text-[16px] text-[color:var(--color/panel,#11141c)] */
+.chats-title {
+  font-family: 'Inter', sans-serif; /* Inter:Extra_Bold */
+  font-weight: 800; /* Extra Bold */
+  font-size: 16px; /* heading/xs */
+  color: var(--color-panel); /* color/panel */
+  position: relative;
+  flex-shrink: 0;
+  line-height: 1; /* 100% */
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+/* Subtitle: font-['Inter:Medium'] text-[14px] text-[color:var(--color/muted,#8ea0bd)] */
+.chats-subtitle {
+  font-family: 'Inter', sans-serif; /* Inter:Medium */
+  font-weight: 500; /* Medium */
+  font-size: 14px; /* body/sm */
+  color: var(--color-muted); /* color/muted */
+  position: relative;
+  flex-shrink: 0;
+  line-height: 1; /* 100% */
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+/* Unread Badge: absolute left-[43px] size-[12px] top-[6px] */
+.chats-unread-badge {
+  position: absolute;
+  left: 43px; /* left-[43px] */
+  top: 6px; /* top-[6px] */
+  width: 12px; /* size-[12px] */
+  height: 12px;
+}
+
+.chats-badge-img {
+  position: absolute;
+  inset: -166.67%; /* inset-[-166.67%] */
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+/* Divider: h-0 */
+.chats-divider {
+  height: 1px;
+  position: relative;
+  width: 100%;
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.chats-divider-img {
+  display: block;
+  width: 100%;
+  height: 1px;
+}
+
+/* Bottom Navbar - Same structure as home but with chats active */
+.chats-bottom-nav {
+  width: 100%;
+  max-width: 420px;
+  background: #e9eef7; /* color/text */
+  height: 100px; /* h-[100px] */
+  padding: 12px 24px; /* py: space/md, px: space/xl */
+  border-top-left-radius: 14px; /* radius/lg */
+  border-top-right-radius: 14px; /* radius/lg */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  flex-shrink: 0;
+  box-shadow: 0px -4px 4px 0px rgba(0, 0, 0, 0.25);
+}
+
+.chats-bottom-row {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chats-bottom-item {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* gap-[8px] */
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  flex-shrink: 0;
+  height: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.chats-bottom-icon-container {
+  display: flex;
+  height: 40px; /* h-[40px] */
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chats-nav-icon-wrapper {
+  width: 26px; /* size-[26px] */
+  height: 26px;
+  overflow: hidden; /* overflow-clip */
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chats-nav-icon-inner-face {
+  position: absolute;
+  inset: 8.33%; /* inset-[8.33%] */
+}
+
+.chats-nav-icon-inner-announcement {
+  position: absolute;
+  inset: 12.02% 8.33% 12.5% 8.33%; /* inset-[12.02%_8.33%_12.5%_8.33%] */
+}
+
+.chats-nav-icon-inner-message {
+  position: absolute;
+  inset: 8.33%; /* inset-[8.33%] */
+}
+
+.chats-nav-icon-inner-flash {
+  position: absolute;
+  inset: 8.33% 14.86%; /* inset-[8.33%_14.86%] */
+}
+
+.chats-nav-icon-inner-flash-2 {
+  position: absolute;
+  inset: -4.62% -5.47%; /* inset-[-4.62%_-5.47%] */
+  width: calc(100% + 10.94%);
+  height: calc(100% + 9.24%);
+}
+
+.chats-nav-icon-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+.chats-bottom-dot {
+  position: absolute;
+  left: 52px; /* left-[52px] */
+  top: 5px; /* top-[5px] */
+  width: 6px; /* size-[6px] */
+  height: 6px;
+  border-radius: 999px;
+  background: #5ce1e6; /* color/primary */
+}
+
+.chats-bottom-label {
+  font-family: 'Inter', sans-serif; /* Inter:Regular */
+  font-weight: 400; /* Regular */
+  font-size: 10px; /* text-[10px] - body/xxs */
+  height: 14px; /* h-[14px] */
+  width: 73px; /* w-[73px] */
+  color: #1f2633; /* color/stroke */
+  text-align: center;
+  line-height: normal;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.chats-bottom-active .chats-bottom-label {
+  color: #5ce1e6; /* color/primary */
+}
+
+/* CHATS EVENT - Exact from Figma node 634:15364 */
+.chats-event-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background: #e9eef7; /* color/text */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0;
+}
+
+.chats-event-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--space-lg);
+  padding-bottom: 0;
+  box-sizing: border-box;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.chats-event-card {
+  width: 100%;
+  background: var(--color-white);
+  border-radius: 24px;
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm); /* 8px */
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.chats-event-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 44px;
+}
+
+.chats-event-back {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chats-event-back-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.chats-event-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm); /* 8px */
+}
+
+.chats-event-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px; /* radius/sm */
+  object-fit: cover;
+  object-position: center;
+  overflow: hidden;
+}
+
+.chats-event-title {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/base */
+  font-size: 16px;
+  color: var(--color-panel);
+}
+
+.chats-event-dots {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chats-event-dots-img {
+  width: 28px;
+  height: 28px;
+}
+
+.chats-event-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--color-muted);
+  opacity: 0.8;
+}
+
+.chats-event-message-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm); /* 8px */
+}
+
+.chats-event-message-row-out {
+  justify-content: flex-end;
+}
+
+.chats-event-bubble-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  object-fit: cover;
+  object-position: center;
+  overflow: hidden;
+}
+
+.chats-event-bubble {
+  max-width: 280px;
+  padding: var(--space-sm); /* 8px */
+  border-radius: 17px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; /* body/xs */
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+.chats-event-bubble-incoming {
+  background: var(--color-text);
+  color: var(--color-panel);
+}
+
+.chats-event-bubble-outgoing {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-bottom-right-radius: 4px;
+}
+
+.chats-event-bubble-text {
+  margin: 0;
+}
+
+.chats-event-bubble-text-out {
+  color: var(--color-white);
+}
+
+.chats-event-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  color: var(--color-darker);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; /* body/xs */
+}
+
+.chats-event-status-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.chats-event-status-icon-secondary {
+  width: 12px;
+  height: 12px;
+}
+
+.chats-event-status-text {
+  font-size: 12px;
+  color: var(--color-darker);
+}
+
+.chats-event-input {
+  width: 100%;
+  height: 38px;
+  background: var(--color-text);
+  border-radius: var(--radius-lg); /* 14px */
+  padding: 8px 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+}
+
+.chats-event-input-placeholder {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* body/sm */
+  font-size: 14px;
+  color: var(--color-darker);
+}
+
+/* Active chats icon should be cyan */
+.chats-bottom-active .chats-nav-icon-wrapper[data-name="message-chat-square"] .chats-nav-icon-img {
+  filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
+}

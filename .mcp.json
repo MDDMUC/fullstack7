@@ -1,8 +1,10 @@
 {
   "mcpServers": {
-    "Figma Desktop": {
+    "figma": {
       "url": "http://127.0.0.1:3845/mcp",
-      "headers": {}
+      "headers": {
+        "Accept": "application/json, text/event-stream"
+      }
     }
   }
 }

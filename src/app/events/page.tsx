@@ -1,246 +1,143 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Event, loadEvents } from '@/lib/communityData'
-import Eyebrow from '@/components/Eyebrow'
-import { fetchThreads, fetchMessages, Message } from '@/lib/messages'
+import React from 'react'
+import Link from 'next/link'
+import { RequireAuth } from '@/components/RequireAuth'
 
-export default function EventsPage() {
-  const router = useRouter()
-  const [events, setEvents] = useState<Event[]>([])
-  const [loading, setLoading] = useState(true)
-  const [going, setGoing] = useState<Record<string, boolean>>({})
-  const [liveAttendees, setLiveAttendees] = useState(0)
-  const [statPulse, setStatPulse] = useState<'up' | 'down' | null>(null)
-  const eventImages = ['/event1.jpg', '/event2.jpg', '/event3.jpg', '/event4.jpg', '/group2.jpg', '/group3.jpg', '/boardlords.jpg']
-  const [recentMessages, setRecentMessages] = useState<Message[]>([])
+const EVENT_TILES = [
+  {
+    title: 'PETZL Rope Demo',
+    subtitle: 'DAV Thalkirchen',
+    location: 'Munich',
+    attendees: '27 people are going',
+    img: 'http://localhost:3845/assets/e77d367964c4498d605be651145ba7bf039e3be8.png',
+  },
+  {
+    title: 'Beginner Lead Class',
+    subtitle: 'DAV Thalkirchen',
+    location: 'Munich',
+    attendees: '27 people are going',
+    img: 'http://localhost:3845/assets/3bb4efb27db8984b86255e27c681d482f01670ba.png',
+  },
+  {
+    title: 'PETZL Rope Demo',
+    subtitle: 'DAV Thalkirchen',
+    location: 'Munich',
+    attendees: '27 people are going',
+    img: 'http://localhost:3845/assets/e77d367964c4498d605be651145ba7bf039e3be8.png',
+  },
+  {
+    title: 'Beginner Lead Class',
+    subtitle: 'DAV Thalkirchen',
+    location: 'Munich',
+    attendees: '27 people are going',
+    img: 'http://localhost:3845/assets/3bb4efb27db8984b86255e27c681d482f01670ba.png',
+  },
+]
 
-  useEffect(() => {
-    let mounted = true
-    const load = async () => {
-      const data = await loadEvents()
-      if (!mounted) return
-      setEvents(data)
-      const total = data.reduce((sum, e) => sum + e.attendees, 0)
-      setLiveAttendees(total || 10)
-      setLoading(false)
-    }
-    load()
-    return () => {
-      mounted = false
-    }
-  }, [])
+const FILTER_LABELS = ['city', 'type', 'time']
 
-  const totalAttendees = useMemo(
-    () => events.reduce((sum, e) => sum + e.attendees, 0),
-    [events]
-  )
-
-  useEffect(() => {
-    if (!events.length && liveAttendees === 0) return
-    let timeoutId: ReturnType<typeof setTimeout> | undefined
-    const tick = () => {
-      setLiveAttendees(prev => {
-        const base = prev || 10
-        const delta = Math.floor(Math.random() * 7) - 3 // -3 to +3
-        const next = base + delta
-        const clamped = Math.max(4, Math.min(80, next))
-        setStatPulse(delta > 0 ? 'up' : delta < 0 ? 'down' : null)
-        return clamped
-      })
-      const nextDelay = 2000 + Math.random() * 2500
-      timeoutId = setTimeout(tick, nextDelay)
-    }
-    tick()
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId)
-    }
-  }, [events.length, liveAttendees])
-
-  useEffect(() => {
-    const loadRecent = async () => {
-      try {
-        if (!events.length) return
-        const target = events.find(e => e.id === 'e-boardlords') || events[0]
-        const threads = await fetchThreads({ type: 'event', eventId: target.id })
-        const thread = threads[0]
-        if (!thread) return
-        const msgs = await fetchMessages(thread.id)
-        setRecentMessages(msgs.slice(-3).reverse()) // latest 3, newest first
-      } catch (err) {
-        console.warn('Failed to load recent event messages', err)
-      }
-    }
-    loadRecent()
-  }, [events])
-
-  const toggleGoing = (id: string) => {
-    setGoing(prev => ({ ...prev, [id]: !prev[id] }))
-  }
-
-  const handleRSVP = (id: string) => {
-    toggleGoing(id)
-    router.push('/signup')
-  }
-
+export default function EventsScreen() {
   return (
-    <main className="feature-shell">
-      <section className="feature-hero">
-        <div className="hero-visual">
-          <img src="/group2.jpg" alt="Climbing event crowd" className="hero-image" />
-        </div>
-        <div className="hero-copy">
-          <Eyebrow>Events</Eyebrow>
-          <h1 className="hero-metal">Meetups, trips, cleanups.</h1>
-          <p className="lede">
-            Give people a reason to open Dab on weekends. RSVP, see who else is going, and keep the thread alive
-            through the event.
-          </p>
-          <div className="feature-actions">
-            <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Get started</button>
-            <button className="megabtn megabtn-ghost" onClick={() => router.push('/gym-chat')}>Chat with hosts</button>
-          </div>
-          <div className="pill-row">
-            <span>Gym & outdoor</span>
-            <span>Carpool built-in</span>
-            <span>RSVP + thread</span>
-          </div>
-        </div>
-        {events.length ? (
-          <div className="feature-stat stat-tall">
-            <div>
-              <p className="stat__label">People attending</p>
-              <p
-                className={`stat__number ${
-                  statPulse === 'up' ? 'stat-pulse-up' : statPulse === 'down' ? 'stat-pulse-down' : ''
-                }`}
-              >
-                {liveAttendees || totalAttendees || 10}
-              </p>
-              <p className="muted small">Threads stay attached to events for coordination and safety.</p>
-              <div style={{ marginTop: 10, display: 'grid', gap: 10 }}>
-                {recentMessages.map(msg => (
-                  <div
-                    key={msg.id}
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'auto 1fr',
-                      gap: '8px',
-                      alignItems: 'center',
-                      padding: '8px',
-                      borderRadius: '10px',
-                      border: '1px solid var(--stroke)',
-                      background: 'rgba(12,14,18,0.65)',
-                    }}
-                  >
-                    <img
-                      src={msg.profiles?.avatar_url || '/fallback-male.jpg'}
-                      alt={msg.profiles?.username || 'Climber'}
-                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--stroke)' }}
-                    />
-                    <div style={{ display: 'grid', gap: '2px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px' }}>
-                        <strong style={{ fontSize: 13 }}>{msg.profiles?.username || 'Climber'}</strong>
-                        <span className="muted small" style={{ fontSize: 11 }}>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+    <RequireAuth>
+      <div className="events-screen" data-name="/ events">
+        <div className="events-content">
+          <div className="events-card">
+            <div className="events-createbar" data-name="create-event-mobile" data-node-id="636:2102">
+              <div className="events-createbar-left">
+                <div className="events-createbar-plus" data-name="plus" data-node-id="636:2101">
+                  <div className="events-createbar-plus-inner" data-name="plus" data-node-id="636:2099">
+                    <div className="events-createbar-icon" data-name="Icon" data-node-id="I636:2099;633:7054">
+                      <div className="events-createbar-stroke">
+                        <img src="/icons/plus.svg" alt="" />
                       </div>
-                      <p className="muted small" style={{ margin: 0, fontSize: 12 }}>
-                        {msg.body.length > 42 ? `${msg.body.slice(0, 42)}…` : msg.body}
-                      </p>
                     </div>
                   </div>
-                ))}
+                </div>
+              </div>
+              <div className="events-createbar-center" data-name="name" data-node-id="636:2092">
+                <p className="events-createbar-text">create event</p>
+              </div>
+              <div className="events-createbar-right" data-name="Auto Layout Horizontal" data-node-id="636:2094">
+                <div className="events-createbar-ghost">
+                  <div className="events-createbar-ghost-inner">
+                    <div className="events-createbar-ghost-frame">
+                      <div className="events-createbar-ghost-img">
+                        <img src="/icons/dots.svg" alt="" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        ) : null}
-      </section>
 
-      <section className="event-grid">
-        {[...events].sort((a, b) => (a.id === 'e-boardlords' ? -1 : b.id === 'e-boardlords' ? 1 : 0)).map(event => {
-          const fill = Math.min(100, Math.round((event.attendees / event.capacity) * 100))
-          const imageForEvent = (() => {
-            if (event.id === 'e4') return '/lead2.jpg'
-            if (event.id === 'e-boardlords') return '/boardlords.jpg'
-            if (event.id === 'e2') return '/kocheltrip.jpg'
-            const hash = event.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)
-            return eventImages[Math.abs(hash) % eventImages.length] || eventImages[0]
-          })()
-          return (
-            <article key={event.id} className="event-card">
-              <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', border: '1px solid var(--stroke)' }}>
-                <img
-                  src={imageForEvent}
-                  alt={event.title}
-                  style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
-                />
-                <div
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.55))',
-                    display: 'flex',
-                    alignItems: 'flex-end',
-                    padding: '12px',
-                  }}
-                >
-                  <div style={{ display: 'grid', gap: '6px' }}>
-                    <div>
-                      <p className="eyebrow" style={{ marginBottom: 4 }}>{event.type}</p>
-                      <h4 style={{ margin: 0 }}>{event.title}</h4>
-                    </div>
-                    <div
-                      className="pill"
-                      style={{
-                        width: 'fit-content',
-                        padding: '4px 10px',
-                        fontSize: '11px',
-                        lineHeight: 1.1,
-                        border: '1px solid var(--stroke)',
-                        background: 'rgba(12,14,18,0.65)',
-                        color: 'var(--text)',
-                        letterSpacing: '0.2px',
-                      }}
-                    >
-                      {event.attendees}/{event.capacity} going
+            {EVENT_TILES.map((tile, idx) => (
+              <Link key={`${tile.title}-${idx}`} href="/events/detail" className="events-tile">
+                <div className="events-tile-img">
+                  <img src={tile.img} alt="" className="events-tile-img-el" />
+                </div>
+                <div className="events-tile-overlay" />
+                <div className="events-tile-text">
+                  <p className="events-tile-title">{tile.title}</p>
+                  <p className="events-tile-subtitle">{tile.subtitle}</p>
+                  <div className="events-tile-info">
+                    <p className="events-tile-loc">{tile.location}</p>
+                    <p className="events-tile-att">{tile.attendees}</p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="home-bottom-nav">
+            <div className="home-bottom-row">
+              <Link href="/profile" className="home-bottom-item">
+                <div className="home-bottom-icon-container">
+                  <div className="home-nav-icon-wrapper" data-name="face-content">
+                    <div className="home-nav-icon-inner-face">
+                      <img src="/icons/face-content.svg" alt="" className="home-nav-icon-img" />
                     </div>
                   </div>
                 </div>
-              </div>
-              <header>
-                <div style={{ display: 'grid', gap: '4px', alignItems: 'start', width: '100%' }}>
-                  <p className="muted small">{event.host} - {event.date} - {event.time}</p>
-                  <p className="muted small">{event.location}</p>
+                <span className="home-bottom-label">profile</span>
+              </Link>
+              <Link href="/events" className="home-bottom-item home-bottom-active">
+                <div className="home-bottom-icon-container">
+                  <div className="home-nav-icon-wrapper" data-name="announcement-01">
+                    <div className="home-nav-icon-inner-announcement">
+                      <img src="/icons/announcement-01.svg" alt="" className="home-nav-icon-img" />
+                    </div>
+                  </div>
                 </div>
-              </header>
-              <p className="event-desc">{event.description}</p>
-              <div className="tagline">
-                {event.tags.map(tag => <span key={tag} className="ghost-tag">{tag}</span>)}
-              </div>
-              <div className="progress">
-                <div className="progress-bar" style={{ width: `${fill}%` }} />
-              </div>
-              <div className="event-actions">
-                <button className="megabtn megabtn-ghost" onClick={() => router.push('/gym-chat')}>Join Chat</button>
-                <button
-                  className={`megabtn megabtn-cta ${going[event.id] ? 'is-active' : ''}`}
-                  onClick={() => handleRSVP(event.id)}
-                >
-                  {going[event.id] ? 'Marked as going' : 'Join'}
-                </button>
-              </div>
-            </article>
-          )
-        })}
-
-        {!events.length && !loading ? (
-          <div className="panel empty-state">
-            <h3>No events yet.</h3>
-            <p className="muted">Host the first one and set the tone.</p>
-            <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Host an event</button>
+                <span className="home-bottom-label">events</span>
+              </Link>
+              <Link href="/chats" className="home-bottom-item home-bottom-item-chat">
+                <div className="home-bottom-icon-container">
+                  <div className="home-nav-icon-wrapper" data-name="message-chat-square">
+                    <div className="home-nav-icon-inner-message">
+                      <img src="/icons/message-chat-square.svg" alt="" className="home-nav-icon-img" />
+                    </div>
+                  </div>
+                  <div className="home-bottom-dot" />
+                </div>
+                <span className="home-bottom-label">chats</span>
+              </Link>
+              <Link href="/home" className="home-bottom-item">
+                <div className="home-bottom-icon-container">
+                  <div className="home-nav-icon-wrapper" data-name="flash">
+                    <div className="home-nav-icon-inner-flash" data-name="Icon">
+                      <div className="home-nav-icon-inner-flash-2">
+                        <img src="/icons/flash.svg" alt="" className="home-nav-icon-img" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <span className="home-bottom-label">dab</span>
+              </Link>
+            </div>
           </div>
-        ) : null}
-      </section>
-    </main>
+        </div>
+      </div>
+    </RequireAuth>
   )
 }

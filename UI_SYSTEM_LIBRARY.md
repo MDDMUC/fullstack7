@@ -1,11 +1,85 @@
 ---
 
+## 🚨 CRITICAL RULE: NEVER IMPROVISE BUTTONS
+
+**PRIORITY #1 RULE**: NEVER improvise, guess, or make up button components. ALWAYS:
+1. Get the exact component from Figma using `get_design_context` with the Figma node ID
+2. Use ONLY the code structure and classes from Figma
+3. Convert Tailwind classes to CSS exactly as they appear in Figma
+4. Use exact tokens and values - no approximations
+5. If you don't have the Figma component, ASK the user - never create your own
+
+**This applies to ALL buttons**: DAB, CTA, navlink, chip, tag, pill, field, etc.
+
+### 🎯 DAB BUTTON SPECIFIC RULE
+
+**CRITICAL**: The DAB button for mobile MUST use the exact SVG files from `/public/icons/`:
+- **Default state**: `/icons/button.dab-default.svg` (117×38px)
+- **Hover state**: `/icons/button.dab-hover.svg` (121×42px)
+- **Focus state**: `/icons/button.dab-focus.svg` (117×38px)
+
+**NEVER**:
+- ❌ Create your own DAB button design
+- ❌ Use `/dab-logo.svg` or any other logo file
+- ❌ Build the button with CSS/borders - use the SVG files directly
+- ❌ Improvise or approximate the button appearance
+
+**ALWAYS**:
+- ✅ Use the three SVG files listed above
+- ✅ Implement hover and focus states using these exact SVGs
+- ✅ Check `/public/icons/` folder for button SVG files
+
+---
+
 ## 📱 Mobile Home Screen (node 633:14303) — Supersedes prior usercard/mobile docs
 
 - **Figma Frame**: `/ home` `633:14303` (02_COMPONENTS)
 - **Code**: `src/app/home/page.tsx`
 - **Styles**: `src/app/globals.css` (`.home-*`), uses existing megabtn tokens
 - **Extraction**: `get_variable_defs`, `get_design_context` (forceCode:true), `get_screenshot`
+
+### ⚠️ CRITICAL: Special Chips Display Rules
+
+**ALWAYS display climbing style and grade from Supabase onboarding profiles:**
+- **Climbing Styles**: Always displayed from `profile.style` field (comma-separated or array)
+- **Climbing Grade**: Always displayed from `profile.grade` field when available
+- These are displayed as tags (`.button-tag` and `.button-tag-grade`)
+
+**Special Chips with Unique Styling:**
+The `Button.Chip` component in Figma has special variants that MUST use their specific styling:
+
+1. **PRO Chip** (`.button-chip-pro`):
+   - Background: `#0c0e12` (color/bg)
+   - Border: `1px solid #ff7b7b` (color/red)
+   - Text: `#ff7b7b` (color/red)
+   - Detected by: chip text contains "pro" (but not "founder" or "crew")
+
+2. **Founder Chip** (`.button-chip-founder`):
+   - Background: `#0c0e12` (color/bg)
+   - Border: `1px solid #ff9500` (color/special)
+   - Text: **Gradient** `linear-gradient(90deg, #ffd166, #ff7b7b)` (gold to red)
+   - Text must be wrapped in `<span>` for gradient to work
+   - Detected by: chip text contains "founder"
+
+3. **Crew Chip** (`.button-chip-crew`):
+   - Background: `#0c0e12` (color/bg)
+   - Border: `1px solid #ff9500` (color/special)
+   - Text: **Gradient** `linear-gradient(90deg, #ffd166, #ff7b7b)` (gold to red)
+   - Text must be wrapped in `<span>` for gradient to work
+   - Detected by: chip text contains "crew"
+
+4. **Belay Certified Chip** (`.button-chip-belay`):
+   - Background: `#0c0e12` (color/bg)
+   - Border: `1px solid #5ce1e6` (color/primary)
+   - Text: `#5ce1e6` (color/primary)
+   - Border-radius: `999px` (pill shape, not chip shape)
+   - Detected by: chip text contains "belay"
+
+**Implementation Notes:**
+- Check chips in this order: PRO → Founder → Crew → Belay Certified → default/focus
+- Founder and Crew chips require wrapping text in `<span>` for gradient effect
+- All special chips use `#0c0e12` background (color/bg), not card or panel color
+- See `Button.Chip` component in Figma (02_COMPONENTS) for all variants
 
 ### Key Token Values (exact)
 
@@ -45,6 +119,70 @@ home-screen
    │  └─ cta row gap12: next (panel), dab (border)
    └─ bottom nav bg #e9eef7 radius-top 14 p12x24: profile, events, chats (dot), dab active
 ```
+
+---
+
+## 💬 Chats Home Screen (node 633:14116)
+
+- **Figma Frame**: `/ chats` `633:14116` (02_COMPONENTS)
+- **Code**: `src/app/chats/page.tsx`
+- **Styles**: `src/app/globals.css` (`.chats-*`), uses existing megabtn tokens
+- **Extraction**: `get_variable_defs`, `get_design_context` (forceCode:true), `get_screenshot`
+
+### Key Token Values (exact)
+
+| Element | Value |
+| --- | --- |
+| Page bg | `#e9eef7` (color/text) |
+| Page padding | 16px (space/lg) |
+| Top nav filters | gap `6px`, width `358px`, pills: bg `#e9eef7`, border `1px solid #8ea0bd`, radius `10px`, padding `10px 12px`, text `15px 400` muted |
+| Chat card | bg `#ffffff`, radius `24px`, padding `24px`, gap `12px`, shadow `0px 20px 60px rgba(0,0,0,0.4)` |
+| Chat preview | height `60px`, gap `0px` |
+| Avatar | size `60px`, radius `10px`, bg `#e9eef7` |
+| Title | `16px 800` (heading/xs), color `#11141c` (color/panel) |
+| Subtitle | `14px 500` (body/sm), color `#8ea0bd` (color/muted) |
+| Text gap | `6px` (space/xs) |
+| Unread badge | `12px`, position `left: 43px, top: 6px`, cyan `#5ce1e6` |
+| Divider | height `0px`, line color `#8ea0bd` |
+| Bottom nav | Same as home screen, chats active (cyan icon + label) |
+
+### CSS Classes (chats)
+
+`chats-screen`, `chats-content`, `chats-topnav`, `chats-filter-pill`, `chats-filter-pill-inner`, `chats-filter-text`, `chats-filter-chevron`, `chats-chevron-img`, `chats-card`, `chats-preview`, `chats-preview-cont`, `chats-avatar-wrapper`, `chats-avatar-bg`, `chats-avatar-img`, `chats-text`, `chats-title`, `chats-subtitle`, `chats-unread-badge`, `chats-badge-img`, `chats-divider`, `chats-divider-img`, `chats-bottom-nav`, `chats-bottom-row`, `chats-bottom-item`, `chats-bottom-active`, `chats-bottom-icon-container`, `chats-nav-icon-wrapper`, `chats-nav-icon-inner-*`, `chats-nav-icon-img`, `chats-bottom-dot`, `chats-bottom-label`.
+
+### Structure
+
+```
+chats-screen (bg #e9eef7)
+└─ chats-content (gap 16, p16, pb0)
+   ├─ chats-topnav (gap 6, w358): gym, event, personal filters
+   ├─ chats-card (bg #ffffff, radius 24, p24, gap 12, shadow)
+   │  ├─ chats-preview (h60, gap 0)
+   │  │  ├─ avatar (60px, radius 10)
+   │  │  ├─ text (gap 6): title (16px 800), subtitle (14px 500)
+   │  │  └─ unread-badge (12px, left 43px, top 6px) [optional]
+   │  └─ divider (h0, line #8ea0bd)
+   │  └─ [repeat previews...]
+   └─ chats-bottom-nav (same as home, chats active)
+```
+
+### Navigation
+
+- All navbar items use Next.js `Link` components:
+  - Profile → `/profile`
+  - Events → `/events`
+  - Chats → `/chats` (active on chats page)
+  - Dab → `/home` (active on home page)
+
+### SVG Files Used
+
+- `/icons/Color.svg` - Chevron down icon for filters (12×8px)
+- `/icons/divider-line.svg` - Horizontal divider line (310×1px)
+- `/icons/unread-badge.svg` - Unread notification badge (52×38px, clipped to 12px)
+- Navbar icons: same as home screen (`face-content.svg`, `announcement-01.svg`, `message-chat-square.svg`, `flash.svg`)
+
+---
+
 # DAB UI System Library
 
 This document serves as a comprehensive reference for the DAB design system, with **EXACT values extracted directly from Figma**.

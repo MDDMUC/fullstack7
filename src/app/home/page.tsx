@@ -1,9 +1,12 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { RequireAuth } from '@/components/RequireAuth'
+import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
+import { supabase, requireSupabase } from '@/lib/supabaseClient'
 
 // Figma mobile navbar - exact structure from node 628:4634
 // Using exact SVG files from /public/icons/
@@ -30,14 +33,27 @@ const FALLBACK_PROFILE: Profile = {
   tags: ['Boulder', 'Sport', 'grade:Advanced', 'Belay Certified', 'Edelrid Ohm', 'Host'],
 }
 
-const gradeFromTags = (tags?: string[]) =>
-  tags?.find(t => t.toLowerCase().startsWith('grade:'))?.split(':')[1] ?? undefined
-
 const chipsFromTags = (tags?: string[]) =>
   (tags ?? []).filter(t => !t.toLowerCase().startsWith('grade:') && !['boulder', 'sport', 'lead', 'trad'].includes(t.toLowerCase()))
 
-const stylesFromTags = (tags?: string[]) =>
-  (tags ?? []).filter(t => ['boulder', 'sport', 'trad', 'lead'].includes(t.toLowerCase()))
+// Extract styles from profile.style field (comma-separated string or array)
+const getStylesFromProfile = (profile: Profile): string[] => {
+  if (!profile.style) return []
+  // If it's already an array, return it
+  if (Array.isArray(profile.style)) {
+    return profile.style.map(s => s.trim()).filter(Boolean)
+  }
+  // If it's a string, split by comma
+  if (typeof profile.style === 'string') {
+    return profile.style.split(',').map(s => s.trim()).filter(Boolean)
+  }
+  return []
+}
+
+// Get grade from profile.grade field
+const getGradeFromProfile = (profile: Profile): string | undefined => {
+  return profile.grade?.trim() || undefined
+}
 
 const fallbackAvatarFor = (profile?: Profile | null) => {
   const hint = (profile?.pronouns || (profile as any)?.gender || '').toString().toLowerCase()
@@ -48,7 +64,37 @@ const fallbackAvatarFor = (profile?: Profile | null) => {
 }
 
 export default function HomeScreen() {
+  const { session } = useAuthSession()
   const [deck, setDeck] = useState<Profile[]>([])
+  const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null)
+
+  // Fetch current user's profile to check for pro status
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      if (!session) {
+        setCurrentUserProfile(null)
+        return
+      }
+      try {
+        const client = supabase ?? requireSupabase()
+        const { data: userData } = await client.auth.getUser()
+        if (!userData.user) {
+          setCurrentUserProfile(null)
+          return
+        }
+        const profiles = await fetchProfiles(client, [userData.user.id])
+        if (profiles.length > 0) {
+          setCurrentUserProfile(profiles[0])
+        } else {
+          setCurrentUserProfile(null)
+        }
+      } catch (err) {
+        console.error('Failed to load current user profile', err)
+        setCurrentUserProfile(null)
+      }
+    }
+    loadCurrentUser()
+  }, [session])
 
   useEffect(() => {
     const load = async () => {
@@ -72,12 +118,34 @@ export default function HomeScreen() {
   const current = useMemo(() => deck[0] ?? FALLBACK_PROFILE, [deck])
 
   const tags = useMemo(() => {
-    const styles = stylesFromTags(current.tags)
-    const grade = gradeFromTags(current.tags)
+    // Get styles and grade from database fields, not from tags
+    const styles = getStylesFromProfile(current)
+    const grade = getGradeFromProfile(current)
     return { styles, grade }
   }, [current])
 
   const chips = useMemo(() => chipsFromTags(current.tags), [current])
+
+  // Check if the displayed profile is the logged-in user
+  const isCurrentUser = useMemo(() => {
+    return currentUserProfile && current?.id && currentUserProfile.id === current.id
+  }, [currentUserProfile, current])
+
+  // Status row visibility: always render to mirror the Figma reference; prefer live data when present.
+  const showProChip = useMemo(() => {
+    const normalizedStatus = (currentUserProfile?.status ?? (current as any)?.status ?? '').toString().toLowerCase()
+    if (normalizedStatus.includes('pro')) return true
+    // Default to showing the pro chip to stay faithful to the Figma reference when no status is present.
+    return !currentUserProfile
+  }, [currentUserProfile, current])
+
+  const showOnlinePill = useMemo(() => {
+    if (isCurrentUser && session) return true
+    // Default on when unauthenticated so layout remains consistent with the Figma component.
+    return !session
+  }, [isCurrentUser, session])
+
+  const showStatusRow = showProChip || showOnlinePill
 
   const handleNext = () => {
     setDeck(prev => {
@@ -101,10 +169,21 @@ export default function HomeScreen() {
           </div>
 
           <div className="home-card" data-name="usercard-mobile">
-            <div className="home-card-header">
-              <span className="megabtn megabtn-chip megabtn-chip-pro">🔥 PRO</span>
-              <span className="megabtn megabtn-pill megabtn-pill-online">Online</span>
-            </div>
+            {showStatusRow && (
+              <div className="home-card-header">
+                <div className="home-card-header-left">
+                  {showProChip && <span className="button-chip button-chip-pro">PRO</span>}
+                </div>
+                <div className="home-card-header-right">
+                  {showOnlinePill && (
+                    <span className="button-pill button-pill-focus button-pill-online-now">
+                      <span className="button-pill-dot" />
+                      Online now
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="home-card-main">
               <div className="home-image-wrapper">
@@ -120,22 +199,54 @@ export default function HomeScreen() {
                   </div>
                   <div className="home-location">{current.city || 'Somewhere craggy'}</div>
                   <div className="home-chips-row">
-                    {tags.styles.map((style, idx) => (
-                      <span key={`style-${style}-${idx}`} className="megabtn megabtn-tag">
-                        {style}
-                      </span>
-                    ))}
+                    {/* Always display styles from database */}
+                    {tags.styles.length > 0 ? (
+                      tags.styles.map((style, idx) => (
+                        <span key={`style-${style}-${idx}`} className="button-tag">
+                          {style}
+                        </span>
+                      ))
+                    ) : null}
+                    {/* Always display grade from database if available */}
                     {tags.grade && (
-                      <span className="megabtn megabtn-tag megabtn-tag-grade">{tags.grade}</span>
+                      <span className="button-tag button-tag-grade">{tags.grade}</span>
                     )}
-                    {chips.map((chip, idx) => (
-                      <span
-                        key={`chip-${chip}-${idx}`}
-                        className="megabtn megabtn-chip megabtn-chip-muted megabtn-chip-card-bg"
-                      >
-                        {chip}
-                      </span>
-                    ))}
+                    {chips.map((chip, idx) => {
+                      const chipLower = chip.toLowerCase();
+                      // Check for special chips that have unique styling
+                      const isPro = chipLower.includes('pro') && !chipLower.includes('founder') && !chipLower.includes('crew');
+                      const isFounder = chipLower.includes('founder');
+                      const isCrew = chipLower.includes('crew');
+                      const isBelayCertified = chipLower.includes('belay');
+                      
+                      // Determine chip class based on special types
+                      let chipClass = 'button-chip';
+                      if (isPro) {
+                        chipClass += ' button-chip-pro';
+                      } else if (isFounder) {
+                        chipClass += ' button-chip-founder';
+                      } else if (isCrew) {
+                        chipClass += ' button-chip-crew';
+                      } else if (isBelayCertified) {
+                        chipClass += ' button-chip-belay';
+                      } else {
+                        // First chip uses focus state, rest use default
+                        const isFirst = idx === 0;
+                        if (isFirst) chipClass += ' button-chip-focus';
+                      }
+                      
+                      // For founder and crew, wrap text in span for gradient
+                      const needsGradient = isFounder || isCrew;
+                      
+                      return (
+                        <span
+                          key={`chip-${chip}-${idx}`}
+                          className={chipClass}
+                        >
+                          {needsGradient ? <span>{chip}</span> : chip}
+                        </span>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -149,13 +260,19 @@ export default function HomeScreen() {
               </div>
             </div>
 
-            <div className="home-cta-row">
-              <button type="button" className="home-btn-next" onClick={handleNext}>
-                Next
-              </button>
-              <button type="button" className="home-btn-dab">
-                <img src="/dab-logo.svg" alt="DAB" className="home-dab-logo" />
-              </button>
+            <div className="button-row" data-name="cta row" data-node-id="634:16494">
+              <div className="button-row-wrapper" data-name="button-mainnav" data-node-id="634:16495">
+                <button type="button" className="button-navlink button-navlink-hover" onClick={handleNext}>
+                  Next
+                </button>
+              </div>
+              <div className="button-row-wrapper" data-name="button-dab" data-node-id="634:16496">
+                <button type="button" className="button-dab" data-name="Property 1=dab, Property 2=default" data-node-id="476:13447">
+                  <img src="/icons/button.dab-default.svg" alt="DAB" className="button-dab-img button-dab-default" />
+                  <img src="/icons/button.dab-hover.svg" alt="DAB" className="button-dab-img button-dab-hover" />
+                  <img src="/icons/button.dab-focus.svg" alt="DAB" className="button-dab-img button-dab-focus" />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -163,7 +280,7 @@ export default function HomeScreen() {
           <div className="home-bottom-nav" data-name="state=Default">
             <div className="home-bottom-row" data-name="links">
               {/* Profile */}
-              <div className="home-bottom-item" data-name="profile">
+              <Link href="/profile" className="home-bottom-item" data-name="profile">
                 <div className="home-bottom-icon-container">
                   <div className="home-nav-icon-wrapper" data-name="face-content">
                     <div className="home-nav-icon-inner-face">
@@ -172,9 +289,9 @@ export default function HomeScreen() {
                   </div>
                 </div>
                 <span className="home-bottom-label">profile</span>
-              </div>
+              </Link>
               {/* Events */}
-              <div className="home-bottom-item" data-name="events">
+              <Link href="/events" className="home-bottom-item" data-name="events">
                 <div className="home-bottom-icon-container">
                   <div className="home-nav-icon-wrapper" data-name="announcement-01">
                     <div className="home-nav-icon-inner-announcement">
@@ -183,9 +300,9 @@ export default function HomeScreen() {
                   </div>
                 </div>
                 <span className="home-bottom-label">events</span>
-              </div>
+              </Link>
               {/* Chats */}
-              <div className="home-bottom-item home-bottom-item-chat" data-name="chats">
+              <Link href="/chats" className="home-bottom-item home-bottom-item-chat" data-name="chats">
                 <div className="home-bottom-icon-container">
                   <div className="home-nav-icon-wrapper" data-name="message-chat-square">
                     <div className="home-nav-icon-inner-message">
@@ -195,9 +312,9 @@ export default function HomeScreen() {
                   <div className="home-bottom-dot" />
                 </div>
                 <span className="home-bottom-label">chats</span>
-              </div>
+              </Link>
               {/* Dab */}
-              <div className="home-bottom-item home-bottom-active" data-name="dab">
+              <Link href="/home" className="home-bottom-item home-bottom-active" data-name="dab">
                 <div className="home-bottom-icon-container">
                   <div className="home-nav-icon-wrapper" data-name="flash">
                     <div className="home-nav-icon-inner-flash" data-name="Icon">
@@ -208,7 +325,7 @@ export default function HomeScreen() {
                   </div>
                 </div>
                 <span className="home-bottom-label">dab</span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -216,4 +333,3 @@ export default function HomeScreen() {
     </RequireAuth>
   )
 }
-

@@ -6,8 +6,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// Routes where the header should be hidden (onboarding flows, preview pages, mobile home)
-const HIDDEN_HEADER_ROUTES = ['/dab', '/signup']
+// Routes where the header should be hidden (onboarding flows, preview pages, mobile home/chats/events/profile)
+const HIDDEN_HEADER_ROUTES = ['/dab', '/signup', '/chats', '/home', '/events', '/profile']
 
 export default function ClientHeader() {
   const pathname = usePathname()
@@ -30,10 +30,10 @@ export default function ClientHeader() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Hide header on onboarding routes and mobile home page
+  // Hide header on onboarding routes and mobile pages
   const shouldHideHeader = HIDDEN_HEADER_ROUTES.some(route => 
     pathname === route || pathname.startsWith(`${route}/`)
-  ) || (isMobile && pathname === '/home')
+  )
 
   if (shouldHideHeader) {
     return null
