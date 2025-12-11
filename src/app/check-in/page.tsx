@@ -75,8 +75,8 @@ export default function CheckInPage() {
             Perfect for spontaneous linkups.
           </p>
           <div className="feature-actions">
-            <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Get started</button>
-            <button className="megabtn megabtn-ghost" onClick={() => router.push('/partner-finder')}>Find a partner</button>
+            <button className="button-navlink button-navlink-hover" onClick={() => router.push('/signup')}>Get started</button>
+            <button className="button-navlink" onClick={() => router.push('/partner-finder')}>Find a partner</button>
           </div>
           <div className="pill-row">
             <span>Privacy-first opt-in</span>
@@ -159,8 +159,8 @@ export default function CheckInPage() {
             </div>
             <div className="session-actions">
               <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                <button className="megabtn megabtn-ghost" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
-                <button className="megabtn megabtn-cta" style={{ flex: 1 }} onClick={() => handlePing(checkin.id)}>
+                <button className="button-navlink" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
+                <button className="button-navlink button-navlink-hover" style={{ flex: 1 }} onClick={() => handlePing(checkin.id)}>
                   {pinged[checkin.id] ? (
                     'Ping sent'
                   ) : (
@@ -178,7 +178,7 @@ export default function CheckInPage() {
           <div className="panel empty-state">
             <h3>No live check-ins.</h3>
             <p className="muted">Be the first to drop a presence status.</p>
-            <button className="megabtn megabtn-cta" onClick={() => router.push('/signup')}>Check in</button>
+            <button className="button-navlink button-navlink-hover" onClick={() => router.push('/signup')}>Check in</button>
           </div>
         ) : null}
       </section>

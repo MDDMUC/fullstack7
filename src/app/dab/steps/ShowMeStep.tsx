@@ -21,35 +21,35 @@ const availabilityIcon = (option: string) => {
   switch (option) {
     case 'Mornings':
       return (
-        <svg {...common} stroke="var(--accent)">
+        <svg {...common} stroke="var(--color-primary)">
           <circle cx="12" cy="12" r="4" />
           <path strokeLinecap="round" d="M12 2v3m0 14v3m10-10h-3M5 12H2m15.5-6.5-2.1 2.1M8.6 17.4l-2.1 2.1m0-13.6 2.1 2.1m8.8 9.4-2.1-2.1" />
         </svg>
       )
     case 'Middays':
       return (
-        <svg {...common} stroke="#ffd166">
+        <svg {...common} stroke="var(--color-yellow)">
           <circle cx="12" cy="12" r="5" />
           <path strokeLinecap="round" d="M12 3v2m0 14v2m9-9h-2M5 12H3m13.5-6.5-1.5 1.5M9.9 17.6 8.4 19m0-14.6 1.5 1.5m7.6 9.7-1.5-1.5" />
         </svg>
       )
     case 'Afternoons':
       return (
-        <svg {...common} stroke="#ff9f1c">
+        <svg {...common} stroke="var(--color-special)">
           <path strokeLinecap="round" d="M4 16c2.5-3 6.5-4 10-2.5 1.5.6 3 1.7 4 2.5" />
           <path strokeLinecap="round" d="M7 14a5 5 0 0 1 10 0" />
         </svg>
       )
     case 'Evenings':
       return (
-        <svg {...common} stroke="#9ad0ff">
+        <svg {...common} stroke="color-mix(in srgb, var(--color-primary) 35%, var(--color-text) 65%)">
           <path strokeLinecap="round" d="M16 4a6 6 0 1 0 4 10 7 7 0 1 1-4-10Z" />
           <path strokeLinecap="round" d="M5 19h14" />
         </svg>
       )
     case 'Weekdays':
       return (
-        <svg {...common} stroke="var(--accent)">
+        <svg {...common} stroke="var(--color-primary)">
           <rect x="4" y="6" width="16" height="12" rx="2" />
           <path strokeLinecap="round" d="M8 4v4m8-4v4" />
           <path d="M7 12h2m3 0h5" />
@@ -57,7 +57,7 @@ const availabilityIcon = (option: string) => {
       )
     case 'Weekends':
       return (
-        <svg {...common} stroke="var(--accent-2)">
+        <svg {...common} stroke="var(--color-secondary)">
           <path strokeLinecap="round" d="M7 6v6" />
           <path strokeLinecap="round" d="M11 6v8" />
           <path strokeLinecap="round" d="M15 8v6" />
@@ -67,7 +67,7 @@ const availabilityIcon = (option: string) => {
       )
     case 'Flexible':
       return (
-        <svg {...common} stroke="#b9fbc0">
+        <svg {...common} stroke="color-mix(in srgb, var(--color-primary) 40%, var(--color-yellow) 60%)">
           <path strokeLinecap="round" d="M6 8c2-3 10-3 12 2-4 0-6 2-6 6-3 0-5-2-6-4" />
           <circle cx="8" cy="16" r="1" />
           <circle cx="16" cy="10" r="1" />
@@ -75,14 +75,14 @@ const availabilityIcon = (option: string) => {
       )
     case 'Always':
       return (
-        <svg {...common} stroke="var(--accent)">
+        <svg {...common} stroke="var(--color-primary)">
           <circle cx="12" cy="12" r="7" />
           <path strokeLinecap="round" d="M12 8v4l3 2" />
         </svg>
       )
     case 'Spontaneous':
       return (
-        <svg {...common} stroke="#ffd166">
+        <svg {...common} stroke="var(--color-yellow)">
           <path strokeLinecap="round" d="m7 10 2 2-2 2m4-4 2 2-2 2m4-4 2 2-2 2" />
           <path strokeLinecap="round" d="M5 6h14" />
         </svg>
@@ -117,10 +117,10 @@ export default function ShowMeStep() {
     >
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
-        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)', margin: 0 }}>
+        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--color-text)', margin: 0 }}>
           Availability
         </h1>
-        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--color-muted)' }}>
           Only real people. When are you usually available to climb?
         </p>
 
@@ -146,9 +146,9 @@ export default function ShowMeStep() {
                 style={{
                   minWidth: '140px',
                   width: '100%',
-                  border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--stroke)'}`,
-                  background: isSelected ? 'rgba(92, 225, 230, 0.12)' : '#0f131d',
-                  color: isSelected ? 'var(--accent)' : 'var(--text)',
+                  border: `1px solid ${isSelected ? 'var(--color-primary)' : 'var(--color-stroke)'}`,
+                  background: isSelected ? 'rgba(92, 225, 230, 0.12)' : 'var(--color-panel)',
+                  color: isSelected ? 'var(--color-primary)' : 'var(--color-text)',
                 }}
               >
                 <span className="font-normal leading-none text-[16px] tracking-[-0.2px] w-full text-center block flex items-center justify-center gap-2">

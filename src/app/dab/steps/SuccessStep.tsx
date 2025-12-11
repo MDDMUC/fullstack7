@@ -29,7 +29,12 @@ export default function SuccessStep() {
 
   // Create confetti on mount
   useEffect(() => {
-    const colors = ['#5ce1e6', '#e68fff', '#FFFFFF', '#E0E0E0']
+    const colors = [
+      'var(--color-primary)',
+      'var(--color-secondary)',
+      'var(--color-text-white)',
+      'color-mix(in srgb, var(--color-text-white) 70%, transparent)',
+    ]
     const confettiPieces = Array.from({ length: 50 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,

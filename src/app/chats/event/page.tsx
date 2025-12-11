@@ -3,7 +3,12 @@
 import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
 
-const AVATAR_IMG = 'http://localhost:3845/assets/4988ee5a6746ff9791c7714cf1a1e34b3cd63723.png'
+const HERO_IMG = 'https://www.figma.com/api/mcp/asset/6adb3ca3-0513-4775-88ca-40e2e7b63cd3'
+const AVATAR_IMG = 'https://www.figma.com/api/mcp/asset/875a43ce-f895-4170-893e-c2d83c8a6e56'
+const BACK_ICON = 'https://www.figma.com/api/mcp/asset/5fed23cc-cd2b-40b2-baae-f59643e79b0b'
+const MENU_ICON = 'https://www.figma.com/api/mcp/asset/ccc45227-14b0-4a26-bcc6-3cf30f676a51'
+const STATUS_ICON_PRIMARY = 'https://www.figma.com/api/mcp/asset/9669b4a0-521f-4460-b5ea-398ba81c3620'
+const STATUS_ICON_SECONDARY = 'https://www.figma.com/api/mcp/asset/a7a888de-184f-46cf-a824-bf78fa777b31'
 
 export default function ChatsEventPage() {
   return (
@@ -11,35 +16,49 @@ export default function ChatsEventPage() {
       <div className="chats-event-screen" data-name="/chats/event">
         <div className="chats-event-content">
           <div className="chats-event-card">
-            <div className="chats-event-header">
+            <div className="chats-event-backbar">
               <Link href="/chats" className="chats-event-back" aria-label="Back">
-                <img src="/icons/chevron-left.svg" alt="" className="chats-event-back-icon" />
+                <img src={BACK_ICON} alt="" className="chats-event-back-icon" />
               </Link>
-              <div className="chats-event-meta">
-                <img src={AVATAR_IMG} alt="Event" className="chats-event-avatar" />
-                <div className="chats-event-title">PETZL Rope Demo</div>
-              </div>
-              <div className="chats-event-dots">
-                <img src="/icons/dots.svg" alt="" className="chats-event-dots-img" />
+              <div className="chats-event-back-title">back</div>
+              <button type="button" className="chats-event-menu" aria-label="Menu">
+                <img src={MENU_ICON} alt="" className="chats-event-menu-icon" />
+              </button>
+            </div>
+
+            <div className="chats-event-hero">
+              <div className="chats-event-hero-bg" style={{ backgroundImage: `url(${HERO_IMG})` }} />
+              <div className="chats-event-hero-overlay" />
+              <div className="chats-event-hero-text">
+                <div className="chats-event-hero-title">Beginner Lead Class</div>
+                <div className="chats-event-hero-subtitle">DAV Thalkirchen</div>
+                <div className="chats-event-hero-info">
+                  <span className="chats-event-hero-location">Munich</span>
+                  <span className="chats-event-hero-attendance">27 people are going</span>
+                </div>
               </div>
             </div>
 
             <div className="chats-event-divider" />
 
+            <div className="chats-event-system-text">You joined this chat on 11/07/2023.</div>
+
             <div className="chats-event-message-row">
-              <img src={AVATAR_IMG} alt="avatar" className="chats-event-bubble-avatar" />
+              <div className="chats-event-avatar">
+                <img src={AVATAR_IMG} alt="avatar" />
+              </div>
               <div className="chats-event-bubble chats-event-bubble-incoming">
-                <p className="chats-event-bubble-text">Hey, what’s up with dog pics?</p>
+                Hey, what&apos;s up with dog pics?
               </div>
             </div>
 
-            <div className="chats-event-message-row chats-event-message-row-out">
-              <div className="chats-event-bubble chats-event-bubble-outgoing">
-                <p className="chats-event-bubble-text chats-event-bubble-text-out">cuz em a dog 🐶</p>
-              </div>
-              <div className="chats-event-status">
-                <img src="/icons/message-plus.svg" alt="" className="chats-event-status-icon" />
-                <img src="/icons/read.svg" alt="" className="chats-event-status-icon-secondary" />
+            <div className="chats-event-response">
+              <div className="chats-event-bubble chats-event-bubble-outgoing">cuz em a dog 🐶</div>
+              <div className="chats-event-status-row">
+                <div className="chats-event-status-iconwrap">
+                  <img src={STATUS_ICON_PRIMARY} alt="" className="chats-event-status-icon" />
+                </div>
+                <img src={STATUS_ICON_SECONDARY} alt="" className="chats-event-status-check" />
                 <span className="chats-event-status-text">Sent</span>
               </div>
             </div>
@@ -73,7 +92,7 @@ export default function ChatsEventPage() {
                 </div>
                 <span className="home-bottom-label">events</span>
               </Link>
-              <Link href="/chats" className="home-bottom-item home-bottom-item-chat home-bottom-active">
+              <Link href="/chats" className="home-bottom-item home-bottom-item-chat">
                 <div className="home-bottom-icon-container">
                   <div className="home-nav-icon-wrapper" data-name="message-chat-square">
                     <div className="home-nav-icon-inner-message">
@@ -84,7 +103,7 @@ export default function ChatsEventPage() {
                 </div>
                 <span className="home-bottom-label">chats</span>
               </Link>
-              <Link href="/home" className="home-bottom-item">
+              <Link href="/home" className="home-bottom-item home-bottom-active">
                 <div className="home-bottom-icon-container">
                   <div className="home-nav-icon-wrapper" data-name="flash">
                     <div className="home-nav-icon-inner-flash" data-name="Icon">

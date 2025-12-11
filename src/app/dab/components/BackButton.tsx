@@ -23,15 +23,15 @@ export default function BackButton() {
     padding: '8px',
     borderRadius: '50%',
     background: 'rgba(15, 19, 29, 0.8)',
-    border: '1px solid var(--stroke)',
-    color: 'var(--text)',
+    border: '1px solid var(--color-stroke)',
+    color: 'var(--color-text)',
     cursor: 'pointer',
     transition: 'all 120ms ease',
   }
 
   const hoverStyle = {
-    borderColor: 'var(--accent)',
-    color: 'var(--accent)',
+    borderColor: 'var(--color-primary)',
+    color: 'var(--color-primary)',
   }
 
   if (currentStep === 1) {

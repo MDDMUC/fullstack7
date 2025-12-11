@@ -1,8 +1,10 @@
 ﻿'use client'
 
+import ButtonGhost from './ButtonGhost'
+import ButtonCta from './ButtonCta'
 import Link from 'next/link'
-import { supabase } from '@/lib/supabaseClient'
 import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 
 function UserNav() {
   const [userEmail, setUserEmail] = useState<string | null>(null)
@@ -40,7 +42,9 @@ function UserNav() {
   if (!checked) {
     return (
       <nav className="site-header-cta">
-        <span className="site-header-ghost" style={{ opacity: 0.6 }}>Loading…</span>
+        <ButtonGhost disabled aria-live="polite" aria-busy>
+          Loading…
+        </ButtonGhost>
       </nav>
     )
   }
@@ -48,17 +52,15 @@ function UserNav() {
   if (!userEmail) {
     return (
       <nav className="site-header-cta">
-        <Link className="site-header-ghost" href="/login">Login</Link>
-        <Link className="site-header-cta-btn" href="/signup">Get Started</Link>
+        <ButtonGhost href="/login">Login</ButtonGhost>
+        <ButtonCta href="/signup">Get Started</ButtonCta>
       </nav>
     )
   }
 
   return (
     <nav className="site-header-cta">
-      <button className="site-header-ghost" onClick={handleSignOut}>
-        Logout
-      </button>
+      <ButtonGhost onClick={handleSignOut}>Logout</ButtonGhost>
     </nav>
   )
 }

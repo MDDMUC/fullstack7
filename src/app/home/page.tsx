@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { ChevronDownIcon } from '@heroicons/react/24/outline'
+import ButtonDab from '@/components/ButtonDab'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
@@ -19,7 +19,7 @@ type Profile = DbProfile & {
 
 const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
-const FIGMA_CARD_IMAGE = 'http://localhost:3845/assets/104b4ede10b02efcc011650409ddff69e359dddd.png' // Figma node 633:14303
+const FIGMA_CARD_IMAGE = 'https://www.figma.com/api/mcp/asset/11d0ee86-62b7-427f-86c4-f30e4e38bbfb' // Figma node 633:14303
 
 const FILTER_LABELS = ['city', 'style', 'gym', 'time']
 
@@ -163,7 +163,7 @@ export default function HomeScreen() {
             {FILTER_LABELS.map(label => (
               <button key={label} type="button" className="filter-pill">
                 <span className="filter-pill-label">{label}</span>
-                <ChevronDownIcon className="filter-pill-icon" />
+                <img src="/icons/Color.svg" alt="" className="filter-pill-icon" />
               </button>
             ))}
           </div>
@@ -172,7 +172,12 @@ export default function HomeScreen() {
             {showStatusRow && (
               <div className="home-card-header">
                 <div className="home-card-header-left">
-                  {showProChip && <span className="button-chip button-chip-pro">PRO</span>}
+                  {showProChip && (
+                    <span className="button-chip button-chip-pro">
+                      <img src="/icons/pro.svg" alt="" className="button-chip-pro-icon" />
+                      PRO
+                    </span>
+                  )}
                 </div>
                 <div className="home-card-header-right">
                   {showOnlinePill && (
@@ -267,11 +272,7 @@ export default function HomeScreen() {
                 </button>
               </div>
               <div className="button-row-wrapper" data-name="button-dab" data-node-id="634:16496">
-                <button type="button" className="button-dab" data-name="Property 1=dab, Property 2=default" data-node-id="476:13447">
-                  <img src="/icons/button.dab-default.svg" alt="DAB" className="button-dab-img button-dab-default" />
-                  <img src="/icons/button.dab-hover.svg" alt="DAB" className="button-dab-img button-dab-hover" />
-                  <img src="/icons/button.dab-focus.svg" alt="DAB" className="button-dab-img button-dab-focus" />
-                </button>
+                <ButtonDab type="button" data-name="Property 1=dab, Property 2=default" data-node-id="476:13447" />
               </div>
             </div>
           </div>

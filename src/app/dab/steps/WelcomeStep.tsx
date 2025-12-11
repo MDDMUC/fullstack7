@@ -134,14 +134,14 @@ export default function WelcomeStep() {
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)', margin: 0 }}>
+          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--color-text)', margin: 0 }}>
             Pledge
           </h1>
         </div>
-        <p className="font-normal leading-normal text-[18px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+        <p className="font-normal leading-normal text-[18px] text-center max-w-2xl" style={{ color: 'var(--color-muted)' }}>
           Only real people. Commit to the crew before we connect you.
         </p>
-        <p className="text-sm font-semibold uppercase tracking-[1px]" style={{ color: 'var(--accent)' }}>
+        <p className="text-sm font-semibold uppercase tracking-[1px]" style={{ color: 'var(--color-primary)' }}>
           Select all to continue
         </p>
 
@@ -154,8 +154,8 @@ export default function WelcomeStep() {
                 key={item.title}
                 className="flex gap-4 items-start justify-center p-3 rounded-[12px]"
                 style={{
-                  border: `1px solid ${checked || isHovered ? 'var(--accent)' : 'var(--stroke)'}`,
-                  background: checked ? 'rgba(92, 225, 230, 0.08)' : isHovered ? '#131826' : '#0f131d',
+                  border: `1px solid ${checked || isHovered ? 'var(--color-primary)' : 'var(--color-stroke)'}`,
+                  background: checked ? 'rgba(92, 225, 230, 0.08)' : isHovered ? 'var(--color-card)' : 'var(--color-panel)',
                   cursor: 'pointer',
                   boxShadow: isHovered
                     ? '0 12px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)'
@@ -171,23 +171,23 @@ export default function WelcomeStep() {
                 <div
                   className="mt-1 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors"
                   style={{
-                    borderColor: checked ? 'var(--accent)' : 'var(--stroke)',
-                    background: checked ? 'var(--accent)' : 'transparent',
+                    borderColor: checked ? 'var(--color-primary)' : 'var(--color-stroke)',
+                    background: checked ? 'var(--color-primary)' : 'transparent',
                   }}
                 >
                   {checked && (
-                    <div className="w-3 h-3 rounded-full" style={{ background: '#0c0e12' }}></div>
+                    <div className="w-3 h-3 rounded-full" style={{ background: 'var(--color-bg)' }}></div>
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold leading-normal text-[18px]" style={{ color: 'var(--text)', margin: 0 }}>
+                  <p className="font-bold leading-normal text-[18px]" style={{ color: 'var(--color-text)', margin: 0 }}>
                     {item.title}
                   </p>
-                  <p className="font-normal leading-normal text-[15px] mt-1" style={{ color: 'var(--muted)', margin: 0 }}>
+                  <p className="font-normal leading-normal text-[15px] mt-1" style={{ color: 'var(--color-muted)', margin: 0 }}>
                     {item.detail}
                   </p>
                   {!checked && (
-                    <p className="text-[12px] font-semibold mt-1" style={{ color: 'var(--accent)', letterSpacing: '0.5px' }}>
+                    <p className="text-[12px] font-semibold mt-1" style={{ color: 'var(--color-primary)', letterSpacing: '0.5px' }}>
                       Tap to agree (required)
                     </p>
                   )}

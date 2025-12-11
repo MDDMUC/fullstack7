@@ -226,8 +226,8 @@ export default function GymChatPage() {
             Real-time presence, respectful vibes, and prompts that keep the conversation moving.
           </p>
           <div className="feature-actions">
-            <button className="megabtn megabtn-cta" onClick={handleJoin}>Get started</button>
-            <button className="megabtn megabtn-ghost" onClick={() => router.push('/partner-finder')}>Find a partner</button>
+            <button className="button-navlink button-navlink-hover" onClick={handleJoin}>Get started</button>
+            <button className="button-navlink" onClick={() => router.push('/partner-finder')}>Find a partner</button>
           </div>
           <div className="pill-row">
             <span>Belay-verified channels</span>
@@ -329,7 +329,7 @@ export default function GymChatPage() {
               <h3>{activeThread?.title || 'Thread'}</h3>
               <p className="muted small">{activeThread?.vibe || 'Climber chat'} - {activeThread?.members ?? 0} people</p>
             </div>
-            <button className="megabtn megabtn-ghost" onClick={handleJoin}>Join chat</button>
+            <button className="button-navlink" onClick={handleJoin}>Join chat</button>
           </header>
 
           <div className="thread-tabs">
@@ -387,8 +387,8 @@ export default function GymChatPage() {
               readOnly
             />
             <div className="chat-actions">
-              <button className="megabtn megabtn-ghost" onClick={handleJoin}>+ Clip</button>
-              <button className="megabtn megabtn-cta" onClick={handleJoin}>Post</button>
+              <button className="button-navlink" onClick={handleJoin}>+ Clip</button>
+              <button className="button-navlink button-navlink-hover" onClick={handleJoin}>Post</button>
             </div>
           </footer>
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import ButtonDab from './ButtonDab'
 import { fetchProfiles, Profile } from '@/lib/profiles'
 import { supabase } from '@/lib/supabaseClient'
 
@@ -235,17 +236,15 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
           <p>{profile.bio || 'Looking for people to hit me up. Always keen to just hang and give a belay if neccessary. Let me know when you have time and hit me up xx.'}</p>
         </div>
 
-        {/* CTA Row - using megabutton system */}
-        <div className="fc-cta-row" style={{ gap: '12px' }}>
-          <div className="fc-cta-wrapper">
-            <button className="megabtn megabtn-ghost megabtn-full" onClick={onPass} aria-label="pass">
+        {/* CTA Row */}
+        <div className="fc-cta-row" style={{ gap: 'var(--space-md)' }}>
+          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
+            <button className="button-navlink" style={{ width: '100%', height: 'var(--btn-height-lg)' }} onClick={onPass} aria-label="pass">
               Pass
             </button>
           </div>
-          <div className="fc-cta-wrapper">
-            <button className="megabtn megabtn-dab-filled" onClick={onDab} aria-label="send a like">
-              <img src="/dab-logo.svg" alt="DAB" />
-            </button>
+          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
+            <ButtonDab onClick={onDab} aria-label="send a like" />
           </div>
         </div>
       </div>
@@ -266,8 +265,8 @@ function Hero({ featured }: { featured?: Profile }) {
             DAB isn't for everyone. It's for the ones who chase the set. Drop in, see who's there, throw a dab. You're not climbing alone anymore.
           </p>
           <div className="landing-hero-actions">
-            <button className="megabtn megabtn-cta">Get Started</button>
-            <button className="megabtn megabtn-ghost">Browse Climbers</button>
+            <button className="button-navlink button-navlink-hover">Get Started</button>
+            <button className="button-navlink">Browse Climbers</button>
           </div>
           <div className="landing-hero-badges">
             <span>Stoke</span>
@@ -382,15 +381,13 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
           <p>{profile.bio || 'Ready for a safe catch and good beta.'}</p>
         </div>
         
-        {/* CTA Row - using megabutton system */}
-        <div className="gpc-cta" style={{ gap: '12px' }}>
-          <div className="fc-cta-wrapper">
-            <button className="megabtn megabtn-ghost megabtn-full" onClick={onPass} aria-label="pass">Pass</button>
+        {/* CTA Row */}
+        <div className="gpc-cta" style={{ gap: 'var(--space-md)' }}>
+          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
+            <button className="button-navlink" style={{ width: '100%', height: 'var(--btn-height-lg)' }} onClick={onPass} aria-label="pass">Pass</button>
           </div>
-          <div className="fc-cta-wrapper">
-            <button className="megabtn megabtn-dab-filled" onClick={onDab} aria-label="send a like">
-              <img src="/dab-logo.svg" alt="DAB" />
-            </button>
+          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
+            <ButtonDab onClick={onDab} aria-label="send a like" />
           </div>
         </div>
       </div>

@@ -32,12 +32,12 @@ export default function PhotosStep() {
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)', margin: 0 }}>
+          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--color-text)', margin: 0 }}>
             Photos
           </h1>
         </div>
 
-        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--color-muted)' }}>
           The more the better match
         </p>
 
@@ -46,7 +46,7 @@ export default function PhotosStep() {
             <div
               key={index}
               className="h-[150px] w-[200px] rounded-[12px] relative overflow-hidden"
-              style={{ border: '1px solid var(--stroke)', background: '#0f131d' }}
+              style={{ border: '1px solid var(--color-stroke)', background: 'var(--color-panel)' }}
             >
               {photos[index] ? (
                 <>
@@ -59,9 +59,9 @@ export default function PhotosStep() {
                     type="button"
                     onClick={() => handleRemovePhoto(index)}
                     className="absolute top-2 right-2 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold transition-colors"
-                    style={{ background: '#ff7b7b', color: '#fff' }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = '#ff5252'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = '#ff7b7b'}
+                    style={{ background: 'var(--color-red)', color: 'var(--color-text-white)' }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = 'color-mix(in srgb, var(--color-red) 80%, var(--color-text-white) 20%)'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-red)'}
                   >
                     A-
                   </button>
@@ -71,9 +71,9 @@ export default function PhotosStep() {
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full h-full flex items-center justify-center text-sm transition-colors"
-                  style={{ color: 'var(--muted)' }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--accent)'}
-                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--muted)'}
+                  style={{ color: 'var(--color-muted)' }}
+                  onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
+                  onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-muted)'}
                 >
                   <span>+ Add photo</span>
                 </button>

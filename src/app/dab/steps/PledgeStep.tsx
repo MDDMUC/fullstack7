@@ -197,14 +197,14 @@ export default function PledgeStep() {
                           cx="10"
                           cy="22"
                           r="9"
-                          stroke={isAgreed ? '#5ce1e6' : '#1f2633'}
+                          stroke={isAgreed ? 'var(--color-primary)' : 'var(--color-stroke)'}
                           strokeWidth="2"
                           fill={isAgreed ? 'rgba(92, 225, 230, 0.1)' : 'transparent'}
                         />
                         {isAgreed && (
                           <path
                             d="M6 22L9 25L14 19"
-                            stroke="#5ce1e6"
+                            stroke="var(--color-primary)"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -232,7 +232,7 @@ export default function PledgeStep() {
 
             {/* Error message */}
             {submitError && (
-              <div className="onb-error-message" style={{ color: '#ff6b6b', fontSize: '14px', textAlign: 'center', marginTop: '8px' }}>
+              <div className="onb-error-message" style={{ color: 'var(--color-red)', fontSize: '14px', textAlign: 'center', marginTop: '8px' }}>
                 {submitError}
               </div>
             )}

@@ -35,7 +35,7 @@
 
 - **Figma Frame**: `/ home` `633:14303` (02_COMPONENTS)
 - **Code**: `src/app/home/page.tsx`
-- **Styles**: `src/app/globals.css` (`.home-*`), uses existing megabtn tokens
+- **Styles**: `src/app/globals.css` (`.home-*`), uses new tokenized button classes (`.button-cta`, `.button-ghost`, `.button-dab`, etc.)
 - **Extraction**: `get_variable_defs`, `get_design_context` (forceCode:true), `get_screenshot`
 
 ### ⚠️ CRITICAL: Special Chips Display Rules
@@ -92,8 +92,8 @@ The `Button.Chip` component in Figma has special variants that MUST use their sp
 | Overlay | gradient to bottom (`rgba(0,0,0,0)` → `rgba(0,0,0,0.75)`), padding `32px 12px 12px 12px`, gap `6px`, radius `14px` |
 | Name/age | `32px` heading/md, weights 800/400, color `#fff`, gap `8px` |
 | Location | `16px 500`, color `#e9eef7` |
-| Tags | `.megabtn-tag` bg `rgba(92,225,230,0.08)`, text `#5ce1e6`, radius `999px`, padding `6px 10px`; grade text `#e68fff` |
-| Chips | `.megabtn-chip` bg `#151927` in overlay, border `#5ce1e6` (accent) or `#1f2633` (muted), padding `8px x 6px`, radius `8px`, text `12px` |
+| Tags | `.button-tag` bg `rgba(92,225,230,0.08)`, text `#5ce1e6`, radius `999px`, padding `6px 10px`, min-width 88px; grade text `#e68fff` |
+| Chips | `.fc-chip` family (panel/card/stroke tokens), padding uses spacing tokens, radius `var(--radius-sm)`, text `var(--font-pill-size)` |
 | Bio | bg `#1f2633`, padding `12px 16px`, radius `14px`, text `14px 500` color `#8ea0bd`, inset shadow `inset 4px 4px 4px rgba(0,0,0,0.5)` |
 | CTA row | gap `12px` |
 | Next button | bg `#151927`, radius `10px`, padding `10px 16px`, text `15px 700` color `#e9eef7` |
@@ -126,7 +126,7 @@ home-screen
 
 - **Figma Frame**: `/ chats` `633:14116` (02_COMPONENTS)
 - **Code**: `src/app/chats/page.tsx`
-- **Styles**: `src/app/globals.css` (`.chats-*`), uses existing megabtn tokens
+- **Styles**: `src/app/globals.css` (`.chats-*`), uses tokenized chips/pills/buttons (no megabtn references)
 - **Extraction**: `get_variable_defs`, `get_design_context` (forceCode:true), `get_screenshot`
 
 ### Key Token Values (exact)
@@ -370,6 +370,8 @@ All values in this document are extracted from Figma file `DAB-Build` using the 
 ## Design Tokens (Exact from Figma)
 
 **All values extracted directly from Figma file `DAB-Build` using `get_variable_defs`**
+
+- Token naming is now `--color-primary` / `--color-secondary` (old `accent`/`accent2` aliases were removed). Compatibility aliases that remain: `--color-bg`, `--color-panel`, `--color-card`, `--color-stroke`, `--color-text`, `--color-muted`, `--color-text-dark`, `--color-yellow`, `--color-special`, `--color-red`. New tokens: `--color-accent-warm-cream` (events gradients) and `--radius-card` (24px). Shorthand aliases (`--text`, `--stroke`, `--bg`, `--panel`, `--card`) have been removed after migration.
 
 ---
 
@@ -748,78 +750,239 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 
 | Class | Figma Node | Description | Padding | Radius | States |
 |-------|------------|-------------|---------|--------|--------|
-| `.megabtn-cta` | button.cta | Gradient fill, dark text | 10px 16px | 10px | Default: gradient + shadow/base, Hover: border + shadow/small |
-| `.megabtn-ghost` | button.ghost | Transparent, muted border | 10px 16px | 10px | Border: #8ea0bd (muted) |
-| `.megabtn-navlink` | button.navlink | Dark fill `#1f2633` | 10px 16px | 10px | Background: #1f2633, text: muted |
-| `.megabtn-dab` | button.dab | Cyan border, logo | 10px 16px | 10px | Default: border only, Hover: border + shadow/small |
-| `.megabtn-dab-filled` | button.dab (filled) | Gradient fill, logo | 10px 16px | 10px | Gradient background variant |
+| `.button-cta` | button.cta (node 633:13958) | Gradient fill accent2→accent, dark text | 10px 16px | 10px | Default: gradient fill, Hover: border #5ce1e6 + shadow/small, Focus: border #5ce1e6 |
+| `.button-ghost` | button.ghost (node 633:13977) | Transparent, muted border (default), stroke hover, primary focus + inner lightfill | 10px 16px | 10px | Default border: #8ea0bd, Hover border: #1f2633, Focus: border #5ce1e6 + inset 0 0 0 4px rgba(92,225,230,0.08) |
+| `.button-navlink` | button.navlink (node 633:13974) | Transparent default, card hover, cyan focus | 10px 16px | 10px | Default: text #8ea0bd; Hover: bg #151927 text #e9eef7; Focus: bg rgba(92,225,230,0.5) text #5ce1e6 + inset 0 0 0 4px rgba(92,225,230,0.08) |
+| `.button-activitylog` | button.activitylog (node 633:13980) | Card bg, muted text; focus adds primary border + inner lightfill | 10px 16px | 10px | Default: bg #151927 text #8ea0bd border #1f2633; Hover: text #e9eef7; Focus: bg #0c0e12 text #5ce1e6 border #5ce1e6 + inset 4px rgba(92,225,230,0.08) |
+| `.button-radio` | button.radio (node 633:13983) | Radio row with icon + label | 10px 16px | 10px | Default: bg #0c0e12 text #8ea0bd border #1f2633; Hover: bg #151927 text #e9eef7; Focus: bg #0c0e12 text #5ce1e6 border #5ce1e6 + inset 4px rgba(92,225,230,0.08) |
+| `.button-footerlink` | button.footerlink (node 633:13962) | Footer text link | 10px 16px | 10px | Default: text #8ea0bd; Hover: text #e9eef7; Focus: text #5ce1e6 + inset 4px rgba(92,225,230,0.08) |
+| `.button-dab` | button.dab (node 633:13997) | Gradient outline + DAB mark | 10px 16px | 10px | Default/focus: gradient accent2→accent, border #5ce1e6; Hover: gradient accent→accent2 + shadow/small; Focus: border #5ce1e6 |
 | `.megabtn-cardaction` | button.cardaction | Icon-only action button | 0px | 14px | 42px × 38px, bg: #11141c |
 | `.megabtn-cardaction-cancel` | button.cardaction cancel | Cancel/X icon variant | 0px | 14px | Same as base |
 | `.megabtn-cardaction-addfriend` | button.cardaction addfriend | Add friend icon variant | 0px | 14px | Same as base |
 | `.megabtn-cardaction-message` | button.cardaction message | Message icon variant | 0px | 14px | Same as base |
 
 ```css
-/* CTA Button - Gradient (Default State) */
-.megabtn-cta {
-  padding: 10px 16px;
-  background: linear-gradient(120deg, #5ce1e6, #e68fff);
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #0c0e12;
-  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4);
+/* CTA Button (button.cta — node 633:13958) */
+.button-cta {
+  min-width: 117px;
+  padding: 10px 16px; /* py: button/padding/md, px: button/padding/xxl */
   border: none;
+  border-radius: 10px; /* radius/md */
+  background-image: linear-gradient(247.35416303387024deg, #e68fff 11.557%, #5ce1e6 87.691%);
+  font-size: 15px; /* button/base */
+  font-weight: 700;
+  color: #0c0e12; /* color/bg */
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-/* CTA Button - Hover State */
-.megabtn-cta:hover {
-  background: transparent;
-  border: 1px solid #5ce1e6;
-  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4);
+.button-cta:hover:not(:disabled) {
+  border: 1px solid #5ce1e6; /* color/primary */
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4); /* shadow/small */
 }
 
-/* Ghost Button */
-.megabtn-ghost {
+.button-cta:focus-visible {
+  outline: none;
+  border: 1px solid #5ce1e6; /* color/primary */
+}
+
+.button-cta:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tailwind extract (exact from get_design_context 633:13958)
+   Default: content-stretch flex flex-col items-start relative w-[117px] ; inner: px-[var(---xxl,16px)] py-[var(---md,10px)] rounded-[var(---md,10px)] bg gradient accent2→accent
+   Hover: container adds shadow-[0px_2px_2px_0px_rgba(0,0,0,0.4)] ; inner adds border-[var(---primary,#5ce1e6)]
+   Focus: inner adds border-[var(---primary,#5ce1e6)]
+*/
+
+/* Tailwind extract (exact from get_design_context 633:13997)
+   Container: h-[38px] w-[117px]
+   Default/Focus: border-[var(---primary,#5ce1e6)] rounded-[var(---md,10px)] px-[16px] py-[10px] bg linear-gradient(247.35deg, accent2 11.557%, accent 87.691%)
+   Hover: shadow-[0px_2px_2px_0px_rgba(0,0,0,0.4)] bg linear-gradient(247.35deg, accent 11.557%, accent2 82.2%)
+   Icon: w-[36.498px] h-[22px]; hover uses alt asset
+*/
+
+/* Tailwind extract (exact from get_design_context 633:13989)
+   Container: w-[88px]
+   Default (style): bg-[rgba(92,225,230,0.08)] px-[10px] py-[6px] rounded-[999px] text-[12px] text-[color:var(---primary,#5ce1e6)]
+   Grade: text-[color:var(---secondary,#e68fff)]
+*/
+
+/* Tailwind extract (exact from get_design_context 633:13968)
+   Base: px-[10px] py-[6px] rounded-[999px] bg-[rgba(92,225,230,0.2)] text-[12px] text-[color:var(---primary,#5ce1e6)] w-[88px]
+   Hover: bg-[rgba(92,225,230,0.4)]
+   Focus: bg-[rgba(92,225,230,0.2)] border-[var(---primary,#5ce1e6)]
+   Busy: bg-[rgba(255,209,102,0.08)] border-[var(---yellow,#ffd166)] text-[color:var(---yellow,#ffd166)]
+   Warning: bg-[rgba(255,123,123,0.08)] border-[var(---special,#ff9500)] text-[color:var(---special,#ff9500)]
+   Pink: bg-[rgba(230,143,255,0.08)] border-[var(---secondary,#e68fff)] text-[color:var(---secondary,#e68fff)]
+*/
+
+/* Tailwind extract (exact from get_design_context 633:13980)
+   Container: h-[38px] w-[117px]
+   Default: bg-[var(---card,#151927)] border-[var(---stroke,#1f2633)] text-[color:var(---muted,#8ea0bd)] px-[16px] py-[10px] rounded-[10px]
+   Hover: text-[color:var(---text,#e9eef7)]
+   Focus: bg-[var(---bg,#0c0e12)] border-[var(---primary,#5ce1e6)] text-[color:var(---primary,#5ce1e6)] shadow-[inset_0px_0px_0px_4px_rgba(92,225,230,0.08)]
+*/
+
+/* Tailwind extract (exact from get_design_context 633:13983)
+   Container: px-[16px] py-[10px] rounded-[10px] h-[38px] min-w-[117px] gap-[8px]
+   Default: bg-[var(---bg,#0c0e12)] border-[var(---stroke,#1f2633)] text-[color:var(---muted,#8ea0bd)]
+   Hover: bg-[var(---card,#151927)] text-[color:var(---text,#e9eef7)] border stroke
+   Focus: bg-[var(---bg,#0c0e12)] text-[color:var(---primary,#5ce1e6)] border-[var(---primary,#5ce1e6)] shadow-[inset_0px_0px_0px_4px_rgba(92,225,230,0.08)]
+   Icon: size-[20px]; default/hover/focus SVG assets swap per state
+*/
+
+/* Tailwind extract (exact from get_design_context 633:13962)
+   Container: px-[16px] py-[10px] rounded-[10px]
+   Default: text-[color:var(---muted,#8ea0bd)]
+   Hover: text-[color:var(---text,#e9eef7)]
+   Focus: text-[color:var(---primary,#5ce1e6)] shadow-[inset_0px_0px_0px_4px_rgba(92,225,230,0.08)]
+*/
+
+/* Ghost Button (button.ghost — node 633:13977) */
+.button-ghost {
+  height: 38px;
+  min-width: 117px;
   padding: 10px 16px;
   background: transparent;
-  border: 1px solid #8ea0bd;  /* muted color, not stroke */
+  border: 1px solid #8ea0bd; /* color/muted */
+  border-radius: 10px; /* radius/md */
+  font-size: 15px; /* button/base */
+  font-weight: 700;
+  color: #e9eef7; /* color/text */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: border-color 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.button-ghost:hover:not(:disabled) {
+  border-color: #1f2633; /* color/stroke */
+}
+
+.button-ghost:focus-visible {
+  outline: none;
+  border-color: #5ce1e6; /* color/primary */
+  color: #5ce1e6;
+  box-shadow: inset 0 0 0 4px rgba(92, 225, 230, 0.08); /* inner/lightfill */
+}
+
+.button-ghost:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Tailwind extract (exact from get_design_context 633:13977)
+   Container: content-stretch flex flex-col h-[38px] items-start relative w-[117px]
+   Default: border border-solid px-[var(---xxl,16px)] py-[var(---md,10px)] rounded-[var(---md,10px)] border-[var(---muted,#8ea0bd)]
+   Hover: border-[var(---stroke,#1f2633)]
+   Focus: border-[var(---primary,#5ce1e6)] text-[color:var(---primary,#5ce1e6)] shadow-[inset_0px_0px_0px_4px_rgba(92,225,230,0.08)]
+*/
+
+/* Navlink Button (button.navlink — node 633:13974) */
+.button-navlink {
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 700;
+  color: #8ea0bd;
+  min-width: 117px;
+  height: 38px;
+  line-height: 1;
+  text-align: center;
+}
+
+.button-navlink-hover {
+  background: #151927;
   color: #e9eef7;
 }
 
-/* Navlink Button */
-.megabtn-navlink {
-  padding: 10px 16px;
-  background: #1f2633;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  color: #e9eef7;
+.button-navlink:focus-visible {
+  outline: none;
+  background: rgba(92, 225, 230, 0.5);
+  color: #5ce1e6;
+  box-shadow: inset 0 0 0 4px rgba(92, 225, 230, 0.08);
 }
 
-/* DAB Button (outline) - Default State */
-.megabtn-dab {
+/* DAB Button (button.dab — node 633:13997) */
+.button-dab {
+  width: 100%;
+  min-width: 117px;
   height: 38px;
   padding: 10px 16px;
-  background: transparent;
-  border: 1px solid #5ce1e6;
-  border-radius: 10px;
+  border: 1px solid #5ce1e6; /* color/primary */
+  border-radius: 10px; /* radius/md */
+  background-image: linear-gradient(247.35416303387024deg, #e68fff 11.557%, #5ce1e6 87.691%);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background-image 120ms ease;
 }
 
-/* DAB Button - Hover State */
-.megabtn-dab:hover {
-  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4);
+.button-dab:hover:not(:disabled) {
+  background-image: linear-gradient(247.35416303387024deg, #5ce1e6 11.557%, #e68fff 82.2%);
+  box-shadow: 0px 2px 2px 0px rgba(0, 0, 0, 0.4); /* shadow/small */
 }
 
-/* DAB Button (filled) */
-.megabtn-dab-filled {
-  height: 38px;
-  padding: 10px 16px;
-  background: linear-gradient(90deg, #5ce1e6, #e68fff);
-  border: 1px solid #5ce1e6;
-  border-radius: 10px;
+.button-dab:focus-visible:not(:disabled) {
+  outline: none;
+  border: 1px solid #5ce1e6; /* color/primary */
+}
+
+.button-dab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-dab-img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36.498px;
+  height: 22px;
+  display: block;
+  pointer-events: none;
+  object-fit: contain;
+}
+
+.button-dab-hover,
+.button-dab-focus {
+  opacity: 0;
+}
+
+.button-dab:hover:not(:disabled) .button-dab-default {
+  opacity: 0;
+}
+
+.button-dab:hover:not(:disabled) .button-dab-hover {
+  opacity: 1;
+}
+
+.button-dab:focus-visible:not(:disabled) .button-dab-default,
+.button-dab:active:not(:disabled) .button-dab-default {
+  opacity: 0;
+}
+
+.button-dab:focus-visible:not(:disabled) .button-dab-hover,
+.button-dab:active:not(:disabled) .button-dab-hover {
+  opacity: 0;
+}
+
+.button-dab:focus-visible:not(:disabled) .button-dab-focus,
+.button-dab:active:not(:disabled) .button-dab-focus {
+  opacity: 1;
 }
 ```
 
@@ -914,41 +1077,78 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 
 | Class | Figma State | Description | Background | Border |
 |-------|-------------|-------------|------------|--------|
-| `.megabtn-pill` | default | Default pill | `rgba(92,225,230,0.2)` | none |
-| `.megabtn-pill-joined` | joined | Joined indicator | `rgba(92,225,230,0.4)` | none |
-| `.megabtn-pill-online` | focus | Online status | `rgba(92,225,230,0.2)` | 1px `#5ce1e6` |
+| `.button-pill` | default | Default pill | `rgba(92,225,230,0.2)` | none |
+| `.button-pill-hover` | hover | Hover pill | `rgba(92,225,230,0.4)` | none |
+| `.button-pill-focus` | focus | Online status/focus | `rgba(92,225,230,0.2)` | 1px `#5ce1e6` |
 
 ```css
-/* Default Pill */
-.megabtn-pill {
+/* Pill Base (button.pill — node 633:13968) */
+.button-pill {
   padding: 6px 10px;
-  background: rgba(92, 225, 230, 0.2);  /* 0.2 opacity, not 0.08 */
+  background: rgba(92, 225, 230, 0.2);
+  border-radius: 999px;
+  font-size: 12px; /* pill/base */
+  font-weight: 700;
+  color: #5ce1e6; /* color/primary */
+  min-width: 88px;
+  line-height: 1;
+  text-align: center;
   border: none;
+}
+
+/* Pill Hover */
+.button-pill-hover {
+  padding: 6px 10px;
+  background: rgba(92, 225, 230, 0.4);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
   color: #5ce1e6;
+  border: none;
 }
 
-/* Joined Pill (no border, higher opacity) */
-.megabtn-pill-joined {
+/* Pill Focus */
+.button-pill-focus {
   padding: 6px 10px;
-  background: rgba(92, 225, 230, 0.4);  /* 0.4 opacity */
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 400;
-  color: #5ce1e6;
-}
-
-/* Online Pill (focus state - with border) */
-.megabtn-pill-online {
-  padding: 6px 10px;
-  background: rgba(92, 225, 230, 0.2);  /* 0.2 opacity */
+  background: rgba(92, 225, 230, 0.2);
   border: 1px solid #5ce1e6;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
   color: #5ce1e6;
+}
+
+/* Pill Busy */
+.button-pill-busy {
+  padding: 6px 10px;
+  background: rgba(255, 209, 102, 0.08);
+  border: 1px solid #ffd166; /* color/yellow */
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffd166;
+}
+
+/* Pill Warning (special) */
+.button-pill-warning {
+  padding: 6px 10px;
+  background: rgba(255, 123, 123, 0.08);
+  border: 1px solid #ff9500; /* color/special */
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ff9500;
+}
+
+/* Pill Pink */
+.button-pill-pink {
+  padding: 6px 10px;
+  background: rgba(230, 143, 255, 0.08);
+  border: 1px solid #e68fff; /* color/secondary */
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e68fff;
 }
 ```
 
@@ -956,23 +1156,27 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 
 | Class | Figma Node | Description | Text Color |
 |-------|------------|-------------|------------|
-| `.megabtn-tag` | button.tag | Style tags (Boulder, Sport) | `#5ce1e6` |
-| `.megabtn-tag-grade` | button.tag (grade) | Grade tags (Advanced) | `#e68fff` |
+| `.button-tag` | button.tag (node 633:13989) | Style tags | `#5ce1e6` |
+| `.button-tag-grade` | button.tag (grade) | Grade tags | `#e68fff` |
 
 ```css
-/* Style Tag */
-.megabtn-tag {
+/* Style Tag (button.tag — node 633:13989) */
+.button-tag {
   padding: 6px 10px;
   background: rgba(92, 225, 230, 0.08);
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 12px; /* pill/base */
   font-weight: 700;
-  color: #5ce1e6;
+  color: #5ce1e6; /* color/primary */
+  min-width: 88px;
+  line-height: 1;
+  text-align: center;
+  border: none;
 }
 
 /* Grade Tag (modifier) */
-.megabtn-tag-grade {
-  color: #e68fff;
+.button-tag-grade {
+  color: #e68fff; /* color/secondary */
 }
 ```
 
@@ -1076,37 +1280,37 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 | `button.activitylog` | Activity log item | Read-only activity display |
 
 ```css
-/* Input Field */
-.megabtn-field {
+/* Input Field (button.field — node 633:13986) */
+.button-field {
   width: 100%;
   padding: 10px 16px;
   background: #0c0e12;
   border: 1px solid #1f2633;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 15px; /* field/base */
   font-weight: 400;
+  color: #e9eef7;
+  line-height: 1;
+  text-align: left;
+}
+
+.button-field:hover:not(:disabled) {
+  background: #11141c; /* color/panel */
+  border-color: #1f2633;
   color: #e9eef7;
 }
 
-.megabtn-field::placeholder {
-  color: #8ea0bd;
-}
-
-.megabtn-field:focus {
-  border-color: #5ce1e6;
+.button-field:focus-visible:not(:disabled) {
   outline: none;
+  background: #0c0e12; /* color/bg */
+  border-color: #5ce1e6; /* color/primary */
+  color: #5ce1e6;
+  box-shadow: inset 0 0 0 4px rgba(92, 225, 230, 0.08); /* inner/lightfill */
 }
 
-/* Activity Log Item */
-.megabtn-activitylog {
-  width: 100%;
-  padding: 10px 16px;
-  background: #11141c;
-  border: 1px solid #1f2633;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 400;
-  color: #8ea0bd;
+.button-field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 ```
 
@@ -1134,14 +1338,37 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 ### Usage Examples
 
 ```jsx
-// Primary CTA
-<button className="megabtn megabtn-cta">Get Started</button>
-
 // Ghost Button
-<button className="megabtn megabtn-ghost">Browse</button>
+<button className="button-ghost">Browse</button>
 
-// Full Width
-<button className="megabtn megabtn-cta megabtn-full">Submit</button>
+// Navlink Button
+<button className="button-navlink">Browse</button>
+
+// Activity Log Button
+<button className="button-activitylog">Activity Log</button>
+
+// Radio Button
+<button className="button-radio">
+  <span className="button-radio-icon">
+    <img src="https://www.figma.com/api/mcp/asset/afee668a-3cc6-449b-b728-6424e7ad2d64" alt="" className="button-radio-icon-default" />
+    <img src="https://www.figma.com/api/mcp/asset/5fd8706e-7dda-418c-b75e-67e9d4d6e3f9" alt="" className="button-radio-icon-hover" />
+    <img src="https://www.figma.com/api/mcp/asset/9d845333-1f45-490f-b0f9-e5119bec8faf" alt="" className="button-radio-icon-focus" />
+  </span>
+  <span className="button-radio-label">Get Started</span>
+</button>
+
+// Footer Link
+<button className="button-footerlink">Footer link</button>
+
+// CTA Button
+<button className="button-cta">Get Started</button>
+
+// DAB Button
+<button className="button-dab">
+  <img src="https://www.figma.com/api/mcp/asset/e81702c8-3827-4b22-8f9e-b00469a24e8d" alt="" className="button-dab-img button-dab-default" />
+  <img src="https://www.figma.com/api/mcp/asset/d8ce190e-692f-48e3-b842-dbf79aece79d" alt="" className="button-dab-img button-dab-hover" />
+  <img src="https://www.figma.com/api/mcp/asset/e81702c8-3827-4b22-8f9e-b00469a24e8d" alt="" className="button-dab-img button-dab-focus" />
+</button>
 
 // DAB Button (CTA variant) - Used in card CTA rows
 <div className="fc-cta-wrapper">
@@ -1162,13 +1389,13 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 </button>
 
 // Status Pill
-<span className="megabtn megabtn-pill megabtn-pill-online">Online</span>
+<span className="button-pill button-pill-focus">Online</span>
 
 // Style Tag
-<span className="megabtn megabtn-tag">Boulder</span>
+<span className="button-tag">Boulder</span>
 
 // Grade Tag
-<span className="megabtn megabtn-tag megabtn-tag-grade">Advanced</span>
+<span className="button-tag button-tag-grade">Advanced</span>
 
 // Chip
 <span className="megabtn megabtn-chip megabtn-chip-accent">Belay Certified</span>
@@ -1634,6 +1861,77 @@ Map Figma tokens to CSS custom properties:
 ## Tailwind Classes from Figma (Store for Reference)
 
 These are the EXACT Tailwind classes output by Figma's `get_design_context`. Store here for future use.
+
+### Chat Event Screen (node 634:15364)
+
+```tailwind
+/* SCREEN */
+bg-[#e9eef7] flex flex-col items-center justify-center relative size-full
+
+/* CONTENT */
+flex flex-[1_0_0] flex-col gap-[16px] items-center justify-end px-[16px] pt-[16px] pb-0 w-full max-w-[420px]
+
+/* CARD */
+bg-[#ffffff] flex flex-col gap-[8px] p-[24px] rounded-[24px] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)]
+
+/* BACKBAR */
+flex items-center justify-between h-[44px] w-full
+
+/* HERO */
+relative h-[160px] p-[16px] rounded-[14px] shadow-[0px_2px_2px_0px_rgba(0,0,0,0.4)] overflow-hidden
+bg-cover bg-center bg-gradient-to-b from-40% from-[rgba(17,20,28,0)] to-[#0c0e12]
+
+/* MESSAGES */
+gap-[12px]; incoming: px-[12px] py-[8px] rounded-[14px] bg-[#e9eef7] text-[12px]
+outgoing: px-[12px] py-[8px] rounded-bl-[16px] rounded-br-[4px] rounded-tl-[16px] rounded-tr-[16px] bg-[#5ce1e6] text-[14px]
+
+/* INPUT */
+bg-[#e9eef7] rounded-[14px] px-[12px] py-[8px] text-[14px]
+```
+
+### Home Screen (node 633:14303)
+
+```tailwind
+/* SCREEN */
+bg-[#e9eef7] flex flex-col items-center justify-center relative size-full
+
+/* CONTENT */
+flex flex-col gap-[16px] items-center justify-end px-[16px] pt-[16px] pb-0 w-full max-w-[420px]
+
+/* FILTERS */
+flex gap-[6px] w-[358px]; pill: bg-[#e9eef7] border border-[#8ea0bd] rounded-[10px] px-[12px] py-[10px] h-[44px] text-[15px] text-[#8ea0bd] gap-[12px]
+
+/* CARD */
+bg-[#0c0e12] border-[4px] border-[#5ce1e6] rounded-[14px] p-[24px] gap-[12px] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)]
+
+/* IMAGE WRAPPER */
+p-[4px] border-[4px] border-[#5ce1e6] rounded-[14px] shadow-[inset_4px_4px_4px_rgba(0,0,0,0.5)]
+
+/* OVERLAY */
+pt-[32px] pb-[12px] px-[12px] gap-[6px] bg-gradient-to-b from-[rgba(0,0,0,0)] to-[rgba(0,0,0,0.75)] rounded-[14px]
+
+/* NAME */
+text-[32px] text-white gap-[8px]
+
+/* LOCATION */
+text-[16px] text-[#e9eef7]
+
+/* TAGS */
+default tag: bg-[rgba(92,225,230,0.08)] px-[10px] py-[6px] rounded-[999px] text-[12px] text-[#5ce1e6]
+grade tag: same padding/radius text-[12px] text-[#e68fff]
+belay chip: bg-[#0c0e12] border border-[#5ce1e6] rounded-[999px] px-[8px] py-[6px] text-[12px] text-[#5ce1e6]
+default chip: bg-[#151927] border border-[#1f2633] rounded-[8px] px-[8px] py-[6px] text-[12px] text-[#8ea0bd]
+
+/* BIO */
+bg-[#1f2633] px-[16px] py-[12px] rounded-[14px] text-[14px] text-[#8ea0bd] shadow-[inset_4px_4px_4px_rgba(0,0,0,0.5)]
+
+/* CTA ROW */
+gap-[12px]; next button bg-[#11141c] rounded-[10px] h-[38px] px-[16px] py-[10px] text-[15px] text-[#e9eef7]
+dab button border border-[#5ce1e6] rounded-[10px] h-[38px] px-[16px] py-[10px]
+
+/* BOTTOM NAV */
+bg-[#e9eef7] h-[100px] px-[24px] py-[12px] rounded-t-[14px]
+```
 
 ### Featured Climber Card (node 470:1116)
 
@@ -2644,16 +2942,16 @@ uc-mobile-card (358px × 724px, bg: #0c0e12, border: 4px #5ce1e6, radius: 14px, 
 │   │           ├── uc-mobile-location-row (16px, #e9eef7)
 │   │           └── uc-mobile-chips-section
 │   │               └── uc-mobile-chips-row (flex-wrap, gap: 6px)
-│   │                   ├── Style tags (Boulder, Sport) - megabtn-tag
-│   │                   ├── Grade tag (Advanced) - megabtn-tag megabtn-tag-grade
-│   │                   ├── Belay Certified - megabtn-chip megabtn-chip-accent megabtn-chip-card-bg
-│   │                   └── Standard chips - megabtn-chip megabtn-chip-muted megabtn-chip-card-bg
+│   │                   ├── Style tags (Boulder, Sport) - button-tag
+│   │                   ├── Grade tag (Advanced) - button-tag button-tag-grade
+│   │                   ├── Belay Certified - button-chip button-chip-accent button-chip-card-bg
+│   │                   └── Standard chips - button-chip button-chip-muted button-chip-card-bg
 │   └── uc-mobile-bio (bg: #1f2633, p: 12px 16px, radius: 14px)
 │       ├── uc-mobile-bio-text (14px, #8ea0bd, width: 278px)
 │       └── uc-mobile-bio-shadow (inset shadow)
 └── uc-mobile-cta-row (gap: 12px)
-    ├── Next button (flex: 1) - megabtn-navlink (bg: #11141c)
-    └── DAB button (flex: 1) - megabtn-dab (border only)
+    ├── Next button (flex: 1) - button-navlink (bg: #11141c)
+    └── DAB button (flex: 1) - button-dab (border only)
 ```
 
 ### CSS Values (Exact from Figma node 634:16523)

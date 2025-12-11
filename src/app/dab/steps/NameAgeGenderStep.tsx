@@ -25,10 +25,10 @@ export default function NameAgeGenderStep() {
     >
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
-        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)', margin: 0 }}>
+        <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--color-text)', margin: 0 }}>
           About you
         </h1>
-        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--color-muted)' }}>
           Only real people. Share a few basics so matches know who you are.
         </p>
 
@@ -36,8 +36,8 @@ export default function NameAgeGenderStep() {
           <div 
             className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
             style={{ 
-              background: '#0f131d', 
-              border: '1px solid var(--stroke)',
+              background: 'var(--color-panel)', 
+              border: '1px solid var(--color-stroke)',
             }}
           >
             <input
@@ -46,7 +46,7 @@ export default function NameAgeGenderStep() {
               onChange={(e) => setAge(e.target.value)}
               className="w-full h-full px-4 bg-transparent border-0 outline-none text-base appearance-none"
               style={{ 
-                color: 'var(--text)',
+                color: 'var(--color-text)',
                 WebkitAppearance: 'none',
                 MozAppearance: 'textfield',
               } as any}
@@ -57,10 +57,10 @@ export default function NameAgeGenderStep() {
               onFocus={(e) => {
                 e.currentTarget.style.outline = 'none'
                 e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.parentElement!.style.borderColor = 'var(--accent)'
+                e.currentTarget.parentElement!.style.borderColor = 'var(--color-primary)'
               }}
               onBlur={(e) => {
-                e.currentTarget.parentElement!.style.borderColor = 'var(--stroke)'
+                e.currentTarget.parentElement!.style.borderColor = 'var(--color-stroke)'
               }}
             />
           </div>
@@ -71,20 +71,20 @@ export default function NameAgeGenderStep() {
               onClick={() => setGender('Man')}
               className="h-14 relative rounded-[12px] flex-1 flex items-center justify-between px-4 transition-colors"
               style={{
-                background: '#0f131d',
-                border: `1px solid ${gender === 'Man' ? 'var(--accent)' : 'var(--stroke)'}`,
+                background: 'var(--color-panel)',
+                border: `1px solid ${gender === 'Man' ? 'var(--color-primary)' : 'var(--color-stroke)'}`,
               }}
               onMouseEnter={(e) => {
-                if (gender !== 'Man') e.currentTarget.style.borderColor = 'var(--accent)'
+                if (gender !== 'Man') e.currentTarget.style.borderColor = 'var(--color-primary)'
               }}
               onMouseLeave={(e) => {
-                if (gender !== 'Man') e.currentTarget.style.borderColor = 'var(--stroke)'
+                if (gender !== 'Man') e.currentTarget.style.borderColor = 'var(--color-stroke)'
               }}
             >
-              <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>Man</span>
-              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === 'Man' ? 'var(--accent)' : 'var(--stroke)' }}>
+              <span className="font-normal leading-6 text-base" style={{ color: 'var(--color-text)' }}>Man</span>
+              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === 'Man' ? 'var(--color-primary)' : 'var(--color-stroke)' }}>
                 {gender === 'Man' && (
-                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
+                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--color-primary)' }}></div>
                 )}
               </div>
             </button>
@@ -94,20 +94,20 @@ export default function NameAgeGenderStep() {
               onClick={() => setGender('Woman')}
               className="h-14 relative rounded-[12px] flex-1 flex items-center justify-between px-4 transition-colors"
               style={{
-                background: '#0f131d',
-                border: `1px solid ${gender === 'Woman' ? 'var(--accent)' : 'var(--stroke)'}`,
+                background: 'var(--color-panel)',
+                border: `1px solid ${gender === 'Woman' ? 'var(--color-primary)' : 'var(--color-stroke)'}`,
               }}
               onMouseEnter={(e) => {
-                if (gender !== 'Woman') e.currentTarget.style.borderColor = 'var(--accent)'
+                if (gender !== 'Woman') e.currentTarget.style.borderColor = 'var(--color-primary)'
               }}
               onMouseLeave={(e) => {
-                if (gender !== 'Woman') e.currentTarget.style.borderColor = 'var(--stroke)'
+                if (gender !== 'Woman') e.currentTarget.style.borderColor = 'var(--color-stroke)'
               }}
             >
-              <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>Woman</span>
-              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === 'Woman' ? 'var(--accent)' : 'var(--stroke)' }}>
+              <span className="font-normal leading-6 text-base" style={{ color: 'var(--color-text)' }}>Woman</span>
+              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === 'Woman' ? 'var(--color-primary)' : 'var(--color-stroke)' }}>
                 {gender === 'Woman' && (
-                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
+                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--color-primary)' }}></div>
                 )}
               </div>
             </button>
@@ -117,20 +117,20 @@ export default function NameAgeGenderStep() {
               onClick={() => setGender("Won't say")}
               className="h-14 relative rounded-[12px] flex-1 flex items-center justify-between px-4 transition-colors"
               style={{
-                background: '#0f131d',
-                border: `1px solid ${gender === "Won't say" ? 'var(--accent)' : 'var(--stroke)'}`,
+                background: 'var(--color-panel)',
+                border: `1px solid ${gender === "Won't say" ? 'var(--color-primary)' : 'var(--color-stroke)'}`,
               }}
               onMouseEnter={(e) => {
-                if (gender !== "Won't say") e.currentTarget.style.borderColor = 'var(--accent)'
+                if (gender !== "Won't say") e.currentTarget.style.borderColor = 'var(--color-primary)'
               }}
               onMouseLeave={(e) => {
-                if (gender !== "Won't say") e.currentTarget.style.borderColor = 'var(--stroke)'
+                if (gender !== "Won't say") e.currentTarget.style.borderColor = 'var(--color-stroke)'
               }}
             >
-              <span className="font-normal leading-6 text-base" style={{ color: 'var(--text)' }}>Won't say</span>
-              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === "Won't say" ? 'var(--accent)' : 'var(--stroke)' }}>
+              <span className="font-normal leading-6 text-base" style={{ color: 'var(--color-text)' }}>Won't say</span>
+              <div className="w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0" style={{ borderColor: gender === "Won't say" ? 'var(--color-primary)' : 'var(--color-stroke)' }}>
                 {gender === "Won't say" && (
-                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--accent)' }}></div>
+                  <div className="w-3 h-3 rounded-full" style={{ background: 'var(--color-primary)' }}></div>
                 )}
               </div>
             </button>
@@ -139,8 +139,8 @@ export default function NameAgeGenderStep() {
           <div 
             className="h-14 relative rounded-[12px] w-full flex items-center transition-colors"
             style={{ 
-              background: '#0f131d', 
-              border: '1px solid var(--stroke)',
+              background: 'var(--color-panel)', 
+              border: '1px solid var(--color-stroke)',
             }}
           >
             <input
@@ -149,16 +149,16 @@ export default function NameAgeGenderStep() {
               onChange={(e) => setBio(e.target.value)}
               className="w-full h-full px-4 bg-transparent border-0 outline-none text-base"
               style={{ 
-                color: 'var(--text)'
+                color: 'var(--color-text)'
               }}
               placeholder="Short bio (optional)"
               onFocus={(e) => {
                 e.currentTarget.style.outline = 'none'
                 e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.parentElement!.style.borderColor = 'var(--accent)'
+                e.currentTarget.parentElement!.style.borderColor = 'var(--color-primary)'
               }}
               onBlur={(e) => {
-                e.currentTarget.parentElement!.style.borderColor = 'var(--stroke)'
+                e.currentTarget.parentElement!.style.borderColor = 'var(--color-stroke)'
               }}
             />
           </div>

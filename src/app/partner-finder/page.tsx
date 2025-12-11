@@ -119,8 +119,8 @@ export default function PartnerFinderPage() {
             your pace and stoke.
           </p>
           <div className="feature-actions">
-            <button className="megabtn megabtn-cta" onClick={handleJoin}>Get started</button>
-            <button className="megabtn megabtn-ghost" onClick={() => router.push('/gym-chat')}>Jump into a wall</button>
+            <button className="button-navlink button-navlink-hover" onClick={handleJoin}>Get started</button>
+            <button className="button-navlink" onClick={() => router.push('/gym-chat')}>Jump into a wall</button>
           </div>
           <div className="pill-row">
             <span>Belay verification</span>
@@ -185,7 +185,7 @@ export default function PartnerFinderPage() {
           />
         </label>
         <button
-          className="megabtn megabtn-ghost"
+          className="button-navlink"
           style={{ alignSelf: 'center', justifySelf: 'end', height: '100%' }}
           onClick={() => setFilters({ gym: 'All', style: 'All', day: 'All', belay: 'any', search: '' })}
         >
@@ -196,7 +196,7 @@ export default function PartnerFinderPage() {
       <section className="session-grid">
         {filteredSessions.map(session => (
           <article key={session.id} className="session-card">
-            <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', border: '1px solid var(--stroke)', marginBottom: 10 }}>
+            <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', border: '1px solid var(--color-stroke)', marginBottom: 10 }}>
               <img
                 src={sessionImages[Math.abs(session.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)) % sessionImages.length]}
                 alt={session.gym}
@@ -213,7 +213,7 @@ export default function PartnerFinderPage() {
                 }}
               >
                 <div style={{ display: 'grid', gap: '6px' }}>
-                  <div style={{ position: 'absolute', top: 10, left: 10, width: 52, height: 52, borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--stroke)' }}>
+                  <div style={{ position: 'absolute', top: 10, left: 10, width: 52, height: 52, borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--color-stroke)' }}>
                     <img src={gymThumbFor(session.gym)} alt={session.gym} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
@@ -227,9 +227,9 @@ export default function PartnerFinderPage() {
                       padding: '4px 10px',
                       fontSize: '11px',
                       lineHeight: 1.1,
-                      border: '1px solid var(--stroke)',
+                      border: '1px solid var(--color-stroke)',
                       background: 'rgba(12,14,18,0.65)',
-                      color: 'var(--text)',
+                      color: 'var(--color-text)',
                       letterSpacing: '0.2px',
                     }}
                   >
@@ -273,8 +273,8 @@ export default function PartnerFinderPage() {
             </div>
             <div className="session-actions">
               <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
-                <button className="megabtn megabtn-ghost" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
-                <button className="megabtn megabtn-cta" style={{ flex: 1 }} onClick={handleJoin}>I&apos;m in</button>
+                <button className="button-navlink" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
+                <button className="button-navlink button-navlink-hover" style={{ flex: 1 }} onClick={handleJoin}>I&apos;m in</button>
               </div>
             </div>
           </article>
@@ -284,7 +284,7 @@ export default function PartnerFinderPage() {
           <div className="panel empty-state">
             <h3>No sessions match your filters.</h3>
             <p className="muted">Try broadening grade or day, or post your own slot.</p>
-            <button className="megabtn megabtn-cta" onClick={handleJoin}>Post a session</button>
+            <button className="button-navlink button-navlink-hover" onClick={handleJoin}>Post a session</button>
           </div>
         ) : null}
       </section>

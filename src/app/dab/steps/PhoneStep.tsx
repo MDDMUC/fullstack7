@@ -97,12 +97,12 @@ export default function PhoneStep() {
       <BackButton />
       <div className="onboard-card flex flex-col items-center gap-4">
         <div className="flex gap-2 items-center justify-center px-4 py-0 w-full max-w-2xl">
-          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--text)' }}>
+          <h1 className="font-bold leading-[41px] text-[34px] text-nowrap tracking-[0.374px]" style={{ color: 'var(--color-text)' }}>
             Add your phone
           </h1>
         </div>
         
-        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--muted)' }}>
+        <p className="font-normal leading-normal text-[20px] text-center max-w-2xl" style={{ color: 'var(--color-muted)' }}>
           Only real people.
         </p>
         
@@ -111,10 +111,10 @@ export default function PhoneStep() {
             <div
               className="h-14 relative rounded-[12px] flex items-center gap-2"
               style={{
-                background: '#0f131d',
-                border: `1px solid ${(focused || open) ? 'var(--accent)' : 'var(--stroke)'}`,
+                background: 'var(--color-panel)',
+                border: `1px solid ${(focused || open) ? 'var(--color-primary)' : 'var(--color-stroke)'}`,
                 padding: '0 8px',
-                boxShadow: (focused || open) ? '0 0 0 2px rgba(92,225,230,0.2)' : 'none',
+                boxShadow: (focused || open) ? '0 0 0 2px color-mix(in srgb, var(--color-primary) 20%, transparent)' : 'none',
                 transition: 'border-color 120ms ease, box-shadow 120ms ease',
               }}
             >
@@ -126,7 +126,7 @@ export default function PhoneStep() {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: 'var(--text)',
+                    color: 'var(--color-text)',
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
@@ -139,14 +139,14 @@ export default function PhoneStep() {
                   <span>{countryCode}</span>
                 </button>
                 {open && (
-                  <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: '#0f131d', border: '1px solid var(--stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '280px' }}>
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: 'var(--color-panel)', border: '1px solid var(--color-stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '280px' }}>
                     <div style={{ padding: '8px' }}>
                       <input
                         type="search"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="w-full h-9 px-3 rounded-[10px] text-sm"
-                        style={{ background: '#0f131d', border: '1px solid var(--stroke)', color: 'var(--text)' }}
+                        style={{ background: 'var(--color-panel)', border: '1px solid var(--color-stroke)', color: 'var(--color-text)' }}
                         placeholder="Search code or country"
                       />
                     </div>
@@ -154,17 +154,17 @@ export default function PhoneStep() {
                       <button
                         key={option.code}
                         type="button"
-                        className="w-full px-3 py-2 hover:bg-[#131826]"
+                        className="w-full px-3 py-2 hover:bg-[color:var(--color-card)]"
                         onClick={() => {
                           setCountryCode(option.code)
                           setSearch('')
                           setOpen(false)
                         }}
-                        style={{ color: 'var(--text)', fontSize: '13px', whiteSpace: 'nowrap' }}
+                        style={{ color: 'var(--color-text)', fontSize: '13px', whiteSpace: 'nowrap' }}
                       >
                         <div style={{ display: 'grid', gridTemplateColumns: '32px 64px 1fr', alignItems: 'center', gap: '8px' }}>
                           <span style={{ minWidth: '20px' }}>{option.flag || '🌐'}</span>
-                          <span style={{ color: 'var(--accent)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
+                          <span style={{ color: 'var(--color-primary)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{option.label}</span>
                         </div>
                       </button>
@@ -177,14 +177,14 @@ export default function PhoneStep() {
                 value={formatDisplay(nationalNumber)}
                 onChange={(e) => setNationalNumber(normalizedDigits(e.target.value))}
                 className="flex-1 h-12 px-3 bg-transparent border-none outline-none text-base rounded-[10px]"
-                style={{ color: 'var(--text)', outline: 'none', boxShadow: 'none' }}
+                style={{ color: 'var(--color-text)', outline: 'none', boxShadow: 'none' }}
                 placeholder="415 555 1234"
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 required
               />
             </div>
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>
+            <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
               Add digits only; we'll verify later. You control when to share.
             </p>
           </div>

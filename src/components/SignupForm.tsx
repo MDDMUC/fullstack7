@@ -113,7 +113,7 @@ export default function SignupForm({ compact = false, heading, subheading }: Pro
             <input type="password" name="confirm" required minLength={8} placeholder="Repeat password" />
           </label>
         </div>
-        <button className="megabtn megabtn-cta megabtn-full" type="submit" disabled={loading} aria-busy={loading}>
+        <button className="button-navlink button-navlink-hover" style={{ width: '100%', height: 38 }} type="submit" disabled={loading} aria-busy={loading}>
           {loading ? 'Creating...' : 'Create account'}
         </button>
         {message && (
