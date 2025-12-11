@@ -30,7 +30,18 @@ export default function ConfirmEmailWaitPage() {
           </p>
         </div>
 
-        <div className="onb-signup-card" style={{ textAlign: 'center', gap: 'var(--space-md)' }}>
+        <div
+          className="onb-signup-card"
+          style={{
+            textAlign: 'center',
+            gap: 'var(--space-md)',
+            padding: 'var(--space-xl)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <div className="onb-header-block" style={{ width: '100%' }}>
             <h2 className="onb-header-title">Confirm to proceed</h2>
             <p className="onb-header-subtitle">
