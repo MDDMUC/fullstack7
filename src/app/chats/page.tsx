@@ -41,6 +41,16 @@ type ChatListItem = {
   type: string | null | undefined
 }
 
+type MessageSlim = {
+  id: string
+  thread_id: string
+  body: string
+  created_at: string
+  sender_id: string
+  receiver_id: string
+  status: string | null
+}
+
 export default function ChatsScreen() {
   const { session, loading } = useAuthSession()
   const userId = session?.user?.id
@@ -129,6 +139,23 @@ export default function ChatsScreen() {
       }
     })
 
+    const latestByThread: Record<string, MessageSlim> = {}
+    const threadIds = fullyFilteredThreads.map(t => t.id)
+    if (threadIds.length > 0) {
+      const { data: latestMsgs } = await supabase
+        .from('messages')
+        .select('id,thread_id,body,created_at,sender_id,receiver_id,status')
+        .in('thread_id', threadIds)
+        .order('created_at', { ascending: false })
+      if (latestMsgs) {
+        for (const m of latestMsgs as MessageSlim[]) {
+          if (!latestByThread[m.thread_id]) {
+            latestByThread[m.thread_id] = m
+          }
+        }
+      }
+    }
+
     const otherIds = Array.from(
       new Set(
         fullyFilteredThreads
@@ -188,20 +215,25 @@ export default function ChatsScreen() {
       const otherUserId = isDirect ? (t.user_a === userId ? t.user_b : t.user_a) : null
       const profile = otherUserId ? profilesMap[otherUserId] : undefined
       const gym = !isDirect && t.gym_id ? gymsMap[t.gym_id] : undefined
+      const fallbackMsg = latestByThread[t.id]
       const title = isDirect
         ? profile?.username || 'Dabber'
         : `${gym?.name || 'Gym'} ${t.title || 'thread'}`.trim()
       const avatar = isDirect
         ? profile?.avatar_url ?? null
         : gym?.avatar_url ?? 'https://www.figma.com/api/mcp/asset/d19fa6c1-2d62-4bd-940b-0bf7cbc80c45'
+      const isUnread =
+        !!fallbackMsg &&
+        fallbackMsg.receiver_id === userId &&
+        (fallbackMsg.status ?? '').toLowerCase() !== 'read'
       return {
         threadId: t.id,
         otherUserId,
         title,
-        subtitle: formatSubtitle(t.last_message),
+        subtitle: formatSubtitle(t.last_message ?? fallbackMsg?.body ?? null),
         avatar,
-        lastMessageAt: t.last_message_at,
-        unread: false,
+        lastMessageAt: t.last_message_at ?? fallbackMsg?.created_at ?? null,
+        unread: isUnread,
         type: t.type,
       }
     })
@@ -267,7 +299,10 @@ export default function ChatsScreen() {
             {!isLoading &&
               items.map((chat, idx) => (
                 <React.Fragment key={chat.threadId}>
-                  <Link href={`/chats/${chat.threadId}`} className="chats-preview">
+                  <Link
+                    href={`/chats/${chat.threadId}`}
+                    className={`chats-preview ${chat.unread ? 'chats-preview-unread' : ''}`}
+                  >
                     <div className="chats-preview-cont">
                       <div className="chats-avatar-wrapper">
                         <div className="chats-avatar-bg" />
