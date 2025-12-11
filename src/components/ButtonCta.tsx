@@ -7,7 +7,7 @@ type ButtonCtaLinkProps = {
   href: string
   className?: string
   children: React.ReactNode
-} & Omit<React.ComponentProps<typeof Link>, 'href' | 'className' | 'children'>
+} & Omit<React.ComponentProps<typeof Link>, 'href' | 'className' | 'children' | 'type'>
 
 type ButtonCtaButtonProps = {
   href?: undefined
@@ -19,8 +19,10 @@ export type ButtonCtaProps = ButtonCtaLinkProps | ButtonCtaButtonProps
 
 const cx = (...classes: Array<string | undefined | null | false>) => classes.filter(Boolean).join(' ')
 
+const isLinkProps = (props: ButtonCtaProps): props is ButtonCtaLinkProps => 'href' in props && !!props.href
+
 export default function ButtonCta(props: ButtonCtaProps) {
-  if ('href' in props && props.href) {
+  if (isLinkProps(props)) {
     const { href, className, children, ...rest } = props
     return (
       <Link href={href} className={cx('button-cta', className)} {...rest}>
