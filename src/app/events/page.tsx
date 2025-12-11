@@ -4,41 +4,90 @@ import React from 'react'
 import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
 import MobileNavbar from '@/components/MobileNavbar'
+import { supabase } from '@/lib/supabaseClient'
 
-const EVENT_TILES = [
-  {
-    title: 'PETZL Rope Demo',
-    subtitle: 'DAV Thalkirchen',
-    location: 'Munich',
-    attendees: '27 people are going',
-    img: 'http://localhost:3845/assets/e77d367964c4498d605be651145ba7bf039e3be8.png',
-  },
-  {
-    title: 'Beginner Lead Class',
-    subtitle: 'DAV Thalkirchen',
-    location: 'Munich',
-    attendees: '27 people are going',
-    img: 'http://localhost:3845/assets/3bb4efb27db8984b86255e27c681d482f01670ba.png',
-  },
-  {
-    title: 'PETZL Rope Demo',
-    subtitle: 'DAV Thalkirchen',
-    location: 'Munich',
-    attendees: '27 people are going',
-    img: 'http://localhost:3845/assets/e77d367964c4498d605be651145ba7bf039e3be8.png',
-  },
-  {
-    title: 'Beginner Lead Class',
-    subtitle: 'DAV Thalkirchen',
-    location: 'Munich',
-    attendees: '27 people are going',
-    img: 'http://localhost:3845/assets/3bb4efb27db8984b86255e27c681d482f01670ba.png',
-  },
-]
+type EventRow = {
+  id: string
+  title: string
+  location: string | null
+  description: string | null
+  start_at: string | null
+  slots_total: number | null
+  slots_open: number | null
+  image_url?: string | null
+}
 
-const FILTER_LABELS = ['city', 'type', 'time']
+type ThreadRow = {
+  id: string
+  event_id: string | null
+  last_message: string | null
+  last_message_at: string | null
+}
 
 export default function EventsScreen() {
+  const [events, setEvents] = React.useState<
+    Array<
+      EventRow & {
+        thread?: ThreadRow | null
+      }
+    >
+  >([])
+  const [loading, setLoading] = React.useState(false)
+
+  React.useEffect(() => {
+    const fetchEvents = async () => {
+      const client = supabase
+      if (!client) return
+      setLoading(true)
+      const { data: eventsData, error: eventsError } = await client
+        .from('events')
+        .select('id,title,location,description,start_at,slots_total,slots_open,image_url')
+        .order('start_at', { ascending: true })
+
+      if (eventsError || !eventsData) {
+        setEvents([])
+        setLoading(false)
+        return
+      }
+
+      const eventIds = eventsData.map(e => e.id)
+      let threadsMap: Record<string, ThreadRow> = {}
+      if (eventIds.length > 0) {
+        const { data: threadsData } = await client
+          .from('threads')
+          .select('id,event_id,last_message,last_message_at')
+          .eq('type', 'event')
+          .in('event_id', eventIds)
+        threadsMap =
+          threadsData?.reduce<Record<string, ThreadRow>>((acc, t) => {
+            if (t.event_id) acc[t.event_id] = t
+            return acc
+          }, {}) ?? {}
+      }
+
+      const combined = eventsData.map(ev => ({
+        ...ev,
+        thread: threadsMap[ev.id] ?? null,
+      }))
+      setEvents(combined)
+      setLoading(false)
+    }
+
+    fetchEvents()
+  }, [])
+
+  const formatDate = (iso?: string | null) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    return d.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   return (
     <RequireAuth>
       <div className="events-screen" data-name="/ events">
@@ -72,22 +121,36 @@ export default function EventsScreen() {
               </div>
             </div>
 
-            {EVENT_TILES.map((tile, idx) => (
-              <Link key={`${tile.title}-${idx}`} href="/events/detail" className="events-tile">
-                <div className="events-tile-img">
-                  <img src={tile.img} alt="" className="events-tile-img-el" />
-                </div>
-                <div className="events-tile-overlay" />
-                <div className="events-tile-text">
-                  <p className="events-tile-title">{tile.title}</p>
-                  <p className="events-tile-subtitle">{tile.subtitle}</p>
-                  <div className="events-tile-info">
-                    <p className="events-tile-loc">{tile.location}</p>
-                    <p className="events-tile-att">{tile.attendees}</p>
+            {loading && <p className="events-loading">Loading events…</p>}
+            {!loading &&
+              events.map(ev => (
+                <Link
+                  key={ev.id}
+                  href={ev.thread?.id ? `/chats/${ev.thread.id}` : '#'}
+                  className="events-tile"
+                >
+                  <div className="events-tile-img">
+                    <img
+                      src={ev.image_url || '/icons/event-placeholder.svg'}
+                      alt=""
+                      className="events-tile-img-el"
+                    />
                   </div>
-                </div>
-              </Link>
-            ))}
+                  <div className="events-tile-overlay" />
+                  <div className="events-tile-text">
+                    <p className="events-tile-title">{ev.title}</p>
+                    <p className="events-tile-subtitle">{ev.location || ''}</p>
+                    <div className="events-tile-info">
+                      <p className="events-tile-loc">{formatDate(ev.start_at)}</p>
+                      <p className="events-tile-att">
+                        {ev.slots_total != null && ev.slots_open != null
+                          ? `${ev.slots_total - ev.slots_open} going · ${ev.slots_open} open`
+                          : 'Slots TBD'}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
           </div>
 
           <MobileNavbar active="events" />

@@ -17,6 +17,7 @@ type ThreadRow = {
   type?: string | null
   gym_id?: string | null
   title?: string | null
+  event_id?: string | null
 }
 
 type Profile = {
@@ -51,6 +52,12 @@ type MessageSlim = {
   status: string | null
 }
 
+type EventRow = {
+  id: string
+  title: string | null
+  image_url: string | null
+}
+
 export default function ChatsScreen() {
   const { session, loading } = useAuthSession()
   const userId = session?.user?.id
@@ -72,14 +79,14 @@ export default function ChatsScreen() {
     // Direct 1:1 threads where current user is user_a or user_b
     const { data: directThreads, error: threadsError } = await supabase
       .from('threads')
-      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id,title')
+      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title')
       .or(`user_a.eq.${userId},user_b.eq.${userId}`)
       .order('last_message_at', { ascending: false, nullsFirst: false })
 
     // Group/gym threads via participant table
     const { data: participantThreads, error: participantError } = await supabase
       .from('thread_participants')
-      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id,title)')
+      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title)')
       .eq('user_id', userId)
 
     if (threadsError) {
@@ -203,6 +210,28 @@ export default function ChatsScreen() {
         ) ?? {}
     }
 
+    // Events map for event threads
+    const eventIds = Array.from(
+      new Set(
+        fullyFilteredThreads
+          .filter(t => (t.type ?? 'direct') === 'event' && t.event_id)
+          .map(t => t.event_id as string),
+      ),
+    )
+
+    let eventsMap: Record<string, EventRow> = {}
+    if (eventIds.length > 0) {
+      const { data: events } = await supabase
+        .from('events')
+        .select('id,title,image_url')
+        .in('id', eventIds)
+      eventsMap =
+        events?.reduce<Record<string, EventRow>>((acc, ev) => {
+          acc[ev.id] = ev
+          return acc
+        }, {}) ?? {}
+    }
+
     // Drop gym threads that have no matching gym record (or missing gym_id)
     const finalThreads = fullyFilteredThreads.filter(t => {
       if ((t.type ?? 'direct') !== 'gym') return true
@@ -215,13 +244,16 @@ export default function ChatsScreen() {
       const otherUserId = isDirect ? (t.user_a === userId ? t.user_b : t.user_a) : null
       const profile = otherUserId ? profilesMap[otherUserId] : undefined
       const gym = !isDirect && t.gym_id ? gymsMap[t.gym_id] : undefined
+      const ev = !isDirect && t.event_id ? eventsMap[t.event_id] : undefined
       const fallbackMsg = latestByThread[t.id]
       const title = isDirect
         ? profile?.username || 'Dabber'
-        : `${gym?.name || 'Gym'} ${t.title || 'thread'}`.trim()
+        : `${gym?.name || ev?.title || 'Gym'} ${t.title || 'thread'}`.trim()
       const avatar = isDirect
         ? profile?.avatar_url ?? null
-        : gym?.avatar_url ?? 'https://www.figma.com/api/mcp/asset/d19fa6c1-2d62-4bd-940b-0bf7cbc80c45'
+        : ev?.image_url ||
+          gym?.avatar_url ||
+          'https://www.figma.com/api/mcp/asset/d19fa6c1-2d62-4bd-940b-0bf7cbc80c45'
       const isUnread =
         !!fallbackMsg &&
         fallbackMsg.receiver_id === userId &&

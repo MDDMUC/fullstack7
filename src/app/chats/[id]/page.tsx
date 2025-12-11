@@ -22,6 +22,7 @@ type ThreadRow = {
   user_b: string | null
   type?: string | null
   gym_id?: string | null
+  event_id?: string | null
   title?: string | null
 }
 
@@ -48,6 +49,17 @@ type Gym = {
   location?: string | null
 }
 
+type EventRow = {
+  id: string
+  title: string | null
+  location: string | null
+  start_at: string | null
+  slots_total: number | null
+  slots_open: number | null
+  image_url: string | null
+  description: string | null
+}
+
 export default function ChatDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -58,6 +70,7 @@ export default function ChatDetailPage() {
   const [thread, setThread] = useState<ThreadRow | null>(null)
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null)
   const [gym, setGym] = useState<Gym | null>(null)
+  const [event, setEvent] = useState<EventRow | null>(null)
   const [participants, setParticipants] = useState<string[]>([])
   const [messages, setMessages] = useState<MessageRow[]>([])
   const [draft, setDraft] = useState('')
@@ -73,12 +86,30 @@ export default function ChatDetailPage() {
     return (thread?.type ?? '') === 'gym'
   }, [thread])
 
+  const isEventThread = useMemo(() => {
+    return (thread?.type ?? '') === 'event'
+  }, [thread])
+
+  const isGroupThread = isGymThread || isEventThread
+
   const otherFirstName = useMemo(() => {
     const name = otherProfile?.username || ''
     if (!name) return 'User'
     const first = name.trim().split(/\s+/)[0]
     return first || 'User'
   }, [otherProfile])
+
+  const formatDate = (iso?: string | null) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    return d.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -150,6 +181,15 @@ export default function ChatDetailPage() {
           .eq('id', t.gym_id)
           .single()
         if (g) setGym(g)
+      }
+
+      if (!isDirect && (t.type ?? '') === 'event' && t.event_id) {
+        const { data: ev } = await client
+          .from('events')
+          .select('id,title,location,start_at,slots_total,slots_open,image_url,description')
+          .eq('id', t.event_id)
+          .single()
+        if (ev) setEvent(ev)
       }
 
       // Messages
@@ -268,10 +308,18 @@ export default function ChatDetailPage() {
     return STATUS_BIG
   }
 
+  const heroImage = isEventThread
+    ? event?.image_url || AVATAR_PLACEHOLDER
+    : gym?.avatar_url || otherProfile?.avatar_url || AVATAR_PLACEHOLDER
+  const heroTitle = thread?.title || event?.title || gym?.name || 'Thread Name'
+  const heroSub = isEventThread ? event?.title || '' : gym?.name || 'Gym Name'
+  const heroInfoLeft = isEventThread ? event?.location || '' : gym?.location || 'City'
+  const heroInfoRight = isEventThread ? formatDate(event?.start_at) || 'Date/time' : '27 people are going'
+
   return (
-    <div className={isGymThread ? 'chat-gym-screen' : 'chat-detail-screen'} data-chat-id={chatId}>
-      <div className={isGymThread ? 'chat-gym-content' : 'chat-detail-content'}>
-        {isGymThread ? (
+    <div className={isGroupThread ? 'chat-gym-screen' : 'chat-detail-screen'} data-chat-id={chatId}>
+      <div className={isGroupThread ? 'chat-gym-content' : 'chat-detail-content'}>
+        {isGroupThread ? (
           <div className="chat-gym-card">
             <div className="chat-gym-backbar">
               <button type="button" className="chat-detail-icon-btn" aria-label="Back" onClick={() => router.back()}>
@@ -284,18 +332,14 @@ export default function ChatDetailPage() {
             </div>
 
             <div className="chat-gym-hero">
-              <img
-                src={gym?.avatar_url || otherProfile?.avatar_url || AVATAR_PLACEHOLDER}
-                alt=""
-                className="chat-gym-hero-img"
-              />
+              <img src={heroImage} alt="" className="chat-gym-hero-img" />
               <div className="chat-gym-hero-gradient" />
               <div className="chat-gym-hero-text">
-                <p className="chat-gym-thread-name">{thread?.title || 'Thread Name'}</p>
-                <p className="chat-gym-name">{gym?.name || 'Gym Name'}</p>
+                <p className="chat-gym-thread-name">{heroTitle}</p>
+                <p className="chat-gym-name">{heroSub}</p>
                 <div className="chat-gym-info-row">
-                  <p className="chat-gym-city">{gym?.location || 'City'}</p>
-                  <p className="chat-gym-people">27 people are going</p>
+                  <p className="chat-gym-city">{heroInfoLeft}</p>
+                  <p className="chat-gym-people">{heroInfoRight}</p>
                 </div>
               </div>
             </div>
