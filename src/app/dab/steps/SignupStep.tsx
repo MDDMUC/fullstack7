@@ -82,6 +82,7 @@ export default function SignupStep() {
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dab`,
           data: {
             name: formData.fullName,
           },
@@ -89,8 +90,8 @@ export default function SignupStep() {
       })
 
       if (signUpError) throw signUpError
-      // Redirect to onboarding after successful signup
-      router.push('/dab')
+      // Show confirmation screen
+      router.push('/dab/confirm-email')
     } catch (err: any) {
       setError(err?.message || 'Sign up failed')
     } finally {

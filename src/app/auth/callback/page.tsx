@@ -31,8 +31,9 @@ function AuthCallbackInner() {
         return
       }
 
+      const next = searchParams.get('next') || '/dab'
       setStatus('done')
-      router.replace('/dab')
+      router.replace(next)
     }
 
     exchange()
