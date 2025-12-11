@@ -1337,6 +1337,181 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   cursor: not-allowed;
 }
 
+/* ----------------------------------------
+   BUTTON.FILTER.MOBILE (node 634:15799)
+   ---------------------------------------- */
+.button-filter-mobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 125px;
+  padding: var(--btn-pad-md) var(--space-md); /* 10px 12px */
+  border-radius: var(--radius-md); /* 10px */
+  background: var(--color-text);
+  border: 1px solid var(--color-muted);
+  font-family: var(--font-inter);
+  font-size: var(--font-field-size); /* 15px */
+  font-weight: var(--font-field-weight); /* 400 */
+  color: var(--color-muted);
+  line-height: normal;
+  text-align: left;
+  cursor: pointer;
+  transition: color 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.button-filter-mobile.hover {
+  border-color: transparent;
+  color: var(--color-text-dark);
+}
+
+.button-filter-mobile.focus {
+  border-color: transparent;
+  color: var(--color-primary);
+  box-shadow: var(--shadow-lightfill);
+}
+
+.button-filter-mobile-text {
+  font: inherit;
+  color: inherit;
+}
+
+.button-filter-mobile-text.hover {
+  color: var(--color-text-dark);
+}
+
+.button-filter-mobile-text.focus {
+  color: var(--color-primary);
+}
+
+.button-filter-mobile-icon {
+  width: 12px;
+  height: 7.41px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.button-filter-mobile-wrapper {
+  position: relative;
+}
+
+.button-filter-mobile-menu {
+  position: absolute;
+  top: calc(100% + var(--space-xxs));
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  padding: var(--space-xxs);
+  background: var(--color-panel);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-small);
+  z-index: 10;
+}
+
+.button-filter-mobile-option {
+  width: 100%;
+  text-align: left;
+  padding: var(--btn-pad-md) var(--space-sm);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-inter);
+  font-size: var(--font-field-size);
+  font-weight: var(--font-field-weight);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+
+.button-filter-mobile-option:hover {
+  background: color-mix(in srgb, var(--color-text) 8%, transparent);
+  color: var(--color-text-dark);
+}
+
+.button-filter-mobile-option.selected {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+/* ----------------------------------------
+   MOBILE NAVBAR (node 636:1676)
+   ---------------------------------------- */
+.mobile-navbar {
+  width: 100%;
+  max-width: 420px;
+  background: transparent;
+}
+
+.mobile-navbar-inner {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--color-text);
+  padding: var(--space-md) var(--space-xl);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-sizing: border-box;
+  gap: var(--space-xl);
+}
+
+.mobile-navbar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  width: 73px;
+  color: var(--color-border-default);
+  font-family: var(--font-inter);
+  font-size: var(--font-size-xxs); /* 10px */
+  font-weight: var(--font-weight-regular);
+  line-height: normal;
+}
+
+.mobile-navbar-item:visited {
+  color: inherit;
+}
+
+.mobile-navbar-icon-wrap {
+  position: relative;
+  width: 26px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-navbar-icon {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.mobile-navbar-icon.active {
+  filter: none;
+}
+
+.mobile-navbar-label {
+  color: var(--color-border-default);
+}
+
+.mobile-navbar-label.active {
+  color: var(--color-primary);
+}
+
+.mobile-navbar-dot {
+  position: absolute;
+  top: 5px;
+  right: -4px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+
 .button-cta,
 .site-header-cta-btn {
   padding: var(--btn-pad-md) var(--btn-pad-xxl);
@@ -1899,8 +2074,8 @@ input[type=number] {
    Figma: bg-[var(---bg,#0c0e12)] border border-[var(---red,#ff7b7b)] */
 .button-chip-pro {
   background: var(--color-bg);
-  border: 1px solid var(--color-red);
-  color: var(--color-red);
+  border: 1px solid var(--color-special);
+  color: var(--color-special);
 }
 
 .button-chip-pro-icon {
@@ -2435,11 +2610,12 @@ input[type=number] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 8px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 400;
-  font-family: 'Inter', sans-serif;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm); /* 6px 8px */
+  border-radius: var(--space-sm); /* 8px exact per Figma */
+  font-size: var(--font-pill-size); /* 12px */
+  font-weight: var(--font-field-weight); /* 400 */
+  font-family: var(--font-inter);
   line-height: normal;
   white-space: nowrap;
   text-align: center;
@@ -2450,6 +2626,15 @@ input[type=number] {
 .fc-chip-founder {
   background: var(--color-panel);
   border: 1px solid var(--color-special);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--space-sm);
+  font-size: var(--font-pill-size);
+  font-weight: var(--font-field-weight);
+  font-family: var(--font-inter);
 }
 
 .fc-chip-founder .fc-chip-text {
@@ -2465,6 +2650,15 @@ input[type=number] {
 .fc-chip-crew {
   background: var(--color-panel);
   border: 1px solid var(--color-special);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--space-sm);
+  font-size: var(--font-pill-size);
+  font-weight: var(--font-field-weight);
+  font-family: var(--font-inter);
 }
 
 .fc-chip-crew .fc-chip-text {
@@ -2475,6 +2669,206 @@ input[type=number] {
   color: transparent;
 }
 
+.fc-chip-icon {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.home-special-chips {
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  display: flex;
+  gap: var(--space-xs);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.home-special-chips .fc-chip {
+  pointer-events: auto;
+}
+
+/* ----------------------------------------
+   CHAT DETAIL (/chats/[id]) - node 634:15102
+   ---------------------------------------- */
+.chat-detail-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background: var(--color-text);
+  display: flex;
+  justify-content: center;
+  padding: var(--space-lg);
+  box-sizing: border-box;
+}
+
+.chat-detail-content {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.chat-detail-card {
+  background: var(--color-white, var(--color-text));
+  border-radius: 24px;
+  box-shadow: var(--shadow-base);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.chat-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.chat-detail-icon-btn {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.chat-detail-partner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1 1 0;
+}
+
+.chat-detail-avatar {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.chat-detail-name {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-panel);
+}
+
+.chat-detail-divider {
+  width: 100%;
+  height: 1px;
+  background: color-mix(in srgb, var(--color-muted) 60%, transparent);
+}
+
+.chat-detail-messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.chat-detail-system {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-darker);
+  text-align: center;
+}
+
+.chat-detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+
+.chat-detail-row.left {
+  justify-content: flex-start;
+}
+
+.chat-detail-row.right {
+  justify-content: flex-end;
+}
+
+.chat-detail-avatar-small {
+  width: 34px;
+  height: 34px;
+}
+
+.chat-detail-bubble {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: normal;
+  max-width: 80%;
+}
+
+.chat-detail-bubble-left {
+  background: var(--color-text);
+  color: var(--color-panel);
+}
+
+.chat-detail-bubble-right {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-bottom-right-radius: 4px;
+}
+
+.chat-detail-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.chat-detail-status-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: color-mix(in srgb, var(--color-primary) 20%, transparent);
+  padding: 2px;
+  border-radius: 8px;
+}
+
+.chat-detail-status-icon {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-detail-status-text {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-darker);
+}
+
+.chat-detail-input {
+  height: 38px;
+  background: var(--color-text);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  align-items: center;
+}
+
+.chat-detail-input-placeholder {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-darker);
+}
 /* Belay Certified Chip
    Figma: bg-[#11141c] border border-[#5ce1e6] text-[#5ce1e6] */
 .fc-chip-belay {
@@ -2487,13 +2881,18 @@ input[type=number] {
    Figma: bg-[#11141c] border border-[#ff7b7b] text-[#ff7b7b]
    px-[8px] py-[6px] rounded-[8px] text-[12px] Inter Regular */
 .fc-chip-pro {
-  background: var(--color-panel); /* color/panel */
-  border: 1px solid var(--color-red); /* color/red */
-  color: var(--color-red); /* color/red */
-  padding: var(--space-xs) var(--space-sm); /* py: button/padding/xs, px: button/padding/sm */
-  border-radius: var(--radius-sm); /* space/sm */
-  font-size: var(--font-pill-size); /* body/xs */
-  font-weight: var(--font-weight-regular); /* Regular */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-special);
+  color: var(--color-special);
+  padding: var(--space-xs) var(--space-sm); /* 6px 8px */
+  border-radius: var(--space-sm); /* 8px */
+  font-size: var(--font-pill-size); /* 12px */
+  font-weight: var(--font-weight-regular); /* 400 */
+  font-family: var(--font-inter);
 }
 
 /* Standard Chip

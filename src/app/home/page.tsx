@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import ButtonDab from '@/components/ButtonDab'
+import FilterDropdownMobile from '@/components/FilterDropdownMobile'
+import MobileNavbar from '@/components/MobileNavbar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
@@ -21,7 +23,12 @@ const FALLBACK_MALE = '/fallback-male.jpg'
 const FALLBACK_FEMALE = '/fallback-female.jpg'
 const FIGMA_CARD_IMAGE = 'https://www.figma.com/api/mcp/asset/11d0ee86-62b7-427f-86c4-f30e4e38bbfb' // Figma node 633:14303
 
-const FILTER_LABELS = ['city', 'style', 'gym', 'time']
+const ROCK_ICON = 'https://www.figma.com/api/mcp/asset/b40792a1-8803-46f4-8eda-7fffabd185d1'
+const FOUNDER_ICON = 'https://www.figma.com/api/mcp/asset/678371f8-8c8a-45a5-bdfc-e9638de47c64'
+const PRO_ICON = 'https://www.figma.com/api/mcp/asset/e59c8273-cc79-465c-baea-a52bc6410ee6'
+
+const FILTER_LABELS = ['city', 'style', 'gym', 'time'] as const
+type FilterKey = (typeof FILTER_LABELS)[number]
 
 const FALLBACK_PROFILE: Profile = {
   id: 'figma-demo',
@@ -67,6 +74,12 @@ export default function HomeScreen() {
   const { session } = useAuthSession()
   const [deck, setDeck] = useState<Profile[]>([])
   const [currentUserProfile, setCurrentUserProfile] = useState<Profile | null>(null)
+  const [filters, setFilters] = useState<Record<FilterKey, string>>({
+    city: 'All',
+    style: 'All',
+    gym: 'All',
+    time: 'All',
+  })
 
   // Fetch current user's profile to check for pro status
   useEffect(() => {
@@ -115,7 +128,50 @@ export default function HomeScreen() {
     load()
   }, [])
 
-  const current = useMemo(() => deck[0] ?? FALLBACK_PROFILE, [deck])
+  const filterOptions = useMemo(() => {
+    const cities = new Set<string>(['All'])
+    const styles = new Set<string>(['All'])
+    const gyms = new Set<string>(['All'])
+    const times = new Set<string>(['All'])
+
+    deck.forEach(p => {
+      if (p.city) cities.add(p.city)
+      if ((p as any).homebase) gyms.add((p as any).homebase as string)
+      getStylesFromProfile(p).forEach(s => styles.add(s))
+      if (p.availability) {
+        p.availability
+          .split(',')
+          .map(a => a.trim())
+          .filter(Boolean)
+          .forEach(a => times.add(a))
+      }
+    })
+
+    return {
+      city: Array.from(cities),
+      style: Array.from(styles),
+      gym: Array.from(gyms),
+      time: Array.from(times),
+    }
+  }, [deck])
+
+  const filteredDeck = useMemo(() => {
+    return deck.filter(p => {
+      if (filters.city !== 'All' && p.city !== filters.city && (p as any).homebase !== filters.city) return false
+      if (filters.style !== 'All') {
+        const styles = getStylesFromProfile(p).map(s => s.toLowerCase())
+        if (!styles.includes(filters.style.toLowerCase())) return false
+      }
+      if (filters.gym !== 'All' && (p as any).homebase !== filters.gym) return false
+      if (filters.time !== 'All') {
+        const avail = (p.availability || '').toLowerCase()
+        if (!avail.includes(filters.time.toLowerCase())) return false
+      }
+      return true
+    })
+  }, [deck, filters])
+
+  const current = useMemo(() => filteredDeck[0] ?? deck[0] ?? FALLBACK_PROFILE, [filteredDeck, deck])
 
   const tags = useMemo(() => {
     // Get styles and grade from database fields, not from tags
@@ -125,6 +181,17 @@ export default function HomeScreen() {
   }, [current])
 
   const chips = useMemo(() => chipsFromTags(current.tags), [current])
+  const specialTopChips = useMemo(() => {
+    return chips.filter(chip => {
+      const lower = chip.toLowerCase()
+      return lower.includes('pro') || lower.includes('founder') || lower.includes('crew')
+    })
+  }, [chips])
+
+  const remainingChips = useMemo(() => {
+    const specials = new Set(specialTopChips)
+    return chips.filter(chip => !specials.has(chip))
+  }, [chips, specialTopChips])
 
   // Check if the displayed profile is the logged-in user
   const isCurrentUser = useMemo(() => {
@@ -161,10 +228,13 @@ export default function HomeScreen() {
         <div className="home-content">
           <div className="home-filters">
             {FILTER_LABELS.map(label => (
-              <button key={label} type="button" className="filter-pill">
-                <span className="filter-pill-label">{label}</span>
-                <img src="/icons/Color.svg" alt="" className="filter-pill-icon" />
-              </button>
+              <FilterDropdownMobile
+                key={label}
+                label={label}
+                value={filters[label]}
+                options={filterOptions[label]}
+                onChange={val => setFilters(prev => ({ ...prev, [label]: val }))}
+              />
             ))}
           </div>
 
@@ -192,6 +262,28 @@ export default function HomeScreen() {
 
             <div className="home-card-main">
               <div className="home-image-wrapper">
+                {specialTopChips.length > 0 && (
+                  <div className="home-special-chips">
+                    {specialTopChips.map(chip => {
+                      const lower = chip.toLowerCase()
+                      const isPro = lower.includes('pro')
+                      const isFounder = lower.includes('founder')
+                      const isCrew = lower.includes('crew')
+                      let chipClass = 'fc-chip'
+                      if (isPro) chipClass += ' fc-chip-pro'
+                      else if (isFounder) chipClass += ' fc-chip-founder'
+                      else if (isCrew) chipClass += ' fc-chip-crew'
+                      const iconSrc = isPro ? PRO_ICON : isFounder ? FOUNDER_ICON : ROCK_ICON
+                      const needsGradient = isFounder || isCrew
+                      return (
+                        <span key={`special-top-${chip}`} className={chipClass}>
+                          <img src={iconSrc} alt="" className="fc-chip-icon" />
+                          {needsGradient ? <span className="fc-chip-text">{chip}</span> : chip}
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
                 <img
                   src={current.avatar_url || FIGMA_CARD_IMAGE}
                   alt={current.username || 'Profile'}
@@ -216,42 +308,31 @@ export default function HomeScreen() {
                     {tags.grade && (
                       <span className="button-tag button-tag-grade">{tags.grade}</span>
                     )}
-                    {chips.map((chip, idx) => {
-                      const chipLower = chip.toLowerCase();
-                      // Check for special chips that have unique styling
-                      const isPro = chipLower.includes('pro') && !chipLower.includes('founder') && !chipLower.includes('crew');
-                      const isFounder = chipLower.includes('founder');
-                      const isCrew = chipLower.includes('crew');
-                      const isBelayCertified = chipLower.includes('belay');
-                      
-                      // Determine chip class based on special types
-                      let chipClass = 'button-chip';
-                      if (isPro) {
-                        chipClass += ' button-chip-pro';
-                      } else if (isFounder) {
-                        chipClass += ' button-chip-founder';
-                      } else if (isCrew) {
-                        chipClass += ' button-chip-crew';
-                      } else if (isBelayCertified) {
-                        chipClass += ' button-chip-belay';
-                      } else {
-                        // First chip uses focus state, rest use default
-                        const isFirst = idx === 0;
-                        if (isFirst) chipClass += ' button-chip-focus';
-                      }
-                      
-                      // For founder and crew, wrap text in span for gradient
-                      const needsGradient = isFounder || isCrew;
-                      
-                      return (
-                        <span
-                          key={`chip-${chip}-${idx}`}
-                          className={chipClass}
-                        >
-                          {needsGradient ? <span>{chip}</span> : chip}
-                        </span>
-                      );
-                    })}
+                    {remainingChips.map((chip, idx) => {
+                    const chipLower = chip.toLowerCase()
+                    const isPro = chipLower.includes('pro') && !chipLower.includes('founder') && !chipLower.includes('crew')
+                    const isFounder = chipLower.includes('founder')
+                    const isCrew = chipLower.includes('crew')
+                    const isBelayCertified = chipLower.includes('belay')
+
+                    let chipClass = 'fc-chip'
+                    if (isPro) chipClass += ' fc-chip-pro'
+                    else if (isFounder) chipClass += ' fc-chip-founder'
+                    else if (isCrew) chipClass += ' fc-chip-crew'
+                    else if (isBelayCertified) chipClass += ' fc-chip-belay'
+                    else chipClass += ' fc-chip-standard'
+
+                    const needsGradient = isFounder || isCrew
+                    const showIcon = isPro || isFounder || isCrew
+                    const iconSrc = isPro ? PRO_ICON : isFounder ? FOUNDER_ICON : ROCK_ICON
+
+                    return (
+                      <span key={`chip-${chip}-${idx}`} className={chipClass}>
+                        {showIcon && <img src={iconSrc} alt="" className="fc-chip-icon" />}
+                        {needsGradient ? <span className="fc-chip-text">{chip}</span> : chip}
+                      </span>
+                    )
+                  })}
                   </div>
                 </div>
               </div>
@@ -278,57 +359,7 @@ export default function HomeScreen() {
           </div>
 
           {/* Mobile Navbar - Exact from Figma node 628:4634 */}
-          <div className="home-bottom-nav" data-name="state=Default">
-            <div className="home-bottom-row" data-name="links">
-              {/* Profile */}
-              <Link href="/profile" className="home-bottom-item" data-name="profile">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="face-content">
-                    <div className="home-nav-icon-inner-face">
-                      <img src="/icons/face-content.svg" alt="" className="home-nav-icon-img" />
-                    </div>
-                  </div>
-                </div>
-                <span className="home-bottom-label">profile</span>
-              </Link>
-              {/* Events */}
-              <Link href="/events" className="home-bottom-item" data-name="events">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="announcement-01">
-                    <div className="home-nav-icon-inner-announcement">
-                      <img src="/icons/announcement-01.svg" alt="" className="home-nav-icon-img" />
-                    </div>
-                  </div>
-                </div>
-                <span className="home-bottom-label">events</span>
-              </Link>
-              {/* Chats */}
-              <Link href="/chats" className="home-bottom-item home-bottom-item-chat" data-name="chats">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="message-chat-square">
-                    <div className="home-nav-icon-inner-message">
-                      <img src="/icons/message-chat-square.svg" alt="" className="home-nav-icon-img" />
-                    </div>
-                  </div>
-                  <div className="home-bottom-dot" />
-                </div>
-                <span className="home-bottom-label">chats</span>
-              </Link>
-              {/* Dab */}
-              <Link href="/home" className="home-bottom-item home-bottom-active" data-name="dab">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="flash">
-                    <div className="home-nav-icon-inner-flash" data-name="Icon">
-                      <div className="home-nav-icon-inner-flash-2">
-                        <img src="/icons/flash.svg" alt="" className="home-nav-icon-img" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <span className="home-bottom-label">dab</span>
-              </Link>
-            </div>
-          </div>
+          <MobileNavbar active="dab" />
         </div>
       </div>
     </RequireAuth>

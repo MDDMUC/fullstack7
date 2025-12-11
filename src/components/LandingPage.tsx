@@ -103,6 +103,10 @@ const organizeTagsAndChips = (profile: Profile) => {
 
 type StatusState = { label: string; variant: 'live' | 'offline' | 'new' | 'omw' | 'dab' | 'climb' | 'herenow'; live: boolean }
 
+const ROCK_ICON = 'https://www.figma.com/api/mcp/asset/b40792a1-8803-46f4-8eda-7fffabd185d1'
+const PRO_ICON = 'https://www.figma.com/api/mcp/asset/e59c8273-cc79-465c-baea-a52bc6410ee6'
+const FOUNDER_ICON = 'https://www.figma.com/api/mcp/asset/678371f8-8c8a-45a5-bdfc-e9638de47c64'
+
 const statusForProfile = (profile: Profile): StatusState => {
   const raw = (profile.status || '').toLowerCase()
   const city = profile.city || 'your gym'
@@ -193,7 +197,8 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
               {/* Pro chip - check grade column */}
               {profile.grade === 'Pro' && (
                 <span className="fc-chip fc-chip-pro">
-                  🔥 PRO
+                  <img src={PRO_ICON} alt="" className="fc-chip-icon" />
+                  PRO
                 </span>
               )}
               {/* Special chips (Founder, Belay Certified, Outdoorclimber) */}
@@ -210,14 +215,18 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
                 else if (isBelay || isOutdoor) chipClass += ' fc-chip-belay'
                 
                 // Add emoji for founder/crew
-                const displayText = (isFounder || isCrew) ? `🤘${chip}` : chip
                 const needsGradient = isFounder || isCrew
-                
+                const showIcon = isFounder || isCrew
+                const iconSrc = isFounder ? FOUNDER_ICON : ROCK_ICON
+
                 return (
                   <span key={`special-${chip}`} className={chipClass}>
+                    {showIcon && <img src={iconSrc} alt="" className="fc-chip-icon" />}
                     {needsGradient ? (
-                      <span className="fc-chip-text">{displayText}</span>
-                    ) : displayText}
+                      <span className="fc-chip-text">{chip}</span>
+                    ) : (
+                      chip
+                    )}
                   </span>
                 )
               })}
@@ -346,7 +355,8 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
               {/* Pro chip - check grade column */}
               {profile.grade === 'Pro' && (
                 <span className="gpc-chip pro">
-                  🔥 PRO
+                  <img src={PRO_ICON} alt="" className="fc-chip-icon" />
+                  PRO
                 </span>
               )}
               {specialChips.map(chip => {
@@ -356,14 +366,21 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
                 const isBelay = lowerChip.includes('belay') || lowerChip.includes('certified')
                 const isOutdoor = lowerChip.includes('outdoorclimber') || lowerChip.includes('outdoor')
                 const isFounderOrCrew = isFounder || isCrew
-                const displayText = isFounderOrCrew ? `🤘${chip}` : chip
+                const iconSrc = isFounder ? FOUNDER_ICON : ROCK_ICON
                 let chipClass = 'gpc-chip'
                 if (isFounder) chipClass += ' founder'
                 else if (isCrew) chipClass += ' crew'
                 else if (isBelay || isOutdoor) chipClass += ' belay'
                 return (
                   <span key={`special-${chip}`} className={chipClass}>
-                    {isFounderOrCrew ? <span>{displayText}</span> : displayText}
+                    {isFounderOrCrew ? (
+                      <>
+                        <img src={iconSrc} alt="" className="fc-chip-icon" />
+                        <span className="fc-chip-text">{chip}</span>
+                      </>
+                    ) : (
+                      chip
+                    )}
                   </span>
                 )
               })}

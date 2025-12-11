@@ -1405,6 +1405,11 @@ All interactive elements use the `.megabtn` base class with variant modifiers.
 
 ## Components (Exact from Figma node 470:1116)
 
+### Mobile Navbar (node 636:1676)
+- Component: `MobileNavbar` (used on `/home`, `/chats`, `/events`, `/profile`).
+- Tokenized: background `--color-text`, text default `--color-border-default`, active text/icon `--color-primary`, spacing `--space-md/--space-xl`, radius `--radius-lg`, dot uses `--color-primary`, font `--font-size-xxs` / `--font-weight-regular` / `--font-inter`.
+- Icons: Figma-exported SVGs per tab; active icons swap per state (profile/events/chats/dab). Four states: Default (dab active), chats active, events active, profile active.
+
 ### Featured Climber Card Structure
 
 ```

@@ -1,11 +1,12 @@
 // src/hooks/useAuthSession.ts
 'use client'
 import { useEffect, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabaseClient'
 
 export function useAuthSession() {
   const [loading, setLoading] = useState(true)
-  const [session, setSession] = useState<null | { access_token: string }>(null)
+  const [session, setSession] = useState<Session | null>(null)
 
   useEffect(() => {
     let mounted = true
