@@ -10130,8 +10130,8 @@ div.mh-silver-card[data-name="card2"] {
   width: 60px;
   height: 60px;
   flex-shrink: 0;
-  background: var(--color-card); /* color/card */
-  border: 1px solid var(--color-stroke); /* stroke */
+  background: var(--color-text-default); /* color/text/default placeholder */
+  border: none;
   overflow: hidden;
 }
 
@@ -10140,7 +10140,7 @@ div.mh-silver-card[data-name="card2"] {
   inset: 0;
   pointer-events: none;
   border-radius: 10px; /* radius/md */
-  background: var(--color-card); /* color/card */
+  background: var(--color-text-default); /* color/text/default placeholder */
 }
 
 .chats-avatar-img {
@@ -10158,7 +10158,7 @@ div.mh-silver-card[data-name="card2"] {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs); /* 6px token */
+  gap: var(--space-xxxs); /* 2px token */
   align-items: flex-start;
   justify-content: center;
   min-width: 0;
@@ -10181,6 +10181,11 @@ div.mh-silver-card[data-name="card2"] {
   line-height: 1; /* 100% */
   white-space: nowrap;
   letter-spacing: 0;
+}
+
+.chats-preview:hover .chats-title,
+.chats-preview:focus-visible .chats-title {
+  color: var(--color-secondary);
 }
 
 /* Subtitle: font-['Inter:Medium'] text-[14px] text-[color:var(---muted,#8ea0bd)] */

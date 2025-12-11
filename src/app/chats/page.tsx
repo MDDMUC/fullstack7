@@ -16,6 +16,7 @@ type ThreadRow = {
   last_message_at: string | null
   type?: string | null
   gym_id?: string | null
+  title?: string | null
 }
 
 type Profile = {
@@ -61,14 +62,14 @@ export default function ChatsScreen() {
     // Direct 1:1 threads where current user is user_a or user_b
     const { data: directThreads, error: threadsError } = await supabase
       .from('threads')
-      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id')
+      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id,title')
       .or(`user_a.eq.${userId},user_b.eq.${userId}`)
       .order('last_message_at', { ascending: false, nullsFirst: false })
 
     // Group/gym threads via participant table
     const { data: participantThreads, error: participantError } = await supabase
       .from('thread_participants')
-      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id)')
+      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id,title)')
       .eq('user_id', userId)
 
     if (threadsError) {
@@ -84,25 +85,53 @@ export default function ChatsScreen() {
       return
     }
 
+    const directIds = new Set<string>((directThreads ?? []).map(t => t.id).filter(Boolean))
+    const participantThreadRows = (participantThreads ?? [])
+      .map(p => (p as unknown as { thread: ThreadRow }).thread)
+      .filter(Boolean) as ThreadRow[]
+    const participantIds = new Set<string>(participantThreadRows.map(t => t.id).filter(Boolean))
+    const allowedIds = new Set<string>([...directIds, ...participantIds])
+
     const threadsData: ThreadRow[] = [
       ...(directThreads ?? []),
-      ...((participantThreads ?? [])
-        .map(p => (p as unknown as { thread: ThreadRow }).thread)
-        .filter(Boolean) as ThreadRow[]),
-    ]
+      ...participantThreadRows,
+    ].filter(t => t?.id && allowedIds.has(t.id))
 
     // Dedupe by thread id
     const uniqueThreadsMap = new Map<string, ThreadRow>()
     threadsData.forEach(t => {
-      if (t?.id && !uniqueThreadsMap.has(t.id)) {
+      if (t?.id && allowedIds.has(t.id) && !uniqueThreadsMap.has(t.id)) {
         uniqueThreadsMap.set(t.id, t)
       }
     })
     const uniqueThreads = Array.from(uniqueThreadsMap.values())
 
+    // Keep only the three canonical gym thread titles; drop anything else.
+    const allowedGymTitles = new Set(['general', 'beta center', 'routesetting'])
+    const filteredThreads = uniqueThreads.filter(t => {
+      if ((t.type ?? 'direct') !== 'gym') return true
+      const title = (t.title ?? '').trim().toLowerCase()
+      return allowedGymTitles.has(title)
+    })
+
+    // Dedupe gym threads per gym_id+title
+    const gymKeySeen = new Set<string>()
+    const fullyFilteredThreads: ThreadRow[] = []
+    filteredThreads.forEach(t => {
+      if ((t.type ?? 'direct') !== 'gym') {
+        fullyFilteredThreads.push(t)
+        return
+      }
+      const key = `${t.gym_id ?? ''}::${(t.title ?? '').trim().toLowerCase()}`
+      if (!gymKeySeen.has(key)) {
+        gymKeySeen.add(key)
+        fullyFilteredThreads.push(t)
+      }
+    })
+
     const otherIds = Array.from(
       new Set(
-        uniqueThreads
+        fullyFilteredThreads
           .filter(t => (t.type ?? 'direct') === 'direct')
           .map(t => (t.user_a === userId ? t.user_b : t.user_a))
           .filter(Boolean) as string[],
@@ -122,14 +151,49 @@ export default function ChatsScreen() {
         }, {}) ?? {}
     }
 
-    const normalized = uniqueThreads.map<ChatListItem>(t => {
+    // Gyms map for gym threads
+    const gymIds = Array.from(
+      new Set(
+        fullyFilteredThreads
+          .filter(t => (t.type ?? 'direct') === 'gym' && t.gym_id)
+          .map(t => t.gym_id as string),
+      ),
+    )
+
+    let gymsMap: Record<string, { id: string; name: string | null; avatar_url: string | null }> = {}
+    if (gymIds.length > 0) {
+      const { data: gyms } = await supabase
+        .from('gyms')
+        .select('id,name,avatar_url')
+        .in('id', gymIds)
+      gymsMap =
+        gyms?.reduce<Record<string, { id: string; name: string | null; avatar_url: string | null }>>(
+          (acc, g) => {
+            acc[g.id] = g
+            return acc
+          },
+          {},
+        ) ?? {}
+    }
+
+    // Drop gym threads that have no matching gym record (or missing gym_id)
+    const finalThreads = fullyFilteredThreads.filter(t => {
+      if ((t.type ?? 'direct') !== 'gym') return true
+      if (!t.gym_id) return false
+      return Boolean(gymsMap[t.gym_id])
+    })
+
+    const normalized = finalThreads.map<ChatListItem>(t => {
       const isDirect = (t.type ?? 'direct') === 'direct'
       const otherUserId = isDirect ? (t.user_a === userId ? t.user_b : t.user_a) : null
       const profile = otherUserId ? profilesMap[otherUserId] : undefined
-      const title = isDirect ? profile?.username || 'Dabber' : 'Gym thread'
+      const gym = !isDirect && t.gym_id ? gymsMap[t.gym_id] : undefined
+      const title = isDirect
+        ? profile?.username || 'Dabber'
+        : `${gym?.name || 'Gym'} ${t.title || 'thread'}`.trim()
       const avatar = isDirect
         ? profile?.avatar_url ?? null
-        : 'https://www.figma.com/api/mcp/asset/d19fa6c1-2d62-4bd4-940b-0bf7cbc80c45' // dab glyph as placeholder
+        : gym?.avatar_url ?? 'https://www.figma.com/api/mcp/asset/d19fa6c1-2d62-4bd-940b-0bf7cbc80c45'
       return {
         threadId: t.id,
         otherUserId,
@@ -142,6 +206,14 @@ export default function ChatsScreen() {
       }
     })
 
+    // Sort by lastMessageAt desc (nulls last)
+    normalized.sort((a, b) => {
+      if (!a.lastMessageAt && !b.lastMessageAt) return 0
+      if (!a.lastMessageAt) return 1
+      if (!b.lastMessageAt) return -1
+      return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+    })
+
     setItems(normalized)
     setIsLoading(false)
   }, [userId])
@@ -151,8 +223,9 @@ export default function ChatsScreen() {
   }, [fetchThreads])
 
   React.useEffect(() => {
-    if (!supabase || !userId) return
-    const channel = supabase
+    const client = supabase
+    if (!client || !userId) return
+    const channel = client
       .channel('messages-feed')
       .on(
         'postgres_changes',
@@ -167,7 +240,7 @@ export default function ChatsScreen() {
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      client.removeChannel(channel)
     }
   }, [userId, fetchThreads])
 
