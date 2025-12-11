@@ -13,6 +13,7 @@ type Props = {
 export default function SignupForm({ compact = false, heading, subheading }: Props) {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: 'error' | 'info' | 'success'; text: string } | null>(null)
+  const [showToast, setShowToast] = useState(false)
   const router = useRouter()
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -59,8 +60,10 @@ export default function SignupForm({ compact = false, heading, subheading }: Pro
       return
     }
 
-    setMessage({ type: 'success', text: 'Check your email to confirm. Redirecting...' })
-    router.push('/dab')
+    setMessage({ type: 'success', text: 'Check your email for confirmation.' })
+    setShowToast(true)
+    // Redirect to email confirmation instruction page
+    setTimeout(() => router.push('/dab/confirm-email'), 400)
   }
 
   return (
@@ -122,6 +125,16 @@ export default function SignupForm({ compact = false, heading, subheading }: Pro
           </p>
         )}
       </form>
+
+      {showToast && (
+        <div className="signup-toast" role="status" aria-live="assertive">
+          <div className="signup-toast-icon" aria-hidden="true">📧</div>
+          <div className="signup-toast-text">
+            <div className="signup-toast-title">Check your email for confirmation</div>
+            <div className="signup-toast-sub">Tap the link to continue onboarding.</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
