@@ -154,7 +154,7 @@ function EventDetailContent() {
         setJoining(false)
         return
       }
-      threadId = newThread.id
+      threadId = newThread.id as string
       setThread({ id: threadId })
     }
 
