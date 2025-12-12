@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -103,7 +103,12 @@ export default function LoginPage() {
                 <span>Password</span>
                 <input type="password" name="password" required minLength={8} placeholder="Your password" />
               </label>
-              <button className="button-navlink button-navlink-hover" style={{ width: '100%', height: 38 }} type="submit" disabled={loading} aria-busy={loading}>
+              <button
+                className="onb-cta-btn login-cta"
+                type="submit"
+                disabled={loading}
+                aria-busy={loading}
+              >
                 {loading ? 'Signing in…' : 'Log in'}
               </button>
               {status && (

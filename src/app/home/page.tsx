@@ -19,8 +19,6 @@ type Profile = DbProfile & {
   grade?: string
 }
 
-const FALLBACK_MALE = '/fallback-male.jpg'
-const FALLBACK_FEMALE = '/fallback-female.jpg'
 const FIGMA_CARD_IMAGE = 'https://www.figma.com/api/mcp/asset/11d0ee86-62b7-427f-86c4-f30e4e38bbfb' // Figma node 633:14303
 
 const ROCK_ICON = 'https://www.figma.com/api/mcp/asset/b40792a1-8803-46f4-8eda-7fffabd185d1'
@@ -61,14 +59,6 @@ const getStylesFromProfile = (profile?: Profile | null): string[] => {
 const getGradeFromProfile = (profile?: Profile | null): string | undefined => {
   if (!profile) return undefined
   return profile.grade?.trim() || undefined
-}
-
-const fallbackAvatarFor = (profile?: Profile | null) => {
-  const hint = (profile?.pronouns || (profile as any)?.gender || '').toString().toLowerCase()
-  if (hint.includes('she') || hint.includes('her') || hint.includes('woman') || hint.includes('female')) {
-    return FALLBACK_FEMALE
-  }
-  return FALLBACK_MALE
 }
 
 export default function HomeScreen() {
@@ -121,7 +111,6 @@ export default function HomeScreen() {
         const profiles: Profile[] = normalized.map(p => ({
           ...p,
           distance: p.distance ?? '10 km',
-          avatar_url: p.avatar_url ?? fallbackAvatarFor(p),
         }))
         setDeck(profiles)
       } catch (err) {
@@ -198,19 +187,19 @@ export default function HomeScreen() {
     return chips.filter(chip => !specials.has(chip))
   }, [chips, specialTopChips])
 
+  const currentAvatar = (current as any)?.photo ?? current?.avatar_url ?? null
+
   // Check if the displayed profile is the logged-in user
   const isCurrentUser = useMemo(() => {
     return currentUserProfile && current?.id && currentUserProfile.id === current.id
   }, [currentUserProfile, current])
 
-  // Status row visibility: always render to mirror the Figma reference; prefer live data when present.
   const showProChip = useMemo(() => {
     if (!current) return false
-    const normalizedStatus = (currentUserProfile?.status ?? (current as any)?.status ?? '').toString().toLowerCase()
+    const normalizedStatus = ((current as any)?.status ?? '').toString().toLowerCase()
     if (normalizedStatus.includes('pro')) return true
-    // Default to showing the pro chip to stay faithful to the Figma reference when no status is present.
-    return !currentUserProfile
-  }, [currentUserProfile, current])
+    return specialTopChips.some(chip => chip.toLowerCase().includes('pro'))
+  }, [current, specialTopChips])
 
   const showOnlinePill = useMemo(() => {
     if (!current) return false
@@ -314,11 +303,13 @@ export default function HomeScreen() {
                         })}
                       </div>
                     )}
-                    <img
-                      src={current.avatar_url || fallbackAvatarFor(current) || ''}
-                      alt={current.username || 'Profile'}
-                      className="home-image"
-                    />
+                    {currentAvatar && (
+                      <img
+                        src={currentAvatar}
+                        alt={current?.username || 'Profile'}
+                        className="home-image"
+                      />
+                    )}
                     <div className="home-image-overlay">
                       <div className="home-name-row">
                         <div className="home-name">{current.username?.split(' ')[0] || '—'}</div>

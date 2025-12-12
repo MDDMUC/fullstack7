@@ -130,9 +130,19 @@ const DEMO_IMAGE_MAP: Record<string, string> = {
   'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f': 'e5d0e0da-a9d7-4a89-ad61-e5bc7641905f/maxtrad.jpg',
 }
 
+const normalizeStoragePath = (path?: string | null) => {
+  if (!path) return null
+  const trimmed = path.replace(/^\/+/, '')
+  if (trimmed.startsWith(`${USER_IMAGES_BUCKET}/`)) {
+    return trimmed.slice(USER_IMAGES_BUCKET.length + 1)
+  }
+  return trimmed
+}
+
 const publicUrlFor = (path?: string | null) => {
-  if (!path || !SUPABASE_PUBLIC_URL) return null
-  return `${SUPABASE_PUBLIC_URL}/storage/v1/object/public/${USER_IMAGES_BUCKET}/${path}`
+  const normalized = normalizeStoragePath(path)
+  if (!normalized || !SUPABASE_PUBLIC_URL) return null
+  return `${SUPABASE_PUBLIC_URL}/storage/v1/object/public/${USER_IMAGES_BUCKET}/${normalized}`
 }
 
 const toSlug = (value?: string | null) =>
@@ -167,7 +177,7 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
   const c = client ?? requireSupabase()
   const baseQuery = c
     .from('profiles')
-    .select('id, username, email, created_at')
+    .select('*')
     .order('created_at', { ascending: false })
   if (ids?.length) baseQuery.in('id', ids)
 
@@ -200,6 +210,13 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
 
       let avatarUrl = normalized.avatar_url
 
+      // If onboardingprofiles.photo stored a path (not a full URL), make it public
+      if (avatarUrl && !avatarUrl.startsWith('http')) {
+        const storagePath = normalizeStoragePath(avatarUrl)
+        const { data: urlData } = c.storage.from(USER_IMAGES_BUCKET).getPublicUrl(storagePath || avatarUrl)
+        avatarUrl = urlData?.publicUrl ?? publicUrlFor(storagePath) ?? avatarUrl
+      }
+
       // Known demo mapping: always prefer the uploaded file for these seeded users
       if (DEMO_IMAGE_MAP[normalized.id]) {
         const mappedPath = DEMO_IMAGE_MAP[normalized.id]
@@ -224,7 +241,8 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
         }
       }
 
-      return { ...normalized, avatar_url: avatarUrl ?? null }
+      const resolvedPhoto = avatarUrl ?? normalized.photo ?? null
+      return { ...normalized, avatar_url: avatarUrl ?? null, photo: resolvedPhoto }
     })
   )
 
