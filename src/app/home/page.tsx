@@ -151,6 +151,7 @@ export default function HomeScreen() {
 
   const filteredDeck = useMemo(() => {
     return deck.filter(p => {
+      if (currentUserProfile?.id && p.id === currentUserProfile.id) return false
       if (filters.city !== 'All' && p.city !== filters.city && (p as any).homebase !== filters.city) return false
       if (filters.style !== 'All') {
         const styles = getStylesFromProfile(p).map(s => s.toLowerCase())
@@ -163,7 +164,7 @@ export default function HomeScreen() {
       }
       return true
     })
-  }, [deck, filters])
+  }, [deck, filters, currentUserProfile])
 
   const current = useMemo(() => filteredDeck[0] ?? deck[0] ?? null, [filteredDeck, deck])
 
@@ -187,19 +188,12 @@ export default function HomeScreen() {
     return chips.filter(chip => !specials.has(chip))
   }, [chips, specialTopChips])
 
-  const currentAvatar = (current as any)?.photo ?? current?.avatar_url ?? null
+  const currentAvatar = current?.avatar_url ?? (current as any)?.photo ?? null
 
   // Check if the displayed profile is the logged-in user
   const isCurrentUser = useMemo(() => {
     return currentUserProfile && current?.id && currentUserProfile.id === current.id
   }, [currentUserProfile, current])
-
-  const showProChip = useMemo(() => {
-    if (!current) return false
-    const normalizedStatus = ((current as any)?.status ?? '').toString().toLowerCase()
-    if (normalizedStatus.includes('pro')) return true
-    return specialTopChips.some(chip => chip.toLowerCase().includes('pro'))
-  }, [current, specialTopChips])
 
   const showOnlinePill = useMemo(() => {
     if (!current) return false
@@ -208,7 +202,7 @@ export default function HomeScreen() {
     return !session
   }, [isCurrentUser, session])
 
-  const showStatusRow = showProChip || showOnlinePill
+  const showStatusRow = showOnlinePill
 
   const handleNext = () => {
     setDeck(prev => {
@@ -260,14 +254,7 @@ export default function HomeScreen() {
               <div className="home-card" data-name="usercard-mobile">
                 {showStatusRow && (
                   <div className="home-card-header">
-                    <div className="home-card-header-left">
-                      {showProChip && (
-                        <span className="button-chip button-chip-pro">
-                          <img src="/icons/pro.svg" alt="" className="button-chip-pro-icon" />
-                          PRO
-                        </span>
-                      )}
-                    </div>
+                    <div className="home-card-header-left" />
                     <div className="home-card-header-right">
                       {showOnlinePill && (
                         <span className="button-pill button-pill-focus button-pill-online-now">

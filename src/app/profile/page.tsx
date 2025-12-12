@@ -46,7 +46,7 @@ export default function ProfilePage() {
     loadProfile()
   }, [session])
 
-  const avatar = profile?.photo ?? profile?.avatar_url ?? null
+  const avatar = profile?.avatar_url ?? profile?.photo ?? null
   const rawName = (profile?.username || profile?.email || '').trim()
   const name =
     rawName.split(/\s+/)[0] ||
@@ -192,8 +192,20 @@ export default function ProfilePage() {
               <div className="profile-divider" aria-hidden="true" />
 
               <div className="profile-cta-row">
-                <button type="button" className="profile-btn-cancel" disabled={loading}>CANCEL</button>
-                <button type="button" className="profile-btn-save" disabled={loading}>SAVE</button>
+                <button
+                  type="button"
+                  className="button-navlink button-navlink-hover profile-btn-cancel"
+                  disabled={loading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="onb-cta-btn profile-btn-save"
+                  disabled={loading}
+                >
+                  Save
+                </button>
               </div>
             </div>
           </div>

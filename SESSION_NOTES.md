@@ -29,3 +29,11 @@
 - If hosting more external images with `next/image`, add hosts to `next.config.js` or keep using `<img>`.
 - Gym names/avatars can be surfaced in chat list for `type='gym'` threads if desired.
 
+### Recent fixes (home/profile, onboarding)
+- Profile/home cards now pull images from onboarding `photo` (normalized storage paths to public URLs) and stop showing fallbacks or empty `src`.
+- /home deck filters out the logged-in user; synthesized profiles from `onboardingprofiles` show up even without a `profiles` row.
+- PRO badge logic fixed: shows only when status or chips include pro; removed duplicate header badge on home.
+- Gradient strokes aligned (outer wrapper only; inner image no stroke); filled corner gaps on image wrapper.
+- CTA buttons on /profile use tokenized components (`button-navlink` cancel, `onb-cta-btn` save) and full-width layout.
+- Profile name shows first name/email prefix only; chevron buttons left-align text/right-align chevron.
+

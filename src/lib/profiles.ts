@@ -184,13 +184,10 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
   const { data: baseProfiles, error: baseErr } = await baseQuery
   if (baseErr) throw baseErr
 
-  const obIds = (baseProfiles ?? []).map(p => p.id)
-  const { data: obRows, error: obErr } = await c
-    .from('onboardingprofiles')
-    .select('*')
-    .in('id', obIds)
+  // Pull all onboarding rows so we can include users who haven't been inserted into profiles yet.
+  const { data: obRowsAll, error: obErr } = await c.from('onboardingprofiles').select('*')
   if (obErr) throw obErr
-  const obMap = new Map((obRows ?? []).map(ob => [ob.id, ob]))
+  const obMap = new Map((obRowsAll ?? []).map(ob => [ob.id, ob]))
 
   // Preload a flat listing at root as a fallback for manually uploaded files not placed in user folders
   let bucketListing: { name: string }[] | undefined
@@ -201,8 +198,20 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
     console.warn('Bucket root listing failed', err)
   }
 
+  // If no profiles rows but we have onboarding rows, synthesize profiles from onboarding data
+  const baseIds = new Set((baseProfiles ?? []).map(p => p.id))
+  const synthesizedFromOnboarding =
+    (obRowsAll ?? [])
+      .filter(ob => !baseIds.has(ob.id))
+      .map(ob => ({ ...ob, id: ob.id, created_at: ob.created_at }))
+
+  const sourceProfiles = [
+    ...(baseProfiles ?? []),
+    ...synthesizedFromOnboarding,
+  ]
+
   const resolved = await Promise.all(
-    (baseProfiles ?? []).map(async profile => {
+    (sourceProfiles ?? []).map(async profile => {
       const normalized = normalizeProfile({
         ...profile,
         onboardingprofiles: obMap.get(profile.id) ? [obMap.get(profile.id)] : [],
