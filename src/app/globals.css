@@ -1026,6 +1026,15 @@ body {
   background: var(--color-panel);
 }
 
+.events-create-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
 .events-create-hero-overlay {
   position: absolute;
   inset: 0;
@@ -1096,6 +1105,7 @@ body {
   gap: var(--space-lg); /* 16px */
   width: 100%;
   align-items: center;
+  margin-top: auto;
 }
 
 .events-create-cancel {
@@ -1111,6 +1121,41 @@ body {
   font-weight: 700;
   font-size: 15px;
   cursor: pointer;
+}
+
+.events-create-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  flex: 1 1 auto;
+}
+
+.events-create-upload-row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.events-create-upload {
+  height: var(--btn-height-lg);
+  padding: var(--btn-pad-md) var(--btn-pad-xxl);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-stroke);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-family: Inter, var(--fontfamily-inter), sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.events-create-upload:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.events-create-file-input {
+  display: none;
 }
 .events-bottom-row {
   display: flex;

@@ -41,8 +41,9 @@ export default function EventsScreen() {
       setLoading(true)
       const { data: eventsData, error: eventsError } = await client
         .from('events')
-        .select('id,title,location,description,start_at,slots_total,slots_open,image_url')
-        .order('start_at', { ascending: true })
+        .select('id,title,location,description,start_at,slots_total,slots_open,image_url,created_at')
+        .order('created_at', { ascending: false, nullsFirst: false })
+        .order('start_at', { ascending: false, nullsFirst: false })
 
       if (eventsError || !eventsData) {
         setEvents([])
@@ -92,8 +93,8 @@ export default function EventsScreen() {
     <RequireAuth>
       <div className="events-screen" data-name="/ events">
         <div className="events-content">
-          <div className="events-card">
-            <div className="events-createbar" data-name="create-event-mobile" data-node-id="636:2102">
+            <div className="events-card">
+            <Link href="/events/create" className="events-createbar" data-name="create-event-mobile" data-node-id="636:2102">
               <div className="events-createbar-left">
                 <div className="events-createbar-plus" data-name="plus" data-node-id="636:2101">
                   <div className="events-createbar-plus-inner" data-name="plus" data-node-id="636:2099">
@@ -119,7 +120,7 @@ export default function EventsScreen() {
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
 
             {loading && <p className="events-loading">Loading events…</p>}
             {!loading &&
