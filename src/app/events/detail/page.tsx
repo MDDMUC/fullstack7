@@ -1,8 +1,11 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import React from 'react'
+import React, { Suspense } from 'react'
 
 import ButtonCta from '@/components/ButtonCta'
 import MobileNavbar from '@/components/MobileNavbar'
@@ -53,7 +56,7 @@ const extractCity = (location?: string | null) => {
   return ''
 }
 
-export default function EventDetailPage() {
+function EventDetailContent() {
   const searchParams = useSearchParams()
   const eventId = searchParams.get('eventId')
 
@@ -119,76 +122,83 @@ export default function EventDetailPage() {
   const cityLabel = extractCity(event?.location) || 'Location'
 
   return (
-    <RequireAuth>
-      <div className="events-detail-screen" data-name="/event/detail">
-        <div className="events-detail-content">
-          <div className="events-detail-card">
-            <div className="events-detail-backbar">
-              <Link href="/events" className="events-detail-back-btn" aria-label="Back to events">
-                <img src="/icons/chevron-left.svg" alt="" className="events-detail-back-icon" />
-              </Link>
-              <div className="events-detail-back-text">back</div>
-              <div className="events-detail-dots">
-                <img src="/icons/dots.svg" alt="" className="events-detail-dots-img" />
-              </div>
+    <div className="events-detail-screen" data-name="/event/detail">
+      <div className="events-detail-content">
+        <div className="events-detail-card">
+          <div className="events-detail-backbar">
+            <Link href="/events" className="events-detail-back-btn" aria-label="Back to events">
+              <img src="/icons/chevron-left.svg" alt="" className="events-detail-back-icon" />
+            </Link>
+            <div className="events-detail-back-text">back</div>
+            <div className="events-detail-dots">
+              <img src="/icons/dots.svg" alt="" className="events-detail-dots-img" />
             </div>
-
-            {loading && <p className="events-detail-status">Loading event…</p>}
-            {!loading && error && <p className="events-detail-status events-detail-status-error">{error}</p>}
-
-            {event && !loading && !error && (
-              <>
-                <div className="events-detail-hero">
-                  <img
-                    src={event.image_url || HERO_PLACEHOLDER}
-                    alt={event.title || 'Event'}
-                    className="events-detail-hero-img"
-                  />
-                  <div className="events-detail-hero-overlay" />
-                  <div className="events-detail-hero-text">
-                    <p className="events-detail-title">{event.title}</p>
-                    {event.location ? <p className="events-detail-subtitle">{event.location}</p> : null}
-                    <div className="events-detail-info-row">
-                      <p className="events-detail-info-loc">{cityLabel}</p>
-                      <p className="events-detail-info-att">{goingLabel}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="events-detail-block">
-                  <div className="events-detail-block-text">
-                    <p className="events-detail-block-title">TIME &amp; LOCATION</p>
-                    <p className="events-detail-block-body">
-                      {timeLabel || 'Schedule to be announced'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="events-detail-block">
-                  <div className="events-detail-block-text">
-                    <p className="events-detail-block-title">DESCRIPTION</p>
-                    <p className="events-detail-block-body">
-                      {event.description || 'Details coming soon.'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="events-detail-cta-row">
-                  {thread ? (
-                    <ButtonCta href={`/chats/${thread.id}`}>Join Chat</ButtonCta>
-                  ) : (
-                    <ButtonCta disabled>Join Chat</ButtonCta>
-                  )}
-                  <ButtonCta>I’m Going</ButtonCta>
-                </div>
-              </>
-            )}
           </div>
 
-          <MobileNavbar active="events" />
+          {loading && <p className="events-detail-status">Loading event…</p>}
+          {!loading && error && <p className="events-detail-status events-detail-status-error">{error}</p>}
+
+          {event && !loading && !error && (
+            <>
+              <div className="events-detail-hero">
+                <img
+                  src={event.image_url || HERO_PLACEHOLDER}
+                  alt={event.title || 'Event'}
+                  className="events-detail-hero-img"
+                />
+                <div className="events-detail-hero-overlay" />
+                <div className="events-detail-hero-text">
+                  <p className="events-detail-title">{event.title}</p>
+                  {event.location ? <p className="events-detail-subtitle">{event.location}</p> : null}
+                  <div className="events-detail-info-row">
+                    <p className="events-detail-info-loc">{cityLabel}</p>
+                    <p className="events-detail-info-att">{goingLabel}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="events-detail-block">
+                <div className="events-detail-block-text">
+                  <p className="events-detail-block-title">TIME &amp; LOCATION</p>
+                  <p className="events-detail-block-body">
+                    {timeLabel || 'Schedule to be announced'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="events-detail-block">
+                <div className="events-detail-block-text">
+                  <p className="events-detail-block-title">DESCRIPTION</p>
+                  <p className="events-detail-block-body">
+                    {event.description || 'Details coming soon.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="events-detail-cta-row">
+                {thread ? (
+                  <ButtonCta href={`/chats/${thread.id}`}>Join Chat</ButtonCta>
+                ) : (
+                  <ButtonCta disabled>Join Chat</ButtonCta>
+                )}
+                <ButtonCta>I’m Going</ButtonCta>
+              </div>
+            </>
+          )}
         </div>
+
+        <MobileNavbar active="events" />
       </div>
-    </RequireAuth>
+    </div>
   )
 }
 
+export default function EventDetailPage() {
+  return (
+    <RequireAuth>
+      <Suspense fallback={null}>
+        <EventDetailContent />
+      </Suspense>
+    </RequireAuth>
+  )
+}
