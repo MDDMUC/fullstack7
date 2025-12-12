@@ -41,3 +41,13 @@
 - Swipes RLS fixed: select policy now allows swiper OR swipee to read rows (`swipes_select_self_or_target`), enabling reciprocal-like detection; mutual dabs now create matches and direct threads successfully.
 - Chats overview: direct threads show first name and real avatar (using merged onboarding/profile data), new matches show as unread and sort to top; unread wave slowed (5.4s) and masked to content; online pill dot set to 12px token size.
 
+### New event create flow
+- Built `/events/create` page to match Figma node 755:2440 with tokenized hero/inputs/buttons, live previews, and ButtonCta submit/cancel.
+- Form fields: title, location, description, start_at, slots_total, slots_open, image_url; host recorded via `created_by` (current user). Submits stay on page with status/errors and disabled states.
+- Added CSS tokens for create hero (160px, gradient overlay), field blocks, cancel button, and CTA height/layout.
+- Updated button-cta hover/focus text color (uses `color-surface-bg` token) and ensured hover shadow/border match spec.
+- Profile page container constrained to 420px max width to match other main nav pages.
+
+### Supabase updates
+- Added SQL to ensure `events.created_by` column, indexes, and RLS policies: select-all for authenticated, insert check `created_by = auth.uid()`, optional self-update; confirmed execution succeeded.
+

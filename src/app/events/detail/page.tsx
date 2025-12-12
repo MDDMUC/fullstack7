@@ -1,18 +1,130 @@
 'use client'
 
 import Link from 'next/link'
-import { RequireAuth } from '@/components/RequireAuth'
+import { useSearchParams } from 'next/navigation'
+import React from 'react'
 
-const HERO_IMG = 'http://localhost:3845/assets/e77d367964c4498d605be651145ba7bf039e3be8.png'
+import ButtonCta from '@/components/ButtonCta'
+import MobileNavbar from '@/components/MobileNavbar'
+import { RequireAuth } from '@/components/RequireAuth'
+import { supabase } from '@/lib/supabaseClient'
+
+type EventRow = {
+  id: string
+  title: string
+  location: string | null
+  description: string | null
+  start_at: string | null
+  slots_total: number | null
+  slots_open: number | null
+  image_url?: string | null
+}
+
+type ThreadRow = {
+  id: string
+}
+
+const HERO_PLACEHOLDER = '/icons/event-placeholder.svg'
+
+const formatEventDate = (iso?: string | null) => {
+  if (!iso) return ''
+  const date = new Date(iso)
+  const weekday = date.toLocaleDateString(undefined, { weekday: 'long' })
+  const day = `${date.getDate()}`.padStart(2, '0')
+  const month = `${date.getMonth() + 1}`.padStart(2, '0')
+  const year = date.getFullYear()
+  const time = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+  const tz = new Intl.DateTimeFormat(undefined, { timeZoneName: 'short' })
+    .formatToParts(date)
+    .find(part => part.type === 'timeZoneName')?.value
+  return `${weekday} / ${day}.${month}.${year} / ${time}${tz ? ` (${tz})` : ''}`
+}
+
+const formatGoing = (slotsTotal?: number | null, slotsOpen?: number | null) => {
+  if (slotsTotal == null || slotsOpen == null) return 'Attendance TBD'
+  const going = Math.max(0, slotsTotal - slotsOpen)
+  return `${going} people are going`
+}
+
+const extractCity = (location?: string | null) => {
+  if (!location) return ''
+  const parts = location.split(',').map(part => part.trim()).filter(Boolean)
+  if (parts.length > 1) return parts[parts.length - 1]
+  return ''
+}
 
 export default function EventDetailPage() {
+  const searchParams = useSearchParams()
+  const eventId = searchParams.get('eventId')
+
+  const [event, setEvent] = React.useState<EventRow | null>(null)
+  const [thread, setThread] = React.useState<ThreadRow | null>(null)
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    let cancelled = false
+    const client = supabase
+    if (!eventId) {
+      setError('Event not found')
+      return
+    }
+    if (!client) {
+      setError('Unable to connect to Supabase')
+      return
+    }
+
+    const fetchEvent = async () => {
+      setLoading(true)
+      setError(null)
+      const { data: eventData, error: eventError } = await client
+        .from('events')
+        .select('id,title,location,description,start_at,slots_total,slots_open,image_url')
+        .eq('id', eventId)
+        .maybeSingle()
+
+      if (cancelled) return
+
+      if (eventError || !eventData) {
+        setEvent(null)
+        setThread(null)
+        setError('Event not found')
+        setLoading(false)
+        return
+      }
+
+      const { data: threadData } = await client
+        .from('threads')
+        .select('id')
+        .eq('type', 'event')
+        .eq('event_id', eventId)
+        .maybeSingle()
+
+      if (cancelled) return
+
+      setEvent(eventData)
+      setThread(threadData ?? null)
+      setLoading(false)
+    }
+
+    fetchEvent()
+
+    return () => {
+      cancelled = true
+    }
+  }, [eventId])
+
+  const timeLabel = formatEventDate(event?.start_at)
+  const goingLabel = formatGoing(event?.slots_total, event?.slots_open)
+  const cityLabel = extractCity(event?.location) || 'Location'
+
   return (
     <RequireAuth>
       <div className="events-detail-screen" data-name="/event/detail">
         <div className="events-detail-content">
           <div className="events-detail-card">
             <div className="events-detail-backbar">
-              <Link href="/events" className="events-detail-back-btn" aria-label="Back">
+              <Link href="/events" className="events-detail-back-btn" aria-label="Back to events">
                 <img src="/icons/chevron-left.svg" alt="" className="events-detail-back-icon" />
               </Link>
               <div className="events-detail-back-text">back</div>
@@ -21,96 +133,59 @@ export default function EventDetailPage() {
               </div>
             </div>
 
-            <div className="events-detail-hero">
-              <img src={HERO_IMG} alt="Event" className="events-detail-hero-img" />
-              <div className="events-detail-hero-overlay">
-                <div className="events-detail-hero-text">
-                  <p className="events-detail-title">PETZL Rope Demo</p>
-                  <p className="events-detail-subtitle">DAV Thalkirchen</p>
-                  <div className="events-detail-info-row">
-                    <p className="events-detail-info-loc">Munich</p>
-                    <p className="events-detail-info-att">27 people are going</p>
+            {loading && <p className="events-detail-status">Loading event…</p>}
+            {!loading && error && <p className="events-detail-status events-detail-status-error">{error}</p>}
+
+            {event && !loading && !error && (
+              <>
+                <div className="events-detail-hero">
+                  <img
+                    src={event.image_url || HERO_PLACEHOLDER}
+                    alt={event.title || 'Event'}
+                    className="events-detail-hero-img"
+                  />
+                  <div className="events-detail-hero-overlay" />
+                  <div className="events-detail-hero-text">
+                    <p className="events-detail-title">{event.title}</p>
+                    {event.location ? <p className="events-detail-subtitle">{event.location}</p> : null}
+                    <div className="events-detail-info-row">
+                      <p className="events-detail-info-loc">{cityLabel}</p>
+                      <p className="events-detail-info-att">{goingLabel}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="events-detail-block">
-              <div className="events-detail-block-text">
-                <p className="events-detail-block-title">TIME &amp; LOCATION</p>
-                <p className="events-detail-block-body">Saturday / 27.12.2025 / 16:30pm (CET)</p>
-              </div>
-            </div>
+                <div className="events-detail-block">
+                  <div className="events-detail-block-text">
+                    <p className="events-detail-block-title">TIME &amp; LOCATION</p>
+                    <p className="events-detail-block-body">
+                      {timeLabel || 'Schedule to be announced'}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="events-detail-block">
-              <div className="events-detail-block-text">
-                <p className="events-detail-block-title">DESCRIPTION</p>
-                <p className="events-detail-block-body">
-                  Try out new ropes, chat with PETZL rope experts and see how advancements in rope making have changed
-                  climbing history first hand. There will be a separate signup table at the entrance. All levels welcome.
-                  Drop in, say hi and join the event and learn more about ropes and the expertise that goes into making
-                  them.
-                </p>
-              </div>
-            </div>
+                <div className="events-detail-block">
+                  <div className="events-detail-block-text">
+                    <p className="events-detail-block-title">DESCRIPTION</p>
+                    <p className="events-detail-block-body">
+                      {event.description || 'Details coming soon.'}
+                    </p>
+                  </div>
+                </div>
 
-            <div className="events-detail-cta-row">
-              <button type="button" className="events-detail-btn events-detail-btn-chat">
-                CHAT
-              </button>
-              <button type="button" className="events-detail-btn events-detail-btn-join">
-                JOIN
-              </button>
-            </div>
+                <div className="events-detail-cta-row">
+                  {thread ? (
+                    <ButtonCta href={`/chats/${thread.id}`}>Join Chat</ButtonCta>
+                  ) : (
+                    <ButtonCta disabled>Join Chat</ButtonCta>
+                  )}
+                  <ButtonCta>I’m Going</ButtonCta>
+                </div>
+              </>
+            )}
           </div>
 
-          <div className="home-bottom-nav">
-            <div className="home-bottom-row">
-              <Link href="/profile" className="home-bottom-item">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="face-content">
-                    <div className="home-nav-icon-inner-face">
-                      <img src="/icons/face-content.svg" alt="" className="home-nav-icon-img" />
-                    </div>
-                  </div>
-                </div>
-                <span className="home-bottom-label">profile</span>
-              </Link>
-              <Link href="/events" className="home-bottom-item home-bottom-active">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="announcement-01">
-                    <div className="home-nav-icon-inner-announcement">
-                      <img src="/icons/announcement-01.svg" alt="" className="home-nav-icon-img" />
-                    </div>
-                  </div>
-                </div>
-                <span className="home-bottom-label">events</span>
-              </Link>
-              <Link href="/chats" className="home-bottom-item home-bottom-item-chat">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="message-chat-square">
-                    <div className="home-nav-icon-inner-message">
-                      <img src="/icons/message-chat-square.svg" alt="" className="home-nav-icon-img" />
-                    </div>
-                  </div>
-                  <div className="home-bottom-dot" />
-                </div>
-                <span className="home-bottom-label">chats</span>
-              </Link>
-              <Link href="/home" className="home-bottom-item">
-                <div className="home-bottom-icon-container">
-                  <div className="home-nav-icon-wrapper" data-name="flash">
-                    <div className="home-nav-icon-inner-flash" data-name="Icon">
-                      <div className="home-nav-icon-inner-flash-2">
-                        <img src="/icons/flash.svg" alt="" className="home-nav-icon-img" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <span className="home-bottom-label">dab</span>
-              </Link>
-            </div>
-          </div>
+          <MobileNavbar active="events" />
         </div>
       </div>
     </RequireAuth>

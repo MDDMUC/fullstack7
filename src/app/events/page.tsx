@@ -124,11 +124,7 @@ export default function EventsScreen() {
             {loading && <p className="events-loading">Loading events…</p>}
             {!loading &&
               events.map(ev => (
-                <Link
-                  key={ev.id}
-                  href={ev.thread?.id ? `/chats/${ev.thread.id}` : '#'}
-                  className="events-tile"
-                >
+                <Link key={ev.id} href={`/events/detail?eventId=${ev.id}`} className="events-tile">
                   <div className="events-tile-img">
                     <img
                       src={ev.image_url || '/icons/event-placeholder.svg'}

@@ -100,6 +100,16 @@ The `Button.Chip` component in Figma has special variants that MUST use their sp
 | Dab button | border `1px solid #5ce1e6`, radius `10px`, height `38px`, padding `10px 16px`, logo 22×36.5 rotated 180° + flipY |
 | Bottom nav | bg `#e9eef7`, radius top `14px`, padding `12px 24px`, icon `26px`, label `10px 400` color `#1f2633`, active color `#5ce1e6`, unread dot `6px` cyan |
 
+## 📅 Event Detail (node 752:877)
+
+- Screen: page padding `24px` (space/xl) with gap `12px` (space/md); background `linear-gradient(180deg, color/text 0% → color/accent-warm-cream 100%)`.
+- Card: gradient `linear-gradient(149.5deg, transparent 0% → color/special 50%)` layered on `color/text-white`; radius `24px` (radius/card); padding `24px`; gap `12px`; shadow `0 20px 60px rgba(0,0,0,0.4)`.
+- Back bar: height `44px`; icon wrappers `44px`; dots icon `28px`; label uses body/base `16px 500` color `#11141c` (color/panel).
+- Hero: height `160px`; padding `16px` (space/lg); radius `14px`; shadow small `0 2px 2px rgba(0,0,0,0.4)`; overlay gradient transparent 40% → color/bg 100%; image scale `127.73%` width `103.97%` offset `-1.79%/-18.61%`.
+- Typography: title heading/sm `20px 800` color `color/text`; subtitle body/base `16px 500` color `color/text`; info row uses body/xs `12px` and body/xxs `10px` color `color/text-muted`.
+- Info blocks: background `color/text-white`; radius `14px`; padding `12px`; gap `12px`; title heading/xxs `12px 800` uppercase color `color/text-darker`; body body/sm `14px 500` color `color/text-darker`.
+- CTA row: gap `16px`; buttons height `38px` radius `10px`; left button bg `color/card` text `color/text`; right button gradient `247.35deg color/accent2 → color/accent` text `color/bg`.
+
 ### CSS Classes (home)
 
 `home-screen`, `home-content`, `home-filters`, `filter-pill`, `home-card`, `home-card-header`, `home-image-wrapper`, `home-image-overlay`, `home-name-row`, `home-name`, `home-age`, `home-location`, `home-chips-row`, `home-bio`, `home-bio-text`, `home-bio-shadow`, `home-cta-row`, `home-btn-next`, `home-btn-dab`, `home-bottom-nav`, `home-bottom-row`, `home-bottom-item`, `home-bottom-active`, `home-bottom-icon`, `home-bottom-label`, `home-bottom-dot`.
@@ -737,6 +747,14 @@ All values in this document are extracted from Figma file `DAB-Build` using the 
 | `button/base` | Inter | 15px | 700 (Bold) | 100% |
 | `heading/sm` | Inter | 20px | 800 (Extra Bold) | 100% |
 | `age` | Inter | 18px | 400 (Regular) | 100% |
+
+## 📄 Event Create (node 755:2440)
+
+- Card: width 358px; background `#ffffff`; radius `24px`; padding `24px`; gap `12px`; shadow/base `0px 20px 60px rgba(0,0,0,0.4)`.
+- Backbar: mobile backbar 44px icons; label body/base 16px 500 color `#11141c`.
+- Hero preview: height `160px`; padding `16px`; radius `14px`; shadow/small `0px 2px 2px rgba(0,0,0,0.4)`; overlay `linear-gradient(180deg, transparent 0-40%, #0c0e12 100%)`; title heading/sm 20px 800 color text/default; subtitle body/base 16px 500 color text/default; info row body/xs 12px + body/xxs 10px color text/muted.
+- Input blocks: background `#ffffff`; radius `14px`; padding `12px`; gap `12px`; shadow/small; label heading/xxs 12px 800 color text/darker; placeholder body/sm 14px 500 color text/muted.
+- Buttons row: gap `16px`; height `38px`; left button bg `#151927` text color/text; right button uses ButtonCta gradient (accent2→accent) text color/bg; padding `10px 16px`; radius `10px`.
 
 ---
 
