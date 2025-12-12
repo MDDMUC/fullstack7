@@ -15,6 +15,7 @@ type ThreadRow = {
   user_b: string | null
   last_message: string | null
   last_message_at: string | null
+   created_at?: string | null
   type?: string | null
   gym_id?: string | null
   title?: string | null
