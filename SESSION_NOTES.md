@@ -36,4 +36,5 @@
 - Gradient strokes aligned (outer wrapper only; inner image no stroke); filled corner gaps on image wrapper.
 - CTA buttons on /profile use tokenized components (`button-navlink` cancel, `onb-cta-btn` save) and full-width layout.
 - Profile name shows first name/email prefix only; chevron buttons left-align text/right-align chevron.
+- Dab => match => chat: dab button now writes a like swipe and, on reciprocal like, inserts a match and ensures a direct thread between the pair (reuses existing direct threads even if `type` was null).
 

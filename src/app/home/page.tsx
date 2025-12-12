@@ -9,6 +9,8 @@ import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
+import { sendSwipe } from '@/lib/swipes'
+import { checkAndCreateMatch } from '@/lib/matches'
 
 // Figma mobile navbar - exact structure from node 628:4634
 // Using exact SVG files from /public/icons/
@@ -212,11 +214,16 @@ export default function HomeScreen() {
     })
   }
 
-  const handleDab = () => {
+  const handleDab = async () => {
     if (!current) return
     setCelebrateName(current.username?.split(' ')[0] || current.username || 'This climber')
     setCelebrate(true)
-    // TODO: wire to Supabase dabs table and check for mutual dab before creating chat
+    try {
+      await sendSwipe(current.id, 'like')
+      await checkAndCreateMatch(current.id)
+    } catch (err) {
+      console.error('dab action failed', err)
+    }
     setTimeout(() => setCelebrate(false), 2200)
   }
 

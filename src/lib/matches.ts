@@ -4,6 +4,33 @@ import { normalizeProfile } from './profiles'
 
 const sortPair = (a: string, b: string) => (a < b ? [a, b] : [b, a])
 
+export async function ensureDirectThreadForMatch(userA: string, userB: string) {
+  const supabase = requireSupabase()
+  const [user_a, user_b] = sortPair(userA, userB)
+
+  // Find existing direct thread between the pair
+  const { data: existing, error: findErr } = await supabase
+    .from('threads')
+    .select('id')
+    .or(
+      `and(user_a.eq.${user_a},user_b.eq.${user_b},or(type.eq.direct,type.is.null)),and(user_a.eq.${user_b},user_b.eq.${user_a},or(type.eq.direct,type.is.null))`,
+    )
+    .limit(1)
+    .maybeSingle()
+
+  if (findErr && findErr.code !== 'PGRST116') throw findErr
+  if (existing?.id) return existing.id as string
+
+  const { data, error } = await supabase
+    .from('threads')
+    .insert({ user_a, user_b, type: 'direct', created_by: user_a })
+    .select('id')
+    .single()
+
+  if (error) throw error
+  return data.id as string
+}
+
 export async function checkAndCreateMatch(swipeeId: string) {
   const supabase = requireSupabase()
   const { data: userData, error: userErr } = await supabase.auth.getUser()
@@ -31,6 +58,8 @@ export async function checkAndCreateMatch(swipeeId: string) {
     .select()
     .single()
 
+  let matchRecord = data
+
   if (error) {
     // Ignore duplicate insert; return the existing match if already created
     if (error.code !== '23505') throw error
@@ -41,10 +70,11 @@ export async function checkAndCreateMatch(swipeeId: string) {
       .eq('user_b', user_b)
       .single()
     if (fetchErr) throw fetchErr
-    return existing
+    matchRecord = existing
   }
 
-  return data
+  const threadId = await ensureDirectThreadForMatch(user_a, user_b)
+  return { ...(matchRecord as any), thread_id: threadId }
 }
 
 export type MatchWithProfiles = {
