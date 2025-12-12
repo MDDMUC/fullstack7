@@ -2044,8 +2044,8 @@ input[type=number] {
 
 /* Pulsing dot indicator */
 .button-pill-dot {
-  width: var(--space-xs);
-  height: var(--space-xs);
+  width: var(--space-md);
+  height: var(--space-md);
   border-radius: 50%;
   background: var(--color-primary);
   display: inline-block;
@@ -10957,32 +10957,37 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 /* Unread wave highlight on row */
-.chats-preview-unread {
+.chats-preview-unread .chats-preview-cont {
   position: relative;
   overflow: hidden;
 }
 
-.chats-preview-unread::after {
+.chats-preview-unread .chats-preview-cont::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
+  inset: var(--space-sm);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  mask-image: linear-gradient(
     90deg,
-    rgba(92, 225, 230, 0.2) 0%,
-    rgba(92, 225, 230, 0) 40%,
-    rgba(92, 225, 230, 0.2) 80%
+    transparent 0%,
+    rgba(0, 0, 0, 0.28) 70%,
+    rgba(0, 0, 0, 0.28) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.28) 70%,
+    rgba(0, 0, 0, 0.28) 100%
   );
   transform: translateX(-100%);
-  animation: chats-wave 1.8s ease-in-out infinite;
+  animation: chats-wave 5.4s ease-in-out infinite;
   pointer-events: none;
 }
 
 @keyframes chats-wave {
   0% {
     transform: translateX(-100%);
-  }
-  50% {
-    transform: translateX(0%);
   }
   100% {
     transform: translateX(100%);

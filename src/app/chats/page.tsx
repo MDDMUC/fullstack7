@@ -6,6 +6,7 @@ import { RequireAuth } from '@/components/RequireAuth'
 import FilterDropdownMobile from '@/components/FilterDropdownMobile'
 import MobileNavbar from '@/components/MobileNavbar'
 import { supabase } from '@/lib/supabaseClient'
+import { fetchProfiles } from '@/lib/profiles'
 import { useAuthSession } from '@/hooks/useAuthSession'
 
 type ThreadRow = {
@@ -79,14 +80,14 @@ export default function ChatsScreen() {
     // Direct 1:1 threads where current user is user_a or user_b
     const { data: directThreads, error: threadsError } = await supabase
       .from('threads')
-      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title')
+      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title,created_at')
       .or(`user_a.eq.${userId},user_b.eq.${userId}`)
       .order('last_message_at', { ascending: false, nullsFirst: false })
 
     // Group/gym threads via participant table
     const { data: participantThreads, error: participantError } = await supabase
       .from('thread_participants')
-      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title)')
+      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title,created_at)')
       .eq('user_id', userId)
 
     if (threadsError) {
@@ -174,15 +175,20 @@ export default function ChatsScreen() {
 
     let profilesMap: Record<string, Profile> = {}
     if (otherIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id,username,avatar_url')
-        .in('id', otherIds)
-      profilesMap =
-        profiles?.reduce<Record<string, Profile>>((acc, p) => {
-          acc[p.id] = p
-          return acc
-        }, {}) ?? {}
+      try {
+        const mergedProfiles = await fetchProfiles(supabase, otherIds)
+        profilesMap =
+          mergedProfiles?.reduce<Record<string, Profile>>((acc, p) => {
+            acc[p.id] = {
+              id: p.id,
+              username: p.username ?? p.email ?? '',
+              avatar_url: p.avatar_url ?? (p as any)?.photo ?? null,
+            }
+            return acc
+          }, {}) ?? {}
+      } catch (err) {
+        console.error('Failed to fetch profiles for chats', err)
+      }
     }
 
     // Gyms map for gym threads
@@ -246,25 +252,29 @@ export default function ChatsScreen() {
       const gym = !isDirect && t.gym_id ? gymsMap[t.gym_id] : undefined
       const ev = !isDirect && t.event_id ? eventsMap[t.event_id] : undefined
       const fallbackMsg = latestByThread[t.id]
+      const firstName = (profile?.username || '').trim().split(/\s+/)[0] || 'Dabber'
       const title = isDirect
-        ? profile?.username || 'Dabber'
+        ? firstName
         : `${gym?.name || ev?.title || 'Gym'} ${t.title || 'thread'}`.trim()
       const avatar = isDirect
         ? profile?.avatar_url ?? null
         : ev?.image_url ||
           gym?.avatar_url ||
           'https://www.figma.com/api/mcp/asset/d19fa6c1-2d62-4bd-940b-0bf7cbc80c45'
+      const lastMessageAt = t.last_message_at ?? fallbackMsg?.created_at ?? t.created_at ?? null
+      const hasMessages = !!fallbackMsg || !!t.last_message
       const isUnread =
-        !!fallbackMsg &&
-        fallbackMsg.receiver_id === userId &&
-        (fallbackMsg.status ?? '').toLowerCase() !== 'read'
+        (!hasMessages && isDirect) ||
+        (!!fallbackMsg &&
+          fallbackMsg.receiver_id === userId &&
+          (fallbackMsg.status ?? '').toLowerCase() !== 'read')
       return {
         threadId: t.id,
         otherUserId,
         title,
         subtitle: formatSubtitle(t.last_message ?? fallbackMsg?.body ?? null),
         avatar,
-        lastMessageAt: t.last_message_at ?? fallbackMsg?.created_at ?? null,
+        lastMessageAt,
         unread: isUnread,
         type: t.type,
       }
