@@ -4,12 +4,13 @@ export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense } from 'react'
 
 import ButtonCta from '@/components/ButtonCta'
 import MobileNavbar from '@/components/MobileNavbar'
 import { RequireAuth } from '@/components/RequireAuth'
+import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 
 type EventRow = {
@@ -59,11 +60,15 @@ const extractCity = (location?: string | null) => {
 function EventDetailContent() {
   const searchParams = useSearchParams()
   const eventId = searchParams.get('eventId')
+  const router = useRouter()
+  const { session } = useAuthSession()
+  const userId = session?.user?.id
 
   const [event, setEvent] = React.useState<EventRow | null>(null)
   const [thread, setThread] = React.useState<ThreadRow | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [joining, setJoining] = React.useState(false)
 
   React.useEffect(() => {
     let cancelled = false
@@ -121,6 +126,63 @@ function EventDetailContent() {
   const goingLabel = formatGoing(event?.slots_total, event?.slots_open)
   const cityLabel = extractCity(event?.location) || 'Location'
 
+  const handleJoinChat = async () => {
+    if (!supabase || !userId || !event) {
+      setError('You must be signed in and have an event loaded to join chat.')
+      return
+    }
+    setJoining(true)
+    setError(null)
+    const now = new Date().toISOString()
+    let threadId = thread?.id
+
+    // If no event thread exists yet, create one on the fly
+    if (!threadId) {
+      const { data: newThread, error: createErr } = await supabase
+        .from('threads')
+        .insert({
+          type: 'event',
+          event_id: event.id,
+          title: event.title,
+          last_message: 'New event chat',
+          last_message_at: now,
+        })
+        .select('id')
+        .maybeSingle()
+      if (createErr || !newThread?.id) {
+        setError(createErr?.message || 'Could not create event chat.')
+        setJoining(false)
+        return
+      }
+      threadId = newThread.id
+      setThread({ id: threadId })
+    }
+
+    // Ensure participation and bump ordering
+    const { error: partErr } = await supabase.from('thread_participants').upsert({ thread_id: threadId, user_id: userId })
+    if (partErr) {
+      setError(partErr.message)
+      setJoining(false)
+      return
+    }
+    // Drop a system message to ensure unread + ordering like other chats
+    const { data: newMsg, error: msgErr } = await supabase
+      .from('messages')
+      .insert({
+        thread_id: threadId,
+        body: 'Joined event',
+        sender_id: userId,
+        receiver_id: userId,
+        status: 'unread',
+      })
+      .select('created_at')
+      .maybeSingle()
+    const bumpAt = newMsg?.created_at ?? now
+    await supabase.from('threads').update({ last_message_at: bumpAt, last_message: 'Joined event' }).eq('id', threadId)
+    setJoining(false)
+    router.push(`/chats/${threadId}`)
+  }
+
   return (
     <div className="events-detail-screen" data-name="/event/detail">
       <div className="events-detail-content">
@@ -176,11 +238,9 @@ function EventDetailContent() {
               </div>
 
               <div className="events-detail-cta-row">
-                {thread ? (
-                  <ButtonCta href={`/chats/${thread.id}`}>Join Chat</ButtonCta>
-                ) : (
-                  <ButtonCta disabled>Join Chat</ButtonCta>
-                )}
+                    <ButtonCta onClick={handleJoinChat} disabled={joining || loading || !event}>
+                      {joining ? 'Joining…' : 'Join Chat'}
+                    </ButtonCta>
                 <ButtonCta>I’m Going</ButtonCta>
               </div>
             </>
