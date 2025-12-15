@@ -50,4 +50,10 @@
 
 ### Supabase updates
 - Added SQL to ensure `events.created_by` column, indexes, and RLS policies: select-all for authenticated, insert check `created_by = auth.uid()`, optional self-update; confirmed execution succeeded.
-
+ 
+### Mobile navbar & global UI polish (today)
+- Refined `MobileNavbar` to match latest Figma: items are now `Events / Chats / Crew / Dab`, profile removed, crew links to `/crew`, and labels are properly capitalized. Icon assets are wired from Figma; crew uses 24px icons, others 26px, with inactive icons tinted to `color-text-default` via CSS and active icons using their accent color.
+- Navbar layout is fully tokenized: sticky full-width bar (`width: 100%`), no top corner radius, card-colored inner (`color-surface-card`) with 12px vertical and 24px horizontal padding (`space-md` / `space-xl`), 100px height, and Inter 12px bold labels (`font-size-sm`, `font-weight-bold`). Content wrappers with horizontal padding (`home-/chats-/events-*/profile-*-content`) now offset the navbar width/margins so the bar visually spans the full mobile width on all pages.
+- Chats unread indicator logic moved into `MobileNavbar`: we compute `hasUnreadChats` by fetching latest messages per thread for the current user and subscribing to `messages` changes; the small dot on the Chats icon is shown only when there are unread messages. The dot is positioned top-right inside the icon container and uses `color-primary`.
+- `/chats/event` was updated to drop the old `home-bottom-nav` Figma stub and now uses the shared `MobileNavbar` (active="chats"), so all authenticated mobile views share the same bottom nav component.
+- Introduced a global `.custom-scrollbar` helper using tokens (`color-text-muted` for the thumb, `radius-full` for rounding) and applied it to scrollable cards like `.chats-card` and `.events-card`. Events list card background now uses `color-surface-card` and scrolls internally, matching chats card behavior and overall dark card styling.

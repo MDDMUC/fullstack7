@@ -334,7 +334,7 @@ export default function ChatsScreen() {
           </div>
 
           {/* Chat List Card */}
-          <div className="chats-card">
+          <div className="chats-card custom-scrollbar">
             {isLoading && <p className="chats-subtitle">Loading chats…</p>}
             {!isLoading && items.length === 0 && (
               <p className="chats-subtitle">No messages yet. Say hi!</p>

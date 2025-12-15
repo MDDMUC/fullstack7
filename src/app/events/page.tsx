@@ -93,7 +93,7 @@ export default function EventsScreen() {
     <RequireAuth>
       <div className="events-screen" data-name="/ events">
         <div className="events-content">
-            <div className="events-card">
+            <div className="events-card custom-scrollbar">
             <Link href="/events/create" className="events-createbar" data-name="create-event-mobile" data-node-id="636:2102">
               <div className="events-createbar-left">
                 <div className="events-createbar-plus" data-name="plus" data-node-id="636:2101">

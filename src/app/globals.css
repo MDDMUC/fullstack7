@@ -371,6 +371,49 @@ body {
 }
 
 /* ========================================
+   GLOBAL SCROLLBAR STYLING
+   Apply .custom-scrollbar class to any scrollable container
+   ======================================== */
+.custom-scrollbar {
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-text-muted) transparent;
+}
+
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button:start:decrement,
+.custom-scrollbar::-webkit-scrollbar-button:end:increment {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--color-text-muted);
+  border-radius: var(--radius-full);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ========================================
    EVENTS SCREEN - Exact from Figma node 633:14033
    ======================================== */
 .events-screen {
@@ -475,14 +518,13 @@ body {
 
 .events-card {
   flex: 1 1 0;
-  background: var(--color-white); /* color/white */
+  background: var(--color-surface-card); /* color/card */
   display: flex;
   flex-direction: column;
   gap: var(--space-md); /* 12px */
   align-items: center;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
   padding: var(--space-xl); /* 24px */
   position: relative;
   border-radius: 24px;
@@ -1581,14 +1623,15 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
    ---------------------------------------- */
 .mobile-navbar {
   width: 100%;
-  max-width: 420px;
   background: var(--color-text-default);
   box-shadow: 0px -4px 4px rgba(0, 0, 0, 0.25);
   position: sticky;
   bottom: 0;
   z-index: 10;
-  border-top-left-radius: var(--radius-lg);
-  border-top-right-radius: var(--radius-lg);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  padding: 0;
+  margin: 0;
 }
 
 .mobile-navbar-inner {
@@ -1596,11 +1639,31 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   justify-content: space-between;
   width: 100%;
   background: var(--color-surface-card);
-  padding: var(--space-md) var(--space-xl);
+  padding-top: var(--space-md);
+  padding-bottom: var(--space-md);
+  padding-left: var(--space-xl);
+  padding-right: var(--space-xl);
   height: 100px;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: 0;
   box-sizing: border-box;
   gap: var(--space-xl);
+  margin: 0;
+}
+
+/* Ensure full-width navbar inside padded mobile content wrappers */
+/* All content containers with horizontal padding need this to span full width */
+.chats-content .mobile-navbar,
+.events-content .mobile-navbar,
+.home-content .mobile-navbar,
+.events-detail-content .mobile-navbar,
+.events-create-content .mobile-navbar,
+.profile-content .mobile-navbar,
+.chats-event-content .mobile-navbar,
+.chat-detail-content .mobile-navbar,
+.chat-gym-content .mobile-navbar {
+  width: calc(100% + (var(--space-lg) * 2));
+  margin-left: calc(-1 * var(--space-lg));
+  margin-right: calc(-1 * var(--space-lg));
 }
 
 .mobile-navbar-item {
@@ -10924,8 +10987,6 @@ div.mh-silver-card[data-name="card2"] {
   align-items: center;
   min-width: 0;
   min-height: 0;
-  overflow-y: auto; /* scrollbar inside the card */
-  overflow-x: hidden;
   padding: 24px; /* space/xl */
   position: relative;
   border-radius: 24px;
