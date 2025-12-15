@@ -60,6 +60,7 @@ type EventRow = {
   slots_open: number | null
   image_url: string | null
   description: string | null
+  created_by: string | null
 }
 
 type CrewRow = {
@@ -90,9 +91,12 @@ export default function ChatDetailPage() {
   const [draft, setDraft] = useState('')
   const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [groupMenuOpen, setGroupMenuOpen] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const [deletingEvent, setDeletingEvent] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const groupMenuRef = useRef<HTMLDivElement | null>(null)
 
   const otherUserId = useMemo(() => {
     if (!thread || !userId) return null
@@ -240,7 +244,7 @@ export default function ChatDetailPage() {
       if (!isDirect && (t.type ?? '') === 'event' && t.event_id) {
         const { data: ev } = await client
           .from('events')
-          .select('id,title,location,start_at,slots_total,slots_open,image_url,description')
+          .select('id,title,location,start_at,slots_total,slots_open,image_url,description,created_by')
           .eq('id', t.event_id)
           .single()
         if (ev) setEvent(ev)
@@ -340,20 +344,23 @@ export default function ChatDetailPage() {
     }
   }
 
-  // Close menu when clicking outside
+  // Close menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setMenuOpen(false)
       }
+      if (groupMenuRef.current && !groupMenuRef.current.contains(event.target as Node)) {
+        setGroupMenuOpen(false)
+      }
     }
-    if (menuOpen) {
+    if (menuOpen || groupMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside)
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [menuOpen])
+  }, [menuOpen, groupMenuOpen])
 
   // Mark incoming messages as read when viewing the thread
   useEffect(() => {
@@ -382,34 +389,86 @@ export default function ChatDetailPage() {
 
   const handleLeaveChat = async () => {
     const client = supabase
-    if (!client || !userId || !chatId || !isDirect) {
+    if (!client || !userId || !chatId) {
       return
     }
 
+    const chatName = isDirect ? otherFullName : isEventThread ? event?.title || 'this event chat' : isGymThread ? gym?.name || 'this gym chat' : 'this chat'
+
     // Confirm leaving
-    if (!confirm(`Are you sure you want to leave this chat with ${otherFullName}?`)) {
+    if (!confirm(`Are you sure you want to leave ${chatName}?`)) {
       return
     }
 
     setLeaving(true)
     setMenuOpen(false)
+    setGroupMenuOpen(false)
 
-    // Delete the thread (for direct messages, leaving means ending the conversation)
+    if (isDirect) {
+      // Delete the thread (for direct messages, leaving means ending the conversation)
+      const { error: deleteError } = await client
+        .from('threads')
+        .delete()
+        .eq('id', chatId)
+        .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+
+      if (deleteError) {
+        console.error('Error leaving chat:', deleteError)
+        setLeaving(false)
+        return
+      }
+    } else {
+      // For group threads, remove user from participants
+      const { error: leaveError } = await client
+        .from('thread_participants')
+        .delete()
+        .eq('thread_id', chatId)
+        .eq('user_id', userId)
+
+      if (leaveError) {
+        console.error('Error leaving chat:', leaveError)
+        setLeaving(false)
+        return
+      }
+    }
+
+    // Redirect to chats list
+    router.push('/chats')
+  }
+
+  const handleDeleteEventChat = async () => {
+    const client = supabase
+    if (!client || !userId || !chatId || !isEventThread || !event) {
+      return
+    }
+
+    // Confirm deletion
+    if (!confirm(`Are you sure you want to delete the chat for "${event.title}"? This action cannot be undone.`)) {
+      return
+    }
+
+    setDeletingEvent(true)
+    setGroupMenuOpen(false)
+
+    // Delete the event thread
     const { error: deleteError } = await client
       .from('threads')
       .delete()
       .eq('id', chatId)
-      .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+      .eq('type', 'event')
+      .eq('event_id', event.id)
 
     if (deleteError) {
-      console.error('Error leaving chat:', deleteError)
-      setLeaving(false)
+      console.error('Error deleting event chat:', deleteError)
+      setDeletingEvent(false)
       return
     }
 
     // Redirect to chats list
     router.push('/chats')
   }
+
+  const isEventCreator = event?.created_by === userId
 
   const statusIcon = (status?: string) => {
     if (status === 'read') return ICON_READ
@@ -446,9 +505,88 @@ export default function ChatDetailPage() {
                 <img src={ICON_BACK} alt="" width={28} height={28} />
               </button>
               <div className="chat-gym-backbar-title">back</div>
-              <button type="button" className="chat-detail-icon-btn" aria-label="More options">
-                <img src={ICON_MENU} alt="" width={28} height={28} />
-              </button>
+              <div style={{ position: 'relative' }} ref={groupMenuRef}>
+                <button
+                  type="button"
+                  className="chat-detail-icon-btn"
+                  aria-label="More options"
+                  onClick={() => setGroupMenuOpen(!groupMenuOpen)}
+                >
+                  <img src={ICON_MENU} alt="" width={28} height={28} />
+                </button>
+                {groupMenuOpen && (
+                  <div
+                    className="mh-silver-dropdown-menu mh-silver-dropdown-right"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      right: 0,
+                      zIndex: 1000,
+                      minWidth: '200px',
+                      background: 'var(--color-surface-card)',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--color-stroke)',
+                      padding: '4px 0',
+                    }}
+                  >
+                    {isEventThread && isEventCreator && (
+                      <>
+                        <button
+                          type="button"
+                          className="mh-silver-dropdown-item"
+                          onClick={handleDeleteEventChat}
+                          disabled={deletingEvent}
+                          style={{
+                            display: 'block',
+                            width: '100%',
+                            padding: 'var(--space-md) var(--space-lg)',
+                            background: 'transparent',
+                            border: 'none',
+                            textAlign: 'left',
+                            color: deletingEvent ? 'var(--color-text-muted)' : '#ff4444',
+                            fontFamily: 'var(--fontfamily-inter)',
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            cursor: deletingEvent ? 'not-allowed' : 'pointer',
+                            opacity: deletingEvent ? 0.6 : 1,
+                          }}
+                        >
+                          {deletingEvent ? 'Deleting...' : 'Delete Event Chat'}
+                        </button>
+                        <div
+                          style={{
+                            height: '1px',
+                            background: 'var(--color-stroke)',
+                            margin: '4px 0',
+                          }}
+                        />
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      className="mh-silver-dropdown-item"
+                      onClick={handleLeaveChat}
+                      disabled={leaving}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: 'var(--space-md) var(--space-lg)',
+                        background: 'transparent',
+                        border: 'none',
+                        textAlign: 'left',
+                        color: leaving ? 'var(--color-text-muted)' : 'var(--color-text-default)',
+                        fontFamily: 'var(--fontfamily-inter)',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        cursor: leaving ? 'not-allowed' : 'pointer',
+                        opacity: leaving ? 0.6 : 1,
+                      }}
+                    >
+                      {leaving ? 'Leaving...' : `Leave ${isEventThread ? 'event' : 'gym'} chat`}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="chat-gym-hero">
