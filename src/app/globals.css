@@ -1595,8 +1595,9 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   display: flex;
   justify-content: space-between;
   width: 100%;
-  background: var(--color-text-default);
+  background: var(--color-surface-card);
   padding: var(--space-md) var(--space-xl);
+  height: 100px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   box-sizing: border-box;
   gap: var(--space-xl);
@@ -1610,11 +1611,19 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   gap: var(--space-sm);
   text-decoration: none;
   width: 73px;
-  color: var(--color-border-default);
-  font-family: var(--font-inter);
-  font-size: var(--font-size-xxs); /* 10px */
-  font-weight: var(--font-weight-regular);
-  line-height: normal;
+  flex: 1 0 0;
+  color: var(--color-text-default);
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  position: relative;
+  padding: 0;
+  border-radius: var(--radius-lg);
+}
+
+.mobile-navbar-item.active {
+  background: var(--color-surface-bg);
 }
 
 .mobile-navbar-item:visited {
@@ -1636,12 +1645,28 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   display: block;
 }
 
+.mobile-navbar-icon.crew {
+  width: 24px;
+  height: 24px;
+}
+
+.mobile-navbar-icon.default-state {
+  filter: brightness(0) saturate(100%) invert(96%) sepia(3%) saturate(1018%) hue-rotate(195deg) brightness(102%) contrast(100%);
+}
+
 .mobile-navbar-icon.active {
   filter: none;
 }
 
 .mobile-navbar-label {
-  color: var(--color-border-default);
+  height: 14px;
+  color: var(--color-text-default);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobile-navbar-label.active {
@@ -1651,7 +1676,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 .mobile-navbar-dot {
   position: absolute;
   top: 5px;
-  right: -4px;
+  right: 0;
   width: 6px;
   height: 6px;
   border-radius: 50%;
