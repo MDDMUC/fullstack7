@@ -3,11 +3,13 @@
 import React from 'react'
 import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
+import DropdownMenu from '@/components/DropdownMenu'
 import MobileNavbar from '@/components/MobileNavbar'
+import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
-import { fetchProfiles } from '@/lib/profiles'
+import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
 
 type CrewRow = {
   id: string
@@ -16,6 +18,21 @@ type CrewRow = {
   description: string | null
   image_url?: string | null
   created_at?: string | null
+  created_by?: string | null
+}
+
+type FilterKey = 'city' | 'style' | 'gym'
+
+// Extract styles from profile.style field
+const getStylesFromProfile = (profile?: any): string[] => {
+  if (!profile || !profile.style) return []
+  if (Array.isArray(profile.style)) {
+    return profile.style.map((s: string) => s.trim()).filter(Boolean)
+  }
+  if (typeof profile.style === 'string') {
+    return profile.style.split(',').map((s: string) => s.trim()).filter(Boolean)
+  }
+  return []
 }
 
 type ThreadRow = {
@@ -42,10 +59,29 @@ export default function CrewScreen() {
         thread?: ThreadRow | null
         unread?: boolean
         lastMessageSenderName?: string | null
+        creatorStyle?: string[]
+        creatorGym?: string[]
+      }
+    >
+  >([])
+  const [allCrews, setAllCrews] = React.useState<
+    Array<
+      CrewRow & {
+        thread?: ThreadRow | null
+        unread?: boolean
+        lastMessageSenderName?: string | null
+        creatorStyle?: string[]
+        creatorGym?: string[]
       }
     >
   >([])
   const [loading, setLoading] = React.useState(false)
+  const [filters, setFilters] = React.useState<Record<FilterKey, string>>({
+    city: 'All',
+    style: 'All',
+    gym: 'All',
+  })
+  const [gyms, setGyms] = React.useState<Gym[]>([])
 
   const fetchCrews = React.useCallback(async () => {
     const client = supabase
@@ -53,7 +89,7 @@ export default function CrewScreen() {
     setLoading(true)
     const { data: crewsData, error: crewsError } = await client
       .from('crews')
-      .select('id,title,location,description,image_url,created_at')
+      .select('id,title,location,description,image_url,created_at,created_by')
       .order('created_at', { ascending: false, nullsFirst: false })
 
     if (crewsError || !crewsData) {
@@ -163,15 +199,124 @@ export default function CrewScreen() {
       }
     }
 
-    const combined = crewsData.map(crew => ({
-      ...crew,
-      thread: threadsMap[crew.id] ?? null,
-      unread: unreadMap[crew.id] ?? false,
-      lastMessageSenderName: lastMessageSenderMap[crew.id] ?? null,
-    }))
-    setCrews(combined)
+    // Fetch creator profiles to get style and gym info
+    const creatorIds = Array.from(new Set(crewsData.map(c => c.created_by).filter(Boolean) as string[]))
+    let creatorProfilesMap: Record<string, any> = {}
+    if (creatorIds.length > 0) {
+      try {
+        const profiles = await fetchProfiles(client, creatorIds)
+        creatorProfilesMap = profiles.reduce<Record<string, any>>((acc, p) => {
+          acc[p.id] = p
+          return acc
+        }, {})
+      } catch (err) {
+        console.error('Failed to fetch creator profiles', err)
+      }
+    }
+
+    const combined = crewsData.map(crew => {
+      const creator = crew.created_by ? creatorProfilesMap[crew.created_by] : null
+      const creatorStyle = creator ? getStylesFromProfile(creator) : []
+      const creatorGym = creator && Array.isArray(creator.gym) ? creator.gym : []
+      
+      return {
+        ...crew,
+        thread: threadsMap[crew.id] ?? null,
+        unread: unreadMap[crew.id] ?? false,
+        lastMessageSenderName: lastMessageSenderMap[crew.id] ?? null,
+        creatorStyle,
+        creatorGym,
+      }
+    })
+    setAllCrews(combined)
     setLoading(false)
   }, [userId])
+
+  // Fetch gyms on mount
+  React.useEffect(() => {
+    const loadGyms = async () => {
+      if (!supabase) return
+      const gymsList = await fetchGymsFromTable(supabase)
+      setGyms(gymsList)
+    }
+    loadGyms()
+  }, [])
+
+  // Extract filter options from all crews
+  const filterOptions = React.useMemo(() => {
+    const cities = new Set<string>(['All'])
+    const styles = new Set<string>(['All'])
+    const gymNames = new Set<string>(['All'])
+
+    allCrews.forEach(crew => {
+      if (crew.location) cities.add(crew.location)
+      crew.creatorStyle?.forEach(s => styles.add(s))
+    })
+
+    gyms.forEach(gym => {
+      if (gym.name) gymNames.add(gym.name)
+    })
+
+    return {
+      city: Array.from(cities).sort(),
+      style: Array.from(styles).sort(),
+      gym: Array.from(gymNames).sort(),
+    }
+  }, [allCrews, gyms])
+
+  // Create gym ID to name map for filtering
+  const gymMap = React.useMemo(() => {
+    const map = new Map<string, string>()
+    gyms.forEach(gym => {
+      if (gym.id && gym.name) {
+        map.set(gym.id, gym.name)
+      }
+    })
+    return map
+  }, [gyms])
+
+  // Filter crews based on selected filters
+  const filteredCrews = React.useMemo(() => {
+    return allCrews.filter(crew => {
+      // Filter by city - case-insensitive
+      if (filters.city !== 'All') {
+        const crewCity = (crew.location || '').trim().toLowerCase()
+        const filterCity = filters.city.trim().toLowerCase()
+        if (crewCity !== filterCity) return false
+      }
+
+      // Filter by style - check if creator's style includes the selected style
+      if (filters.style !== 'All') {
+        const creatorStyles = (crew.creatorStyle || []).map(s => s.trim().toLowerCase())
+        const filterStyle = filters.style.trim().toLowerCase()
+        if (!creatorStyles.includes(filterStyle)) return false
+      }
+
+      // Filter by gym - check if creator's gym includes the selected gym
+      if (filters.gym !== 'All') {
+        const creatorGyms = crew.creatorGym || []
+        const filterGym = filters.gym.trim().toLowerCase()
+        
+        // Check if any creator gym matches (by ID or name)
+        const hasGym = creatorGyms.some(g => {
+          if (!g || typeof g !== 'string') return false
+          const trimmed = g.trim().toLowerCase()
+          // Match by ID (UUID format) or by name
+          const gymName = gymMap.get(g) || ''
+          return trimmed === filterGym || gymName.trim().toLowerCase() === filterGym
+        })
+        
+        if (!hasGym) return false
+      }
+
+      return true
+    })
+  }, [allCrews, filters, gymMap])
+
+  // Update crews when filters change
+  React.useEffect(() => {
+    setCrews(filteredCrews)
+  }, [filteredCrews])
 
   React.useEffect(() => {
     fetchCrews()
@@ -199,6 +344,34 @@ export default function CrewScreen() {
     <RequireAuth>
       <div className="events-screen" data-name="/ crew">
         <div className="events-content">
+          <MobileTopbar breadcrumb="Crew" />
+          {/* Filters */}
+          <div style={{ display: 'flex', gap: 'var(--space-xs)', width: '100%', boxSizing: 'border-box' }}>
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
+              <DropdownMenu
+                label="city"
+                value={filters.city}
+                options={filterOptions.city}
+                onChange={val => setFilters(prev => ({ ...prev, city: val }))}
+              />
+            </div>
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
+              <DropdownMenu
+                label="style"
+                value={filters.style}
+                options={filterOptions.style}
+                onChange={val => setFilters(prev => ({ ...prev, style: val }))}
+              />
+            </div>
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
+              <DropdownMenu
+                label="gym"
+                value={filters.gym}
+                options={filterOptions.gym}
+                onChange={val => setFilters(prev => ({ ...prev, gym: val }))}
+              />
+            </div>
+          </div>
             <div className="events-card custom-scrollbar">
             <Link href="/crew/create" className="events-createbar" data-name="create-crew-mobile" data-node-id="636:2102">
               <div className="events-createbar-left">

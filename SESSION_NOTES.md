@@ -123,3 +123,83 @@
   - Three dots menu now conditionally shows creator-only options based on `created_by` field
   - Fixed TypeScript error: added `created_by` field to `EventRow` type and included it in event queries
   - Event queries now fetch `created_by` to determine if current user is the event creator
+
+### Global filter system implementation (latest)
+- **Created global DropdownMenu component**:
+  - New reusable component `src/components/DropdownMenu.tsx` matching the three-dot options menu style
+  - Uses `mh-silver-dropdown-menu` and `mh-silver-dropdown-item` CSS classes for consistency
+  - Dropdown trigger button styled with `mh-silver-dropdown-trigger` class (matches three-dot menu button style)
+  - Supports click-outside-to-close, keyboard navigation, and proper ARIA attributes
+  - Text truncation with ellipsis for long values
+- **Applied filters to all list pages**:
+  - **`/chats` page**: City and Gym filters
+    - City filter: Extracts cities from other user's profile (direct chats) or gym/event location (group chats)
+    - Gym filter: Filters gym threads by gym name (matches gym_id to gym name from gyms table)
+    - Filter options dynamically extracted from available data
+    - Case-insensitive filtering
+  - **`/events` page**: City, Style, and Gym filters
+    - City filter: Filters by event location
+    - Style filter: Filters by event creator's climbing styles (from creator's profile)
+    - Gym filter: Filters by event creator's gyms (from creator's profile gym array)
+    - Fetches creator profiles to extract style and gym data
+    - Handles both gym IDs (UUIDs) and gym names in creator's gym array
+  - **`/crew` page**: City, Style, and Gym filters
+    - City filter: Filters by crew location
+    - Style filter: Filters by crew creator's climbing styles (from creator's profile)
+    - Gym filter: Filters by crew creator's gyms (from creator's profile gym array)
+    - Same filtering logic as events page
+- **Filter UI styling**:
+  - Filter containers span full width (100%) with equal-width dropdown buttons
+  - Each dropdown wrapped in flex container with `flex: 1 1 0` for equal distribution
+  - Removed padding from filter containers to maximize width usage
+  - Updated `.chats-topnav` CSS to match `.chats-card` behavior (width: 100%, respects parent padding)
+  - Removed `max-width: 358px` constraint from `.chats-topnav` to allow full width
+- **Filtering logic improvements**:
+  - Case-insensitive matching for all filters (city, style, gym)
+  - Gym filtering handles both UUID format (gym IDs) and gym names
+  - Creates gym ID to name map for proper matching
+  - Filters update in real-time as selections change
+  - All filters default to "All" to show everything initially
+- **Data fetching**:
+  - All pages fetch gyms from `gyms` table using `fetchGymsFromTable` function
+  - Creator profiles fetched for events and crews to extract style/gym data
+  - Filter options dynamically generated from available data (sorted alphabetically)
+  - Separate state for all items vs filtered items for proper filtering
+
+### MobileTopbar component & notifications system (latest)
+- **MobileTopbar component**:
+  - Created new `MobileTopbar` component (`src/components/MobileTopbar.tsx`) matching Figma node 764:3056
+  - Displays breadcrumb text on left, profile avatar and notifications bell icon on right
+  - Top-centered and spans full width on `/home`, `/chats`, `/events`, and `/crew` pages
+  - Profile avatar links to `/profile` page via Next.js Link component
+  - Styled with design tokens: `var(--color-surface-card)`, `var(--space-md)`, `var(--space-xl)`, `var(--font-size-md)`, `var(--font-weight-extra-bold)`
+  - CSS classes: `.mobile-topbar`, `.mobile-topbar-content`, `.mobile-topbar-breadcrumb-text`, `.mobile-topbar-profile-icon`, `.mobile-topbar-notifications-icon`
+- **Notifications dropdown**:
+  - Bell icon opens notifications menu styled like three-dot options menu (using `mh-silver-dropdown-menu` classes)
+  - Menu overlays content without affecting topbar size (absolute positioning, `z-index: 1001`)
+  - Fetches real notification data from Supabase:
+    - **Recent messages**: Fetches 10 most recent messages from threads where user is a participant (excludes messages from user)
+    - **Dabs**: Fetches swipes where `swipee = current user` and `action = 'like'` (shows who dabbed the user)
+  - Notification display format:
+    - Messages: "{FirstName} sent you a message" with time ago
+    - Dabs: "{FirstName} dabbed you" with time ago
+  - Clicking notification navigates to relevant page (chat thread or home)
+  - Loading state and empty state handling
+  - Click-outside-to-close functionality
+- **Unread dot indicator**:
+  - Shows pulsating dot on bell icon when there are unread notifications
+  - Uses `var(--color-primary)` (#5ce1e6) with subtle border effect
+  - Positioned at top-right of bell icon (12px x 12px, absolute positioning)
+  - CSS class: `.mobile-topbar-notifications-dot` with `z-index: 3`
+- **Clear notifications button**:
+  - Added "Clear" button at bottom of notifications list
+  - Separated from list items with border-top
+  - Clears all notifications from local state and closes menu
+  - Styled consistently with notification items (hover/active states, design tokens)
+  - Only shown when there are notifications to clear
+- **Styling**:
+  - All styling uses design tokens (colors, spacing, typography)
+  - Menu matches three-dot options menu style exactly
+  - Responsive width: `min-width: 280px`, `max-width: calc(100vw - (var(--space-lg) * 2))`
+  - Max height: 400px with scrollable overflow
+  - Time formatting: "Just now", "{X}m ago", "{X}h ago", "{X}d ago", or date string

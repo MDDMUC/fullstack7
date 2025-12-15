@@ -3,11 +3,12 @@
 import React from 'react'
 import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
-import FilterDropdownMobile from '@/components/FilterDropdownMobile'
+import DropdownMenu from '@/components/DropdownMenu'
 import MobileNavbar from '@/components/MobileNavbar'
+import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
 import { supabase } from '@/lib/supabaseClient'
-import { fetchProfiles } from '@/lib/profiles'
+import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
 import { useAuthSession } from '@/hooks/useAuthSession'
 
 type ThreadRow = {
@@ -28,6 +29,8 @@ type Profile = {
   id: string
   username: string | null
   avatar_url: string | null
+  city?: string | null
+  homebase?: string | null
 }
 
 type ParticipantRow = {
@@ -44,6 +47,8 @@ type ChatListItem = {
   lastMessageAt: string | null
   unread: boolean
   type: string | null | undefined
+  gymId?: string | null
+  city?: string | null
 }
 
 type MessageSlim = {
@@ -63,14 +68,19 @@ type EventRow = {
 }
 
 
+type FilterKey = 'city' | 'gym'
+
 export default function ChatsScreen() {
   const { session, loading } = useAuthSession()
   const userId = session?.user?.id
   const [items, setItems] = React.useState<ChatListItem[]>([])
+  const [allItems, setAllItems] = React.useState<ChatListItem[]>([]) // Store all items for filtering
   const [isLoading, setIsLoading] = React.useState(false)
-  const [filter, setFilter] = React.useState<'All'>('All')
-
-  const filterOptions: Array<'All'> = ['All']
+  const [filters, setFilters] = React.useState<Record<FilterKey, string>>({
+    city: 'All',
+    gym: 'All',
+  })
+  const [gyms, setGyms] = React.useState<Gym[]>([])
 
   const formatSubtitle = (msg: string | null) => {
     if (!msg) return 'No messages yet. Say hi!'
@@ -190,6 +200,8 @@ export default function ChatsScreen() {
               id: p.id,
               username: p.username ?? p.email ?? '',
               avatar_url: p.avatar_url ?? (p as any)?.photo ?? null,
+              city: p.city,
+              homebase: p.homebase,
             }
             return acc
           }, {}) ?? {}
@@ -207,14 +219,14 @@ export default function ChatsScreen() {
       ),
     )
 
-    let gymsMap: Record<string, { id: string; name: string | null; avatar_url: string | null }> = {}
+    let gymsMap: Record<string, { id: string; name: string | null; avatar_url: string | null; area: string | null }> = {}
     if (gymIds.length > 0) {
       const { data: gyms } = await supabase
         .from('gyms')
-        .select('id,name,avatar_url')
+        .select('id,name,avatar_url,area')
         .in('id', gymIds)
       gymsMap =
-        gyms?.reduce<Record<string, { id: string; name: string | null; avatar_url: string | null }>>(
+        gyms?.reduce<Record<string, { id: string; name: string | null; avatar_url: string | null; area: string | null }>>(
           (acc, g) => {
             acc[g.id] = g
             return acc
@@ -232,14 +244,14 @@ export default function ChatsScreen() {
       ),
     )
 
-    let eventsMap: Record<string, EventRow> = {}
+    let eventsMap: Record<string, EventRow & { location?: string | null }> = {}
     if (eventIds.length > 0) {
       const { data: events } = await supabase
         .from('events')
-        .select('id,title,image_url')
+        .select('id,title,image_url,location')
         .in('id', eventIds)
       eventsMap =
-        events?.reduce<Record<string, EventRow>>((acc, ev) => {
+        events?.reduce<Record<string, EventRow & { location?: string | null }>>((acc, ev) => {
           acc[ev.id] = ev
           return acc
         }, {}) ?? {}
@@ -279,6 +291,11 @@ export default function ChatsScreen() {
         (!!fallbackMsg &&
           fallbackMsg.receiver_id === userId &&
           (fallbackMsg.status ?? '').toLowerCase() !== 'read')
+      // Get city from profile (for direct chats) or from gym/event
+      const city = isDirect
+        ? (profile?.city || profile?.homebase || null)
+        : (gym?.area || ev?.location || null)
+
       return {
         threadId: t.id,
         otherUserId,
@@ -288,6 +305,8 @@ export default function ChatsScreen() {
         lastMessageAt,
         unread: isUnread,
         type: t.type,
+        gymId: t.gym_id || null,
+        city: city,
       }
     })
 
@@ -304,9 +323,83 @@ export default function ChatsScreen() {
       return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
     })
 
-    setItems(normalized)
+    setAllItems(normalized)
     setIsLoading(false)
   }, [userId])
+
+  // Fetch gyms on mount
+  React.useEffect(() => {
+    const loadGyms = async () => {
+      if (!supabase) return
+      const gymsList = await fetchGymsFromTable(supabase)
+      setGyms(gymsList)
+    }
+    loadGyms()
+  }, [])
+
+  // Extract filter options from all items
+  const filterOptions = React.useMemo(() => {
+    const cities = new Set<string>(['All'])
+    const gymNames = new Set<string>(['All'])
+
+    // Extract cities from items
+    allItems.forEach(item => {
+      if (item.city) cities.add(item.city)
+    })
+
+    // Extract gym names from gyms table
+    gyms.forEach(gym => {
+      if (gym.name) gymNames.add(gym.name)
+    })
+
+    return {
+      city: Array.from(cities).sort(),
+      gym: Array.from(gymNames).sort(),
+    }
+  }, [allItems, gyms])
+
+  // Create gym ID to name map for filtering
+  const gymMap = React.useMemo(() => {
+    const map = new Map<string, string>()
+    gyms.forEach(gym => {
+      if (gym.id && gym.name) {
+        map.set(gym.id, gym.name)
+      }
+    })
+    return map
+  }, [gyms])
+
+  // Filter items based on selected filters
+  const filteredItems = React.useMemo(() => {
+    return allItems.filter(item => {
+      // Filter by city - case-insensitive
+      if (filters.city !== 'All') {
+        const itemCity = (item.city || '').trim().toLowerCase()
+        const filterCity = filters.city.trim().toLowerCase()
+        if (itemCity !== filterCity) return false
+      }
+
+      // Filter by gym - for gym threads, check if gym name matches
+      if (filters.gym !== 'All') {
+        if (item.type === 'gym' && item.gymId) {
+          const gymName = gymMap.get(item.gymId) || ''
+          if (gymName.trim().toLowerCase() !== filters.gym.trim().toLowerCase()) {
+            return false
+          }
+        } else {
+          // For non-gym threads, exclude them when gym filter is active
+          return false
+        }
+      }
+
+      return true
+    })
+  }, [allItems, filters, gymMap])
+
+  // Update items when filters change
+  React.useEffect(() => {
+    setItems(filteredItems)
+  }, [filteredItems])
 
   React.useEffect(() => {
     fetchThreads()
@@ -338,14 +431,25 @@ export default function ChatsScreen() {
     <RequireAuth>
       <div className="chats-screen" data-name="/ chats">
         <div className="chats-content">
-          {/* Top Navigation - Filters: gym, event, personal */}
+          <MobileTopbar breadcrumb="Chats" />
+          {/* Top Navigation - Filters: city, gym */}
           <div className="chats-topnav">
-            <FilterDropdownMobile
-              label="filter"
-              value={filter}
-              options={filterOptions}
-              onChange={val => setFilter(val as any)}
-            />
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
+              <DropdownMenu
+                label="city"
+                value={filters.city}
+                options={filterOptions.city}
+                onChange={val => setFilters(prev => ({ ...prev, city: val }))}
+              />
+            </div>
+            <div style={{ flex: '1 1 0', minWidth: 0 }}>
+              <DropdownMenu
+                label="gym"
+                value={filters.gym}
+                options={filterOptions.gym}
+                onChange={val => setFilters(prev => ({ ...prev, gym: val }))}
+              />
+            </div>
           </div>
 
           {/* Chat List Card */}

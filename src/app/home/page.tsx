@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import ButtonDab from '@/components/ButtonDab'
-import FilterDropdownMobile from '@/components/FilterDropdownMobile'
+import DropdownMenu from '@/components/DropdownMenu'
 import MobileNavbar from '@/components/MobileNavbar'
+import MobileTopbar from '@/components/MobileTopbar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
-import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
+import { fetchProfiles, Profile as DbProfile, fetchGymsFromTable, Gym } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { sendSwipe } from '@/lib/swipes'
 import { checkAndCreateMatch } from '@/lib/matches'
@@ -27,7 +28,7 @@ const ROCK_ICON = 'https://www.figma.com/api/mcp/asset/b40792a1-8803-46f4-8eda-7
 const FOUNDER_ICON = 'https://www.figma.com/api/mcp/asset/678371f8-8c8a-45a5-bdfc-e9638de47c64'
 const PRO_ICON = 'https://www.figma.com/api/mcp/asset/e59c8273-cc79-465c-baea-a52bc6410ee6'
 
-const FILTER_LABELS = ['city', 'style', 'gym', 'time'] as const
+const FILTER_LABELS = ['city', 'style', 'gym'] as const
 type FilterKey = (typeof FILTER_LABELS)[number]
 
 const FALLBACK_PROFILE: Profile = {
@@ -44,8 +45,19 @@ const chipsFromTags = (tags?: string[]) =>
   (tags ?? []).filter(t => !t.toLowerCase().startsWith('grade:') && !['boulder', 'sport', 'lead', 'trad'].includes(t.toLowerCase()))
 
 // Extract styles from profile.style field (comma-separated string or array)
+// Also checks the raw styles array from onboardingprofiles if available
 const getStylesFromProfile = (profile?: Profile | null): string[] => {
-  if (!profile || !profile.style) return []
+  if (!profile) return []
+  
+  // First, check if there's a raw styles array (from onboardingprofiles)
+  const rawStyles = (profile as any).styles || (profile as any).onboardingprofiles?.[0]?.styles
+  if (Array.isArray(rawStyles) && rawStyles.length > 0) {
+    return rawStyles.map(s => String(s).trim()).filter(Boolean)
+  }
+  
+  // Otherwise, check the normalized style field
+  if (!profile.style) return []
+  
   // If it's already an array, return it
   if (Array.isArray(profile.style)) {
     return profile.style.map(s => s.trim()).filter(Boolean)
@@ -74,8 +86,8 @@ export default function HomeScreen() {
     city: 'All',
     style: 'All',
     gym: 'All',
-    time: 'All',
   })
+  const [gyms, setGyms] = useState<Gym[]>([])
 
   // Fetch current user's profile to check for pro status
   useEffect(() => {
@@ -109,12 +121,17 @@ export default function HomeScreen() {
     const load = async () => {
       setLoadingProfiles(true)
       try {
-        const normalized = await fetchProfiles()
+        const client = supabase ?? requireSupabase()
+        const normalized = await fetchProfiles(client)
         const profiles: Profile[] = normalized.map(p => ({
           ...p,
           distance: p.distance ?? '10 km',
         }))
         setDeck(profiles)
+        
+        // Fetch gyms from the gyms table
+        const gymsList = await fetchGymsFromTable(client)
+        setGyms(gymsList)
       } catch (err) {
         console.error('Failed to load profiles', err)
         setDeck([])
@@ -124,49 +141,90 @@ export default function HomeScreen() {
     load()
   }, [])
 
+  // Create a map of gym ID to gym name for filtering
+  const gymMap = useMemo(() => {
+    const map = new Map<string, string>()
+    gyms.forEach(gym => {
+      if (gym.id && gym.name) {
+        map.set(gym.id, gym.name)
+      }
+    })
+    return map
+  }, [gyms])
+
   const filterOptions = useMemo(() => {
     const cities = new Set<string>(['All'])
     const styles = new Set<string>(['All'])
-    const gyms = new Set<string>(['All'])
-    const times = new Set<string>(['All'])
+    const gymNames = new Set<string>(['All'])
 
+    // Extract cities from profiles (check both city and homebase)
     deck.forEach(p => {
-      if (p.city) cities.add(p.city)
-      if ((p as any).homebase) gyms.add((p as any).homebase as string)
+      const city = p.city || p.homebase
+      if (city) cities.add(city)
       getStylesFromProfile(p).forEach(s => styles.add(s))
-      if (p.availability) {
-        p.availability
-          .split(',')
-          .map(a => a.trim())
-          .filter(Boolean)
-          .forEach(a => times.add(a))
-      }
+    })
+
+    // Extract gym names from the gyms table
+    gyms.forEach(gym => {
+      if (gym.name) gymNames.add(gym.name)
     })
 
     return {
-      city: Array.from(cities),
-      style: Array.from(styles),
-      gym: Array.from(gyms),
-      time: Array.from(times),
+      city: Array.from(cities).sort(),
+      style: Array.from(styles).sort(),
+      gym: Array.from(gymNames).sort(),
     }
-  }, [deck])
+  }, [deck, gyms])
 
   const filteredDeck = useMemo(() => {
     return deck.filter(p => {
+      // Exclude current user's own profile
       if (currentUserProfile?.id && p.id === currentUserProfile.id) return false
-      if (filters.city !== 'All' && p.city !== filters.city && (p as any).homebase !== filters.city) return false
+      
+      // Filter by city - case-insensitive match
+      if (filters.city !== 'All') {
+        const profileCity = (p.city || p.homebase || '').trim().toLowerCase()
+        const filterCity = filters.city.trim().toLowerCase()
+        if (profileCity !== filterCity) {
+          return false
+        }
+      }
+      
+      // Filter by climbing style - case-insensitive match
       if (filters.style !== 'All') {
-        const styles = getStylesFromProfile(p).map(s => s.toLowerCase())
-        if (!styles.includes(filters.style.toLowerCase())) return false
+        const profileStyles = getStylesFromProfile(p).map(s => s.trim().toLowerCase())
+        const filterStyle = filters.style.trim().toLowerCase()
+        if (!profileStyles.includes(filterStyle)) {
+          return false
+        }
       }
-      if (filters.gym !== 'All' && (p as any).homebase !== filters.gym) return false
-      if (filters.time !== 'All') {
-        const avail = (p.availability || '').toLowerCase()
-        if (!avail.includes(filters.time.toLowerCase())) return false
+      
+      // Filter by gym - check if profile's gym array includes the selected gym
+      // The gym array may contain gym IDs (UUIDs) or gym names, so we check both
+      if (filters.gym !== 'All') {
+        const profileGyms = Array.isArray(p.gym) ? p.gym : []
+        if (profileGyms.length === 0) return false
+        
+        // Find the gym ID that matches the selected gym name
+        const selectedGymId = Array.from(gymMap.entries()).find(
+          ([_, name]) => name.trim().toLowerCase() === filters.gym.trim().toLowerCase()
+        )?.[0]
+        
+        // Check if profile has the gym by ID or by name (handles both cases)
+        const hasGym = profileGyms.some(g => {
+          if (!g || typeof g !== 'string') return false
+          const trimmed = g.trim().toLowerCase()
+          const filterGym = filters.gym.trim().toLowerCase()
+          // Match by ID (UUID format) or by name
+          return trimmed === selectedGymId?.toLowerCase() || trimmed === filterGym
+        })
+        
+        if (!hasGym) return false
       }
+      
       return true
     })
-  }, [deck, filters, currentUserProfile])
+  }, [deck, filters, currentUserProfile, gymMap])
 
   const current = useMemo(() => filteredDeck[0] ?? deck[0] ?? null, [filteredDeck, deck])
 
@@ -246,9 +304,10 @@ export default function HomeScreen() {
             </>
           ) : (
             <>
+              <MobileTopbar breadcrumb="DAB" />
               <div className="home-filters">
                 {FILTER_LABELS.map(label => (
-                  <FilterDropdownMobile
+                  <DropdownMenu
                     key={label}
                     label={label}
                     value={filters[label]}
