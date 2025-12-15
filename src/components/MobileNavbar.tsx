@@ -73,10 +73,12 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
   const { session } = useAuthSession()
   const userId = session?.user?.id
   const [hasUnreadChats, setHasUnreadChats] = useState(false)
+  const [hasUnreadCrews, setHasUnreadCrews] = useState(false)
 
   useEffect(() => {
     if (!supabase || !userId) {
       setHasUnreadChats(false)
+      setHasUnreadCrews(false)
       return
     }
 
@@ -84,20 +86,70 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
 
     const checkUnreadChats = async () => {
       try {
-        // Get all threads the user is part of
+        // Get all threads the user is part of (excluding crew threads)
         const { data: directThreads } = await client
           .from('threads')
           .select('id')
           .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+          .neq('type', 'crew')
 
+        // Get all thread_participants for the user
         const { data: participantThreads } = await client
           .from('thread_participants')
           .select('thread_id')
           .eq('user_id', userId)
 
+        if (!participantThreads || participantThreads.length === 0) {
+          // If no participant threads, only check direct threads
+          const threadIds = new Set<string>()
+          directThreads?.forEach(t => t.id && threadIds.add(t.id))
+
+          if (threadIds.size === 0) {
+            setHasUnreadChats(false)
+            return
+          }
+
+          // Get latest message for each thread
+          const { data: latestMessages } = await client
+            .from('messages')
+            .select('id,thread_id,receiver_id,status')
+            .in('thread_id', Array.from(threadIds))
+            .order('created_at', { ascending: false })
+
+          if (!latestMessages || latestMessages.length === 0) {
+            setHasUnreadChats(false)
+            return
+          }
+
+          // Group by thread_id and get the latest message per thread
+          const latestByThread = new Map<string, typeof latestMessages[0]>()
+          for (const msg of latestMessages) {
+            if (!latestByThread.has(msg.thread_id)) {
+              latestByThread.set(msg.thread_id, msg)
+            }
+          }
+
+          // Check if any thread has an unread message (receiver is current user and status is not 'read')
+          const hasUnread = Array.from(latestByThread.values()).some(
+            msg => msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
+          )
+
+          setHasUnreadChats(hasUnread)
+          return
+        }
+
+        const participantThreadIds = participantThreads.map(p => p.thread_id).filter(Boolean) as string[]
+
+        // Get non-crew threads where user is a participant
+        const { data: nonCrewThreads } = await client
+          .from('threads')
+          .select('id')
+          .neq('type', 'crew')
+          .in('id', participantThreadIds)
+
         const threadIds = new Set<string>()
         directThreads?.forEach(t => t.id && threadIds.add(t.id))
-        participantThreads?.forEach(p => p.thread_id && threadIds.add(p.thread_id))
+        nonCrewThreads?.forEach(t => t.id && threadIds.add(t.id))
 
         if (threadIds.size === 0) {
           setHasUnreadChats(false)
@@ -136,7 +188,69 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
       }
     }
 
+    const checkUnreadCrews = async () => {
+      try {
+        // Get all thread_participants for the user
+        const { data: participantThreads } = await client
+          .from('thread_participants')
+          .select('thread_id')
+          .eq('user_id', userId)
+
+        if (!participantThreads || participantThreads.length === 0) {
+          setHasUnreadCrews(false)
+          return
+        }
+
+        const participantThreadIds = participantThreads.map(p => p.thread_id).filter(Boolean) as string[]
+
+        // Get crew threads where user is a participant
+        const { data: crewThreads } = await client
+          .from('threads')
+          .select('id')
+          .eq('type', 'crew')
+          .in('id', participantThreadIds)
+
+        if (!crewThreads || crewThreads.length === 0) {
+          setHasUnreadCrews(false)
+          return
+        }
+
+        const threadIds = crewThreads.map(t => t.id).filter(Boolean) as string[]
+
+        // Get latest message for each crew thread
+        const { data: latestMessages } = await client
+          .from('messages')
+          .select('id,thread_id,receiver_id,status')
+          .in('thread_id', threadIds)
+          .order('created_at', { ascending: false })
+
+        if (!latestMessages || latestMessages.length === 0) {
+          setHasUnreadCrews(false)
+          return
+        }
+
+        // Group by thread_id and get the latest message per thread
+        const latestByThread = new Map<string, typeof latestMessages[0]>()
+        for (const msg of latestMessages) {
+          if (!latestByThread.has(msg.thread_id)) {
+            latestByThread.set(msg.thread_id, msg)
+          }
+        }
+
+        // Check if any crew thread has an unread message (receiver is current user and status is not 'read')
+        const hasUnread = Array.from(latestByThread.values()).some(
+          msg => msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
+        )
+
+        setHasUnreadCrews(hasUnread)
+      } catch (error) {
+        console.error('Error checking unread crews:', error)
+        setHasUnreadCrews(false)
+      }
+    }
+
     checkUnreadChats()
+    checkUnreadCrews()
 
     // Subscribe to message changes
     const channel = client
@@ -146,6 +260,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
         { event: '*', schema: 'public', table: 'messages' },
         () => {
           checkUnreadChats()
+          checkUnreadCrews()
         },
       )
       .subscribe()
@@ -164,7 +279,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
           const textClass = isActive ? 'mobile-navbar-label active' : 'mobile-navbar-label'
           const iconClass = `mobile-navbar-icon ${item.iconSize === 24 ? 'crew' : ''} ${isActive ? 'active' : 'default-state'}`
           const itemClass = `mobile-navbar-item ${isActive ? 'active' : ''}`
-          const showDot = item.id === 'chats' && hasUnreadChats
+          const showDot = (item.id === 'chats' && hasUnreadChats) || (item.id === 'crew' && hasUnreadCrews)
           return (
             <Link key={item.id} href={item.href} className={itemClass}>
               <span className="mobile-navbar-icon-wrap">

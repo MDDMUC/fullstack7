@@ -680,6 +680,19 @@ body {
   object-position: center;
 }
 
+.events-tile-unread-dot {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  box-shadow: 0 0 0 4px rgba(92, 225, 230, 0.1);
+  z-index: 3;
+  animation: presencePulse 2.4s ease-in-out infinite;
+}
+
 .chat-tile-img-el {
   position: absolute;
   height: 127.73%;
