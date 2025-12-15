@@ -50,6 +50,31 @@
 
 ### Supabase updates
 - Added SQL to ensure `events.created_by` column, indexes, and RLS policies: select-all for authenticated, insert check `created_by = auth.uid()`, optional self-update; confirmed execution succeeded.
+
+### Crew system implementation (today)
+- Created complete crew system: `/crew` (list), `/crew/create`, `/crew/detail` pages mirroring events structure
+- Supabase setup:
+  - Created `crews` table (mirrors `events` structure: title, location, description, image_url, created_by, etc.)
+  - Added `crew_id` column to `threads` table for crew-specific threads
+  - Created storage buckets: `crew-cover` and `event-cover` with RLS policies for authenticated uploads
+  - Fixed RLS policies for threads table to allow crew/event/gym/direct thread creation
+- Crew logic:
+  - Crews are unlimited group chats (no time slots, no attendance limits)
+  - Removed time and slots fields from crew creation/display
+  - Crew threads excluded from main `/chats` page (only appear on `/crew` page)
+  - `/crew/detail` functions as full chat interface (mirrors `/chats/event` UI)
+  - Real-time messaging, message status indicators, profile avatars
+- Crew management:
+  - Three dots menu on crew detail: "Invite users to Crew" (creator only), "Delete Crew" (creator only, red), "Leave crew" (all users)
+  - Delete crew removes crew and cascades to delete associated thread
+  - Leave crew removes user from thread_participants and redirects
+- Chat improvements:
+  - 1-on-1 chat header now displays actual first name from Supabase (uses `fetchProfiles` to merge `profiles` + `onboardingprofiles`)
+  - Added three dots menu to 1-on-1 chats with "Leave chat with {Name}" option
+  - Leave chat deletes the direct message thread and redirects to `/chats`
+- UI fixes:
+  - Hidden header (DAB logo/logout) on `/crew` pages (added to `HIDDEN_HEADER_ROUTES`)
+  - Fixed `isDirect` variable definition in chat detail page
  
 ### Mobile navbar & global UI polish (today)
 - Refined `MobileNavbar` to match latest Figma: items are now `Events / Chats / Crew / Dab`, profile removed, crew links to `/crew`, and labels are properly capitalized. Icon assets are wired from Figma; crew uses 24px icons, others 26px, with inactive icons tinted to `color-text-default` via CSS and active icons using their accent color.

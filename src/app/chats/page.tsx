@@ -20,6 +20,7 @@ type ThreadRow = {
   gym_id?: string | null
   title?: string | null
   event_id?: string | null
+  crew_id?: string | null
 }
 
 type Profile = {
@@ -60,6 +61,7 @@ type EventRow = {
   image_url: string | null
 }
 
+
 export default function ChatsScreen() {
   const { session, loading } = useAuthSession()
   const userId = session?.user?.id
@@ -81,14 +83,14 @@ export default function ChatsScreen() {
     // Direct 1:1 threads where current user is user_a or user_b
     const { data: directThreads, error: threadsError } = await supabase
       .from('threads')
-      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title,created_at')
+      .select('id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,crew_id,title,created_at')
       .or(`user_a.eq.${userId},user_b.eq.${userId}`)
       .order('last_message_at', { ascending: false, nullsFirst: false })
 
     // Group/gym threads via participant table
     const { data: participantThreads, error: participantError } = await supabase
       .from('thread_participants')
-      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,title,created_at)')
+      .select('thread:threads(id,user_a,user_b,last_message,last_message_at,type,gym_id,event_id,crew_id,title,created_at)')
       .eq('user_id', userId)
 
     if (threadsError) {
@@ -125,9 +127,12 @@ export default function ChatsScreen() {
     })
     const uniqueThreads = Array.from(uniqueThreadsMap.values())
 
+    // Exclude crew threads - they only appear on /crew page
+    const withoutCrews = uniqueThreads.filter(t => (t.type ?? 'direct') !== 'crew')
+
     // Keep only the three canonical gym thread titles; drop anything else.
     const allowedGymTitles = new Set(['general', 'beta center', 'routesetting'])
-    const filteredThreads = uniqueThreads.filter(t => {
+    const filteredThreads = withoutCrews.filter(t => {
       if ((t.type ?? 'direct') !== 'gym') return true
       const title = (t.title ?? '').trim().toLowerCase()
       return allowedGymTitles.has(title)
@@ -239,6 +244,9 @@ export default function ChatsScreen() {
         }, {}) ?? {}
     }
 
+    // Crew threads are excluded from /chats page - they only appear on /crew page
+    // No need to fetch crew data here
+
     // Drop gym threads that have no matching gym record (or missing gym_id)
     const finalThreads = fullyFilteredThreads.filter(t => {
       if ((t.type ?? 'direct') !== 'gym') return true
@@ -252,6 +260,7 @@ export default function ChatsScreen() {
       const profile = otherUserId ? profilesMap[otherUserId] : undefined
       const gym = !isDirect && t.gym_id ? gymsMap[t.gym_id] : undefined
       const ev = !isDirect && t.event_id ? eventsMap[t.event_id] : undefined
+      // Crew threads are excluded from /chats - they only appear on /crew page
       const fallbackMsg = latestByThread[t.id]
       const firstName = (profile?.username || '').trim().split(/\s+/)[0] || 'Dabber'
       const title = isDirect

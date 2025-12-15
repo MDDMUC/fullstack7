@@ -2,10 +2,11 @@ import { supabase, requireSupabase } from './supabaseClient'
 
 export type Thread = {
   id: string
-  type: 'gym' | 'partner' | 'event' | 'trip' | 'dm'
+  type: 'gym' | 'partner' | 'event' | 'crew' | 'trip' | 'dm'
   title?: string
   gym_id?: string | null
   event_id?: string | null
+  crew_id?: string | null
   trip_id?: string | null
   created_by?: string | null
   created_at?: string | null
@@ -24,12 +25,13 @@ export type Message = {
 
 const client = () => supabase ?? requireSupabase()
 
-export async function fetchThreads(filter?: { type?: Thread['type']; gymId?: string; eventId?: string; tripId?: string }) {
+export async function fetchThreads(filter?: { type?: Thread['type']; gymId?: string; eventId?: string; crewId?: string; tripId?: string }) {
   const c = client()
   let q = c.from('threads').select('*').order('created_at', { ascending: false })
   if (filter?.type) q = q.eq('type', filter.type)
   if (filter?.gymId) q = q.eq('gym_id', filter.gymId)
   if (filter?.eventId) q = q.eq('event_id', filter.eventId)
+  if (filter?.crewId) q = q.eq('crew_id', filter.crewId)
   if (filter?.tripId) q = q.eq('trip_id', filter.tripId)
   const { data, error } = await q
   if (error) throw error

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import MobileNavbar from '@/components/MobileNavbar'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
+import { fetchProfiles } from '@/lib/profiles'
 
 const ICON_BACK = '/icons/chevron-left.svg'
 const ICON_MENU = '/icons/dots.svg'
@@ -23,6 +24,7 @@ type ThreadRow = {
   type?: string | null
   gym_id?: string | null
   event_id?: string | null
+  crew_id?: string | null
   title?: string | null
 }
 
@@ -60,6 +62,17 @@ type EventRow = {
   description: string | null
 }
 
+type CrewRow = {
+  id: string
+  title: string | null
+  location: string | null
+  start_at: string | null
+  slots_total: number | null
+  slots_open: number | null
+  image_url: string | null
+  description: string | null
+}
+
 export default function ChatDetailPage() {
   const params = useParams()
   const router = useRouter()
@@ -71,16 +84,24 @@ export default function ChatDetailPage() {
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null)
   const [gym, setGym] = useState<Gym | null>(null)
   const [event, setEvent] = useState<EventRow | null>(null)
+  const [crew, setCrew] = useState<CrewRow | null>(null)
   const [participants, setParticipants] = useState<string[]>([])
   const [messages, setMessages] = useState<MessageRow[]>([])
   const [draft, setDraft] = useState('')
   const [loading, setLoading] = useState(true)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [leaving, setLeaving] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
 
   const otherUserId = useMemo(() => {
     if (!thread || !userId) return null
     return thread.user_a === userId ? thread.user_b : thread.user_a
   }, [thread, userId])
+
+  const isDirect = useMemo(() => {
+    return (thread?.type ?? 'direct') === 'direct'
+  }, [thread])
 
   const isGymThread = useMemo(() => {
     return (thread?.type ?? '') === 'gym'
@@ -90,13 +111,23 @@ export default function ChatDetailPage() {
     return (thread?.type ?? '') === 'event'
   }, [thread])
 
-  const isGroupThread = isGymThread || isEventThread
+  const isCrewThread = useMemo(() => {
+    return (thread?.type ?? '') === 'crew'
+  }, [thread])
+
+  const isGroupThread = isGymThread || isEventThread || isCrewThread
 
   const otherFirstName = useMemo(() => {
     const name = otherProfile?.username || ''
     if (!name) return 'User'
     const first = name.trim().split(/\s+/)[0]
     return first || 'User'
+  }, [otherProfile])
+
+  const otherFullName = useMemo(() => {
+    const name = otherProfile?.username || ''
+    if (!name) return 'User'
+    return name.trim() || 'User'
   }, [otherProfile])
 
   const formatDate = (iso?: string | null) => {
@@ -166,12 +197,35 @@ export default function ChatDetailPage() {
       // Other profile or gym
       const otherId = isDirect ? (t.user_a === userId ? t.user_b : t.user_a) : null
       if (otherId) {
-        const { data: p } = await client
-          .from('profiles')
-          .select('id,username,avatar_url')
-          .eq('id', otherId)
-          .single()
-        if (p) setOtherProfile(p)
+        try {
+          // Use fetchProfiles to get merged data from both profiles and onboardingprofiles
+          const profiles = await fetchProfiles(client, [otherId])
+          if (profiles.length > 0) {
+            const profile = profiles[0]
+            setOtherProfile({
+              id: profile.id,
+              username: profile.username || null,
+              avatar_url: profile.avatar_url || null,
+            })
+          } else {
+            // Fallback to just profiles table if fetchProfiles doesn't return anything
+            const { data: p } = await client
+              .from('profiles')
+              .select('id,username,avatar_url')
+              .eq('id', otherId)
+              .single()
+            if (p) setOtherProfile(p)
+          }
+        } catch (err) {
+          console.error('Error fetching other profile:', err)
+          // Fallback to just profiles table
+          const { data: p } = await client
+            .from('profiles')
+            .select('id,username,avatar_url')
+            .eq('id', otherId)
+            .single()
+          if (p) setOtherProfile(p)
+        }
       }
 
       if (!isDirect && t.gym_id) {
@@ -190,6 +244,15 @@ export default function ChatDetailPage() {
           .eq('id', t.event_id)
           .single()
         if (ev) setEvent(ev)
+      }
+
+      if (!isDirect && (t.type ?? '') === 'crew' && t.crew_id) {
+        const { data: cr } = await client
+          .from('crews')
+          .select('id,title,location,start_at,slots_total,slots_open,image_url,description')
+          .eq('id', t.crew_id)
+          .single()
+        if (cr) setCrew(cr)
       }
 
       // Messages
@@ -277,6 +340,21 @@ export default function ChatDetailPage() {
     }
   }
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuOpen])
+
   // Mark incoming messages as read when viewing the thread
   useEffect(() => {
     const client = supabase
@@ -302,6 +380,37 @@ export default function ChatDetailPage() {
     })()
   }, [messages, chatId, userId])
 
+  const handleLeaveChat = async () => {
+    const client = supabase
+    if (!client || !userId || !chatId || !isDirect) {
+      return
+    }
+
+    // Confirm leaving
+    if (!confirm(`Are you sure you want to leave this chat with ${otherFullName}?`)) {
+      return
+    }
+
+    setLeaving(true)
+    setMenuOpen(false)
+
+    // Delete the thread (for direct messages, leaving means ending the conversation)
+    const { error: deleteError } = await client
+      .from('threads')
+      .delete()
+      .eq('id', chatId)
+      .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+
+    if (deleteError) {
+      console.error('Error leaving chat:', deleteError)
+      setLeaving(false)
+      return
+    }
+
+    // Redirect to chats list
+    router.push('/chats')
+  }
+
   const statusIcon = (status?: string) => {
     if (status === 'read') return ICON_READ
     if (status === 'delivered') return ICON_DELIVERED
@@ -310,11 +419,22 @@ export default function ChatDetailPage() {
 
   const heroImage = isEventThread
     ? event?.image_url || AVATAR_PLACEHOLDER
+    : isCrewThread
+    ? crew?.image_url || AVATAR_PLACEHOLDER
     : gym?.avatar_url || otherProfile?.avatar_url || AVATAR_PLACEHOLDER
-  const heroTitle = thread?.title || event?.title || gym?.name || 'Thread Name'
-  const heroSub = isEventThread ? event?.title || '' : gym?.name || 'Gym Name'
-  const heroInfoLeft = isEventThread ? event?.location || '' : gym?.location || 'City'
-  const heroInfoRight = isEventThread ? formatDate(event?.start_at) || 'Date/time' : '27 people are going'
+  const heroAvatar = isDirect
+    ? otherProfile?.avatar_url || AVATAR_PLACEHOLDER
+    : isGymThread
+    ? gym?.avatar_url || AVATAR_PLACEHOLDER
+    : isEventThread
+    ? event?.image_url || AVATAR_PLACEHOLDER
+    : isCrewThread
+    ? crew?.image_url || AVATAR_PLACEHOLDER
+    : AVATAR_PLACEHOLDER
+  const heroTitle = thread?.title || event?.title || crew?.title || gym?.name || 'Thread Name'
+  const heroSub = isEventThread ? event?.title || '' : isCrewThread ? crew?.title || '' : gym?.name || 'Gym Name'
+  const heroInfoLeft = isEventThread ? event?.location || '' : isCrewThread ? crew?.location || '' : gym?.location || 'City'
+  const heroInfoRight = isEventThread ? formatDate(event?.start_at) || 'Date/time' : isCrewThread ? formatDate(crew?.start_at) || 'Date/time' : '27 people are going'
 
   return (
     <div className={isGroupThread ? 'chat-gym-screen' : 'chat-detail-screen'} data-chat-id={chatId}>
@@ -415,9 +535,55 @@ export default function ChatDetailPage() {
                 </div>
                 <div className="chat-detail-name">{otherFirstName}</div>
               </div>
-              <button type="button" className="chat-detail-icon-btn" aria-label="More options">
-                <img src={ICON_MENU} alt="" width={24} height={24} />
-              </button>
+              <div style={{ position: 'relative' }} ref={menuRef}>
+                <button
+                  type="button"
+                  className="chat-detail-icon-btn"
+                  aria-label="More options"
+                  onClick={() => setMenuOpen(!menuOpen)}
+                >
+                  <img src={ICON_MENU} alt="" width={24} height={24} />
+                </button>
+                {menuOpen && isDirect && (
+                  <div
+                    className="mh-silver-dropdown-menu mh-silver-dropdown-right"
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 8px)',
+                      right: 0,
+                      zIndex: 1000,
+                      minWidth: '200px',
+                      background: 'var(--color-surface-card)',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--color-stroke)',
+                      padding: '4px 0',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="mh-silver-dropdown-item"
+                      onClick={handleLeaveChat}
+                      disabled={leaving}
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        padding: 'var(--space-md) var(--space-lg)',
+                        background: 'transparent',
+                        border: 'none',
+                        textAlign: 'left',
+                        color: leaving ? 'var(--color-text-muted)' : 'var(--color-text-default)',
+                        fontFamily: 'var(--fontfamily-inter)',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        cursor: leaving ? 'not-allowed' : 'pointer',
+                        opacity: leaving ? 0.6 : 1,
+                      }}
+                    >
+                      {leaving ? 'Leaving...' : `Leave chat with ${otherFirstName}`}
+                    </button>
+                  </div>
+                )}
+              </div>
             </header>
 
             <div className="chat-detail-divider" />
