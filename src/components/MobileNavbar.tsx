@@ -86,100 +86,97 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
 
     const checkUnreadChats = async () => {
       try {
-        // Get all threads the user is part of (excluding crew threads)
+        // Use the exact same logic as /chats page to determine unread status
+        // Direct 1:1 threads where current user is user_a or user_b
         const { data: directThreads } = await client
           .from('threads')
-          .select('id')
+          .select('id,user_a,user_b,type,gym_id,title')
           .or(`user_a.eq.${userId},user_b.eq.${userId}`)
-          .neq('type', 'crew')
 
-        // Get all thread_participants for the user
+        // Group/gym threads via participant table
         const { data: participantThreads } = await client
           .from('thread_participants')
-          .select('thread_id')
+          .select('thread:threads(id,user_a,user_b,type,gym_id,title)')
           .eq('user_id', userId)
 
-        if (!participantThreads || participantThreads.length === 0) {
-          // If no participant threads, only check direct threads
-          const threadIds = new Set<string>()
-          directThreads?.forEach(t => t.id && threadIds.add(t.id))
+        const directIds = new Set<string>((directThreads ?? []).map(t => t.id).filter(Boolean))
+        const participantThreadRows = (participantThreads ?? [])
+          .map(p => (p as unknown as { thread: { id: string; user_a: string | null; user_b: string | null; type: string | null } }).thread)
+          .filter(Boolean)
+        const participantIds = new Set<string>(participantThreadRows.map(t => t.id).filter(Boolean))
+        const allowedIds = new Set<string>([...directIds, ...participantIds])
 
-          if (threadIds.size === 0) {
-            setHasUnreadChats(false)
+        const threadsData = [
+          ...(directThreads ?? []),
+          ...participantThreadRows,
+        ].filter(t => t?.id && allowedIds.has(t.id))
+
+        // Dedupe by thread id
+        const uniqueThreadsMap = new Map<string, typeof threadsData[0]>()
+        threadsData.forEach(t => {
+          if (t?.id && allowedIds.has(t.id) && !uniqueThreadsMap.has(t.id)) {
+            uniqueThreadsMap.set(t.id, t)
+          }
+        })
+        const uniqueThreads = Array.from(uniqueThreadsMap.values())
+
+        // Exclude crew threads - they only appear on /crew page
+        const withoutCrews = uniqueThreads.filter(t => (t.type ?? 'direct') !== 'crew')
+
+        // Keep only the three canonical gym thread titles; drop anything else.
+        const allowedGymTitles = new Set(['general', 'beta center', 'routesetting'])
+        const filteredThreads = withoutCrews.filter(t => {
+          if ((t.type ?? 'direct') !== 'gym') return true
+          const title = (t.title ?? '').trim().toLowerCase()
+          return allowedGymTitles.has(title)
+        })
+
+        // Dedupe gym threads per gym_id+title (simplified - just get unique thread IDs)
+        const gymKeySeen = new Set<string>()
+        const fullyFilteredThreads: typeof filteredThreads = []
+        filteredThreads.forEach(t => {
+          if ((t.type ?? 'direct') !== 'gym') {
+            fullyFilteredThreads.push(t)
             return
           }
+          const key = `${(t as any).gym_id ?? ''}::${((t as any).title ?? '').trim().toLowerCase()}`
+          if (!gymKeySeen.has(key)) {
+            gymKeySeen.add(key)
+            fullyFilteredThreads.push(t)
+          }
+        })
 
-          // Get latest message for each thread
-          const { data: latestMessages } = await client
+        const latestByThread: Record<string, { receiver_id: string; status: string | null }> = {}
+        const threadIds = fullyFilteredThreads.map(t => t.id).filter(Boolean) as string[]
+        if (threadIds.length > 0) {
+          const { data: latestMsgs } = await client
             .from('messages')
             .select('id,thread_id,receiver_id,status')
-            .in('thread_id', Array.from(threadIds))
+            .in('thread_id', threadIds)
             .order('created_at', { ascending: false })
-
-          if (!latestMessages || latestMessages.length === 0) {
-            setHasUnreadChats(false)
-            return
-          }
-
-          // Group by thread_id and get the latest message per thread
-          const latestByThread = new Map<string, typeof latestMessages[0]>()
-          for (const msg of latestMessages) {
-            if (!latestByThread.has(msg.thread_id)) {
-              latestByThread.set(msg.thread_id, msg)
+          if (latestMsgs) {
+            for (const m of latestMsgs) {
+              if (!latestByThread[m.thread_id]) {
+                latestByThread[m.thread_id] = { receiver_id: m.receiver_id, status: m.status }
+              }
             }
           }
-
-          // Check if any thread has an unread message (receiver is current user and status is not 'read')
-          const hasUnread = Array.from(latestByThread.values()).some(
-            msg => msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
-          )
-
-          setHasUnreadChats(hasUnread)
-          return
         }
 
-        const participantThreadIds = participantThreads.map(p => p.thread_id).filter(Boolean) as string[]
-
-        // Get non-crew threads where user is a participant
-        const { data: nonCrewThreads } = await client
-          .from('threads')
-          .select('id')
-          .neq('type', 'crew')
-          .in('id', participantThreadIds)
-
-        const threadIds = new Set<string>()
-        directThreads?.forEach(t => t.id && threadIds.add(t.id))
-        nonCrewThreads?.forEach(t => t.id && threadIds.add(t.id))
-
-        if (threadIds.size === 0) {
-          setHasUnreadChats(false)
-          return
-        }
-
-        // Get latest message for each thread
-        const { data: latestMessages } = await client
-          .from('messages')
-          .select('id,thread_id,receiver_id,status')
-          .in('thread_id', Array.from(threadIds))
-          .order('created_at', { ascending: false })
-
-        if (!latestMessages || latestMessages.length === 0) {
-          setHasUnreadChats(false)
-          return
-        }
-
-        // Group by thread_id and get the latest message per thread
-        const latestByThread = new Map<string, typeof latestMessages[0]>()
-        for (const msg of latestMessages) {
-          if (!latestByThread.has(msg.thread_id)) {
-            latestByThread.set(msg.thread_id, msg)
-          }
-        }
-
-        // Check if any thread has an unread message (receiver is current user and status is not 'read')
-        const hasUnread = Array.from(latestByThread.values()).some(
-          msg => msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
-        )
+        // Check unread status using the exact same logic as /chats page
+        const hasUnread = fullyFilteredThreads.some(t => {
+          const fallbackMsg = latestByThread[t.id]
+          const isDirect = (t.type ?? 'direct') === 'direct'
+          const hasMessages = !!fallbackMsg || !!(t as any).last_message
+          
+          // Match /chats page logic exactly
+          const isUnread =
+            (!hasMessages && isDirect) ||
+            (!!fallbackMsg &&
+              fallbackMsg.receiver_id === userId &&
+              (fallbackMsg.status ?? '').toLowerCase() !== 'read')
+          return isUnread
+        })
 
         setHasUnreadChats(hasUnread)
       } catch (error) {
@@ -218,11 +215,15 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
         const threadIds = crewThreads.map(t => t.id).filter(Boolean) as string[]
 
         // Get latest message for each crew thread
-        const { data: latestMessages } = await client
+        const { data: latestMessages, error: messagesError } = await client
           .from('messages')
           .select('id,thread_id,receiver_id,status')
           .in('thread_id', threadIds)
           .order('created_at', { ascending: false })
+        
+        if (messagesError) {
+          console.error('Error fetching crew messages for unread check:', messagesError)
+        }
 
         if (!latestMessages || latestMessages.length === 0) {
           setHasUnreadCrews(false)
@@ -237,10 +238,11 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
           }
         }
 
-        // Check if any crew thread has an unread message (receiver is current user and status is not 'read')
-        const hasUnread = Array.from(latestByThread.values()).some(
-          msg => msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
-        )
+        // Check if any crew thread has an unread message
+        // Match the logic from /chats page exactly: receiver_id === userId && status !== 'read'
+        const hasUnread = Array.from(latestByThread.values()).some(msg => {
+          return msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
+        })
 
         setHasUnreadCrews(hasUnread)
       } catch (error) {

@@ -15,6 +15,7 @@ type EventRow = {
   slots_total: number | null
   slots_open: number | null
   image_url?: string | null
+  created_at?: string | null
 }
 
 type ThreadRow = {
@@ -29,6 +30,7 @@ export default function EventsScreen() {
     Array<
       EventRow & {
         thread?: ThreadRow | null
+        isNew?: boolean
       }
     >
   >([])
@@ -39,6 +41,15 @@ export default function EventsScreen() {
       const client = supabase
       if (!client) return
       setLoading(true)
+      
+      // Get last visit time from localStorage
+      const lastVisitKey = 'events-last-visit'
+      const lastVisitTime = localStorage.getItem(lastVisitKey)
+      const now = Date.now()
+      
+      // Update last visit time
+      localStorage.setItem(lastVisitKey, now.toString())
+      
       const { data: eventsData, error: eventsError } = await client
         .from('events')
         .select('id,title,location,description,start_at,slots_total,slots_open,image_url,created_at')
@@ -66,10 +77,29 @@ export default function EventsScreen() {
           }, {}) ?? {}
       }
 
-      const combined = eventsData.map(ev => ({
-        ...ev,
-        thread: threadsMap[ev.id] ?? null,
-      }))
+      // Calculate 24 hours in milliseconds
+      const twentyFourHours = 24 * 60 * 60 * 1000
+      
+      const combined = eventsData.map(ev => {
+        // Check if event is new (created within last 24 hours since last visit)
+        let isNew = false
+        if (ev.created_at && lastVisitTime) {
+          const eventCreatedAt = new Date(ev.created_at).getTime()
+          const lastVisit = parseInt(lastVisitTime, 10)
+          // Event is new if it was created after last visit and within last 24 hours
+          isNew = eventCreatedAt > lastVisit && (now - eventCreatedAt) <= twentyFourHours
+        } else if (ev.created_at && !lastVisitTime) {
+          // First visit: show events created in last 24 hours
+          const eventCreatedAt = new Date(ev.created_at).getTime()
+          isNew = (now - eventCreatedAt) <= twentyFourHours
+        }
+        
+        return {
+          ...ev,
+          thread: threadsMap[ev.id] ?? null,
+          isNew,
+        }
+      })
       setEvents(combined)
       setLoading(false)
     }
@@ -109,23 +139,16 @@ export default function EventsScreen() {
               <div className="events-createbar-center" data-name="name" data-node-id="636:2092">
                 <p className="events-createbar-text">create event</p>
               </div>
-              <div className="events-createbar-right" data-name="Auto Layout Horizontal" data-node-id="636:2094">
-                <div className="events-createbar-ghost">
-                  <div className="events-createbar-ghost-inner">
-                    <div className="events-createbar-ghost-frame">
-                      <div className="events-createbar-ghost-img">
-                        <img src="/icons/dots.svg" alt="" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </Link>
 
             {loading && <p className="events-loading">Loading events…</p>}
             {!loading &&
               events.map(ev => (
-                <Link key={ev.id} href={`/events/detail?eventId=${ev.id}`} className="events-tile">
+                <Link 
+                  key={ev.id} 
+                  href={`/events/detail?eventId=${ev.id}`} 
+                  className={`events-tile ${ev.isNew ? 'events-tile-new' : ''}`}
+                >
                   <div className="events-tile-img">
                     <img
                       src={ev.image_url || '/icons/event-placeholder.svg'}

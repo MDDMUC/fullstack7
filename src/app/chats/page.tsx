@@ -291,8 +291,13 @@ export default function ChatsScreen() {
       }
     })
 
-    // Sort by lastMessageAt desc (nulls last)
+    // Sort: unread messages first, then by lastMessageAt desc (nulls last)
     normalized.sort((a, b) => {
+      // Prioritize unread messages
+      if (a.unread && !b.unread) return -1
+      if (!a.unread && b.unread) return 1
+      
+      // Within same unread status, sort by lastMessageAt desc
       if (!a.lastMessageAt && !b.lastMessageAt) return 0
       if (!a.lastMessageAt) return 1
       if (!b.lastMessageAt) return -1

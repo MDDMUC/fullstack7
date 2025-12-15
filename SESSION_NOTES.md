@@ -89,6 +89,7 @@
   - Chats icon shows unread dot for non-crew unread messages; Crew icon shows unread dot for crew thread unread messages
   - Both indicators update in real-time via Supabase subscriptions to `messages` table changes
   - Logic properly filters crew threads from main chats list and vice versa
+  - **Fixed chats unread detection**: Now uses exact same logic as `/chats` page - fetches threads the same way (direct + participant threads), excludes crew threads, filters gym threads to canonical titles, and uses `receiver_id === userId && status !== 'read'` check
 - **Global UnreadDot component**:
   - Created reusable `UnreadDot` component (`src/components/UnreadDot.tsx`) for consistent unread indicators across the app
   - Uses global `.unread-dot` CSS class with tokenized spacing (`var(--space-xs)` = 6px from top/right edges)
@@ -99,11 +100,22 @@
   - Uses global `UnreadDot` component for consistency
   - Unread detection: checks if user is participant in crew thread, fetches latest message, marks unread if `receiver_id === userId` and `status !== 'read'`
   - Real-time updates via Supabase subscription to message changes
+  - **Added "Last message by {Name}" indicator**: Shows who sent the last message in each crew thread, displayed in top-right corner next to unread dot
+  - Styled with `var(--color-primary)`, `var(--font-size-sm)` (12px), tokenized spacing (`var(--space-xs)` = 6px)
+  - Fetches sender profiles using `fetchProfiles` to get first name from username
 - **Chat list unread indicators**:
   - Added pulsating dot indicator on chat avatars (`/chats` page) to show which chats have unread messages
   - Uses global `UnreadDot` component (replaces old unread badge SVG indicator)
   - Removed redundant old unread badge indicator from chat preview items
   - Dot appears in top-right corner of avatar (6px from edges using `--space-xs` token)
+  - Unread messages are sorted to the top of the chat list
+- **Events page updates**:
+  - Removed three dots icon from create event bar (cleaner UI)
+  - **Added new event wave animation**: Events created within last 24 hours since returning to app show pulsating wave animation overlay
+  - Uses same `chats-wave` animation from unread chat messages (5.4s infinite loop)
+  - Tracks last visit time in `localStorage` (`events-last-visit`)
+  - Wave overlay covers entire event tile with primary color gradient mask
+  - CSS class: `.events-tile-new` with `::after` pseudo-element for wave effect
 - **Chat detail page improvements**:
   - Added "Leave chat" option to gym chats and event chats (removes user from `thread_participants`)
   - Added "Delete Event Chat" option for event creators (deletes the event thread entirely)

@@ -7,6 +7,7 @@ import MobileNavbar from '@/components/MobileNavbar'
 import UnreadDot from '@/components/UnreadDot'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
+import { fetchProfiles } from '@/lib/profiles'
 
 type CrewRow = {
   id: string
@@ -27,6 +28,7 @@ type ThreadRow = {
 type MessageSlim = {
   id: string
   thread_id: string
+  user_id: string
   receiver_id: string | null
   status: string | null
 }
@@ -39,6 +41,7 @@ export default function CrewScreen() {
       CrewRow & {
         thread?: ThreadRow | null
         unread?: boolean
+        lastMessageSenderName?: string | null
       }
     >
   >([])
@@ -80,6 +83,8 @@ export default function CrewScreen() {
       .filter(Boolean) as string[]
 
     let unreadMap: Record<string, boolean> = {}
+    let lastMessageSenderMap: Record<string, string> = {}
+    
     if (threadIds.length > 0) {
       // Check if user is a participant in these threads
       const { data: participants } = await client
@@ -96,11 +101,11 @@ export default function CrewScreen() {
       if (userThreadIds.size > 0) {
         const { data: latestMessages } = await client
           .from('messages')
-          .select('id,thread_id,receiver_id,status')
+          .select('id,thread_id,user_id,receiver_id,status')
           .in('thread_id', Array.from(userThreadIds))
           .order('created_at', { ascending: false })
 
-        if (latestMessages) {
+        if (latestMessages && latestMessages.length > 0) {
           // Group by thread_id and get the latest message per thread
           const latestByThread = new Map<string, MessageSlim>()
           for (const msg of latestMessages as MessageSlim[]) {
@@ -109,7 +114,30 @@ export default function CrewScreen() {
             }
           }
 
-          // Check which threads have unread messages
+          // Get sender IDs for fetching profiles
+          const senderIds = Array.from(
+            new Set(
+              Array.from(latestByThread.values())
+                .map(msg => msg.user_id)
+                .filter(Boolean) as string[]
+            )
+          )
+
+          // Fetch sender profiles
+          let senderProfilesMap: Record<string, { username: string }> = {}
+          if (senderIds.length > 0) {
+            try {
+              const profiles = await fetchProfiles(client, senderIds)
+              senderProfilesMap = profiles.reduce<Record<string, { username: string }>>((acc, p) => {
+                acc[p.id] = { username: p.username }
+                return acc
+              }, {})
+            } catch (err) {
+              console.error('Failed to fetch sender profiles', err)
+            }
+          }
+
+          // Check which threads have unread messages and map sender names
           for (const [threadId, msg] of latestByThread.entries()) {
             const isUnread =
               msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
@@ -118,6 +146,16 @@ export default function CrewScreen() {
               const thread = Object.values(threadsMap).find(t => t.id === threadId)
               if (thread?.crew_id) {
                 unreadMap[thread.crew_id] = true
+              }
+            }
+
+            // Map sender name for this thread
+            const thread = Object.values(threadsMap).find(t => t.id === threadId)
+            if (thread?.crew_id && msg.user_id) {
+              const senderProfile = senderProfilesMap[msg.user_id]
+              if (senderProfile) {
+                const firstName = senderProfile.username.trim().split(/\s+/)[0] || 'User'
+                lastMessageSenderMap[thread.crew_id] = firstName
               }
             }
           }
@@ -129,6 +167,7 @@ export default function CrewScreen() {
       ...crew,
       thread: threadsMap[crew.id] ?? null,
       unread: unreadMap[crew.id] ?? false,
+      lastMessageSenderName: lastMessageSenderMap[crew.id] ?? null,
     }))
     setCrews(combined)
     setLoading(false)
@@ -200,6 +239,11 @@ export default function CrewScreen() {
                       className="events-tile-img-el"
                     />
                     {crew.unread && <UnreadDot />}
+                    {crew.lastMessageSenderName && (
+                      <div className="events-tile-last-message">
+                        Last message by {crew.lastMessageSenderName}
+                      </div>
+                    )}
                   </div>
                   <div className="events-tile-overlay" />
                   <div className="events-tile-text">
