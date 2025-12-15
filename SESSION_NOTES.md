@@ -111,11 +111,12 @@
   - Unread messages are sorted to the top of the chat list
 - **Events page updates**:
   - Removed three dots icon from create event bar (cleaner UI)
-  - **Added new event wave animation**: Events created within last 24 hours since returning to app show pulsating wave animation overlay
-  - Uses same `chats-wave` animation from unread chat messages (5.4s infinite loop)
-  - Tracks last visit time in `localStorage` (`events-last-visit`)
-  - Wave overlay covers entire event tile with primary color gradient mask
+  - **Added new event wave animation**: Events created today (same day) show pulsating wave animation overlay
+  - Uses same `chats-wave` animation from unread chat messages (5.4s infinite loop, left-to-right movement)
+  - Simple logic: compares event `created_at` date (start of day) with today's date (start of day)
+  - Wave overlay covers entire event tile with primary color gradient mask (90deg horizontal gradient)
   - CSS class: `.events-tile-new` with `::after` pseudo-element for wave effect
+  - Animation moves horizontally from left to right across the event tile
 - **Chat detail page improvements**:
   - Added "Leave chat" option to gym chats and event chats (removes user from `thread_participants`)
   - Added "Delete Event Chat" option for event creators (deletes the event thread entirely)

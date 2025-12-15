@@ -42,14 +42,6 @@ export default function EventsScreen() {
       if (!client) return
       setLoading(true)
       
-      // Get last visit time from localStorage
-      const lastVisitKey = 'events-last-visit'
-      const lastVisitTime = localStorage.getItem(lastVisitKey)
-      const now = Date.now()
-      
-      // Update last visit time
-      localStorage.setItem(lastVisitKey, now.toString())
-      
       const { data: eventsData, error: eventsError } = await client
         .from('events')
         .select('id,title,location,description,start_at,slots_total,slots_open,image_url,created_at')
@@ -77,21 +69,21 @@ export default function EventsScreen() {
           }, {}) ?? {}
       }
 
-      // Calculate 24 hours in milliseconds
-      const twentyFourHours = 24 * 60 * 60 * 1000
+      // Get today's date (start of day) for comparison
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const todayStart = today.getTime()
       
       const combined = eventsData.map(ev => {
-        // Check if event is new (created within last 24 hours since last visit)
+        // Check if event was created today (same day)
         let isNew = false
-        if (ev.created_at && lastVisitTime) {
-          const eventCreatedAt = new Date(ev.created_at).getTime()
-          const lastVisit = parseInt(lastVisitTime, 10)
-          // Event is new if it was created after last visit and within last 24 hours
-          isNew = eventCreatedAt > lastVisit && (now - eventCreatedAt) <= twentyFourHours
-        } else if (ev.created_at && !lastVisitTime) {
-          // First visit: show events created in last 24 hours
-          const eventCreatedAt = new Date(ev.created_at).getTime()
-          isNew = (now - eventCreatedAt) <= twentyFourHours
+        if (ev.created_at) {
+          const eventCreatedAt = new Date(ev.created_at)
+          eventCreatedAt.setHours(0, 0, 0, 0)
+          const eventDayStart = eventCreatedAt.getTime()
+          
+          // Event is new if it was created on the same day (today)
+          isNew = eventDayStart === todayStart
         }
         
         return {
@@ -100,6 +92,7 @@ export default function EventsScreen() {
           isNew,
         }
       })
+      
       setEvents(combined)
       setLoading(false)
     }

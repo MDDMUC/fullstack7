@@ -101,7 +101,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
 
         const directIds = new Set<string>((directThreads ?? []).map(t => t.id).filter(Boolean))
         const participantThreadRows = (participantThreads ?? [])
-          .map(p => (p as unknown as { thread: { id: string; user_a: string | null; user_b: string | null; type: string | null } }).thread)
+          .map(p => (p as unknown as { thread: { id: string; user_a: string | null; user_b: string | null; type: string | null; gym_id: string | null; title: string | null } }).thread)
           .filter(Boolean)
         const participantIds = new Set<string>(participantThreadRows.map(t => t.id).filter(Boolean))
         const allowedIds = new Set<string>([...directIds, ...participantIds])
@@ -127,7 +127,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
         const allowedGymTitles = new Set(['general', 'beta center', 'routesetting'])
         const filteredThreads = withoutCrews.filter(t => {
           if ((t.type ?? 'direct') !== 'gym') return true
-          const title = (t.title ?? '').trim().toLowerCase()
+          const title = ((t as any).title ?? '').trim().toLowerCase()
           return allowedGymTitles.has(title)
         })
 
