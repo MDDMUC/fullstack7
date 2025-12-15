@@ -210,7 +210,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <MobileNavbar active="profile" />
+          <MobileNavbar active="Default" />
         </div>
       </div>
     </RequireAuth>

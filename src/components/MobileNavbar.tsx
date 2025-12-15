@@ -80,15 +80,17 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
       return
     }
 
+    const client = supabase
+
     const checkUnreadChats = async () => {
       try {
         // Get all threads the user is part of
-        const { data: directThreads } = await supabase
+        const { data: directThreads } = await client
           .from('threads')
           .select('id')
           .or(`user_a.eq.${userId},user_b.eq.${userId}`)
 
-        const { data: participantThreads } = await supabase
+        const { data: participantThreads } = await client
           .from('thread_participants')
           .select('thread_id')
           .eq('user_id', userId)
@@ -103,7 +105,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
         }
 
         // Get latest message for each thread
-        const { data: latestMessages } = await supabase
+        const { data: latestMessages } = await client
           .from('messages')
           .select('id,thread_id,receiver_id,status')
           .in('thread_id', Array.from(threadIds))
@@ -137,7 +139,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
     checkUnreadChats()
 
     // Subscribe to message changes
-    const channel = supabase
+    const channel = client
       .channel('navbar-unread-check')
       .on(
         'postgres_changes',
@@ -149,7 +151,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
       .subscribe()
 
     return () => {
-      supabase.removeChannel(channel)
+      client.removeChannel(channel)
     }
   }, [userId])
 
