@@ -82,3 +82,31 @@
 - Chats unread indicator logic moved into `MobileNavbar`: we compute `hasUnreadChats` by fetching latest messages per thread for the current user and subscribing to `messages` changes; the small dot on the Chats icon is shown only when there are unread messages. The dot is positioned top-right inside the icon container and uses `color-primary`.
 - `/chats/event` was updated to drop the old `home-bottom-nav` Figma stub and now uses the shared `MobileNavbar` (active="chats"), so all authenticated mobile views share the same bottom nav component.
 - Introduced a global `.custom-scrollbar` helper using tokens (`color-text-muted` for the thumb, `radius-full` for rounding) and applied it to scrollable cards like `.chats-card` and `.events-card`. Events list card background now uses `color-surface-card` and scrolls internally, matching chats card behavior and overall dark card styling.
+
+### Chat management & unread indicators (latest)
+- **Mobile navbar unread indicators**:
+  - Extended unread indicator logic to include crew threads: `MobileNavbar` now tracks `hasUnreadChats` (non-crew threads) and `hasUnreadCrews` (crew threads separately)
+  - Chats icon shows unread dot for non-crew unread messages; Crew icon shows unread dot for crew thread unread messages
+  - Both indicators update in real-time via Supabase subscriptions to `messages` table changes
+  - Logic properly filters crew threads from main chats list and vice versa
+- **Global UnreadDot component**:
+  - Created reusable `UnreadDot` component (`src/components/UnreadDot.tsx`) for consistent unread indicators across the app
+  - Uses global `.unread-dot` CSS class with tokenized spacing (`var(--space-xs)` = 6px from top/right edges)
+  - Pulsating animation (`presencePulse`) with `var(--color-primary)` background and shadow
+  - Positioned absolutely within relative parent containers (avatars, images)
+- **Crew page unread indicators**:
+  - Added pulsating dot indicator on crew tiles (`/crew` page) to show which specific crews have unread messages
+  - Uses global `UnreadDot` component for consistency
+  - Unread detection: checks if user is participant in crew thread, fetches latest message, marks unread if `receiver_id === userId` and `status !== 'read'`
+  - Real-time updates via Supabase subscription to message changes
+- **Chat list unread indicators**:
+  - Added pulsating dot indicator on chat avatars (`/chats` page) to show which chats have unread messages
+  - Uses global `UnreadDot` component (replaces old unread badge SVG indicator)
+  - Removed redundant old unread badge indicator from chat preview items
+  - Dot appears in top-right corner of avatar (6px from edges using `--space-xs` token)
+- **Chat detail page improvements**:
+  - Added "Leave chat" option to gym chats and event chats (removes user from `thread_participants`)
+  - Added "Delete Event Chat" option for event creators (deletes the event thread entirely)
+  - Three dots menu now conditionally shows creator-only options based on `created_by` field
+  - Fixed TypeScript error: added `created_by` field to `EventRow` type and included it in event queries
+  - Event queries now fetch `created_by` to determine if current user is the event creator

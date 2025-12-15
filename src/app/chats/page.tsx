@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
 import FilterDropdownMobile from '@/components/FilterDropdownMobile'
 import MobileNavbar from '@/components/MobileNavbar'
+import UnreadDot from '@/components/UnreadDot'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles } from '@/lib/profiles'
 import { useAuthSession } from '@/hooks/useAuthSession'
@@ -366,16 +367,12 @@ export default function ChatsScreen() {
                           alt=""
                           className="chats-avatar-img"
                         />
+                        {chat.unread && <UnreadDot />}
                       </div>
                       <div className="chats-text">
                         <p className="chats-title">{chat.title}</p>
                         <p className="chats-subtitle">{chat.subtitle}</p>
                       </div>
-                      {chat.unread && (
-                        <div className="chats-unread-badge">
-                          <img src="/icons/unread-badge.svg" alt="" className="chats-badge-img" />
-                        </div>
-                      )}
                     </div>
                   </Link>
                   {idx < items.length - 1 && (

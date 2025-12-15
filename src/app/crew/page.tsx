@@ -4,6 +4,7 @@ import React from 'react'
 import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
 import MobileNavbar from '@/components/MobileNavbar'
+import UnreadDot from '@/components/UnreadDot'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 
@@ -198,7 +199,7 @@ export default function CrewScreen() {
                       alt=""
                       className="events-tile-img-el"
                     />
-                    {crew.unread && <span className="events-tile-unread-dot" />}
+                    {crew.unread && <UnreadDot />}
                   </div>
                   <div className="events-tile-overlay" />
                   <div className="events-tile-text">
