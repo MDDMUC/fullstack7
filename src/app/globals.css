@@ -449,6 +449,7 @@ body {
   overflow: hidden;
 }
 
+/* Legacy class - replaced by .mobile-filterbar */
 .events-topnav {
   display: flex;
   gap: var(--space-xs); /* 6px */
@@ -1700,6 +1701,8 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   align-items: center;
   justify-content: center;
   position: relative;
+  margin-bottom: 0; /* Remove bottom margin to touch filterbar */
+  padding-bottom: 0; /* Remove bottom padding to touch filterbar */
 }
 
 .mobile-topbar-content {
@@ -10652,6 +10655,14 @@ div.mh-silver-card[data-name="card2"] {
   box-sizing: border-box;
 }
 
+/* Remove gap between topbar and filterbar - they should touch */
+.home-content .mobile-topbar + .mobile-filterbar,
+.chats-content .mobile-topbar + .mobile-filterbar,
+.events-content .mobile-topbar + .mobile-filterbar,
+.crew-content .mobile-topbar + .mobile-filterbar {
+  margin-top: calc(-1 * var(--space-lg)); /* Negative margin to cancel out parent gap */
+}
+
 .home-dab-toast {
   position: fixed;
   top: 50%;
@@ -10881,6 +10892,7 @@ div.mh-silver-card[data-name="card2"] {
   box-shadow: var(--shadow-base);
 }
 
+/* Legacy class - replaced by .mobile-filterbar */
 .home-filters {
   display: flex;
   gap: var(--space-xs); /* 6px */
@@ -11327,7 +11339,73 @@ div.mh-silver-card[data-name="card2"] {
   overflow: hidden;
 }
 
-/* Top Navigation: gap-[var(---xs,6px)] w-[358px] - STICKY TOP */
+/* Global Mobile Filter Bar - Figma node 765:1754 */
+.mobile-filterbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  /* Extend beyond parent padding to span full width */
+  width: calc(100% + (var(--space-lg) * 2));
+  margin-left: calc(-1 * var(--space-lg));
+  margin-right: calc(-1 * var(--space-lg));
+  margin-top: 0; /* Remove any top margin to touch topbar */
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.mobile-filterbar-content {
+  background: var(--color-surface-card); /* #151927 */
+  display: flex;
+  flex: 1 0 0;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 0;
+  padding: var(--space-xs) var(--space-md); /* 6px vertical, 12px horizontal */
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  gap: var(--space-xs); /* 6px gap between filter items */
+  overflow: visible; /* Allow dropdowns to overflow */
+}
+
+/* Animated gradient divider - transitions from primary to secondary, left to right */
+.mobile-filterbar-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    var(--color-primary) 0%,
+    var(--color-secondary) 50%,
+    var(--color-primary) 100%
+  );
+  background-size: 200% 100%;
+  animation: filterbar-divider-slide 3s linear infinite;
+}
+
+@keyframes filterbar-divider-slide {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 0%;
+  }
+}
+
+.mobile-filterbar-item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Legacy class names for backward compatibility - can be removed after migration */
 .chats-topnav {
   display: flex;
   gap: 6px; /* space/xs */

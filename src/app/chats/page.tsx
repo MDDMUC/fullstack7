@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
-import DropdownMenu from '@/components/DropdownMenu'
+import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
@@ -433,24 +433,12 @@ export default function ChatsScreen() {
         <div className="chats-content">
           <MobileTopbar breadcrumb="Chats" />
           {/* Top Navigation - Filters: city, gym */}
-          <div className="chats-topnav">
-            <div style={{ flex: '1 1 0', minWidth: 0 }}>
-              <DropdownMenu
-                label="city"
-                value={filters.city}
-                options={filterOptions.city}
-                onChange={val => setFilters(prev => ({ ...prev, city: val }))}
-              />
-            </div>
-            <div style={{ flex: '1 1 0', minWidth: 0 }}>
-              <DropdownMenu
-                label="gym"
-                value={filters.gym}
-                options={filterOptions.gym}
-                onChange={val => setFilters(prev => ({ ...prev, gym: val }))}
-              />
-            </div>
-          </div>
+          <MobileFilterBar
+            filters={filters}
+            filterOptions={filterOptions}
+            onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+            filterKeys={['city', 'gym']}
+          />
 
           {/* Chat List Card */}
           <div className="chats-card custom-scrollbar">

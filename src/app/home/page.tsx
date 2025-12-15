@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import ButtonDab from '@/components/ButtonDab'
-import DropdownMenu from '@/components/DropdownMenu'
+import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import { RequireAuth } from '@/components/RequireAuth'
@@ -305,17 +305,12 @@ export default function HomeScreen() {
           ) : (
             <>
               <MobileTopbar breadcrumb="DAB" />
-              <div className="home-filters">
-                {FILTER_LABELS.map(label => (
-                  <DropdownMenu
-                    key={label}
-                    label={label}
-                    value={filters[label]}
-                    options={filterOptions[label]}
-                    onChange={val => setFilters(prev => ({ ...prev, [label]: val }))}
-                  />
-                ))}
-              </div>
+              <MobileFilterBar
+                filters={filters}
+                filterOptions={filterOptions}
+                onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+                filterKeys={FILTER_LABELS}
+              />
 
               <div className="home-card" data-name="usercard-mobile">
                 {showStatusRow && (

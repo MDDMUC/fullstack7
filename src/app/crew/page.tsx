@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
-import DropdownMenu from '@/components/DropdownMenu'
+import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
@@ -346,32 +346,12 @@ export default function CrewScreen() {
         <div className="events-content">
           <MobileTopbar breadcrumb="Crew" />
           {/* Filters */}
-          <div style={{ display: 'flex', gap: 'var(--space-xs)', width: '100%', boxSizing: 'border-box' }}>
-            <div style={{ flex: '1 1 0', minWidth: 0 }}>
-              <DropdownMenu
-                label="city"
-                value={filters.city}
-                options={filterOptions.city}
-                onChange={val => setFilters(prev => ({ ...prev, city: val }))}
-              />
-            </div>
-            <div style={{ flex: '1 1 0', minWidth: 0 }}>
-              <DropdownMenu
-                label="style"
-                value={filters.style}
-                options={filterOptions.style}
-                onChange={val => setFilters(prev => ({ ...prev, style: val }))}
-              />
-            </div>
-            <div style={{ flex: '1 1 0', minWidth: 0 }}>
-              <DropdownMenu
-                label="gym"
-                value={filters.gym}
-                options={filterOptions.gym}
-                onChange={val => setFilters(prev => ({ ...prev, gym: val }))}
-              />
-            </div>
-          </div>
+          <MobileFilterBar
+            filters={filters}
+            filterOptions={filterOptions}
+            onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+            filterKeys={['city', 'style', 'gym']}
+          />
             <div className="events-card custom-scrollbar">
             <Link href="/crew/create" className="events-createbar" data-name="create-crew-mobile" data-node-id="636:2102">
               <div className="events-createbar-left">

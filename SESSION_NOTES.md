@@ -166,6 +166,28 @@
   - Filter options dynamically generated from available data (sorted alphabetically)
   - Separate state for all items vs filtered items for proper filtering
 
+### MobileFilterBar global component (latest)
+- **Created global MobileFilterBar component**:
+  - New reusable component `src/components/MobileFilterBar.tsx` to replace individual filter implementations
+  - Accepts `filters`, `filterOptions`, `onFilterChange`, and `filterKeys` props
+  - Renders filter dropdowns with equal width distribution using flexbox
+  - Replaced filter implementations on `/chats`, `/events`, `/crew`, and `/home` pages
+- **Figma design implementation** (node 765:1754):
+  - Background: `var(--color-surface-card)` (#151927) - matches Figma design
+  - Padding: `var(--space-xs)` vertical (6px), `var(--space-md)` horizontal (12px)
+  - Gap: `var(--space-xs)` (6px) between filter items
+  - Full width spanning: Uses negative margins to extend beyond parent padding, matching mobile-topbar approach
+  - Positioned directly below mobile-topbar with no gaps (removed parent container gap using negative margin)
+- **Animated gradient divider**:
+  - 1px height divider between topbar and filterbar
+  - Animated gradient transitions from `var(--color-primary)` (#5ce1e6) to `var(--color-secondary)` (#e68fff) in left-to-right motion
+  - Continuous infinite loop animation (3s per cycle)
+  - Implemented using `::before` pseudo-element with CSS keyframe animation
+- **CSS consolidation**:
+  - Single `.mobile-filterbar` class replaces `.chats-topnav`, `.events-topnav`, `.home-filters`
+  - All styling uses design tokens and CSS variables
+  - Legacy classes kept for backward compatibility but no longer used
+
 ### MobileTopbar component & notifications system (latest)
 - **MobileTopbar component**:
   - Created new `MobileTopbar` component (`src/components/MobileTopbar.tsx`) matching Figma node 764:3056
