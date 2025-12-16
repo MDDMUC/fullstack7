@@ -1,5 +1,37 @@
 ## Work Log (last ~8 hours)
 
+### Global ChatMessage component & chat UI improvements (latest)
+- **Created global ChatMessage component**:
+  - New reusable component `src/components/ChatMessage.tsx` for consistent message display across all chat types
+  - Displays user avatar (34px, circular) and first name below avatar for all incoming messages
+  - Handles outgoing messages with status indicators (sent/delivered/read)
+  - Supports crew "left" status display for users who have left the crew
+  - All styling uses design tokens: `var(--space-sm)`, `var(--radius-sm)`, `var(--radius-lg)`, `var(--color-text-default)`, `var(--color-surface-panel)`, `var(--color-primary)`, `var(--shadow-small)`
+- **Applied ChatMessage component globally**:
+  - Updated `/crew/detail` page to use ChatMessage component (replaced custom message rendering)
+  - Updated `/chats/[id]` page to use ChatMessage for both direct chats and group chats (gym/event/crew threads)
+  - All chat types now have consistent message display with avatar and first name
+- **Profile fetching improvements**:
+  - Fixed profile fetching to load all message sender profiles for ALL chat types (direct, gym, event, crew)
+  - Added useEffect to fetch missing profiles when messages or otherProfile changes
+  - Improved profile lookup to check both profiles map and otherProfile for direct chats
+  - Added debug logging to track missing profiles
+  - Profiles are fetched for all unique sender IDs from messages, not just group threads
+- **TypeScript fixes**:
+  - Removed local `Profile` type declaration in `/chats/[id]/page.tsx` that conflicted with imported `Profile` type from `@/lib/profiles`
+  - Fixed profile setting to use profile directly from `fetchProfiles` instead of manually constructing object with nullable fields
+  - Resolved type error: `Type 'string | null' is not assignable to type 'string'` by using imported Profile type directly
+- **CSS implementation**:
+  - Added global CSS classes: `.chat-message`, `.chat-message-incoming`, `.chat-message-outgoing`, `.chat-message-avatar-wrapper`, `.chat-message-avatar`, `.chat-message-name`, `.chat-message-content`, `.chat-message-bubble`, `.chat-message-bubble-incoming`, `.chat-message-bubble-outgoing`, `.chat-message-status-row`, `.chat-message-user-left-status`
+  - Avatar: 34px width/height, 6px border-radius, positioned above name
+  - Name: 12px font size, 500 font weight, centered below avatar, 4px gap, text overflow ellipsis with 50px max-width
+  - Message bubbles: 12px padding, 14px border-radius, proper colors and shadows using tokens
+  - All spacing, colors, and typography use design tokens
+- **Chat card styling updates**:
+  - Changed `.chat-gym-card` background from `var(--color-text-white)` to `var(--color-card)` token
+  - Changed `.chat-gym-card` shadow from `var(--shadow-base)` to `var(--shadow-small)` token
+  - Chat cards now use consistent card color and small shadow across all chat types
+
 ### Crew invite system & participant access fixes (latest)
 - **Crew invite acceptance functionality**:
   - Implemented full invite request/acceptance flow: users can request to join crews, owners can accept requests

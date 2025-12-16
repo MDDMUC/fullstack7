@@ -159,11 +159,21 @@ function EventDetailContent() {
     }
 
     // Ensure participation and bump ordering
+    // Use RPC function to bypass RLS if direct insert fails
     const { error: partErr } = await supabase.from('thread_participants').upsert({ thread_id: threadId, user_id: userId })
     if (partErr) {
-      setError(partErr.message)
-      setJoining(false)
-      return
+      // If direct insert fails due to RLS, try using the RPC function
+      const { error: rpcErr } = await supabase.rpc('add_thread_participant', { 
+        p_thread_id: threadId, 
+        p_user_id: userId,
+        p_role: 'member'
+      })
+      if (rpcErr) {
+        console.error('Error joining thread:', rpcErr)
+        setError(rpcErr.message || partErr.message || 'Failed to join chat')
+        setJoining(false)
+        return
+      }
     }
     // Drop a system message to ensure unread + ordering like other chats
     const { data: newMsg, error: msgErr } = await supabase

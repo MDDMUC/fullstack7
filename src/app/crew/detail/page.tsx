@@ -10,6 +10,7 @@ import React, { Suspense, useEffect, useRef, useState } from 'react'
 import MobileNavbar from '@/components/MobileNavbar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { FriendTile, FriendTilesContainer } from '@/components/FriendTile'
+import { ChatMessage } from '@/components/ChatMessage'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym, Profile } from '@/lib/profiles'
@@ -1099,18 +1100,13 @@ function CrewDetailContent() {
           )}
 
           <div className="chats-event-messages-container custom-scrollbar">
-            {messages.map((msg, index) => {
+            {messages.map((msg) => {
             const isOutgoing = msg.sender_id === userId
             const senderProfile = profiles[msg.sender_id]
-            const senderName = senderProfile?.username || 'User'
-            // Always show sender's avatar (not fallback) even if they left
-            const senderAvatar = senderProfile?.avatar_url || (senderProfile ? null : AVATAR_PLACEHOLDER)
             
-            // Check if sender has left the crew
-            const hasLeft = msg.sender_id !== userId && !currentParticipantIds.has(msg.sender_id)
-            
-            // Check if this is the last message from this sender
+            // Check if this is the last message from this sender (for left status)
             const isLastMessageFromSender = (() => {
+              const hasLeft = msg.sender_id !== userId && currentParticipantIds && !currentParticipantIds.has(msg.sender_id)
               if (!hasLeft) return false
               // Find the last message from this sender
               for (let i = messages.length - 1; i >= 0; i--) {
@@ -1121,41 +1117,18 @@ function CrewDetailContent() {
               return false
             })()
 
-            if (isOutgoing) {
-              return (
-                <div key={msg.id} className="chats-event-response">
-                  <div className="chats-event-bubble chats-event-bubble-outgoing">{msg.body}</div>
-                  <div className="chats-event-status-row">
-                    <div className="chats-event-status-iconwrap">
-                      <img src={statusIcon(msg.status)} alt="" className="chats-event-status-icon" />
-                    </div>
-                    <img src={STATUS_ICON_SECONDARY} alt="" className="chats-event-status-check" />
-                    <span className="chats-event-status-text">
-                      {msg.status === 'read' ? 'Read' : msg.status === 'delivered' ? 'Delivered' : 'Sent'}
-                    </span>
-                  </div>
-                </div>
-              )
-            }
-
             return (
-              <div key={msg.id} className="chats-event-message-row">
-                <div className="chats-event-avatar">
-                  {senderAvatar ? (
-                    <img src={senderAvatar} alt={senderName} />
-                  ) : (
-                    <div className="chats-event-avatar-placeholder" />
-                  )}
-                </div>
-                <div className="chats-event-message-content">
-                  <div className="chats-event-bubble chats-event-bubble-incoming">{msg.body}</div>
-                  {isLastMessageFromSender && (
-                    <div className="chats-event-user-left-status">
-                      {senderName} left the crew {formatLeaveTimestamp(msg.created_at)}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <ChatMessage
+                key={msg.id}
+                message={msg}
+                senderProfile={senderProfile}
+                isOutgoing={isOutgoing}
+                statusIcon={statusIcon}
+                currentUserId={userId}
+                currentParticipantIds={currentParticipantIds}
+                formatLeaveTimestamp={isLastMessageFromSender ? formatLeaveTimestamp : undefined}
+                avatarPlaceholder={AVATAR_PLACEHOLDER}
+              />
             )
           })}
             <div ref={messagesEndRef} />

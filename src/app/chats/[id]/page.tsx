@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import MobileNavbar from '@/components/MobileNavbar'
+import { ChatMessage } from '@/components/ChatMessage'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
-import { fetchProfiles } from '@/lib/profiles'
+import { fetchProfiles, Profile } from '@/lib/profiles'
 
 const ICON_BACK = '/icons/chevron-left.svg'
 const ICON_MENU = '/icons/dots.svg'
@@ -36,12 +37,6 @@ type MessageRow = {
   body: string
   status: 'sent' | 'delivered' | 'read'
   created_at: string
-}
-
-type Profile = {
-  id: string
-  username: string | null
-  avatar_url: string | null
 }
 
 type Gym = {
@@ -83,6 +78,7 @@ export default function ChatDetailPage() {
 
   const [thread, setThread] = useState<ThreadRow | null>(null)
   const [otherProfile, setOtherProfile] = useState<Profile | null>(null)
+  const [profiles, setProfiles] = useState<Record<string, Profile>>({})
   const [gym, setGym] = useState<Gym | null>(null)
   const [event, setEvent] = useState<EventRow | null>(null)
   const [crew, setCrew] = useState<CrewRow | null>(null)
@@ -206,11 +202,7 @@ export default function ChatDetailPage() {
           const profiles = await fetchProfiles(client, [otherId])
           if (profiles.length > 0) {
             const profile = profiles[0]
-            setOtherProfile({
-              id: profile.id,
-              username: profile.username || null,
-              avatar_url: profile.avatar_url || null,
-            })
+            setOtherProfile(profile)
           } else {
             // Fallback to just profiles table if fetchProfiles doesn't return anything
             const { data: p } = await client
@@ -265,7 +257,40 @@ export default function ChatDetailPage() {
         .select('*')
         .eq('thread_id', chatId)
         .order('created_at', { ascending: true })
+      
       setMessages(msgs ?? [])
+      
+      // Fetch profiles for all message senders (for ALL thread types, including direct chats)
+      const profilesMap: Record<string, Profile> = {}
+      
+      if (msgs && msgs.length > 0) {
+        // Get all unique sender IDs (exclude current user)
+        const senderIds = Array.from(new Set(
+          msgs
+            .map((m: MessageRow) => m.sender_id)
+            .filter((id): id is string => !!id && id !== userId)
+        ))
+        
+        if (senderIds.length > 0) {
+          try {
+            const senderProfiles = await fetchProfiles(client, senderIds)
+            senderProfiles.forEach(p => {
+              if (p.id) profilesMap[p.id] = p
+            })
+            console.log('Fetched profiles for senders:', Object.keys(profilesMap).length, 'profiles', senderIds, senderProfiles.map(p => ({ id: p.id, username: p.username })))
+          } catch (err) {
+            console.error('Error fetching sender profiles:', err)
+          }
+        }
+      }
+      
+      // For direct chats, merge in otherProfile if we have it
+      if (isDirect && otherProfile?.id) {
+        profilesMap[otherProfile.id] = otherProfile as Profile
+      }
+      
+      setProfiles(profilesMap)
+      
       setLoading(false)
       if (messagesError) {
         console.error('Error loading messages', messagesError)
@@ -273,6 +298,40 @@ export default function ChatDetailPage() {
     }
     fetchData()
   }, [chatId, router, userId])
+
+  // Fetch missing profiles when messages change
+  useEffect(() => {
+    const client = supabase
+    if (!client || !userId || messages.length === 0) return
+
+    // Get all sender IDs that we don't have profiles for
+    const missingSenderIds = Array.from(new Set(
+      messages
+        .map(m => m.sender_id)
+        .filter((id): id is string => 
+          !!id && 
+          id !== userId && 
+          !profiles[id] && 
+          !(isDirect && id === otherUserId && otherProfile)
+        )
+    ))
+
+    if (missingSenderIds.length > 0) {
+      console.log('Fetching missing profiles for senders:', missingSenderIds)
+      fetchProfiles(client, missingSenderIds).then(senderProfiles => {
+        const newProfiles: Record<string, Profile> = {}
+        senderProfiles.forEach(p => {
+          if (p.id) newProfiles[p.id] = p
+        })
+        if (Object.keys(newProfiles).length > 0) {
+          setProfiles(prev => ({ ...prev, ...newProfiles }))
+          console.log('Added profiles:', Object.keys(newProfiles))
+        }
+      }).catch(err => {
+        console.error('Error fetching missing profiles:', err)
+      })
+    }
+  }, [messages, profiles, userId, isDirect, otherUserId, otherProfile])
 
   useEffect(() => {
     const client = supabase
@@ -284,7 +343,21 @@ export default function ChatDetailPage() {
         { event: '*', schema: 'public', table: 'messages', filter: `thread_id=eq.${chatId}` },
         payload => {
           if (payload.eventType === 'INSERT') {
-            setMessages(prev => [...prev, payload.new as MessageRow])
+            const newMsg = payload.new as MessageRow
+            setMessages(prev => [...prev, newMsg])
+            // Fetch profile for new message sender if not already cached
+            if (newMsg.sender_id && newMsg.sender_id !== userId) {
+              setProfiles(prev => {
+                // Only fetch if not already in cache
+                if (prev[newMsg.sender_id]) return prev
+                fetchProfiles(client, [newMsg.sender_id]).then(profiles => {
+                  if (profiles.length > 0 && profiles[0].id) {
+                    setProfiles(prevProfiles => ({ ...prevProfiles, [profiles[0].id]: profiles[0] }))
+                  }
+                })
+                return prev
+              })
+            }
           } else if (payload.eventType === 'UPDATE') {
             setMessages(prev =>
               prev.map(m => (m.id === (payload.old as MessageRow)?.id ? (payload.new as MessageRow) : m)),
@@ -608,38 +681,35 @@ export default function ChatDetailPage() {
               <div className="chat-gym-system">You joined this chat on 11/07/2023.</div>
 
               {!loading &&
-                messages.map(msg =>
-                  msg.sender_id === otherUserId ? (
-                    <div className="chat-gym-row left" key={msg.id}>
-                      <div className="chat-gym-avatar">
-                        <img
-                          src={otherProfile?.avatar_url || AVATAR_PLACEHOLDER}
-                          alt=""
-                          width={34}
-                          height={34}
-                          className="chat-gym-avatar-img"
-                        />
-                      </div>
-                      <div className="chat-gym-bubble-in">
-                        <span>{msg.body}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="chat-gym-row right" key={msg.id}>
-                      <div className="chat-gym-bubble-out">
-                        <span>{msg.body}</span>
-                      </div>
-                      <div className="chat-gym-status">
-                        <span className="chat-gym-status-icon">
-                          <img src={statusIcon(msg.status)} alt="" width={12} height={12} />
-                        </span>
-                        <span className="chat-gym-status-text">
-                          {msg.status === 'read' ? 'Read' : msg.status === 'delivered' ? 'Delivered' : 'Sent'}
-                        </span>
-                      </div>
-                    </div>
-                  ),
-                )}
+                messages.map(msg => {
+                  const isOutgoing = msg.sender_id === userId
+                  // Look up profile: try profiles map first, then otherProfile for direct chats
+                  let senderProfile = profiles[msg.sender_id]
+                  if (!senderProfile && isDirect && msg.sender_id === otherUserId && otherProfile) {
+                    senderProfile = otherProfile as Profile
+                  }
+                  
+                  // Debug logging
+                  if (!isOutgoing && !senderProfile) {
+                    console.warn('Missing profile for sender:', msg.sender_id, {
+                      profilesKeys: Object.keys(profiles),
+                      otherUserId,
+                      otherProfile: otherProfile ? 'exists' : 'null',
+                      isDirect
+                    })
+                  }
+                  
+                  return (
+                    <ChatMessage
+                      key={msg.id}
+                      message={msg}
+                      senderProfile={senderProfile || undefined}
+                      isOutgoing={isOutgoing}
+                      statusIcon={statusIcon}
+                      avatarPlaceholder={AVATAR_PLACEHOLDER}
+                    />
+                  )
+                })}
               <div ref={messagesEndRef} />
             </div>
 
@@ -732,37 +802,21 @@ export default function ChatDetailPage() {
               </div>
 
               {!loading &&
-                messages.map(msg =>
-                  msg.sender_id === otherUserId ? (
-                    <div className="chat-detail-row left" key={msg.id}>
-                      <div className="chat-detail-avatar chat-detail-avatar-small">
-                        <img src={otherProfile?.avatar_url || AVATAR_PLACEHOLDER} alt="" width={34} height={34} className="chat-detail-avatar-img" />
-                      </div>
-                      <div className="chat-detail-bubble chat-detail-bubble-left">
-                        <span>{msg.body}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="chat-detail-row right" key={msg.id}>
-                      <div className="chat-detail-bubble chat-detail-bubble-right">
-                        <span>{msg.body}</span>
-                      </div>
-                      <div className="chat-detail-status">
-                        <span className="chat-status-indicator">
-                          <span className="chat-status-indicator-circle">
-                            <img src={STATUS_BIG} alt="" width={12} height={12} />
-                          </span>
-                          <span className="chat-status-indicator-small">
-                            <img src={STATUS_SMALL} alt="" width={8} height={8} />
-                          </span>
-                        </span>
-                        <span className="chat-detail-status-text">
-                          {msg.status === 'read' ? 'Read' : msg.status === 'delivered' ? 'Delivered' : 'Sent'}
-                        </span>
-                      </div>
-                    </div>
-                  ),
-                )}
+                messages.map(msg => {
+                  const isOutgoing = msg.sender_id === userId
+                  const senderProfile = msg.sender_id === otherUserId ? otherProfile : (profiles[msg.sender_id] || null)
+                  
+                  return (
+                    <ChatMessage
+                      key={msg.id}
+                      message={msg}
+                      senderProfile={senderProfile}
+                      isOutgoing={isOutgoing}
+                      statusIcon={(status) => status === 'read' ? ICON_READ : ICON_DELIVERED}
+                      avatarPlaceholder={AVATAR_PLACEHOLDER}
+                    />
+                  )
+                })}
               <div ref={messagesEndRef} />
             </div>
 
