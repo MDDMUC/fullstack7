@@ -18,11 +18,15 @@ export type MobileTopbarProps = {
 
 type NotificationItem = {
   id: string
-  type: 'message' | 'dab'
+  type: 'message' | 'dab' | 'crew_invite'
   text: string
   time?: string
   link?: string
   userId?: string
+  inviteId?: string
+  crewId?: string
+  crewName?: string
+  inviterName?: string
 }
 
 /**
@@ -120,7 +124,107 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
           }
         }
 
-        // 2. Fetch dabs (swipes where user was dabbed)
+        // 2a. Fetch crew invites TO user (where user is invitee)
+        const { data: crewInvitesToUser } = await client
+          .from('crew_invites')
+          .select(`
+            id,
+            crew_id,
+            inviter_id,
+            created_at,
+            crews!inner(id, title, created_by),
+            inviter:profiles!crew_invites_inviter_id_fkey(id, username)
+          `)
+          .eq('invitee_id', userId)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (crewInvitesToUser && crewInvitesToUser.length > 0) {
+          for (const invite of crewInvitesToUser) {
+            const crew = invite.crews as any
+            const inviter = invite.inviter as any
+            const inviterName = inviter?.username?.trim().split(/\s+/)[0] || 'Someone'
+            const crewName = crew?.title || 'a crew'
+            const timeAgo = formatTimeAgo(invite.created_at)
+            
+            allNotifications.push({
+              id: `crew-invite-${invite.id}`,
+              type: 'crew_invite',
+              text: `${inviterName} invited you to join "${crewName}"`,
+              time: timeAgo,
+              link: `/crew/detail?crewId=${crew.id}`,
+              inviteId: invite.id,
+              crewId: crew.id,
+              crewName: crewName,
+              inviterName: inviterName,
+            })
+          }
+        }
+
+        // 2b. Fetch crew invite requests FROM users (where user is inviter/owner who needs to approve)
+        const { data: crewInviteRequests, error: requestsError } = await client
+          .from('crew_invites')
+          .select(`
+            id,
+            crew_id,
+            invitee_id,
+            inviter_id,
+            created_at,
+            status,
+            crews!inner(id, title, created_by)
+          `)
+          .eq('inviter_id', userId)
+          .eq('status', 'pending')
+          .order('created_at', { ascending: false })
+          .limit(10)
+
+        if (requestsError) {
+          console.error('Error fetching crew invite requests:', requestsError)
+          if (requestsError.message) console.error('Error message:', requestsError.message)
+          if (requestsError.details) console.error('Error details:', requestsError.details)
+          if (requestsError.hint) console.error('Error hint:', requestsError.hint)
+        } else {
+          console.log('Crew invite requests found:', crewInviteRequests?.length || 0, crewInviteRequests)
+        }
+
+        if (crewInviteRequests && crewInviteRequests.length > 0) {
+          // Fetch profiles for invitees separately
+          const inviteeIds = crewInviteRequests.map((inv: any) => inv.invitee_id).filter(Boolean)
+          let inviteeProfilesMap: Record<string, { username: string }> = {}
+          
+          if (inviteeIds.length > 0) {
+            const profiles = await fetchProfiles(client, inviteeIds)
+            inviteeProfilesMap = profiles.reduce<Record<string, { username: string }>>((acc, p) => {
+              if (p.id) {
+                acc[p.id] = { username: p.username || 'User' }
+              }
+              return acc
+            }, {})
+          }
+
+          for (const invite of crewInviteRequests) {
+            const crew = invite.crews as any
+            const invitee = inviteeProfilesMap[invite.invitee_id] || { username: 'Someone' }
+            const requesterName = invitee.username?.trim().split(/\s+/)[0] || 'Someone'
+            const crewName = crew?.title || 'a crew'
+            const timeAgo = formatTimeAgo(invite.created_at)
+            
+            allNotifications.push({
+              id: `crew-request-${invite.id}`,
+              type: 'crew_invite',
+              text: `${requesterName} wants to join "${crewName}"`,
+              time: timeAgo,
+              link: `/crew/detail?crewId=${crew.id}`,
+              inviteId: invite.id,
+              crewId: crew.id,
+              crewName: crewName,
+              inviterName: requesterName, // This is actually the requester
+            })
+          }
+        }
+
+        // 3. Fetch dabs (swipes where user was dabbed)
         const { data: dabs } = await client
           .from('swipes')
           .select('id,swiper,created_at')
@@ -202,9 +306,183 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
   }
 
   const handleNotificationClick = (notif: NotificationItem) => {
+    if (notif.type === 'crew_invite') {
+      // Don't close notifications when clicking on crew invite - let them accept/decline
+      if (notif.link) {
+        router.push(notif.link)
+      }
+      return
+    }
     setNotificationsOpen(false)
     if (notif.link) {
       router.push(notif.link)
+    }
+  }
+
+  const handleAcceptCrewInvite = async (e: React.MouseEvent, inviteId: string) => {
+    e.stopPropagation()
+    if (!userId || !supabase) return
+    
+    try {
+      const client = supabase
+      
+      // First check if this is a request (user is inviter) or an invite (user is invitee)
+      const { data: inviteData } = await client
+        .from('crew_invites')
+        .select('inviter_id, invitee_id, crew_id')
+        .eq('id', inviteId)
+        .single()
+      
+      if (!inviteData) {
+        alert('Invite not found')
+        return
+      }
+
+      const isRequest = inviteData.inviter_id === userId // User is owner approving a request
+      const isInvite = inviteData.invitee_id === userId // User is accepting an invite
+
+      if (isRequest) {
+        // User is approving a request - need to add invitee to thread_participants
+        const { data: threadData } = await client
+          .from('threads')
+          .select('id')
+          .eq('crew_id', inviteData.crew_id)
+          .eq('type', 'crew')
+          .single()
+
+        if (threadData?.id) {
+          // Check if user is already a participant
+          const { data: existingParticipant } = await client
+            .from('thread_participants')
+            .select('user_id')
+            .eq('thread_id', threadData.id)
+            .eq('user_id', inviteData.invitee_id)
+            .maybeSingle()
+
+          // Only add if not already a participant
+          if (!existingParticipant) {
+            const { error: addError } = await client
+              .from('thread_participants')
+              .insert({
+                thread_id: threadData.id,
+                user_id: inviteData.invitee_id,
+                role: 'member'
+              })
+
+            if (addError) {
+              console.error('Error adding user to crew:', addError)
+              console.error('Error message:', addError.message)
+              console.error('Error details:', addError.details)
+              console.error('Error hint:', addError.hint)
+              console.error('Error code:', addError.code)
+              alert('Failed to approve request')
+              return
+            }
+          }
+
+          // Update invite status to accepted (whether user was already a participant or not)
+          const { error: updateError } = await client
+            .from('crew_invites')
+            .update({ status: 'accepted', accepted_at: new Date().toISOString() })
+            .eq('id', inviteId)
+
+          if (updateError) {
+            console.error('Error updating invite status:', updateError)
+            console.error('Error message:', updateError.message)
+            console.error('Error details:', updateError.details)
+            console.error('Error hint:', updateError.hint)
+            console.error('Error code:', updateError.code)
+          } else {
+            // Show success message
+            const { data: inviteeProfile } = await client
+              .from('onboardingprofiles')
+              .select('username')
+              .eq('id', inviteData.invitee_id)
+              .single()
+            
+            const inviteeName = inviteeProfile?.username?.trim().split(/\s+/)[0] || 'User'
+            if (existingParticipant) {
+              alert(`${inviteeName} is already in the crew. Invite status updated.`)
+            } else {
+              alert(`${inviteeName} has been added to the crew!`)
+            }
+          }
+        }
+      } else if (isInvite) {
+        // User is accepting an invite - call the existing function
+        const { data, error } = await client.rpc('accept_crew_invite', { invite_id: inviteId })
+        
+        if (error) {
+          console.error('Error accepting invite:', error)
+          alert('Failed to accept invitation')
+          return
+        }
+      } else {
+        alert('You do not have permission to accept this invite')
+        return
+      }
+      
+      // Remove notification and refresh
+      setNotifications(prev => prev.filter(n => 
+        n.id !== `crew-invite-${inviteId}` && n.id !== `crew-request-${inviteId}`
+      ))
+      
+      // If user was on crew detail page, refresh
+      if (window.location.pathname.includes('/crew/detail')) {
+        window.location.reload()
+      }
+    } catch (err) {
+      console.error('Error accepting invite:', err)
+      alert('Failed to accept invitation')
+    }
+  }
+
+  const handleDeclineCrewInvite = async (e: React.MouseEvent, inviteId: string) => {
+    e.stopPropagation()
+    if (!userId || !supabase) return
+    
+    try {
+      const client = supabase
+      
+      // Check if user is invitee (declining an invite) or inviter (declining a request)
+      const { data: inviteData } = await client
+        .from('crew_invites')
+        .select('inviter_id, invitee_id')
+        .eq('id', inviteId)
+        .single()
+      
+      if (!inviteData) {
+        alert('Invite not found')
+        return
+      }
+
+      const isRequest = inviteData.inviter_id === userId // User is owner declining a request
+      const isInvite = inviteData.invitee_id === userId // User is declining an invite
+
+      if (!isRequest && !isInvite) {
+        alert('You do not have permission to decline this invite')
+        return
+      }
+
+      // Update invite status to declined
+      const { error } = await client
+        .from('crew_invites')
+        .update({ status: 'declined' })
+        .eq('id', inviteId)
+      
+      if (error) {
+        console.error('Error declining invite:', error)
+        alert('Failed to decline invitation')
+        return
+      }
+      
+      // Remove notification
+      setNotifications(prev => prev.filter(n => 
+        n.id !== `crew-invite-${inviteId}` && n.id !== `crew-request-${inviteId}`
+      ))
+    } catch (err) {
+      console.error('Error declining invite:', err)
+      alert('Failed to decline invitation')
     }
   }
 
@@ -281,15 +559,37 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
                   ) : (
                     <>
                       {notifications.map(notif => (
-                        <button
+                        <div
                           key={notif.id}
-                          type="button"
-                          className="mobile-topbar-notification-item"
-                          onClick={() => handleNotificationClick(notif)}
+                          className={`mobile-topbar-notification-item ${notif.type === 'crew_invite' ? 'crew-invite-notification' : ''}`}
                         >
-                          <span>{notif.text}</span>
-                          {notif.time && <span className="mobile-topbar-notification-time">{notif.time}</span>}
-                        </button>
+                          <button
+                            type="button"
+                            className="mobile-topbar-notification-content"
+                            onClick={() => handleNotificationClick(notif)}
+                          >
+                            <span>{notif.text}</span>
+                            {notif.time && <span className="mobile-topbar-notification-time">{notif.time}</span>}
+                          </button>
+                          {notif.type === 'crew_invite' && notif.inviteId && (
+                            <div className="crew-invite-actions">
+                              <button
+                                type="button"
+                                className="crew-invite-accept"
+                                onClick={(e) => handleAcceptCrewInvite(e, notif.inviteId!)}
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                className="crew-invite-decline"
+                                onClick={(e) => handleDeclineCrewInvite(e, notif.inviteId!)}
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       ))}
                       <button
                         type="button"

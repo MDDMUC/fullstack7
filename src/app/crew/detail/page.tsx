@@ -12,7 +12,7 @@ import { RequireAuth } from '@/components/RequireAuth'
 import { FriendTile, FriendTilesContainer } from '@/components/FriendTile'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
-import { fetchProfiles } from '@/lib/profiles'
+import { fetchProfiles, fetchGymsFromTable, Gym, Profile } from '@/lib/profiles'
 
 const BACK_ICON = '/icons/chevron-left.svg'
 const MENU_ICON = '/icons/dots.svg'
@@ -44,11 +44,6 @@ type MessageRow = {
   created_at: string
 }
 
-type Profile = {
-  id: string
-  username: string | null
-  avatar_url: string | null
-}
 
 const extractCity = (location?: string | null) => {
   if (!location) return ''
@@ -76,8 +71,24 @@ function CrewDetailContent() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [leaving, setLeaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [inviteModalOpen, setInviteModalOpen] = useState(false)
+  const [searchCity, setSearchCity] = useState('')
+  const [searchGym, setSearchGym] = useState('')
+  const [searchName, setSearchName] = useState('')
+  const [searchResults, setSearchResults] = useState<Profile[]>([])
+  const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set())
+  const [searching, setSearching] = useState(false)
+  const [inviting, setInviting] = useState(false)
+  const [gyms, setGyms] = useState<Gym[]>([])
+  const [currentParticipantIds, setCurrentParticipantIds] = useState<Set<string>>(new Set())
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [isParticipant, setIsParticipant] = useState<boolean | null>(null)
+  const [ownerProfile, setOwnerProfile] = useState<Profile | null>(null)
+  const [requestingInvite, setRequestingInvite] = useState(false)
+  const [showNotMemberOverlay, setShowNotMemberOverlay] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const inviteModalRef = useRef<HTMLDivElement | null>(null)
 
   // Fetch crew, thread, messages, and ensure participation
   useEffect(() => {
@@ -115,8 +126,11 @@ function CrewDetailContent() {
 
       setCrew(crewData)
 
+      // Check if user is the crew creator
+      const isCreator = crewData.created_by === userId
+
       // Get or create thread
-      let threadData = await client
+      const { data: threadData, error: threadError } = await client
         .from('threads')
         .select('id')
         .eq('type', 'crew')
@@ -125,7 +139,11 @@ function CrewDetailContent() {
 
       if (cancelled) return
 
-      let threadId: string | null = threadData?.data?.id ?? null
+      if (threadError) {
+        console.error('Error fetching thread:', threadError)
+      }
+
+      let threadId: string | null = threadData?.id ?? null
 
       // Create thread if it doesn't exist
       if (!threadId) {
@@ -154,20 +172,75 @@ function CrewDetailContent() {
         setThread({ id: threadId })
       }
 
-      // Ensure user is a participant
-      await client
-        .from('thread_participants')
-        .upsert({ thread_id: threadId, user_id: userId, role: 'member' })
+      // Check if user is a participant
+      let userIsParticipant = false
+      let participantCheck = null
+      
+      if (threadId) {
+        const { data: participantData, error: participantError } = await client
+          .from('thread_participants')
+          .select('user_id')
+          .eq('thread_id', threadId)
+          .eq('user_id', userId)
+          .maybeSingle()
 
-      // Get join date from participant record
-      const { data: participantData } = await client
-        .from('thread_participants')
-        .select('created_at')
-        .eq('thread_id', threadId)
-        .eq('user_id', userId)
-        .maybeSingle()
-      if (participantData?.created_at) {
-        const joinDate = new Date(participantData.created_at)
+        if (participantError) {
+          console.error('Error checking participant status:', participantError)
+          console.error('Error message:', participantError.message)
+          console.error('Error details:', participantError.details)
+          console.error('Error hint:', participantError.hint)
+          console.error('Error code:', participantError.code)
+        } else {
+          participantCheck = participantData
+          userIsParticipant = !!participantCheck
+          console.log('Participant check result:', { userIsParticipant, participantCheck, threadId, userId })
+        }
+      } else {
+        console.warn('Cannot check participant status: threadId is null')
+      }
+
+      // If user is the creator but not a participant, automatically add them
+      if (isCreator && !userIsParticipant && threadId) {
+        const { error: addError } = await client
+          .from('thread_participants')
+          .upsert({ thread_id: threadId, user_id: userId, role: 'owner' })
+        
+        if (!addError) {
+          userIsParticipant = true
+          // Re-fetch participant data
+          const { data: newParticipantData } = await client
+            .from('thread_participants')
+            .select('user_id')
+            .eq('thread_id', threadId)
+            .eq('user_id', userId)
+            .maybeSingle()
+          participantCheck = newParticipantData
+        }
+      }
+
+      setIsParticipant(userIsParticipant)
+
+      // If user is not a participant and not the creator, show the overlay and fetch owner profile
+      if (!userIsParticipant && !isCreator) {
+        console.log('User is not a participant, showing overlay', { userIsParticipant, isCreator, threadId, userId })
+        setShowNotMemberOverlay(true)
+        // Fetch owner profile
+        if (crewData.created_by) {
+          const ownerProfiles = await fetchProfiles(client, [crewData.created_by])
+          if (ownerProfiles.length > 0) {
+            setOwnerProfile(ownerProfiles[0])
+          }
+        }
+        setLoading(false)
+        return
+      } else {
+        console.log('User is a participant or creator, not showing overlay', { userIsParticipant, isCreator, threadId, userId })
+        setShowNotMemberOverlay(false)
+      }
+
+      // Get join date - since created_at doesn't exist in thread_participants, use current date
+      if (participantCheck) {
+        const joinDate = new Date()
         setJoinedAt(joinDate.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: 'numeric' }))
       }
 
@@ -201,7 +274,7 @@ function CrewDetailContent() {
         }
       }
 
-      // Fetch all thread participants for friend tiles
+      // Fetch all thread participants for friend tiles and tracking who left
       if (threadId) {
         const { data: participantData } = await client
           .from('thread_participants')
@@ -210,6 +283,7 @@ function CrewDetailContent() {
         
         if (participantData && participantData.length > 0) {
           const participantIds = participantData.map(p => p.user_id).filter(Boolean)
+          setCurrentParticipantIds(new Set(participantIds))
           const participantProfiles = await fetchProfiles(client, participantIds)
           setParticipants(participantProfiles)
           
@@ -221,6 +295,8 @@ function CrewDetailContent() {
             }
           })
           setProfiles(profilesMap)
+        } else {
+          setCurrentParticipantIds(new Set())
         }
       }
 
@@ -342,6 +418,77 @@ function CrewDetailContent() {
     }
   }, [menuOpen])
 
+  const handleAskForInvite = async () => {
+    const client = supabase
+    if (!client || !crew || !userId || !ownerProfile?.id) {
+      console.error('Missing required data:', { client: !!client, crew: !!crew, userId, ownerId: ownerProfile?.id })
+      setError('Missing required information to send invite request')
+      return
+    }
+
+    setRequestingInvite(true)
+    setError('')
+    try {
+      // Create a crew_invite request where:
+      // - inviter_id = owner (they need to approve)
+      // - invitee_id = current user (requesting to join)
+      // - status = 'pending' (owner will see this and can accept/decline)
+      const { data: inviteData, error: inviteError } = await client
+        .from('crew_invites')
+        .insert({
+          crew_id: crew.id,
+          inviter_id: ownerProfile.id, // Owner is the one who needs to approve
+          invitee_id: userId, // Current user is requesting
+          status: 'pending',
+        })
+        .select()
+
+      if (inviteError) {
+        console.error('Error requesting invite:', inviteError)
+        // Log more details
+        if (inviteError.message) console.error('Error message:', inviteError.message)
+        if (inviteError.details) console.error('Error details:', inviteError.details)
+        if (inviteError.hint) console.error('Error hint:', inviteError.hint)
+        if (inviteError.code) console.error('Error code:', inviteError.code)
+        setError(inviteError.message || 'Failed to send invite request')
+      } else if (inviteData && inviteData.length > 0) {
+        console.log('Invite request created successfully:', inviteData[0])
+        // Show success toast
+        showToast(`Invite request sent to ${ownerProfile.username || 'owner'}`)
+        // Redirect to /crew after a short delay to let the toast be visible
+        setTimeout(() => {
+          router.push('/crew')
+        }, 1500) // 1.5 seconds to see the toast
+      } else {
+        console.error('No data returned from invite insert')
+        setError('Failed to send invite request - no data returned')
+      }
+    } catch (err: any) {
+      console.error('Exception requesting invite:', err)
+      if (err.message) console.error('Exception message:', err.message)
+      if (err.stack) console.error('Exception stack:', err.stack)
+      setError(err.message || 'Failed to send invite request')
+    } finally {
+      setRequestingInvite(false)
+    }
+  }
+
+  // Format timestamp for "left the crew" status
+  const formatLeaveTimestamp = (timestamp: string): string => {
+    const date = new Date(timestamp)
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return date.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: 'numeric' })
+  }
+
   const handleLeaveCrew = async () => {
     const client = supabase
     if (!client || !userId || !thread?.id) {
@@ -369,11 +516,299 @@ function CrewDetailContent() {
   }
 
   const handleInviteUsers = () => {
-    // TODO: Implement invite functionality
-    // For now, just show an alert or placeholder
     setMenuOpen(false)
-    alert('Invite functionality coming soon!')
+    setInviteModalOpen(true)
+    // Load gyms for filter
+    const loadGyms = async () => {
+      const client = supabase
+      if (!client) return
+      const gymsList = await fetchGymsFromTable(client)
+      setGyms(gymsList)
+    }
+    loadGyms()
   }
+
+  // Search users with filters
+  useEffect(() => {
+    if (!inviteModalOpen) {
+      setSearchResults([])
+      return
+    }
+
+    // Don't search if all filters are empty
+    if (!searchCity.trim() && !searchGym.trim() && !searchName.trim()) {
+      setSearchResults([])
+      setSearching(false)
+      return
+    }
+
+    const searchUsers = async () => {
+      const client = supabase
+      if (!client || !thread?.id) return
+
+      setSearching(true)
+      try {
+        // Get current participant IDs to exclude them from search
+        const { data: currentParticipants, error: participantsError } = await client
+          .from('thread_participants')
+          .select('user_id')
+          .eq('thread_id', thread.id)
+        
+        if (participantsError) {
+          console.error('Error fetching participants:', participantsError)
+        }
+        
+        const participantIds = new Set((currentParticipants || []).map(p => p.user_id))
+
+        // Build query for onboardingprofiles (has city, gym data)
+        let query = client
+          .from('onboardingprofiles')
+          .select('*')
+          .limit(100)
+
+        // Exclude current user
+        if (userId) {
+          query = query.neq('id', userId)
+        }
+
+        // Filter by city
+        if (searchCity.trim()) {
+          query = query.ilike('city', `%${searchCity.trim()}%`)
+        }
+
+        // Filter by name
+        if (searchName.trim()) {
+          query = query.ilike('username', `%${searchName.trim()}%`)
+        }
+
+        let onboardingProfiles: any[] | null = null
+        let queryError: any = null
+
+        try {
+          const result = await query
+          onboardingProfiles = result.data
+          queryError = result.error
+        } catch (err: any) {
+          console.error('Exception during query execution:', err)
+          queryError = err
+        }
+
+        if (queryError) {
+          console.error('Error searching users:', queryError)
+          // Log more details if available
+          if (queryError.message) console.error('Error message:', queryError.message)
+          if (queryError.details) console.error('Error details:', queryError.details)
+          if (queryError.hint) console.error('Error hint:', queryError.hint)
+          if (queryError.code) console.error('Error code:', queryError.code)
+          // If error is empty object, it might be a query construction issue
+          if (queryError && typeof queryError === 'object' && Object.keys(queryError).length === 0) {
+            console.error('Empty error object - possible query construction issue. Check RLS policies and query syntax.')
+          }
+          setSearchResults([])
+          setSearching(false)
+          return
+        }
+
+        // Ensure we have data
+        if (!onboardingProfiles) {
+          console.warn('No onboarding profiles returned from query')
+          setSearchResults([])
+          setSearching(false)
+          return
+        }
+
+        // Filter out current participants
+        let filteredProfiles = (onboardingProfiles || []).filter(p => !participantIds.has(p.id))
+        
+        // Filter by gym (post-query filter since gym is stored as array/JSON)
+        if (searchGym.trim() && gyms.length > 0) {
+          const searchTerm = searchGym.toLowerCase().trim()
+          filteredProfiles = filteredProfiles.filter(p => {
+            if (!p.gym) return false
+            let gymArray: string[] = []
+            try {
+              if (Array.isArray(p.gym)) {
+                gymArray = p.gym
+              } else if (typeof p.gym === 'string') {
+                if (p.gym.startsWith('[')) {
+                  gymArray = JSON.parse(p.gym)
+                } else {
+                  gymArray = [p.gym]
+                }
+              }
+            } catch (e) {
+              gymArray = []
+            }
+            return gymArray.some((g: string) => {
+              // Check if gym ID or name matches
+              const matchingGym = gyms.find(gym => 
+                gym.id === g || 
+                gym.name.toLowerCase().includes(searchTerm) ||
+                g.toLowerCase().includes(searchTerm)
+              )
+              return !!matchingGym
+            })
+          })
+        }
+
+        if (filteredProfiles.length === 0) {
+          setSearchResults([])
+          setSearching(false)
+          return
+        }
+
+        // Use fetchProfiles to normalize and merge data
+        const profileIds = filteredProfiles.map(p => p.id)
+        const profiles = await fetchProfiles(client, profileIds)
+
+        setSearchResults(profiles)
+      } catch (err) {
+        console.error('Error in user search:', err)
+        setSearchResults([])
+      } finally {
+        setSearching(false)
+      }
+    }
+
+    const debounceTimer = setTimeout(searchUsers, 300)
+    return () => clearTimeout(debounceTimer)
+  }, [inviteModalOpen, searchCity, searchGym, searchName, thread?.id, userId, gyms])
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUsers(prev => {
+      const next = new Set(prev)
+      if (next.has(userId)) {
+        next.delete(userId)
+      } else {
+        next.add(userId)
+      }
+      return next
+    })
+  }
+
+  // Show toast notification (supports queuing multiple toasts)
+  const toastQueueRef = useRef<string[]>([])
+  const isShowingToastRef = useRef(false)
+
+  const showToast = (message: string) => {
+    toastQueueRef.current.push(message)
+    processToastQueue()
+  }
+
+  const processToastQueue = () => {
+    if (isShowingToastRef.current || toastQueueRef.current.length === 0) {
+      return
+    }
+
+    isShowingToastRef.current = true
+    const message = toastQueueRef.current.shift()!
+    setToastMessage(message)
+
+    // Auto-hide after 3 seconds (matches CSS animation duration)
+    setTimeout(() => {
+      setToastMessage(null)
+      isShowingToastRef.current = false
+      // Process next toast in queue after a short delay
+      setTimeout(() => {
+        processToastQueue()
+      }, 300)
+    }, 3000)
+  }
+
+  const handleInvite = async () => {
+    const client = supabase
+    if (!client || !thread?.id || !crew || selectedUsers.size === 0) {
+      console.warn('Cannot invite: missing client, thread, crew, or selected users')
+      return
+    }
+
+    if (!userId) {
+      setError('You must be logged in to invite users')
+      return
+    }
+
+    setInviting(true)
+    setError('')
+    
+    try {
+      // Get usernames for toast messages
+      const userIdsArray = Array.from(selectedUsers)
+      const userProfilesMap: Record<string, string> = {}
+      
+      // Fetch profiles for selected users to get their names
+      if (userIdsArray.length > 0) {
+        const profiles = await fetchProfiles(client, userIdsArray)
+        profiles.forEach(p => {
+          if (p.id) {
+            userProfilesMap[p.id] = p.username || 'User'
+          }
+        })
+      }
+
+      // Create crew_invites for each selected user
+      const invites = userIdsArray.map(inviteeId => ({
+        crew_id: crew.id,
+        inviter_id: userId,
+        invitee_id: inviteeId,
+        status: 'pending',
+      }))
+
+      const { data: inviteData, error: inviteError } = await client
+        .from('crew_invites')
+        .insert(invites)
+        .select()
+
+      if (inviteError) {
+        console.error('Error creating invites:', inviteError)
+        setError(inviteError.message || 'Failed to send invitations')
+        setInviting(false)
+        return
+      }
+
+      // Show toast for each invited user
+      userIdsArray.forEach(userId => {
+        const userName = userProfilesMap[userId] || 'User'
+        showToast(`Invite has been sent to ${userName}`)
+      })
+
+      // Close modal and reset
+      setInviteModalOpen(false)
+      setSelectedUsers(new Set())
+      setSearchCity('')
+      setSearchGym('')
+      setSearchName('')
+      setSearchResults([])
+    } catch (err: any) {
+      console.error('Error inviting users:', err)
+      setError(err.message || 'Failed to invite users')
+    } finally {
+      setInviting(false)
+    }
+  }
+
+  const handleCancelInvite = () => {
+    setInviteModalOpen(false)
+    setSelectedUsers(new Set())
+    setSearchCity('')
+    setSearchGym('')
+    setSearchName('')
+    setSearchResults([])
+  }
+
+  // Close invite modal on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (inviteModalRef.current && !inviteModalRef.current.contains(event.target as Node)) {
+        handleCancelInvite()
+      }
+    }
+    if (inviteModalOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [inviteModalOpen])
 
   const handleDeleteCrew = async () => {
     const client = supabase
@@ -425,6 +860,64 @@ function CrewDetailContent() {
             <p style={{ padding: '20px', textAlign: 'center' }}>Loading crew chat…</p>
           </div>
           <MobileNavbar active="crew" />
+        </div>
+      </div>
+    )
+  }
+
+  // Show not member overlay if user is not a participant
+  // Only show if explicitly set to true AND participant check is complete (not null) AND user is not a participant
+  if (showNotMemberOverlay && isParticipant === false && crew) {
+    return (
+      <div className="chats-event-screen" data-name="/crew/detail">
+        <div className="chats-event-content">
+          <div className="chats-event-card crew-not-member-card">
+            <div className="crew-not-member-overlay">
+              <button
+                className="crew-not-member-close"
+                onClick={() => {
+                  setShowNotMemberOverlay(false)
+                  router.push('/crew')
+                }}
+                aria-label="Close"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              
+              <div className="crew-not-member-content">
+                <h2 className="crew-not-member-title">You are not part of this crew.</h2>
+                <p className="crew-not-member-subtitle">In order to join the chat, ask the owner to be invited</p>
+                
+                {ownerProfile && (
+                  <div className="crew-not-member-owner">
+                    <div className="crew-not-member-owner-avatar">
+                      {ownerProfile.avatar_url ? (
+                        <img src={ownerProfile.avatar_url} alt={ownerProfile.username || 'Owner'} />
+                      ) : (
+                        <div className="crew-not-member-owner-placeholder">
+                          <img src={AVATAR_PLACEHOLDER} alt="" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="crew-not-member-owner-info">
+                      <div className="crew-not-member-owner-name">{ownerProfile.username || 'Owner'}</div>
+                      <div className="crew-not-member-owner-label">Owner</div>
+                    </div>
+                  </div>
+                )}
+                
+                <button
+                  className="crew-not-member-ask-button"
+                  onClick={handleAskForInvite}
+                  disabled={requestingInvite || !ownerProfile}
+                >
+                  {requestingInvite ? 'Requesting...' : 'Ask for invite'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -505,35 +998,6 @@ function CrewDetailContent() {
                           margin: '4px 0',
                         }}
                       />
-                      <button
-                        type="button"
-                        className="mh-silver-dropdown-item"
-                        onClick={handleDeleteCrew}
-                        disabled={deleting}
-                        style={{
-                          display: 'block',
-                          width: '100%',
-                          padding: 'var(--space-md) var(--space-lg)',
-                          background: 'transparent',
-                          border: 'none',
-                          textAlign: 'left',
-                          color: deleting ? 'var(--color-text-muted)' : '#ff4444',
-                          fontFamily: 'var(--fontfamily-inter)',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          cursor: deleting ? 'not-allowed' : 'pointer',
-                          opacity: deleting ? 0.6 : 1,
-                        }}
-                      >
-                        {deleting ? 'Deleting...' : 'Delete Crew'}
-                      </button>
-                      <div
-                        style={{
-                          height: '1px',
-                          background: 'var(--color-stroke)',
-                          margin: '4px 0',
-                        }}
-                      />
                     </>
                   )}
                   <button
@@ -558,6 +1022,39 @@ function CrewDetailContent() {
                   >
                     {leaving ? 'Leaving...' : 'Leave crew'}
                   </button>
+                  {isCreator && (
+                    <>
+                      <div
+                        style={{
+                          height: '1px',
+                          background: 'var(--color-stroke)',
+                          margin: '4px 0',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="mh-silver-dropdown-item"
+                        onClick={handleDeleteCrew}
+                        disabled={deleting}
+                        style={{
+                          display: 'block',
+                          width: '100%',
+                          padding: 'var(--space-md) var(--space-lg)',
+                          background: 'transparent',
+                          border: 'none',
+                          textAlign: 'left',
+                          color: deleting ? 'var(--color-text-muted)' : '#ff4444',
+                          fontFamily: 'var(--fontfamily-inter)',
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          cursor: deleting ? 'not-allowed' : 'pointer',
+                          opacity: deleting ? 0.6 : 1,
+                        }}
+                      >
+                        {deleting ? 'Deleting...' : 'Delete Crew'}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -602,11 +1099,27 @@ function CrewDetailContent() {
           )}
 
           <div className="chats-event-messages-container custom-scrollbar">
-            {messages.map(msg => {
+            {messages.map((msg, index) => {
             const isOutgoing = msg.sender_id === userId
             const senderProfile = profiles[msg.sender_id]
             const senderName = senderProfile?.username || 'User'
-            const senderAvatar = senderProfile?.avatar_url || AVATAR_PLACEHOLDER
+            // Always show sender's avatar (not fallback) even if they left
+            const senderAvatar = senderProfile?.avatar_url || (senderProfile ? null : AVATAR_PLACEHOLDER)
+            
+            // Check if sender has left the crew
+            const hasLeft = msg.sender_id !== userId && !currentParticipantIds.has(msg.sender_id)
+            
+            // Check if this is the last message from this sender
+            const isLastMessageFromSender = (() => {
+              if (!hasLeft) return false
+              // Find the last message from this sender
+              for (let i = messages.length - 1; i >= 0; i--) {
+                if (messages[i].sender_id === msg.sender_id) {
+                  return messages[i].id === msg.id
+                }
+              }
+              return false
+            })()
 
             if (isOutgoing) {
               return (
@@ -628,9 +1141,20 @@ function CrewDetailContent() {
             return (
               <div key={msg.id} className="chats-event-message-row">
                 <div className="chats-event-avatar">
-                  <img src={senderAvatar} alt={senderName} />
+                  {senderAvatar ? (
+                    <img src={senderAvatar} alt={senderName} />
+                  ) : (
+                    <div className="chats-event-avatar-placeholder" />
+                  )}
                 </div>
-                <div className="chats-event-bubble chats-event-bubble-incoming">{msg.body}</div>
+                <div className="chats-event-message-content">
+                  <div className="chats-event-bubble chats-event-bubble-incoming">{msg.body}</div>
+                  {isLastMessageFromSender && (
+                    <div className="chats-event-user-left-status">
+                      {senderName} left the crew {formatLeaveTimestamp(msg.created_at)}
+                    </div>
+                  )}
+                </div>
               </div>
             )
           })}
@@ -687,6 +1211,114 @@ function CrewDetailContent() {
 
         <MobileNavbar active="crew" />
       </div>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="mh-toast">
+          <p>{toastMessage}</p>
+        </div>
+      )}
+
+      {/* Invite Users Modal */}
+      {inviteModalOpen && (
+        <div className="invite-users-modal-overlay">
+          <div className="invite-users-modal" ref={inviteModalRef}>
+            <div className="invite-users-modal-header">
+              <h2 className="invite-users-modal-title">Invite Users</h2>
+            </div>
+
+            <div className="invite-users-modal-search">
+              <div className="invite-users-search-row">
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={searchName}
+                  onChange={(e) => setSearchName(e.target.value)}
+                  className="invite-users-search-input"
+                />
+              </div>
+              <div className="invite-users-search-row">
+                <input
+                  type="text"
+                  placeholder="Search by city..."
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className="invite-users-search-input"
+                />
+              </div>
+              <div className="invite-users-search-row">
+                <input
+                  type="text"
+                  placeholder="Search by gym..."
+                  value={searchGym}
+                  onChange={(e) => setSearchGym(e.target.value)}
+                  className="invite-users-search-input"
+                />
+              </div>
+            </div>
+
+            <div className="invite-users-modal-results custom-scrollbar">
+              {!searchCity.trim() && !searchGym.trim() && !searchName.trim() ? (
+                <div className="invite-users-empty">Enter search criteria to find users to invite.</div>
+              ) : searching ? (
+                <div className="invite-users-loading">Searching users...</div>
+              ) : searchResults.length === 0 ? (
+                <div className="invite-users-empty">No users found. Try adjusting your search filters.</div>
+              ) : (
+                searchResults.map((user) => {
+                  const isSelected = selectedUsers.has(user.id)
+                  const avatar = user.avatar_url || (user as any)?.photo || AVATAR_PLACEHOLDER
+                  const firstName = user.username?.split(' ')[0] || user.username || 'User'
+                  
+                  return (
+                    <div
+                      key={user.id}
+                      className={`invite-users-result-item ${isSelected ? 'invite-users-result-item-selected' : ''}`}
+                      onClick={() => toggleUserSelection(user.id)}
+                    >
+                      <div className="invite-users-result-avatar">
+                        <img src={avatar} alt={firstName} onError={(e) => {
+                          e.currentTarget.src = AVATAR_PLACEHOLDER
+                        }} />
+                      </div>
+                      <div className="invite-users-result-info">
+                        <div className="invite-users-result-name">{firstName}</div>
+                        {user.city && (
+                          <div className="invite-users-result-city">{user.city}</div>
+                        )}
+                      </div>
+                      <div className="invite-users-result-checkbox">
+                        {isSelected && (
+                          <div className="invite-users-checkmark">✓</div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })
+              )}
+            </div>
+
+            <div className="invite-users-modal-actions">
+              <button
+                type="button"
+                className="invite-users-btn-cancel"
+                onClick={handleCancelInvite}
+                disabled={inviting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="invite-users-btn-invite"
+                onClick={handleInvite}
+                disabled={inviting || selectedUsers.size === 0}
+              >
+                {inviting ? 'Inviting...' : `Invite ${selectedUsers.size > 0 ? `(${selectedUsers.size})` : ''}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

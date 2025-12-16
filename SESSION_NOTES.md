@@ -1,5 +1,33 @@
 ## Work Log (last ~8 hours)
 
+### Crew invite system & participant access fixes (latest)
+- **Crew invite acceptance functionality**:
+  - Implemented full invite request/acceptance flow: users can request to join crews, owners can accept requests
+  - Created `accept_crew_invite` RPC function in Supabase to handle invite acceptance and participant addition
+  - Updated RLS policies to allow owners to update invite status when accepting requests
+  - Updated RLS policies to allow crew owners to add participants to their crew threads via `thread_participants` INSERT
+  - When owner accepts an invite request, the requester is automatically added to `thread_participants` table
+  - Added success notifications when invites are accepted
+  - Invite status is updated to 'accepted' with timestamp when processed
+- **Non-member overlay improvements**:
+  - Changed overlay from full-screen (`position: fixed`) to content-window-only (`position: absolute`)
+  - Overlay now only covers the center content card, not the entire screen
+  - Removed MobileNavbar from overlay view (overlay shows without navbar)
+  - Overlay doesn't affect mobile navbar layout or positioning
+  - Added proper CSS positioning: overlay uses `position: absolute` within `.chats-event-card` container
+  - Border radius matches card border-radius (24px)
+- **Participant detection fixes**:
+  - Fixed participant check query: removed non-existent `created_at` column from `thread_participants` SELECT queries
+  - Added comprehensive error handling and logging for participant status checks
+  - Fixed overlay condition: changed from `!isParticipant` to `isParticipant === false` to prevent showing overlay when state is `null`
+  - Added detailed console logging to debug participant detection issues
+  - Fixed thread data access: changed from `threadData?.data?.id` to `threadData?.id` (correct Supabase query response structure)
+  - Participant check now properly detects when users are added to crew after invite acceptance
+- **SQL scripts created**:
+  - `supabase/create_accept_crew_invite_function.sql`: Creates RPC function for accepting invites
+  - `supabase/update_crew_invites_update_policy.sql`: Updates RLS policy to allow owners to update invite status
+  - `supabase/fix_crew_owner_add_participants.sql`: Updates RLS policy to allow crew owners to add participants
+
 ### Crew detail page improvements & FriendTile component (latest)
 - **Friend tiles on `/crew/detail` page**:
   - Added friend tiles under the main hero section displaying all participants in the crew group
