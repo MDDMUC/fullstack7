@@ -12781,6 +12781,29 @@ div.mh-silver-card[data-name="card2"] {
   position: relative;
   border-radius: var(--radius-md); /* 10px */
   flex-shrink: 0;
+  cursor: pointer;
+  width: 100%;
+}
+
+.gym-card-day-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: auto;
+  min-width: 100%;
+  width: max-content;
+  z-index: 1000;
+}
+
+.gym-card-day-dropdown.mh-silver-dropdown-menu {
+  min-width: 120px;
+  width: max-content;
+  white-space: nowrap;
+}
+
+.mh-silver-dropdown-item.active {
+  background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+  color: var(--color-primary);
 }
 
 .gym-card-field-text {
@@ -12882,6 +12905,8 @@ div.mh-silver-card[data-name="card2"] {
   position: relative;
   flex-shrink: 0;
   width: 100%;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .gym-card-barchart-main {
@@ -12895,6 +12920,9 @@ div.mh-silver-card[data-name="card2"] {
   min-width: 0;
   position: relative;
   flex-shrink: 0;
+  width: 100%;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .gym-card-peakindicator {
@@ -12918,6 +12946,10 @@ div.mh-silver-card[data-name="card2"] {
   align-items: flex-end;
   position: relative;
   flex-shrink: 0;
+  width: 100%;
+  justify-content: flex-start;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 .gym-card-bar {
@@ -12967,7 +12999,7 @@ div.mh-silver-card[data-name="card2"] {
   left: 90px;
   opacity: 0.75;
   border-radius: var(--radius-xs); /* 4px */
-  top: 41px;
+  bottom: 0;
   width: 10px;
 }
 
@@ -13000,6 +13032,11 @@ div.mh-silver-card[data-name="card2"] {
   flex-shrink: 0;
   width: 60px;
   height: 60px;
+  background: transparent;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .gym-card-friend-bg {
@@ -13007,6 +13044,12 @@ div.mh-silver-card[data-name="card2"] {
   inset: 0;
   pointer-events: none;
   border-radius: var(--radius-md); /* 10px */
+  z-index: 0;
+  background: transparent;
+  overflow: hidden;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .gym-card-friend-img-wrapper {
@@ -13014,11 +13057,22 @@ div.mh-silver-card[data-name="card2"] {
   inset: 0;
   overflow: hidden;
   border-radius: var(--radius-md); /* 10px */
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
 }
 
 .gym-card-friend-img {
   position: absolute;
   max-width: none;
+  display: block;
+  border: none;
+  outline: none;
+  background: transparent;
+  z-index: 0;
 }
 
 /* Exact positioning from Figma for each friend */
@@ -13038,9 +13092,16 @@ div.mh-silver-card[data-name="card2"] {
 
 .gym-card-friend-img-3 {
   height: 163.33%;
-  left: 0.38%;
+  left: -7.76%;
   top: -25.69%;
   width: 115.52%;
+  z-index: 0;
+  position: absolute;
+  opacity: 1;
+  visibility: visible;
+  display: block;
+  background: transparent;
+  border: none;
 }
 
 .gym-card-friend-img-4 {
@@ -13048,6 +13109,15 @@ div.mh-silver-card[data-name="card2"] {
   left: -7.76%;
   top: -18.72%;
   width: 115.52%;
+  z-index: 0;
+  position: absolute;
+  opacity: 1;
+  visibility: visible;
+  display: block;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .gym-card-friend-img-5 {
@@ -13069,6 +13139,48 @@ div.mh-silver-card[data-name="card2"] {
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.75) 100%);
   inset: 0;
   border-radius: var(--radius-md); /* 10px */
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: normal;
+  opacity: 1;
+}
+
+/* Ensure overlay doesn't show blue - only dark gradient for text readability */
+/* Ensure all friend image wrappers and bg don't have any blue backgrounds */
+.gym-card-friend .gym-card-friend-bg,
+.gym-card-friend .gym-card-friend-img-wrapper {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* Ensure all friend images are visible and properly positioned */
+.gym-card-friend-img-1,
+.gym-card-friend-img-2,
+.gym-card-friend-img-3,
+.gym-card-friend-img-4,
+.gym-card-friend-img-5,
+.gym-card-friend-img-6 {
+  z-index: 0 !important;
+  position: absolute !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Prevent browser default broken image styling (blue border/background) */
+.gym-card-friend-img:not([src]),
+.gym-card-friend-img[src=""],
+img.gym-card-friend-img {
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .gym-card-friend-name {
@@ -13077,7 +13189,8 @@ div.mh-silver-card[data-name="card2"] {
   flex-direction: column;
   font-family: var(--fontfamily-inter);
   font-weight: 800; /* Extra Bold - heading/xxs */
-  justify-content: center;
+  justify-content: flex-end;
+  align-items: center;
   line-height: 0;
   min-height: 0;
   min-width: 0;
@@ -13087,6 +13200,8 @@ div.mh-silver-card[data-name="card2"] {
   font-size: 12px; /* heading/xxs */
   color: var(--color-text-default); /* #e9eef7 */
   text-align: center;
+  padding-bottom: var(--space-xxs); /* 4px - exact token distance from bottom */
+  z-index: 2;
   margin: 0;
   padding: 0;
   z-index: 1;

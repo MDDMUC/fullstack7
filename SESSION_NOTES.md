@@ -296,3 +296,22 @@
     - Filter comparison uses exact matching after normalization and lowercasing both sides
     - Removed partial matching logic that was causing incorrect cross-city matches
   - **Result**: City filter now works correctly - selecting "Bad Tölz" shows only chats from Bad Tölz, selecting "Munich" shows only Munich chats (including Munich gym threads)
+
+### Gym detail card friend tiles fix (latest)
+- **Removed Yara's friend tile**:
+  - Yara's friend tile (the third friend tile, `data-node-id="769:3184"`) was removed from the gym detail card due to persistent display issues
+  - The gym card now displays 5 friend tiles instead of 6 (Anna, Marco, Finn, Lena, Max)
+- **Fixed friend tile display issues**:
+  - **Issue**: After removing Yara's tile, Finn's tile (now in the third position) inherited the same blue overlay/display issues
+  - **Root cause**: Friend image CSS was missing explicit properties to prevent browser default blue borders/backgrounds and ensure proper image visibility
+  - **Solution**:
+    - Added explicit CSS properties to `.gym-card-friend-img-4` (Finn's image): `z-index: 0`, `position: absolute`, `opacity: 1`, `visibility: visible`, `display: block`, `background: transparent`, `border: none`, `outline: none`, `box-shadow: none`
+    - Removed Yara-specific CSS rules (`data-node-id="769:3184"`) and replaced with global rules for all friend tiles
+    - Applied global CSS fixes to all friend images (`.gym-card-friend-img-1` through `.gym-card-friend-img-6`) to prevent blue overlays, borders, and display issues
+    - Added `onError` handler to Finn's image to hide it if it fails to load (prevents broken image blue placeholder)
+    - Ensured all friend image wrappers and backgrounds have `background: transparent`, `border: none`, `outline: none`, `box-shadow: none`
+  - **CSS changes**:
+    - Global rules applied to `.gym-card-friend .gym-card-friend-bg` and `.gym-card-friend .gym-card-friend-img-wrapper` to prevent blue backgrounds
+    - Global rules for all friend image classes to ensure visibility and prevent browser default styling
+    - Prevented browser default broken image styling (blue border/background) for all friend images
+  - **Result**: All friend tiles now display correctly without blue overlays or display issues, using consistent global CSS rules

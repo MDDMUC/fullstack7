@@ -6,6 +6,7 @@ import { RequireAuth } from '@/components/RequireAuth'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import { supabase } from '@/lib/supabaseClient'
+import { getBarHeightsForDay, getLiveIndicatorPosition, getDayName, getChartTimes } from '@/lib/gymOccupancyData'
 
 // Asset URLs from Figma
 const IMG_ICON = 'https://www.figma.com/api/mcp/asset/819ae93e-17ef-4b2b-9423-20ebaf8b10f1'
@@ -317,8 +318,61 @@ function GymSelectTile({
 
 // GymDetailCard component - exact Figma implementation
 function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => void }) {
-  // Bar chart heights - exact from Figma
-  const barHeights = [18, 18, 21, 32, 44, 50, 50, 44, 32, 24, 44, 58, 50, 44, 32, 28]
+  const [selectedDay, setSelectedDay] = React.useState<number | null>(null) // null = today
+  const [dayDropdownOpen, setDayDropdownOpen] = React.useState(false)
+  const dayDropdownRef = React.useRef<HTMLDivElement | null>(null)
+  
+  // Get real occupancy data for Einstein Boulderhalle, or use default heights
+  const realBarHeights = getBarHeightsForDay(gym.name, selectedDay)
+  const barHeights = realBarHeights || [
+    18, 18, 21, 32, 44, 50, 50, 44, 32, 24, 44, 58, 50, 44, 32, 28,
+    26, 30, 36, 40
+  ]
+  
+  // Calculate live indicator position based on current time
+  // Only show for Einstein Boulderhalle or if we have occupancy data, and only if showing today (current weekday)
+  const isToday = selectedDay === null
+  const liveIndicatorPosition = (realBarHeights && isToday) ? getLiveIndicatorPosition(gym.name) : null
+  
+  // Get display text for selected day
+  const displayDay = selectedDay === null ? 'Today' : getDayName(selectedDay)
+  
+  // Get chart times for selected day (for legend)
+  const chartDay = selectedDay === null ? new Date().getDay() : selectedDay
+  const { startHour, endHour } = getChartTimes(chartDay)
+  
+  // Format time for legend (convert 24h to 12h with am/pm)
+  const formatTime = (hour: number): string => {
+    if (hour === 0) return '12am'
+    if (hour < 12) return `${hour}am`
+    if (hour === 12) return '12pm'
+    return `${hour - 12}pm`
+  }
+  
+  // Handle click outside to close dropdown
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!dayDropdownRef.current) return
+      if (!dayDropdownRef.current.contains(e.target as Node)) {
+        setDayDropdownOpen(false)
+      }
+    }
+    if (dayDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [dayDropdownOpen])
+  
+  // Weekday options (Sunday = 0 to Saturday = 6)
+  const weekdays = [
+    { value: 0, label: 'Sunday' },
+    { value: 1, label: 'Monday' },
+    { value: 2, label: 'Tuesday' },
+    { value: 3, label: 'Wednesday' },
+    { value: 4, label: 'Thursday' },
+    { value: 5, label: 'Friday' },
+    { value: 6, label: 'Saturday' },
+  ]
 
   return (
     <div className="gym-detail-card" data-name="gym-detail-card" data-node-id="769:3192">
@@ -369,25 +423,61 @@ function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => voi
           <div className="gym-card-popular-times" data-node-id="769:2964">
             <p>Popular times</p>
           </div>
-          <div className="gym-card-button-field" data-name="button-field" data-node-id="769:3153">
-            <div className="gym-card-field-button" data-name="button.field" data-node-id="769:3154">
+          <div className="gym-card-button-field" data-name="button-field" data-node-id="769:3153" ref={dayDropdownRef}>
+            <button
+              type="button"
+              className="gym-card-field-button"
+              data-name="button.field"
+              data-node-id="769:3154"
+              onClick={() => setDayDropdownOpen(!dayDropdownOpen)}
+              aria-expanded={dayDropdownOpen}
+            >
               <div className="gym-card-field-text" data-node-id="769:3155">
-                <p>Today</p>
+                <p>{displayDay}</p>
               </div>
               <div className="gym-card-chevron" data-name="chevron-down" data-node-id="769:3156">
                 <div className="gym-card-chevron-inner" data-name="Icon" data-node-id="I769:3156;633:6299">
                   <img src={IMG_CHEVRON} alt="" className="gym-card-chevron-img" />
                 </div>
               </div>
-            </div>
+            </button>
+            {dayDropdownOpen && (
+              <div className="gym-card-day-dropdown mh-silver-dropdown-menu">
+                <button
+                  type="button"
+                  className={`mh-silver-dropdown-item ${selectedDay === null ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedDay(null)
+                    setDayDropdownOpen(false)
+                  }}
+                >
+                  <p>Today</p>
+                </button>
+                {weekdays.map(day => (
+                  <button
+                    key={day.value}
+                    type="button"
+                    className={`mh-silver-dropdown-item ${selectedDay === day.value ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelectedDay(day.value)
+                      setDayDropdownOpen(false)
+                    }}
+                  >
+                    <p>{day.label}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="gym-card-live-chip" data-name="button.chip" data-node-id="769:3158">
-            <div className="gym-card-live-chip-cont" data-name="cont" data-node-id="I769:3158;769:2966">
-              <div className="gym-card-live-chip-text" data-node-id="I769:3158;769:3065">
-                <p>LIVE</p>
+          {isToday && (
+            <div className="gym-card-live-chip" data-name="button.chip" data-node-id="769:3158">
+              <div className="gym-card-live-chip-cont" data-name="cont" data-node-id="I769:3158;769:2966">
+                <div className="gym-card-live-chip-text" data-node-id="I769:3158;769:3065">
+                  <p>LIVE</p>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
         <div className="gym-card-barchart-wrapper" data-name="barchart" data-node-id="769:3085">
           <div className="gym-card-barchart-main" data-name="main" data-node-id="769:2961">
@@ -404,23 +494,30 @@ function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => voi
                 />
               ))}
             </div>
+            {liveIndicatorPosition !== null && liveIndicatorPosition >= 0 && (
+              <div 
+                className="gym-card-liveindicator" 
+                data-name="liveindicator" 
+                data-node-id="769:3163"
+                style={{ left: `${liveIndicatorPosition}px` }}
+              />
+            )}
           </div>
         </div>
         <div className="gym-card-legend" data-name="legendtime" data-node-id="769:3096">
           <div className="gym-card-legend-item" data-node-id="769:3091">
-            <p>6am</p>
+            <p>{formatTime(startHour)}</p>
           </div>
           <div className="gym-card-legend-item" data-node-id="769:3093">
-            <p>1pm</p>
+            <p>{formatTime(Math.round(startHour + (endHour - startHour) * 0.33))}</p>
           </div>
           <div className="gym-card-legend-item" data-node-id="769:3094">
-            <p>6pm</p>
+            <p>{formatTime(Math.round(startHour + (endHour - startHour) * 0.67))}</p>
           </div>
           <div className="gym-card-legend-item" data-node-id="769:3095">
-            <p>12pm</p>
+            <p>{formatTime(endHour)}</p>
           </div>
         </div>
-        <div className="gym-card-liveindicator" data-name="liveindicator" data-node-id="769:3163" />
       </div>
 
       {/* Friends Climbing */}
@@ -447,21 +544,18 @@ function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => voi
             <p>Marco</p>
           </div>
         </div>
-        <div className="gym-card-friend" data-name="friend1" data-node-id="769:3184">
-          <div className="gym-card-friend-bg" aria-hidden="true">
-            <div className="gym-card-friend-img-wrapper">
-              <img src={IMG_FRIEND3} alt="" className="gym-card-friend-img gym-card-friend-img-3" />
-            </div>
-            <div className="gym-card-friend-overlay" />
-          </div>
-          <div className="gym-card-friend-name" data-node-id="769:3185">
-            <p>Yara</p>
-          </div>
-        </div>
         <div className="gym-card-friend" data-name="friend1" data-node-id="769:3186">
           <div className="gym-card-friend-bg" aria-hidden="true">
             <div className="gym-card-friend-img-wrapper">
-              <img src={IMG_FRIEND4} alt="" className="gym-card-friend-img gym-card-friend-img-4" />
+              <img 
+                src={IMG_FRIEND4} 
+                alt="" 
+                className="gym-card-friend-img gym-card-friend-img-4"
+                onError={(e) => {
+                  // Hide broken image to prevent blue placeholder
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
             </div>
             <div className="gym-card-friend-overlay" />
           </div>
