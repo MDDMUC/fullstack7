@@ -284,3 +284,15 @@
   - All gym detail card components have exact spacing, colors, typography from Figma
   - Bar chart bars use gradient backgrounds with exact heights
   - Friend avatars have individual positioning values from Figma for proper image cropping
+
+### City filter bug fix on /chats page (latest)
+- **Fixed city filter logic**:
+  - **Issue**: When selecting a city like "Bad Tölz", Munich gym threads were incorrectly showing up in the filtered results
+  - **Root cause**: City values from `gym.area` could contain full location strings like "Munich, Germany", and the filter logic wasn't properly normalizing and matching cities
+  - **Solution**:
+    - Added city normalization function that extracts the first part before comma (e.g., "Munich, Germany" → "Munich")
+    - Cities are normalized when stored in `ChatListItem` (for both direct chats from profile city/homebase and gym threads from `gym.area`)
+    - Filter options are normalized when extracting cities from items to avoid duplicates in dropdown
+    - Filter comparison uses exact matching after normalization and lowercasing both sides
+    - Removed partial matching logic that was causing incorrect cross-city matches
+  - **Result**: City filter now works correctly - selecting "Bad Tölz" shows only chats from Bad Tölz, selecting "Munich" shows only Munich chats (including Munich gym threads)

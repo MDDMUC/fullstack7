@@ -292,9 +292,16 @@ export default function ChatsScreen() {
           fallbackMsg.receiver_id === userId &&
           (fallbackMsg.status ?? '').toLowerCase() !== 'read')
       // Get city from profile (for direct chats) or from gym/event
+      // Normalize city: extract first part before comma (e.g., "Munich, Germany" -> "Munich")
+      // Store as-is (not lowercased) so filter dropdown shows proper case
+      const getNormalizedCity = (cityStr: string | null | undefined): string | null => {
+        if (!cityStr) return null
+        const normalized = cityStr.trim().split(',')[0].trim()
+        return normalized || null
+      }
       const city = isDirect
-        ? (profile?.city || profile?.homebase || null)
-        : (gym?.area || ev?.location || null)
+        ? getNormalizedCity(profile?.city || profile?.homebase || null)
+        : getNormalizedCity(gym?.area || ev?.location || null)
 
       return {
         threadId: t.id,
@@ -342,9 +349,14 @@ export default function ChatsScreen() {
     const cities = new Set<string>(['All'])
     const gymNames = new Set<string>(['All'])
 
-    // Extract cities from items
+    // Extract cities from items - normalize them to avoid duplicates
+    // (e.g., "Munich" and "Munich, Germany" should both appear as "Munich")
     allItems.forEach(item => {
-      if (item.city) cities.add(item.city)
+      if (item.city) {
+        // Normalize city name: extract first part before comma
+        const normalized = item.city.trim().split(',')[0].trim()
+        if (normalized) cities.add(normalized)
+      }
     })
 
     // Extract gym names from gyms table
@@ -369,14 +381,23 @@ export default function ChatsScreen() {
     return map
   }, [gyms])
 
+  // Normalize city name: extract first part before comma (e.g., "Munich, Germany" -> "Munich")
+  const normalizeCity = (cityStr: string | null | undefined): string => {
+    if (!cityStr) return ''
+    return cityStr.trim().split(',')[0].trim().toLowerCase()
+  }
+
   // Filter items based on selected filters
   const filteredItems = React.useMemo(() => {
     return allItems.filter(item => {
-      // Filter by city - case-insensitive
+      // Filter by city - exact match after normalization (case-insensitive)
+      // Normalize both values to handle cases like "Munich, Germany" matching "Munich"
       if (filters.city !== 'All') {
-        const itemCity = (item.city || '').trim().toLowerCase()
-        const filterCity = filters.city.trim().toLowerCase()
-        if (itemCity !== filterCity) return false
+        const itemCityNormalized = normalizeCity(item.city)
+        const filterCityNormalized = normalizeCity(filters.city)
+        
+        // Exact match only (after normalization)
+        if (itemCityNormalized !== filterCityNormalized) return false
       }
 
       // Filter by gym - for gym threads, check if gym name matches
