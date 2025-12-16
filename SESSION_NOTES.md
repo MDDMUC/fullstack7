@@ -1,5 +1,42 @@
 ## Work Log (last ~8 hours)
 
+### Crew detail page improvements & FriendTile component (latest)
+- **Friend tiles on `/crew/detail` page**:
+  - Added friend tiles under the main hero section displaying all participants in the crew group
+  - Fetches all thread participants from `thread_participants` table for the crew thread
+  - Uses `fetchProfiles` utility to get participant profile data
+  - Displays participant avatars with first names below each tile
+- **Created global FriendTile component**:
+  - New reusable component `src/components/FriendTile.tsx` with `FriendTile` and `FriendTilesContainer` components
+  - Reusable across all pages with consistent styling using design tokens
+  - Supports optional `isHost` prop to show "owner" indicator badge
+  - Cycles through 6 image positioning variants for visual variety
+  - All styling uses design tokens: `var(--color-surface-card)`, `var(--space-sm)`, `var(--radius-md)`, etc.
+  - CSS classes: `.friend-tiles-container`, `.friend-tile`, `.friend-tile-bg`, `.friend-tile-img-wrapper`, `.friend-tile-img`, `.friend-tile-overlay`, `.friend-tile-name`, `.friend-tile-host-indicator`
+- **Owner indicator for crew creator**:
+  - Added "owner" indicator badge to FriendTile component (top-left corner)
+  - Only displays on crew creator's tile on `/crew/detail` page
+  - Badge shows lowercase "owner" text with background color `var(--color-surface-card)`
+  - Styled with `var(--font-size-xs)` (10px), bold font weight, tokenized spacing
+  - Logic: `isHost={participant.id === crew?.created_by}` passed to FriendTile
+- **Sticky input at bottom**:
+  - Made "Type a message" input sticky at the bottom of the card window
+  - Wrapped messages in `chats-event-messages-container` with custom scrollbar for proper scrolling
+  - Input stays within the main content card and floats to bottom while scrolling
+  - Uses `position: sticky` within the card container
+  - Input wrapper has transparent background (hugs content, no fill color)
+- **Styling improvements**:
+  - Changed card background from hardcoded `#ffffff` to `var(--color-card)` design token
+  - Changed backbar background to `var(--color-text-muted)` (muted color)
+  - Updated backbar icon size from `11.977px x 20.789px` to `16px x 16px` to match events page
+  - Changed backbar text color from hardcoded `#11141c` to `var(--color-panel)` design token
+  - Changed divider color from hardcoded `#8ea0bd` (muted) to `var(--color-text-darker)` design token
+  - Removed unnecessary divider after hero section
+  - Friend tiles align left horizontally (changed from centered to `justify-content: flex-start`)
+  - Removed background fill from sticky input wrapper (transparent background)
+
+## Work Log (last ~8 hours)
+
 ### Supabase data model and seeding
 - Added gyms with slugs/locations/avatars for Munich: Boulderwelt West/Ost, DAV Freimann, DAV Thalkirchen, Einstein Boulderhalle, Heavens Gate. Ensured `avatar_url` is the sole image field.
 - Normalized `threads.gym_id` to `uuid`, added FK to `gyms(id)`, enforced unique `(gym_id, title)`.

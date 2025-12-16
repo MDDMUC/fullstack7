@@ -6,7 +6,7 @@ import { RequireAuth } from '@/components/RequireAuth'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import { supabase } from '@/lib/supabaseClient'
-import { getBarHeightsForDay, getLiveIndicatorPosition, getDayName, getChartTimes } from '@/lib/gymOccupancyData'
+import { getBarHeightsForDay, getLiveIndicatorPosition, getDayName, getChartTimes, getCurrentOccupancy } from '@/lib/gymOccupancyData'
 
 // Asset URLs from Figma
 const IMG_ICON = 'https://www.figma.com/api/mcp/asset/819ae93e-17ef-4b2b-9423-20ebaf8b10f1'
@@ -339,7 +339,28 @@ function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => voi
   
   // Get chart times for selected day (for legend)
   const chartDay = selectedDay === null ? new Date().getDay() : selectedDay
-  const { startHour, endHour } = getChartTimes(chartDay)
+  const { startHour, endHour } = getChartTimes(chartDay, gym.name)
+  
+  // Get current occupancy to determine pill state
+  const currentOccupancy = getCurrentOccupancy(gym.name)
+  let pillState: 'chill' | 'busy' | 'peaking' = 'peaking' // default
+  let pillText = 'Peaking'
+  
+  if (currentOccupancy !== null) {
+    if (currentOccupancy < 50) {
+      // 0-49%: Chill
+      pillState = 'chill'
+      pillText = 'Chill'
+    } else if (currentOccupancy >= 50 && currentOccupancy <= 75) {
+      // 50-75%: Busy
+      pillState = 'busy'
+      pillText = 'Busy'
+    } else {
+      // Above 75%: Peaking
+      pillState = 'peaking'
+      pillText = 'Peaking'
+    }
+  }
   
   // Format time for legend (convert 24h to 12h with am/pm)
   const formatTime = (hour: number): string => {
@@ -379,8 +400,15 @@ function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => voi
       {/* Top Row: Peaking pill and Online indicator */}
       <div className="gym-card-toprow" data-name="toprow" data-node-id="769:2938">
         <div className="gym-card-button-pill" data-name="button-pill" data-node-id="769:2919">
-          <div className="gym-card-peaking-pill" data-name="button.cta.default" data-node-id="I769:2919;769:2933">
-            <p className="gym-card-peaking-text" data-node-id="I769:2919;769:2934">Peaking</p>
+          <div 
+            className={`gym-card-occupancy-pill gym-card-occupancy-pill-${pillState}`}
+            data-name="button.cta.default" 
+            data-node-id="I769:2919;769:2933"
+          >
+            {pillState === 'busy' && (
+              <div className="gym-card-occupancy-pill-busy-border" aria-hidden="true" />
+            )}
+            <p className="gym-card-occupancy-text" data-node-id="I769:2919;769:2934">{pillText}</p>
           </div>
         </div>
         <div className="gym-card-live-indicator" data-name="live-indicator" data-node-id="769:2940">

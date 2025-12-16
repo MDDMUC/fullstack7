@@ -9,8 +9,10 @@ import React, { Suspense, useEffect, useRef, useState } from 'react'
 
 import MobileNavbar from '@/components/MobileNavbar'
 import { RequireAuth } from '@/components/RequireAuth'
+import { FriendTile, FriendTilesContainer } from '@/components/FriendTile'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
+import { fetchProfiles } from '@/lib/profiles'
 
 const BACK_ICON = '/icons/chevron-left.svg'
 const MENU_ICON = '/icons/dots.svg'
@@ -66,6 +68,7 @@ function CrewDetailContent() {
   const [thread, setThread] = useState<ThreadRow | null>(null)
   const [messages, setMessages] = useState<MessageRow[]>([])
   const [profiles, setProfiles] = useState<Record<string, Profile>>({})
+  const [participants, setParticipants] = useState<Profile[]>([])
   const [draft, setDraft] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -193,6 +196,29 @@ function CrewDetailContent() {
           const profilesMap: Record<string, Profile> = {}
           profilesData.forEach(p => {
             profilesMap[p.id] = p
+          })
+          setProfiles(profilesMap)
+        }
+      }
+
+      // Fetch all thread participants for friend tiles
+      if (threadId) {
+        const { data: participantData } = await client
+          .from('thread_participants')
+          .select('user_id')
+          .eq('thread_id', threadId)
+        
+        if (participantData && participantData.length > 0) {
+          const participantIds = participantData.map(p => p.user_id).filter(Boolean)
+          const participantProfiles = await fetchProfiles(client, participantIds)
+          setParticipants(participantProfiles)
+          
+          // Also add to profiles map for messages
+          const profilesMap = { ...profiles }
+          participantProfiles.forEach(p => {
+            if (p.id) {
+              profilesMap[p.id] = { id: p.id, username: p.username, avatar_url: p.avatar_url }
+            }
           })
           setProfiles(profilesMap)
         }
@@ -420,7 +446,7 @@ function CrewDetailContent() {
   return (
     <div className="chats-event-screen" data-name="/crew/detail">
       <div className="chats-event-content">
-        <div className="chats-event-card">
+        <div className="chats-event-card chats-event-card-with-sticky-input">
           <div className="chats-event-backbar">
             <Link href="/crew" className="chats-event-back" aria-label="Back">
               <img src={BACK_ICON} alt="" className="chats-event-back-icon" />
@@ -553,13 +579,30 @@ function CrewDetailContent() {
             </div>
           </div>
 
+          {/* Friend tiles for all participants */}
+          {participants.length > 0 && (
+            <FriendTilesContainer>
+              {participants.map((participant, index) => (
+                <FriendTile
+                  key={participant.id || index}
+                  name={participant.username || 'User'}
+                  avatarUrl={participant.avatar_url || (participant as any)?.photo || null}
+                  placeholderUrl={AVATAR_PLACEHOLDER}
+                  imagePosition={(index % 6) + 1}
+                  isHost={participant.id === crew?.created_by}
+                />
+              ))}
+            </FriendTilesContainer>
+          )}
+
           <div className="chats-event-divider" />
 
           {joinedAt && (
             <div className="chats-event-system-text">You joined this chat on {joinedAt}.</div>
           )}
 
-          {messages.map(msg => {
+          <div className="chats-event-messages-container custom-scrollbar">
+            {messages.map(msg => {
             const isOutgoing = msg.sender_id === userId
             const senderProfile = profiles[msg.sender_id]
             const senderName = senderProfile?.username || 'User'
@@ -591,52 +634,54 @@ function CrewDetailContent() {
               </div>
             )
           })}
-
-          <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
+          </div>
 
           <div className="chats-event-divider" />
 
-          <div className="chats-event-input">
-            <input
-              type="text"
-              placeholder="Type a message ..."
-              value={draft}
-              onChange={e => setDraft(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  if (draft.trim()) handleSend()
-                }
-              }}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                fontFamily: 'var(--fontfamily-inter)',
-                fontWeight: 500,
-                fontSize: '14px',
-                color: 'var(--color-text-darker)',
-                minWidth: 0,
-              }}
-            />
-            {draft.trim() && (
-              <button
-                type="button"
-                onClick={handleSend}
+          <div className="chats-event-input-sticky">
+            <div className="chats-event-input">
+              <input
+                type="text"
+                placeholder="Type a message ..."
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    if (draft.trim()) handleSend()
+                  }
+                }}
                 style={{
+                  flex: 1,
                   background: 'transparent',
                   border: 'none',
-                  cursor: 'pointer',
-                  padding: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginLeft: '8px',
+                  outline: 'none',
+                  fontFamily: 'var(--fontfamily-inter)',
+                  fontWeight: 500,
+                  fontSize: '14px',
+                  color: 'var(--color-text-darker)',
+                  minWidth: 0,
                 }}
-              >
-                <img src={ICON_SEND} alt="Send" style={{ width: '20px', height: '20px' }} />
-              </button>
-            )}
+              />
+              {draft.trim() && (
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    padding: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginLeft: '8px',
+                  }}
+                >
+                  <img src={ICON_SEND} alt="Send" style={{ width: '20px', height: '20px' }} />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
