@@ -7,8 +7,9 @@ import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 
-const IMG_ICON = 'https://www.figma.com/api/mcp/asset/bc120e3b-d73a-4ad4-a332-a2ce4091d34d'
-const IMG_BELL = 'https://www.figma.com/api/mcp/asset/978a0595-d3d3-455f-b118-d48c2e848136'
+const IMG_ICON = 'https://www.figma.com/api/mcp/asset/819ae93e-17ef-4b2b-9423-20ebaf8b10f1'
+const IMG_GYMS = 'https://www.figma.com/api/mcp/asset/49b9a635-3cbe-4fea-9a36-11dcaa538fca'
+const IMG_BELL = 'https://www.figma.com/api/mcp/asset/f04bae63-a13f-4ceb-920f-d32174597230'
 
 export type MobileTopbarProps = {
   breadcrumb?: string
@@ -239,7 +240,18 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
                 </div>
               </div>
             </Link>
-            <div className="mobile-topbar-notifications" data-name="notifications" data-node-id="764:3157" ref={notificationsRef}>
+            <Link href="/gyms" className="mobile-topbar-gyms-link">
+              <div className="mobile-topbar-gyms" data-name="gyms" data-node-id="764:3157">
+                <div className="mobile-topbar-gyms-icon" data-name="icon" data-node-id="764:3158">
+                  <div className="mobile-topbar-bar-chart" data-name="bar-chart-square-up" data-node-id="768:2683">
+                    <div className="mobile-topbar-bar-chart-inner" data-name="Icon" data-node-id="I768:2683;633:5687">
+                      <img src={IMG_GYMS} alt="Gyms" className="mobile-topbar-bar-chart-img" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Link>
+            <div className="mobile-topbar-notifications" data-name="notifications" data-node-id="768:2659" ref={notificationsRef}>
               <button
                 type="button"
                 className="mobile-topbar-notifications-button"
@@ -247,9 +259,9 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
                 aria-expanded={notificationsOpen}
                 aria-label="Notifications"
               >
-                <div className="mobile-topbar-notifications-icon" data-name="icon" data-node-id="764:3158">
-                  <div className="mobile-topbar-bell" data-name="bell-01" data-node-id="764:3159">
-                    <div className="mobile-topbar-bell-inner" data-name="Icon" data-node-id="I764:3159;633:7275">
+                <div className="mobile-topbar-notifications-icon" data-name="icon" data-node-id="768:2660">
+                  <div className="mobile-topbar-bell" data-name="bell-01" data-node-id="768:2661">
+                    <div className="mobile-topbar-bell-inner" data-name="Icon" data-node-id="I768:2661;633:7275">
                       <img src={IMG_BELL} alt="Notifications" className="mobile-topbar-bell-img" />
                     </div>
                     {hasUnreadNotifications && <div className="unread-dot mobile-topbar-notifications-dot" />}

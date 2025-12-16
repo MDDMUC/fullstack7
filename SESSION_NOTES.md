@@ -225,3 +225,62 @@
   - Responsive width: `min-width: 280px`, `max-width: calc(100vw - (var(--space-lg) * 2))`
   - Max height: 400px with scrollable overflow
   - Time formatting: "Just now", "{X}m ago", "{X}h ago", "{X}d ago", or date string
+
+### MobileTopbar component update & /gyms page implementation (latest)
+- **MobileTopbar component update** (Figma node 764:3056):
+  - Added new "gyms" icon (bar-chart-square-up) between profile and notifications icons
+  - Updated icon gap from 8px to 16px (`var(--space-lg)`) - exact Figma value
+  - Updated asset URLs to latest Figma versions
+  - Gyms icon links to `/gyms` page
+  - All icons use exact sizes: 40px containers, 24px icon sizes
+  - Exact border radius values: 10px (profile inner), 14px (gyms/notifications containers)
+  - Structure matches Figma design exactly with proper data-node-id attributes
+
+- **/gyms page implementation** (Figma node 768:2698):
+  - Created complete `/gyms` page with MobileTopbar and MobileNavbar components
+  - Hidden header (DAB logo/logout) on `/gyms` page (added to `HIDDEN_HEADER_ROUTES`)
+  - Main card container: "My Gyms" header with "Add Gym" button
+  - **Gym detail cards** (Figma node 769:3192) with all sections:
+    - **Top row**: "Peaking" pill (red background, exact Figma styling) and "42 online" indicator with live dot
+    - **Gym info tile**: 60px gym logo, gym name (15px bold), location (14px medium), city (12px regular muted)
+    - **Busy indicator**: Day selector dropdown, "LIVE" chip, bar chart with 16 bars (exact heights from Figma: 18px, 21px, 32px, 44px, 50px, 58px, etc.), time legend (6am, 1pm, 6pm, 12pm), peak indicator overlay, live indicator bar
+    - **Friends climbing**: Grid of 6 friend avatars (60px each) with gradient overlays and names below (Anna, Marco, Yara, Finn, Lena, Max)
+    - **CTA buttons**: "Unfollow" and "Join Chat" buttons (equal width, full row)
+  - All styling uses exact Figma values: padding, spacing, colors, typography, border radius
+  - Card uses `custom-scrollbar` class for vertical scrolling
+  - Fetches gyms from Supabase `gyms` table with `id, name, avatar_url, area` fields
+  - Currently displays placeholder data for online counts, peaking status, bar chart, friends (as requested)
+
+- **Add Gym dropdown functionality**:
+  - "Add Gym" button opens centered dropdown menu below button
+  - Dropdown uses fixed positioning, centered on screen, overlays everything (z-index: 1000)
+  - Styled like three-dot options menu (`mh-silver-dropdown-menu` classes)
+  - Filters gyms to Munich only (or shows all if no Munich gyms)
+  - **Gym selection tiles** (Figma nodes 484:1225, 484:1233, 484:1241) with 3 states:
+    - **Default**: bg `#0c0e12` (surface/bg), no border
+    - **Hover**: bg `#151927` (surface/card), shadow `0px 24px 70px rgba(0,0,0,0.45)`
+    - **Focus**: bg `#151927` with border `#5ce1e6` (primary) and hover shadow
+    - Each tile: 60px gym logo, gym name (15px bold), location (14px medium), city (12px regular muted)
+    - Full width tiles in dropdown, rounded corners on first/last items
+    - Exact spacing: 12px gap, 10px padding, 2px gap between text elements
+  - Click handler adds selected gym to user's gyms list
+  - Dropdown closes on selection
+  - Click-outside-to-close functionality
+
+- **Unfollow functionality**:
+  - "Unfollow" button removes gym from user's list
+  - **Confirmation dialog**: Shows `window.confirm('Are you sure you want to unfollow this gym?')` before removing
+  - **Persistence**: Unfollowed gym IDs stored in localStorage (`dab_unfollowed_gyms`)
+  - On page load, unfollowed gyms are filtered out from user's gyms list
+  - Unfollowed gyms persist across page navigations
+  - Unfollowed gyms still appear in "Add Gym" dropdown (can be re-added)
+  - Re-adding a gym removes it from unfollowed list and adds back to user's gyms
+
+- **CSS implementation**:
+  - All gyms page CSS uses exact token values and pixel measurements from Figma
+  - `.gyms-screen`, `.gyms-content`, `.gyms-card` structure matches other mobile pages
+  - Full-width mobile topbar/navbar support
+  - Custom scrollbar applied to gyms card for vertical scrolling
+  - All gym detail card components have exact spacing, colors, typography from Figma
+  - Bar chart bars use gradient backgrounds with exact heights
+  - Friend avatars have individual positioning values from Figma for proper image cropping

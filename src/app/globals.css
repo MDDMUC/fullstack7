@@ -1725,7 +1725,8 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 .home-content .mobile-topbar,
 .events-detail-content .mobile-topbar,
 .events-create-content .mobile-topbar,
-.profile-content .mobile-topbar {
+.profile-content .mobile-topbar,
+.gyms-content .mobile-topbar {
   width: calc(100% + (var(--space-lg) * 2));
   margin-left: calc(-1 * var(--space-lg));
   margin-right: calc(-1 * var(--space-lg));
@@ -1736,7 +1737,8 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 .home-content .mobile-topbar-content,
 .events-detail-content .mobile-topbar-content,
 .events-create-content .mobile-topbar-content,
-.profile-content .mobile-topbar-content {
+.profile-content .mobile-topbar-content,
+.gyms-content .mobile-topbar-content {
   width: 100%;
 }
 
@@ -1787,7 +1789,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 
 .mobile-topbar-icons {
   display: flex;
-  gap: var(--space-sm); /* 8px */
+  gap: var(--space-lg); /* 16px - exact Figma value */
   height: 100%;
   align-items: center;
   position: relative;
@@ -1839,13 +1841,61 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   width: 159.63%;
 }
 
+.mobile-topbar-gyms-link {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+.mobile-topbar-gyms {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: var(--radius-lg); /* 14px - exact Figma value */
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+}
+
+.mobile-topbar-gyms-icon {
+  display: flex;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.mobile-topbar-bar-chart {
+  overflow: clip;
+  position: relative;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.mobile-topbar-bar-chart-inner {
+  position: absolute;
+  inset: 8.33% 12.5% 12.5% 8.33%; /* exact Figma value */
+}
+
+.mobile-topbar-bar-chart-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
 .mobile-topbar-notifications {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
-  border-radius: var(--radius-lg); /* 14px */
+  border-radius: var(--radius-lg); /* 14px - exact Figma value */
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -1990,7 +2040,7 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 
 .mobile-topbar-bell-inner {
   position: absolute;
-  inset: 8.33% 13.59%;
+  inset: 8.33% 13.59%; /* exact Figma value */
 }
 
 .mobile-topbar-bell-img {
@@ -2042,7 +2092,8 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 .profile-content .mobile-navbar,
 .chats-event-content .mobile-navbar,
 .chat-detail-content .mobile-navbar,
-.chat-gym-content .mobile-navbar {
+.chat-gym-content .mobile-navbar,
+.gyms-content .mobile-navbar {
   width: calc(100% + (var(--space-lg) * 2));
   margin-left: calc(-1 * var(--space-lg));
   margin-right: calc(-1 * var(--space-lg));
@@ -12128,4 +12179,986 @@ div.mh-silver-card[data-name="card2"] {
 /* Active chats icon should be cyan */
 .chats-bottom-active .chats-nav-icon-wrapper[data-name="message-chat-square"] .chats-nav-icon-img {
   filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
+}
+
+/* ========================================
+   GYMS PAGE - Exact from Figma node 768:2698
+   ======================================== */
+.gyms-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-text-default);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.gyms-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* 16px - exact Figma value */
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-lg); /* 16px */
+  padding-bottom: 0;
+  position: relative;
+  flex: 1 1 0;
+  box-sizing: border-box;
+}
+
+.gyms-content .mobile-topbar,
+.gyms-content .mobile-navbar {
+  width: calc(100% + (var(--space-lg) * 2));
+  margin-left: calc(-1 * var(--space-lg));
+  margin-right: calc(-1 * var(--space-lg));
+}
+
+.gyms-content .mobile-topbar-content {
+  width: 100%;
+}
+
+.gyms-card {
+  background: var(--color-surface-card); /* #151927 */
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  gap: 12px; /* exact Figma value */
+  align-items: center;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: clip;
+  padding: var(--space-xl); /* 24px */
+  position: relative;
+  border-radius: 24px; /* exact Figma value */
+  box-shadow: 0px 20px 60px 0px rgba(0, 0, 0, 0.4); /* shadow/base */
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gyms-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.gyms-title {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 700; /* Bold - button/base */
+  justify-content: center;
+  line-height: 1; /* 100% */
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 15px; /* button/base */
+  color: var(--color-text-default); /* #e9eef7 */
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+.gyms-add-button {
+  display: flex;
+  flex-direction: column;
+  height: 38px;
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--color-text-muted); /* #8ea0bd */
+  border-radius: var(--radius-md); /* 10px */
+  cursor: pointer;
+  padding: 0;
+  gap: 0;
+}
+
+.gyms-add-button > p {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 700; /* Bold */
+  justify-content: center;
+  line-height: 1; /* 100% */
+  min-height: 0;
+  min-width: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 15px; /* button/base */
+  color: var(--color-text-default); /* #e9eef7 */
+  text-align: center;
+  white-space: pre-wrap;
+  padding: var(--button-padding-md) var(--button-padding-xxl); /* 10px 16px */
+  margin: 0;
+}
+
+.gyms-add-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.gyms-add-dropdown {
+  position: fixed;
+  z-index: 1000;
+  min-width: 280px;
+  width: min(400px, calc(100vw - (var(--space-xl) * 2)));
+  background: var(--color-surface-bg); /* #0c0e12 */
+  border: 1px solid var(--color-border-default); /* #1f2633 */
+  border-radius: var(--radius-md); /* 10px */
+  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.4);
+  max-height: 400px;
+  overflow-y: auto;
+  padding: var(--space-xxs) 0; /* 4px vertical */
+  box-sizing: border-box;
+}
+
+/* Gym Select Tile - exact Figma implementation */
+.gym-select-tile {
+  display: flex;
+  gap: var(--space-md); /* 12px */
+  align-items: center;
+  min-width: 195px;
+  padding: var(--button-padding-md); /* 10px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--color-surface-bg); /* #0c0e12 - default state */
+  border: none;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, box-shadow 120ms ease;
+  margin: 0;
+  text-align: left;
+}
+
+.gyms-add-dropdown .gym-select-tile {
+  width: 100%;
+  border-radius: 0;
+  margin: 0;
+}
+
+.gyms-add-dropdown .gym-select-tile:first-child {
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+
+.gyms-add-dropdown .gym-select-tile:last-child {
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+.gym-select-tile:hover {
+  background: var(--color-surface-card); /* #151927 - hover state */
+  box-shadow: 0px 24px 70px 0px rgba(0, 0, 0, 0.45); /* shadow/hover */
+}
+
+.gym-select-tile-focus,
+.gym-select-tile:focus {
+  background: var(--color-surface-card); /* #151927 - focus state */
+  border: 1px solid var(--color-primary); /* #5ce1e6 - focus state */
+  box-shadow: 0px 24px 70px 0px rgba(0, 0, 0, 0.45); /* shadow/hover */
+  outline: none;
+}
+
+.gym-select-tile-left {
+  display: flex;
+  gap: 0; /* var(--space-xs, 0px) - exact Figma */
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-select-tile-img {
+  position: relative;
+  border-radius: var(--radius-lg); /* 14px */
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+}
+
+.gym-select-tile-img-el {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  object-position: 50% 50%;
+  object-fit: cover;
+  pointer-events: none;
+  border-radius: var(--radius-lg); /* 14px */
+  width: 100%;
+  height: 100%;
+}
+
+.gym-select-tile-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxxs); /* 2px */
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.gym-select-tile-name {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 700; /* Bold - button/base */
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 15px; /* button/base */
+  color: var(--color-text-default); /* #e9eef7 */
+  margin: 0;
+  padding: 0;
+}
+
+.gym-select-tile-name > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-select-tile-location {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 500; /* Medium - body/sm */
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 14px; /* body/sm */
+  color: var(--color-text-default); /* #e9eef7 */
+  margin: 0;
+  padding: 0;
+}
+
+.gym-select-tile-location > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-select-tile-city {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 400; /* Regular - body/xs */
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 12px; /* body/xs */
+  color: var(--color-text-muted); /* #8ea0bd */
+  margin: 0;
+  padding: 0;
+}
+
+.gym-select-tile-city > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gyms-loading,
+.gyms-empty {
+  color: var(--color-text-muted);
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-md);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+/* Gym Detail Card */
+.gym-detail-card {
+  background: var(--color-surface-panel); /* #11141c */
+  border: 1px solid var(--color-primary); /* #5ce1e6 */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm); /* 8px */
+  align-items: flex-start;
+  overflow: clip;
+  padding: var(--space-md); /* 12px */
+  position: relative;
+  border-radius: var(--radius-lg); /* 14px */
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gym-card-toprow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.gym-card-button-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-peaking-pill {
+  background: rgba(255, 123, 123, 0.08); /* exact Figma value */
+  border: 1px solid var(--color-state-red); /* #ff7b7b */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--button-padding-xs) var(--button-padding-md); /* 6px 10px */
+  position: relative;
+  border-radius: var(--radius-full); /* 999px */
+  flex-shrink: 0;
+}
+
+.gym-card-peaking-text {
+  font-family: var(--fontfamily-inter);
+  font-weight: 700; /* Bold - pill/base */
+  line-height: normal;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 12px; /* pill/base */
+  color: var(--color-state-red); /* #ff7b7b */
+  text-align: center;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-live-indicator {
+  display: flex;
+  gap: var(--space-xs); /* 6px */
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-live-dot {
+  position: relative;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.gym-card-live-dot-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+.gym-card-online-text {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 700; /* Bold */
+  justify-content: center;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 12px; /* body/xs */
+  color: var(--color-text-muted); /* #8ea0bd */
+  text-align: right;
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-online-text > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+/* Gym Info Tile */
+.gym-card-info-tile {
+  background: var(--color-surface-card); /* #151927 */
+  display: flex;
+  gap: var(--space-md); /* 12px */
+  align-items: center;
+  min-width: 195px;
+  padding: var(--button-padding-md); /* 10px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gym-card-info-left {
+  display: flex;
+  gap: 0; /* var(--space-xs, 0px) - exact Figma */
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-info-img {
+  position: relative;
+  border-radius: var(--radius-lg); /* 14px */
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+}
+
+.gym-card-info-img-el {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  object-position: 50% 50%;
+  object-fit: cover;
+  pointer-events: none;
+  border-radius: var(--radius-lg); /* 14px */
+  width: 100%;
+  height: 100%;
+}
+
+.gym-card-info-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxxs); /* 2px */
+  align-items: flex-start;
+  justify-content: center;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.gym-card-info-name {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 700; /* Bold */
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 15px; /* button/base */
+  color: var(--color-text-default); /* #e9eef7 */
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-info-name > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-info-location {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 500; /* Medium - body/sm */
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 14px; /* body/sm */
+  color: var(--color-text-default); /* #e9eef7 */
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-info-location > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-info-city {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 400; /* Regular - body/xs */
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 12px; /* body/xs */
+  color: var(--color-text-muted); /* #8ea0bd */
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-info-city > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+/* Busy Indicator */
+.gym-card-busy-indicator {
+  background: var(--color-surface-card); /* #151927 */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md); /* 12px */
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 195px;
+  padding: var(--button-padding-md); /* 10px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.gym-card-dayselector {
+  display: flex;
+  gap: var(--space-sm); /* 8px */
+  align-items: center;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.gym-card-popular-times {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 400; /* Regular */
+  justify-content: center;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 12px; /* body/xs */
+  color: var(--color-text-muted); /* #8ea0bd */
+  text-align: center;
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-popular-times > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-button-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-field-button {
+  background: var(--color-surface-bg); /* #0c0e12 */
+  border: 1px solid var(--color-border-default); /* #1f2633 */
+  display: flex;
+  gap: var(--space-xxs); /* 4px */
+  align-items: center;
+  padding: var(--space-xxs) var(--space-sm); /* 4px 8px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  flex-shrink: 0;
+}
+
+.gym-card-field-text {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 400; /* Regular */
+  justify-content: center;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 10px; /* body/xxs */
+  color: var(--color-text-muted); /* #8ea0bd */
+  white-space: nowrap;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-field-text > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-chevron {
+  overflow: clip;
+  position: relative;
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+}
+
+.gym-card-chevron-inner {
+  position: absolute;
+  bottom: 37.5%;
+  left: 25%;
+  right: 25%;
+  top: 37.5%;
+}
+
+.gym-card-chevron-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+.gym-card-live-chip {
+  display: flex;
+  flex-direction: column;
+  height: 20px;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-live-chip-cont {
+  background: var(--color-state-red); /* #ff7b7b */
+  display: flex;
+  height: 20px;
+  align-items: center;
+  justify-content: center;
+  padding: var(--button-padding-xs) var(--button-padding-sm); /* 6px 8px */
+  position: relative;
+  border-radius: var(--space-sm); /* 8px - exact Figma */
+  flex-shrink: 0;
+}
+
+.gym-card-live-chip-text {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 400; /* Regular */
+  height: 10px;
+  justify-content: center;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 10px; /* body/xxs */
+  color: var(--color-text-default); /* #e9eef7 */
+  text-align: center;
+  width: 26px;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-live-chip-text > p {
+  line-height: normal;
+  white-space: pre-wrap;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-barchart-wrapper {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.gym-card-barchart-main {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  gap: var(--space-xxxs); /* 2px */
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-peakindicator {
+  position: absolute;
+  height: 0;
+  left: 0;
+  top: 8px;
+  width: 249px;
+}
+
+.gym-card-peak-img {
+  display: block;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+.gym-card-barchart {
+  display: flex;
+  gap: var(--space-xs); /* 6px */
+  align-items: flex-end;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-bar {
+  background: linear-gradient(to bottom, var(--color-primary), var(--color-surface-card));
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-full); /* 999px */
+  flex-shrink: 0;
+  width: 10px;
+}
+
+.gym-card-legend {
+  display: flex;
+  font-family: var(--fontfamily-inter);
+  font-weight: 400; /* Regular */
+  align-items: center;
+  justify-content: space-between;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 10px; /* body/xxs */
+  color: var(--color-text-muted); /* #8ea0bd */
+  text-align: center;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.gym-card-legend-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.gym-card-legend-item > p {
+  line-height: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-liveindicator {
+  position: absolute;
+  background: var(--color-state-red); /* #ff7b7b */
+  border: 1px solid var(--color-state-special); /* #ff9500 */
+  height: 59px;
+  left: 90px;
+  opacity: 0.75;
+  border-radius: var(--radius-xs); /* 4px */
+  top: 41px;
+  width: 10px;
+}
+
+/* Friends Climbing */
+.gym-card-friends {
+  background: var(--color-surface-card); /* #151927 */
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm); /* 8px */
+  align-items: center;
+  min-width: 195px;
+  padding: var(--button-padding-md); /* 10px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: center;
+  align-content: center;
+}
+
+.gym-card-friend {
+  display: flex;
+  gap: 0; /* var(--space-xs, 0px) */
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 var(--space-xs); /* 0 6px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+}
+
+.gym-card-friend-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--radius-md); /* 10px */
+}
+
+.gym-card-friend-img-wrapper {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--radius-md); /* 10px */
+}
+
+.gym-card-friend-img {
+  position: absolute;
+  max-width: none;
+}
+
+/* Exact positioning from Figma for each friend */
+.gym-card-friend-img-1 {
+  height: 163.33%;
+  left: -7.76%;
+  top: -31.67%;
+  width: 115.52%;
+}
+
+.gym-card-friend-img-2 {
+  height: 163.33%;
+  left: -8.08%;
+  top: -22.7%;
+  width: 115.52%;
+}
+
+.gym-card-friend-img-3 {
+  height: 163.33%;
+  left: 0.38%;
+  top: -25.69%;
+  width: 115.52%;
+}
+
+.gym-card-friend-img-4 {
+  height: 163.33%;
+  left: -7.76%;
+  top: -18.72%;
+  width: 115.52%;
+}
+
+.gym-card-friend-img-5 {
+  height: 163.33%;
+  left: -8.43%;
+  top: -0.29%;
+  width: 115.52%;
+}
+
+.gym-card-friend-img-6 {
+  height: 221.51%;
+  left: -28.33%;
+  top: -41.83%;
+  width: 156.67%;
+}
+
+.gym-card-friend-overlay {
+  position: absolute;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.75) 100%);
+  inset: 0;
+  border-radius: var(--radius-md); /* 10px */
+}
+
+.gym-card-friend-name {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 800; /* Extra Bold - heading/xxs */
+  justify-content: center;
+  line-height: 0;
+  min-height: 0;
+  min-width: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 12px; /* heading/xxs */
+  color: var(--color-text-default); /* #e9eef7 */
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  z-index: 1;
+}
+
+.gym-card-friend-name > p {
+  line-height: normal;
+  white-space: pre-wrap;
+  margin: 0;
+  padding: 0;
+}
+
+/* CTA Row */
+.gym-card-ctarow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow: clip;
+  position: relative;
+  flex-shrink: 0;
+  width: 100%;
+  gap: var(--space-sm); /* 8px */
+}
+
+.gym-card-button-ghost {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  min-width: 0;
+  position: relative;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.gym-card-ghost-cont {
+  border: 1px solid var(--color-border-default); /* #1f2633 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--button-padding-md) var(--button-padding-xxl); /* 10px 16px */
+  position: relative;
+  border-radius: var(--radius-md); /* 10px */
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.gym-card-ghost-text {
+  display: flex;
+  flex-direction: column;
+  font-family: var(--fontfamily-inter);
+  font-weight: 700; /* Bold */
+  justify-content: center;
+  line-height: 0;
+  font-style: normal;
+  position: relative;
+  flex-shrink: 0;
+  font-size: 15px; /* button/base */
+  color: var(--color-text-default); /* #e9eef7 */
+  text-align: center;
+  width: 85px;
+  margin: 0;
+  padding: 0;
+}
+
+.gym-card-ghost-text > p {
+  line-height: normal;
+  white-space: pre-wrap;
+  margin: 0;
+  padding: 0;
 }
