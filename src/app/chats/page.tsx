@@ -494,9 +494,7 @@ export default function ChatsScreen() {
                     </div>
                   </Link>
                   {idx < items.length - 1 && (
-                    <div className="chats-divider">
-                      <img src="/icons/divider-line.svg" alt="" className="chats-divider-img" />
-                    </div>
+                    <div className="chats-divider" />
                   )}
                 </React.Fragment>
               ))}

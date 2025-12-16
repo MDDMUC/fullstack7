@@ -123,8 +123,8 @@ export default function EventCreatePage() {
               </div>
             </div>
 
-            <div className="events-create-hero">
-              <img src={imageUrl || HERO_PLACEHOLDER} alt="" className="events-create-hero-img" />
+            <div className={`events-create-hero ${!imageUrl ? 'events-create-hero-fallback' : ''}`}>
+              {imageUrl && <img src={imageUrl} alt="" className="events-create-hero-img" />}
               <div className="events-create-hero-overlay" />
               <div className="events-create-hero-text">
                 <p className="events-detail-title">{title || 'EVENT Title'}</p>

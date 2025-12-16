@@ -1,6 +1,28 @@
 ## Work Log (last ~8 hours)
 
-### Global ChatMessage component & chat UI improvements (latest)
+### Chat list & event create page styling updates (latest)
+- **Chat list (`/chats`) styling improvements**:
+  - Changed `.chats-card` background from previous color to `var(--color-card)` design token
+  - Changed `.chats-divider` background to `var(--color-text-darker)` design token
+  - Removed redundant divider image (was duplicating the line divider)
+  - Changed `.chats-title` color to `var(--color-text-default)` design token
+  - All styling now uses consistent design tokens
+- **MobileFilterBar animation update**:
+  - Reversed the gradient divider animation direction (now animates from right-to-left instead of left-to-right)
+  - Updated `@keyframes filterbar-divider-slide` to change `background-position` from `0% 0%` → `200% 0%` to `200% 0%` → `0% 0%`
+- **Event create page (`/events/create`) styling updates**:
+  - Added fallback image for hero section when no image is uploaded
+  - Fallback uses `/eventfallback.jpg` from public folder
+  - Implemented via `::before` pseudo-element on `.events-create-hero-fallback` class
+  - Changed `.events-create-card` background to `var(--color-bg)` design token
+  - Changed `.events-create-field` background to `var(--color-card)` design token (was `var(--color-text-darker)`)
+  - All event create form fields now use card color for better visual hierarchy
+- **Events tile styling (`/events` list)**:
+  - Added `outline: 1px solid var(--color-primary)` to `.events-tile` globally
+  - Added `border-radius: var(--radius-lg)` to ensure outline follows rounded corners
+  - All event tiles now have a primary color (#5ce1e6) outline border
+
+### Global ChatMessage component & chat UI improvements
 - **Created global ChatMessage component**:
   - New reusable component `src/components/ChatMessage.tsx` for consistent message display across all chat types
   - Displays user avatar (34px, circular) and first name below avatar for all incoming messages
