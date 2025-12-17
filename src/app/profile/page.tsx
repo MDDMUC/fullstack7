@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { RequireAuth } from '@/components/RequireAuth'
+import MobileTopbar from '@/components/MobileTopbar'
 import MobileNavbar from '@/components/MobileNavbar'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
@@ -72,6 +73,7 @@ export default function ProfilePage() {
     <RequireAuth>
       <div className="profile-screen profile-screen--white" data-name="/ profile">
         <div className="profile-content">
+          <MobileTopbar breadcrumb="Profile" />
           <div className="home-card profile-card--home">
             <div className="home-card-header">
               <div className="home-card-header-left">
@@ -91,8 +93,8 @@ export default function ProfilePage() {
             </div>
 
             <div className="home-card-main">
-              <div className="home-image-wrapper">
-                {specialTopChips.length > 0 && (
+              <div className="home-image-wrapper" style={loading ? { visibility: 'hidden' } : undefined}>
+                {!loading && specialTopChips.length > 0 && (
                   <div className="home-special-chips">
                     {specialTopChips.map(chip => {
                       const lower = chip.toLowerCase()
@@ -114,8 +116,8 @@ export default function ProfilePage() {
                     })}
                   </div>
                 )}
-                {avatar && <img src={avatar} alt="Profile" className="home-image" />}
-                <div className="home-image-overlay">
+                {!loading && avatar && <img src={avatar} alt="Profile" className="home-image" key={profile?.id || 'profile-img'} />}
+                <div className="home-image-overlay" style={loading ? { visibility: 'hidden' } : undefined}>
                   <div className="home-name-row">
                     <div className="home-name">{name}</div>
                     {age && <div className="home-age">{age}</div>}

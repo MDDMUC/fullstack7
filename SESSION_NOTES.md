@@ -434,3 +434,33 @@
     - Global rules for all friend image classes to ensure visibility and prevent browser default styling
     - Prevented browser default broken image styling (blue border/background) for all friend images
   - **Result**: All friend tiles now display correctly without blue overlays or display issues, using consistent global CSS rules
+
+### Profile page fixes & MobileTopbar avatar improvements (latest)
+- **Fixed top gap on `/profile` page**:
+  - **Issue**: Persistent gap showing above the MobileTopbar at the very top of the screen
+  - **Root cause**: The `body` background was white (`var(--color-white)`), and any space before `profile-screen` showed through
+  - **Solution**:
+    - Changed `.profile-screen` to use `position: fixed; top: 0; left: 0; right: 0; bottom: 0;` to anchor to all viewport edges
+    - Changed background from `var(--color-text-default)` to `var(--color-surface-card)` to match the topbar's dark color
+    - Added `overflow-y: auto;` for scrolling within the fixed container
+    - Removed `background` from `.profile-content` (now transparent, inherits from parent)
+  - **Result**: Profile screen now fills entire viewport with no gap above topbar
+
+- **Fixed MobileTopbar avatar showing wrong user briefly**:
+  - **Issue**: When navigating to `/profile`, the topbar avatar briefly showed another user's image before switching to the correct user
+  - **Root cause**: The `profileAvatar` state wasn't being reset when `userId` changed, causing stale avatar to show during async fetch
+  - **Solution**:
+    - Added `avatarLoading` state (starts as `true`)
+    - Reset `profileAvatar` to `null` and `avatarLoading` to `true` immediately at the start of the `useEffect` when `userId` changes
+    - Only render avatar when `!avatarLoading && profileAvatar` - no placeholder, nothing while loading
+    - Added `key={userId || 'avatar'}` prop to force re-render when user changes
+  - **Result**: Topbar avatar shows nothing while loading, then only displays the current user's avatar
+
+- **Fixed profile page content avatar flash**:
+  - **Issue**: The main profile card image area briefly showed incorrect content during navigation
+  - **Solution**:
+    - Added `!loading &&` condition to avatar image rendering: `{!loading && avatar && <img ... />}`
+    - Added `style={loading ? { visibility: 'hidden' } : undefined}` to `.home-image-wrapper` and `.home-image-overlay`
+    - Added `!loading &&` gate to `specialTopChips` rendering
+    - Added `key={profile?.id || 'profile-img'}` to force re-render on profile change
+  - **Result**: Profile content only renders after data is loaded, preventing any stale/cached images from showing

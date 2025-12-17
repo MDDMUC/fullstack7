@@ -72,8 +72,19 @@ export type MobileNavbarProps = {
 export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) {
   const { session } = useAuthSession()
   const userId = session?.user?.id
+  const [resolvedActive, setResolvedActive] = useState<MobileNavbarState | 'dab' | 'Default'>(active)
   const [hasUnreadChats, setHasUnreadChats] = useState(false)
   const [hasUnreadCrews, setHasUnreadCrews] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const path = window.location.pathname
+    if (path.startsWith('/profile') || path.startsWith('/gyms') || path.startsWith('/notifications')) {
+      setResolvedActive('Default')
+    } else {
+      setResolvedActive(active)
+    }
+  }, [active])
 
   useEffect(() => {
     if (!supabase || !userId) {
@@ -276,7 +287,7 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
     <div className="mobile-navbar" data-name="mobile-navbar">
       <div className="mobile-navbar-inner">
         {NAV_ITEMS.map((item) => {
-          const isActive = item.id === active || (active === 'Default' && item.id === 'dab')
+          const isActive = item.id === resolvedActive || (resolvedActive === 'Default' && item.id === 'dab')
           const icon = isActive ? item.activeIcon : item.defaultIcon
           const textClass = isActive ? 'mobile-navbar-label active' : 'mobile-navbar-label'
           const iconClass = `mobile-navbar-icon ${item.iconSize === 24 ? 'crew' : ''} ${isActive ? 'active' : 'default-state'}`

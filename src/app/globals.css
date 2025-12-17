@@ -2,21 +2,29 @@
    PROFILE SCREEN - Exact from Figma node 633:14002
    ======================================== */
 .profile-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-text-default);
+  background: var(--color-surface-card); /* Match topbar bg so no gap shows */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  padding: 0;
+  margin: 0;
   width: 100%;
   box-sizing: border-box;
   overflow-x: hidden;
+  overflow-y: auto;
 }
 
-/* Hard override to ensure white bg on profile page (matches Figma) */
+/* Hard override to ensure consistent bg on profile page */
 .profile-screen--white {
-  background: var(--color-text-default) !important;
+  background: var(--color-surface-card) !important;
 }
 
 .profile-content {
@@ -26,12 +34,16 @@
   flex-direction: column;
   gap: var(--space-lg); /* keep consistent with other pages */
   align-items: center;
-  padding: var(--space-lg);
+  padding: 0 var(--space-lg); /* hug topbar; no top padding */
   padding-bottom: 0; /* avoid gap above sticky bottom nav */
   box-sizing: border-box;
   flex: 1 1 auto;
   min-height: 0; /* allow child flex items to size correctly */
-  background: var(--color-white); /* match other pages' container base */
+  /* No background - inherit from profile-screen to avoid gap */
+}
+
+.profile-screen > .mobile-topbar {
+  margin-top: 0;
 }
 
 .profile-card {
@@ -1771,10 +1783,11 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
 
 .mobile-topbar-breadcrumb {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-sm); /* 8px */
   height: 100%;
-  align-items: flex-start;
-  justify-content: center;
   position: relative;
   flex-shrink: 0;
 }
@@ -1798,6 +1811,34 @@ main { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
   white-space: pre-wrap;
   margin: 0;
   padding: 0;
+}
+
+.mobile-topbar-back {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mobile-topbar-back-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-topbar-back-img {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
 .mobile-topbar-right {

@@ -2,11 +2,12 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 
+const IMG_BACK = 'https://www.figma.com/api/mcp/asset/66aa6b9e-8828-4ea6-b35f-7f40de2a84f9'
 const IMG_ICON = 'https://www.figma.com/api/mcp/asset/819ae93e-17ef-4b2b-9423-20ebaf8b10f1'
 const IMG_GYMS = 'https://www.figma.com/api/mcp/asset/49b9a635-3cbe-4fea-9a36-11dcaa538fca'
 const IMG_BELL = 'https://www.figma.com/api/mcp/asset/f04bae63-a13f-4ceb-920f-d32174597230'
@@ -36,17 +37,24 @@ type NotificationItem = {
 export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = '' }: MobileTopbarProps) {
   const { session } = useAuthSession()
   const router = useRouter()
+  const pathname = usePathname()
   const userId = session?.user?.id
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null)
+  const [avatarLoading, setAvatarLoading] = useState(true)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [notifications, setNotifications] = useState<NotificationItem[]>([])
   const [loadingNotifications, setLoadingNotifications] = useState(false)
   const notificationsRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
+    // Reset avatar immediately when userId changes to prevent showing stale avatar
+    setProfileAvatar(null)
+    setAvatarLoading(true)
+    
     const loadProfile = async () => {
       if (!userId) {
         setProfileAvatar(null)
+        setAvatarLoading(false)
         return
       }
       try {
@@ -54,10 +62,14 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
         const profiles = await fetchProfiles(client, [userId])
         if (profiles.length > 0 && profiles[0].avatar_url) {
           setProfileAvatar(profiles[0].avatar_url)
+        } else {
+          setProfileAvatar(null)
         }
       } catch (err) {
         console.error('Failed to load profile avatar', err)
         setProfileAvatar(null)
+      } finally {
+        setAvatarLoading(false)
       }
     }
     loadProfile()
@@ -491,13 +503,29 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
     setNotificationsOpen(false)
   }
 
+  const handleBack = () => {
+    // Prefer router.back, fallback to home
+    router.back()
+    // No extra fallback to avoid double navigation; router.back is fine for mobile flow
+  }
+
   const hasUnreadNotifications = notifications.length > 0
+  const showBack =
+    pathname?.startsWith('/profile') ||
+    pathname?.startsWith('/notifications')
 
   return (
     <div className={`mobile-topbar ${className}`} data-name="mobile-topbar" data-node-id="764:3057">
       <div className="mobile-topbar-content" data-name="content" data-node-id="764:3058">
         <div className="mobile-topbar-left">
           <div className="mobile-topbar-breadcrumb" data-name="breadcrumb" data-node-id="764:3060">
+            {showBack && (
+              <button type="button" className="mobile-topbar-back" onClick={handleBack} aria-label="Back">
+                <div className="mobile-topbar-back-icon">
+                  <img src={IMG_BACK} alt="" className="mobile-topbar-back-img" />
+                </div>
+              </button>
+            )}
             <p className="mobile-topbar-breadcrumb-text" data-node-id="764:3063">
               {breadcrumb}
             </p>
@@ -508,12 +536,8 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
             <Link href="/profile" className="mobile-topbar-profile-link">
               <div className="mobile-topbar-profile" data-name="profile" data-node-id="764:3073">
                 <div className="mobile-topbar-profile-icon" data-name="icon" data-node-id="764:3074">
-                  {profileAvatar ? (
-                    <img src={profileAvatar} alt="Profile" className="mobile-topbar-profile-img" />
-                  ) : (
-                    <div className="mobile-topbar-profile-placeholder">
-                      <img src={IMG_ICON} alt="" className="mobile-topbar-profile-placeholder-img" />
-                    </div>
+                  {!avatarLoading && profileAvatar && (
+                    <img src={profileAvatar} alt="Profile" className="mobile-topbar-profile-img" key={userId || 'avatar'} />
                   )}
                 </div>
               </div>
