@@ -71,7 +71,7 @@ export default function ProfilePage() {
 
   return (
     <RequireAuth>
-      <div className="profile-screen profile-screen--white" data-name="/ profile">
+      <div className="profile-screen" data-name="/ profile">
         <div className="profile-content">
           <MobileTopbar breadcrumb="Profile" />
           <div className="home-card profile-card--home">

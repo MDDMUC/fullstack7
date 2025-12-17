@@ -119,7 +119,7 @@ export default function CheckInPage() {
       <section className="checkin-grid">
         {checkIns.map(checkin => (
           <article key={checkin.id} className="session-card">
-            <header style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: '12px', alignItems: 'center' }}>
+            <header style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 'var(--space-md)', alignItems: 'center' }}>
               <div className="profile-avatar-frame">
                 <img
                   src={checkin.avatar_url || '/fallback-male.jpg'}
@@ -158,7 +158,7 @@ export default function CheckInPage() {
               {checkin.tags.map(tag => <span key={tag} className="ghost-tag">{tag}</span>)}
             </div>
             <div className="session-actions">
-              <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-sm)', width: '100%' }}>
                 <button className="button-navlink" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
                 <button className="button-navlink button-navlink-hover" style={{ flex: 1 }} onClick={() => handlePing(checkin.id)}>
                   {pinged[checkin.id] ? (

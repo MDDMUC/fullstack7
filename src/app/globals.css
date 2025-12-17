@@ -1,49 +1,37 @@
 /* ========================================
-   PROFILE SCREEN - Exact from Figma node 633:14002
+   PROFILE SCREEN - Consistent with other mobile pages
    ======================================== */
 .profile-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-surface-card); /* Match topbar bg so no gap shows */
+  background: var(--color-text-default);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0;
-  margin: 0;
+  position: relative;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-/* Hard override to ensure consistent bg on profile page */
-.profile-screen--white {
-  background: var(--color-surface-card) !important;
+  overflow: hidden;
 }
 
 .profile-content {
   width: 100%;
   max-width: 420px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: var(--space-lg); /* keep consistent with other pages */
+  gap: 16px; /* space/lg */
   align-items: center;
-  padding: 0 var(--space-lg); /* hug topbar; no top padding */
-  padding-bottom: 0; /* avoid gap above sticky bottom nav */
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  padding: 16px 16px 0 16px; /* pt: space/lg, px: space/lg, pb: 0 */
+  padding-bottom: 0; /* No bottom padding as navbar is sticky */
+  position: relative;
+  flex: 1 1 0;
   box-sizing: border-box;
-  flex: 1 1 auto;
-  min-height: 0; /* allow child flex items to size correctly */
-  /* No background - inherit from profile-screen to avoid gap */
-}
-
-.profile-screen > .mobile-topbar {
-  margin-top: 0;
+  overflow: hidden;
 }
 
 .profile-card {
@@ -14224,4 +14212,93 @@ img.friend-tile-img {
   white-space: pre-wrap;
   margin: 0;
   padding: 0;
+}
+
+/* ========================================
+   MODAL COMPONENT - Global reusable modal
+   ======================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-lg);
+}
+
+.modal-container {
+  background: var(--color-surface-card);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-stroke);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - var(--space-xxl) * 2);
+  width: 100%;
+  overflow: hidden;
+}
+
+.modal-size-sm {
+  max-width: 300px;
+}
+
+.modal-size-md {
+  max-width: 400px;
+}
+
+.modal-size-lg {
+  max-width: 500px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--color-stroke);
+  flex-shrink: 0;
+}
+
+.modal-title {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-default);
+  margin: 0;
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+}
+
+.modal-close:hover {
+  color: var(--color-text-default);
+  background: var(--color-surface-panel);
+}
+
+.modal-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  border-top: 1px solid var(--color-stroke);
+  flex-shrink: 0;
 }

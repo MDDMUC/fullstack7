@@ -9,6 +9,7 @@ import React, { Suspense } from 'react'
 
 import ButtonCta from '@/components/ButtonCta'
 import MobileNavbar from '@/components/MobileNavbar'
+import BackBar from '@/components/BackBar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
@@ -197,15 +198,16 @@ function EventDetailContent() {
     <div className="events-detail-screen" data-name="/event/detail">
       <div className="events-detail-content">
         <div className="events-detail-card">
-          <div className="events-detail-backbar">
-            <Link href="/events" className="events-detail-back-btn" aria-label="Back to events">
-              <img src="/icons/chevron-left.svg" alt="" className="events-detail-back-icon" />
-            </Link>
-            <div className="events-detail-back-text">back</div>
-            <div className="events-detail-dots">
-              <img src="/icons/dots.svg" alt="" className="events-detail-dots-img" />
-            </div>
-          </div>
+          <BackBar
+            backHref="/events"
+            backText="back"
+            className="events-detail-backbar"
+            rightSlot={
+              <div className="events-detail-dots">
+                <img src="/icons/dots.svg" alt="" className="events-detail-dots-img" />
+              </div>
+            }
+          />
 
           {loading && <p className="events-detail-status">Loading event…</p>}
           {!loading && error && <p className="events-detail-status events-detail-status-error">{error}</p>}

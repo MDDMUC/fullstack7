@@ -7,6 +7,7 @@ import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
+import LoadingState from '@/components/LoadingState'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
@@ -381,7 +382,7 @@ export default function CrewScreen() {
               </div>
             </Link>
 
-            {loading && <p className="events-loading">Loading crews…</p>}
+            {loading && <LoadingState message="Loading crews…" />}
             {!loading &&
               crews.map(crew => (
                 <Link key={crew.id} href={`/crew/detail?crewId=${crew.id}`} className="events-tile">

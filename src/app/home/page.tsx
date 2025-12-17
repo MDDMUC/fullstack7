@@ -6,6 +6,7 @@ import ButtonDab from '@/components/ButtonDab'
 import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
+import Avatar from '@/components/Avatar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile, fetchGymsFromTable, Gym } from '@/lib/profiles'
@@ -351,13 +352,12 @@ export default function HomeScreen() {
                         })}
                       </div>
                     )}
-                    {currentAvatar && (
-                      <img
-                        src={currentAvatar}
-                        alt={current?.username || 'Profile'}
-                        className="home-image"
-                      />
-                    )}
+                    <Avatar
+                      src={currentAvatar}
+                      alt={current?.username || 'Profile'}
+                      className="home-image"
+                      showPlaceholder={false}
+                    />
                     <div className="home-image-overlay">
                       <div className="home-name-row">
                         <div className="home-name">{current.username?.split(' ')[0] || '—'}</div>

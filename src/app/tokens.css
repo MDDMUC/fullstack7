@@ -94,6 +94,21 @@
   --btn-height-lg: 38px;
   --btn-min-width-lg: 117px;
 
+  /* Avatar/thumbnail sizes */
+  --avatar-size-xs: 20px;
+  --avatar-size-sm: 34px;
+  --avatar-size-md: 52px;
+  --avatar-size-lg: 60px;
+
+  /* Icon sizes */
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+
+  /* Card/image heights */
+  --card-image-height-sm: 160px;
+  --card-image-height-md: 200px;
+
   /* Aliases to existing variables for compatibility */
   --color-bg: var(--color-surface-bg);
   --color-panel: var(--color-surface-panel);

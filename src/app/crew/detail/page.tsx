@@ -8,9 +8,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense, useEffect, useRef, useState } from 'react'
 
 import MobileNavbar from '@/components/MobileNavbar'
+import BackBar from '@/components/BackBar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { FriendTile, FriendTilesContainer } from '@/components/FriendTile'
 import { ChatMessage } from '@/components/ChatMessage'
+import Avatar from '@/components/Avatar'
+import ActionMenu from '@/components/ActionMenu'
+import Modal from '@/components/Modal'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym, Profile } from '@/lib/profiles'
@@ -858,7 +862,7 @@ function CrewDetailContent() {
       <div className="chats-event-screen" data-name="/crew/detail">
         <div className="chats-event-content">
           <div className="chats-event-card">
-            <p style={{ padding: '20px', textAlign: 'center' }}>Loading crew chat…</p>
+            <p style={{ padding: 'var(--button-padding-xxxxl)', textAlign: 'center' }}>Loading crew chat…</p>
           </div>
           <MobileNavbar active="crew" />
         </div>
@@ -894,13 +898,11 @@ function CrewDetailContent() {
                 {ownerProfile && (
                   <div className="crew-not-member-owner">
                     <div className="crew-not-member-owner-avatar">
-                      {ownerProfile.avatar_url ? (
-                        <img src={ownerProfile.avatar_url} alt={ownerProfile.username || 'Owner'} />
-                      ) : (
-                        <div className="crew-not-member-owner-placeholder">
-                          <img src={AVATAR_PLACEHOLDER} alt="" />
-                        </div>
-                      )}
+                      <Avatar
+                        src={ownerProfile.avatar_url}
+                        alt={ownerProfile.username || 'Owner'}
+                        fallback={AVATAR_PLACEHOLDER}
+                      />
                     </div>
                     <div className="crew-not-member-owner-info">
                       <div className="crew-not-member-owner-name">{ownerProfile.username || 'Owner'}</div>
@@ -929,7 +931,7 @@ function CrewDetailContent() {
       <div className="chats-event-screen" data-name="/crew/detail">
         <div className="chats-event-content">
           <div className="chats-event-card">
-            <p style={{ padding: '20px', textAlign: 'center', color: 'red' }}>{error || 'Crew not found'}</p>
+            <p style={{ padding: 'var(--button-padding-xxxxl)', textAlign: 'center', color: 'red' }}>{error || 'Crew not found'}</p>
           </div>
           <MobileNavbar active="crew" />
         </div>
@@ -941,125 +943,46 @@ function CrewDetailContent() {
     <div className="chats-event-screen" data-name="/crew/detail">
       <div className="chats-event-content">
         <div className="chats-event-card chats-event-card-with-sticky-input">
-          <div className="chats-event-backbar">
-            <Link href="/crew" className="chats-event-back" aria-label="Back">
-              <img src={BACK_ICON} alt="" className="chats-event-back-icon" />
-            </Link>
-            <div className="chats-event-back-title">back</div>
-            <div style={{ position: 'relative' }} ref={menuRef}>
-              <button
-                type="button"
-                className="chats-event-menu"
-                aria-label="Menu"
-                onClick={() => setMenuOpen(!menuOpen)}
-              >
-                <img src={MENU_ICON} alt="" className="chats-event-menu-icon" />
-              </button>
-              {menuOpen && (
-                <div
-                  className="mh-silver-dropdown-menu mh-silver-dropdown-right"
-                  style={{
-                    position: 'absolute',
-                    top: 'calc(100% + 8px)',
-                    right: 0,
-                    zIndex: 1000,
-                    minWidth: '180px',
-                    background: 'var(--color-surface-card)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-stroke)',
-                    padding: '4px 0',
-                  }}
+          <BackBar
+            backHref="/crew"
+            backText="back"
+            className="chats-event-backbar"
+            rightSlot={
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  className="chats-event-menu"
+                  aria-label="Menu"
+                  onClick={() => setMenuOpen(!menuOpen)}
                 >
-                  {isCreator && (
-                    <>
-                      <button
-                        type="button"
-                        className="mh-silver-dropdown-item"
-                        onClick={handleInviteUsers}
-                        style={{
-                          display: 'block',
-                          width: '100%',
-                          padding: 'var(--space-md) var(--space-lg)',
-                          background: 'transparent',
-                          border: 'none',
-                          textAlign: 'left',
-                          color: 'var(--color-text-default)',
-                          fontFamily: 'var(--fontfamily-inter)',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Invite users to Crew
-                      </button>
-                      <div
-                        style={{
-                          height: '1px',
-                          background: 'var(--color-stroke)',
-                          margin: '4px 0',
-                        }}
-                      />
-                    </>
-                  )}
-                  <button
-                    type="button"
-                    className="mh-silver-dropdown-item"
-                    onClick={handleLeaveCrew}
-                    disabled={leaving}
-                    style={{
-                      display: 'block',
-                      width: '100%',
-                      padding: 'var(--space-md) var(--space-lg)',
-                      background: 'transparent',
-                      border: 'none',
-                      textAlign: 'left',
-                      color: leaving ? 'var(--color-text-muted)' : 'var(--color-text-default)',
-                      fontFamily: 'var(--fontfamily-inter)',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      cursor: leaving ? 'not-allowed' : 'pointer',
-                      opacity: leaving ? 0.6 : 1,
-                    }}
-                  >
-                    {leaving ? 'Leaving...' : 'Leave crew'}
-                  </button>
-                  {isCreator && (
-                    <>
-                      <div
-                        style={{
-                          height: '1px',
-                          background: 'var(--color-stroke)',
-                          margin: '4px 0',
-                        }}
-                      />
-                      <button
-                        type="button"
-                        className="mh-silver-dropdown-item"
-                        onClick={handleDeleteCrew}
-                        disabled={deleting}
-                        style={{
-                          display: 'block',
-                          width: '100%',
-                          padding: 'var(--space-md) var(--space-lg)',
-                          background: 'transparent',
-                          border: 'none',
-                          textAlign: 'left',
-                          color: deleting ? 'var(--color-text-muted)' : '#ff4444',
-                          fontFamily: 'var(--fontfamily-inter)',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          cursor: deleting ? 'not-allowed' : 'pointer',
-                          opacity: deleting ? 0.6 : 1,
-                        }}
-                      >
-                        {deleting ? 'Deleting...' : 'Delete Crew'}
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+                  <img src={MENU_ICON} alt="" className="chats-event-menu-icon" />
+                </button>
+                <ActionMenu
+                  open={menuOpen}
+                  onClose={() => setMenuOpen(false)}
+                  items={[
+                    ...(isCreator ? [{
+                      label: 'Invite users to Crew',
+                      onClick: handleInviteUsers,
+                    }] : []),
+                    {
+                      label: 'Leave crew',
+                      onClick: handleLeaveCrew,
+                      loading: leaving,
+                      loadingLabel: 'Leaving...',
+                    },
+                    ...(isCreator ? [{
+                      label: 'Delete Crew',
+                      onClick: handleDeleteCrew,
+                      loading: deleting,
+                      loadingLabel: 'Deleting...',
+                      danger: true,
+                    }] : []),
+                  ]}
+                />
+              </div>
+            }
+          />
 
           <div className="chats-event-hero">
             <div
@@ -1156,7 +1079,7 @@ function CrewDetailContent() {
                   outline: 'none',
                   fontFamily: 'var(--fontfamily-inter)',
                   fontWeight: 500,
-                  fontSize: '14px',
+                  fontSize: 'var(--font-size-md)',
                   color: 'var(--color-text-darker)',
                   minWidth: 0,
                 }}
@@ -1169,13 +1092,13 @@ function CrewDetailContent() {
                     background: 'transparent',
                     border: 'none',
                     cursor: 'pointer',
-                    padding: '4px',
+                    padding: 'var(--space-xxs)',
                     display: 'flex',
                     alignItems: 'center',
-                    marginLeft: '8px',
+                    marginLeft: 'var(--space-sm)',
                   }}
                 >
-                  <img src={ICON_SEND} alt="Send" style={{ width: '20px', height: '20px' }} />
+                  <img src={ICON_SEND} alt="Send" style={{ width: 'var(--icon-size-md)', height: 'var(--icon-size-md)' }} />
                 </button>
               )}
             </div>
@@ -1193,105 +1116,104 @@ function CrewDetailContent() {
       )}
 
       {/* Invite Users Modal */}
-      {inviteModalOpen && (
-        <div className="invite-users-modal-overlay">
-          <div className="invite-users-modal" ref={inviteModalRef}>
-            <div className="invite-users-modal-header">
-              <h2 className="invite-users-modal-title">Invite Users</h2>
-            </div>
-
-            <div className="invite-users-modal-search">
-              <div className="invite-users-search-row">
-                <input
-                  type="text"
-                  placeholder="Search by name..."
-                  value={searchName}
-                  onChange={(e) => setSearchName(e.target.value)}
-                  className="invite-users-search-input"
-                />
-              </div>
-              <div className="invite-users-search-row">
-                <input
-                  type="text"
-                  placeholder="Search by city..."
-                  value={searchCity}
-                  onChange={(e) => setSearchCity(e.target.value)}
-                  className="invite-users-search-input"
-                />
-              </div>
-              <div className="invite-users-search-row">
-                <input
-                  type="text"
-                  placeholder="Search by gym..."
-                  value={searchGym}
-                  onChange={(e) => setSearchGym(e.target.value)}
-                  className="invite-users-search-input"
-                />
-              </div>
-            </div>
-
-            <div className="invite-users-modal-results custom-scrollbar">
-              {!searchCity.trim() && !searchGym.trim() && !searchName.trim() ? (
-                <div className="invite-users-empty">Enter search criteria to find users to invite.</div>
-              ) : searching ? (
-                <div className="invite-users-loading">Searching users...</div>
-              ) : searchResults.length === 0 ? (
-                <div className="invite-users-empty">No users found. Try adjusting your search filters.</div>
-              ) : (
-                searchResults.map((user) => {
-                  const isSelected = selectedUsers.has(user.id)
-                  const avatar = user.avatar_url || (user as any)?.photo || AVATAR_PLACEHOLDER
-                  const firstName = user.username?.split(' ')[0] || user.username || 'User'
-                  
-                  return (
-                    <div
-                      key={user.id}
-                      className={`invite-users-result-item ${isSelected ? 'invite-users-result-item-selected' : ''}`}
-                      onClick={() => toggleUserSelection(user.id)}
-                    >
-                      <div className="invite-users-result-avatar">
-                        <img src={avatar} alt={firstName} onError={(e) => {
-                          e.currentTarget.src = AVATAR_PLACEHOLDER
-                        }} />
-                      </div>
-                      <div className="invite-users-result-info">
-                        <div className="invite-users-result-name">{firstName}</div>
-                        {user.city && (
-                          <div className="invite-users-result-city">{user.city}</div>
-                        )}
-                      </div>
-                      <div className="invite-users-result-checkbox">
-                        {isSelected && (
-                          <div className="invite-users-checkmark">✓</div>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })
-              )}
-            </div>
-
-            <div className="invite-users-modal-actions">
-              <button
-                type="button"
-                className="invite-users-btn-cancel"
-                onClick={handleCancelInvite}
-                disabled={inviting}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="invite-users-btn-invite"
-                onClick={handleInvite}
-                disabled={inviting || selectedUsers.size === 0}
-              >
-                {inviting ? 'Inviting...' : `Invite ${selectedUsers.size > 0 ? `(${selectedUsers.size})` : ''}`}
-              </button>
-            </div>
+      <Modal
+        open={inviteModalOpen}
+        onClose={handleCancelInvite}
+        title="Invite Users"
+        size="lg"
+        footer={
+          <>
+            <button
+              type="button"
+              className="invite-users-btn-cancel"
+              onClick={handleCancelInvite}
+              disabled={inviting}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="invite-users-btn-invite"
+              onClick={handleInvite}
+              disabled={inviting || selectedUsers.size === 0}
+            >
+              {inviting ? 'Inviting...' : `Invite ${selectedUsers.size > 0 ? `(${selectedUsers.size})` : ''}`}
+            </button>
+          </>
+        }
+      >
+        <div className="invite-users-modal-search">
+          <div className="invite-users-search-row">
+            <input
+              type="text"
+              placeholder="Search by name..."
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              className="invite-users-search-input"
+            />
+          </div>
+          <div className="invite-users-search-row">
+            <input
+              type="text"
+              placeholder="Search by city..."
+              value={searchCity}
+              onChange={(e) => setSearchCity(e.target.value)}
+              className="invite-users-search-input"
+            />
+          </div>
+          <div className="invite-users-search-row">
+            <input
+              type="text"
+              placeholder="Search by gym..."
+              value={searchGym}
+              onChange={(e) => setSearchGym(e.target.value)}
+              className="invite-users-search-input"
+            />
           </div>
         </div>
-      )}
+
+        <div className="invite-users-modal-results custom-scrollbar">
+          {!searchCity.trim() && !searchGym.trim() && !searchName.trim() ? (
+            <div className="invite-users-empty">Enter search criteria to find users to invite.</div>
+          ) : searching ? (
+            <div className="invite-users-loading">Searching users...</div>
+          ) : searchResults.length === 0 ? (
+            <div className="invite-users-empty">No users found. Try adjusting your search filters.</div>
+          ) : (
+            searchResults.map((user) => {
+              const isSelected = selectedUsers.has(user.id)
+              const firstName = user.username?.split(' ')[0] || user.username || 'User'
+
+              return (
+                <div
+                  key={user.id}
+                  className={`invite-users-result-item ${isSelected ? 'invite-users-result-item-selected' : ''}`}
+                  onClick={() => toggleUserSelection(user.id)}
+                >
+                  <div className="invite-users-result-avatar">
+                    <Avatar
+                      src={user.avatar_url || (user as any)?.photo}
+                      alt={firstName}
+                      fallback={AVATAR_PLACEHOLDER}
+                    />
+                  </div>
+                  <div className="invite-users-result-info">
+                    <div className="invite-users-result-name">{firstName}</div>
+                    {user.city && (
+                      <div className="invite-users-result-city">{user.city}</div>
+                    )}
+                  </div>
+                  <div className="invite-users-result-checkbox">
+                    {isSelected && (
+                      <div className="invite-users-checkmark">✓</div>
+                    )}
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      </Modal>
     </div>
   )
 }

@@ -232,7 +232,7 @@ export default function PledgeStep() {
 
             {/* Error message */}
             {submitError && (
-              <div className="onb-error-message" style={{ color: 'var(--color-red)', fontSize: '14px', textAlign: 'center', marginTop: '8px' }}>
+              <div className="onb-error-message" style={{ color: 'var(--color-red)', fontSize: 'var(--font-size-md)', textAlign: 'center', marginTop: 'var(--space-sm)' }}>
                 {submitError}
               </div>
             )}

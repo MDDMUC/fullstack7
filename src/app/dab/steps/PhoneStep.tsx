@@ -130,7 +130,7 @@ export default function PhoneStep() {
                     fontWeight: 700,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
+                    gap: 'var(--space-sm)',
                     outline: 'none',
                     boxShadow: 'none',
                   }}
@@ -140,7 +140,7 @@ export default function PhoneStep() {
                 </button>
                 {open && (
                   <div className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden shadow-lg z-20" style={{ background: 'var(--color-panel)', border: '1px solid var(--color-stroke)', maxHeight: '260px', overflowY: 'auto', minWidth: '280px' }}>
-                    <div style={{ padding: '8px' }}>
+                    <div style={{ padding: 'var(--space-sm)' }}>
                       <input
                         type="search"
                         value={search}
@@ -160,9 +160,9 @@ export default function PhoneStep() {
                           setSearch('')
                           setOpen(false)
                         }}
-                        style={{ color: 'var(--color-text)', fontSize: '13px', whiteSpace: 'nowrap' }}
+                        style={{ color: 'var(--color-text)', fontSize: 'var(--font-size-xs)', whiteSpace: 'nowrap' }}
                       >
-                        <div style={{ display: 'grid', gridTemplateColumns: '32px 64px 1fr', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '32px 64px 1fr', alignItems: 'center', gap: 'var(--space-sm)' }}>
                           <span style={{ minWidth: '20px' }}>{option.flag || '🌐'}</span>
                           <span style={{ color: 'var(--color-primary)', fontWeight: 700, minWidth: '46px' }}>{option.code}</span>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{option.label}</span>

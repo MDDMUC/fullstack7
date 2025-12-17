@@ -1,6 +1,176 @@
 ## Work Log (last ~8 hours)
 
-### Chat list & event create page styling updates (latest)
+### Layout fix: Profile page MobileTopbar consistency (latest)
+- **Issue**: Profile page (`/profile`) had different layout behavior than other mobile pages
+  - Used `position: fixed` instead of `position: relative`
+  - Had dark background (`var(--color-surface-card)`) instead of light (`var(--color-text-default)`)
+  - Had custom overflow settings and different content structure
+- **Fixed `.profile-screen` CSS** to match other pages (chats, events, home, crew, gyms):
+  - Changed from `position: fixed; top: 0; left: 0; right: 0; bottom: 0;` to `position: relative; width: 100%;`
+  - Changed background from `var(--color-surface-card)` to `var(--color-text-default)`
+  - Changed overflow from `overflow-x: hidden; overflow-y: auto;` to `overflow: hidden;`
+- **Fixed `.profile-content` CSS** to match other content containers:
+  - Added `height: 100%;` and `flex: 1 1 0;` for proper flex layout
+  - Changed `justify-content` from implicit to `flex-start`
+  - Added `min-width: 0;` for proper flex child sizing
+- **Removed unused CSS**:
+  - Removed `.profile-screen--white` override class (no longer needed)
+  - Removed `.profile-screen > .mobile-topbar` margin rule (no longer needed)
+- **Updated profile/page.tsx**: Removed `profile-screen--white` class from JSX
+- **Impact**: Profile page now has identical MobileTopbar behavior and background as all other mobile pages
+- **Verified**: Build passed successfully (`npm run build`) - all 24 pages compiled with no errors
+
+### Component consolidation: Created reusable Modal component
+- **Created new Modal component** (`src/components/Modal.tsx`):
+  - Reusable modal dialog for overlays and dialogs throughout the app
+  - Props: `open`, `onClose`, `title`, `children`, `footer`, `showCloseButton`, `closeOnOverlayClick`, `className`, `overlayClassName`, `size`
+  - Three sizes: `sm` (300px), `md` (400px), `lg` (500px)
+  - Automatic click-outside-to-close and Escape key handling
+  - Optional close button (X) in header
+  - Optional title and footer slots for header/actions
+  - ARIA attributes for accessibility (`role="dialog"`, `aria-modal`, `aria-labelledby`)
+- **Added Modal CSS to globals.css**:
+  - `.modal-overlay`: Fixed position, semi-transparent background, centered content
+  - `.modal-container`: Card background, border, rounded corners, flex layout
+  - `.modal-header`: Title and close button layout
+  - `.modal-content`: Scrollable content area
+  - `.modal-footer`: Action buttons area
+- **Replaced invite modal in crew/detail/page.tsx**:
+  - Converted `invite-users-modal-overlay` + `invite-users-modal` structure to use `<Modal>` component
+  - Search fields and results remain in `children`, action buttons in `footer` prop
+  - Reduced ~20 lines of modal wrapper/header boilerplate
+- **"Not member" overlay kept as-is**: This specialized full-card overlay has unique layout tied to page structure; converting it would add complexity without benefit
+- **Impact**: Standardized modal pattern for future dialogs (confirmations, forms, etc.)
+- **Maintainability**: Modal styling and behavior (close on overlay click, escape key) centralized
+
+### Component consolidation: Created reusable ActionMenu component
+- **Created new ActionMenu component** (`src/components/ActionMenu.tsx`):
+  - Reusable action menu for three-dot dropdown menus throughout the app
+  - Props: `items` (array of actions), `open` (boolean), `onClose` (callback), `className`
+  - Each item supports: `label`, `onClick`, `disabled`, `loading`, `loadingLabel`, `danger` (red text)
+  - Handles click-outside-to-close behavior automatically
+  - Uses existing `mh-silver-dropdown-menu` and `mh-silver-dropdown-item` CSS classes
+  - Automatic dividers between menu items
+  - Loading states disable buttons and show loading text
+- **Replaced 3 custom dropdown implementations**:
+  - **crew/detail/page.tsx**: Replaced 110+ lines of dropdown code with ActionMenu (Invite users, Leave crew, Delete Crew)
+  - **chats/[id]/page.tsx (group chat)**: Replaced dropdown with ActionMenu (Delete Event Chat, Leave chat)
+  - **chats/[id]/page.tsx (direct chat)**: Replaced dropdown with ActionMenu (Leave chat with {name})
+- **Impact**: Reduced ~200 lines of duplicated inline-styled dropdown code
+- **Maintainability**: Dropdown styling and behavior centralized in one component
+- **Consistency**: All action menus now have identical styling and behavior
+
+### Design tokens: Added semantic size tokens and fixed magic numbers
+- **Added new semantic tokens to `tokens.css`**:
+  - Avatar/thumbnail sizes: `--avatar-size-xs: 20px`, `--avatar-size-sm: 34px`, `--avatar-size-md: 52px`, `--avatar-size-lg: 60px`
+  - Icon sizes: `--icon-size-sm: 16px`, `--icon-size-md: 20px`, `--icon-size-lg: 24px`
+  - Card/image heights: `--card-image-height-sm: 160px`, `--card-image-height-md: 200px`
+- **Replaced 4 instances of hard-coded magic numbers**:
+  - **partner-finder/page.tsx**: Replaced `height: '200px'` with `var(--card-image-height-md)` for session card images
+  - **partner-finder/page.tsx**: Replaced `width: 52, height: 52` with `var(--avatar-size-md)` for gym thumbnail
+  - **crew/detail/page.tsx**: Replaced `width: '20px', height: '20px'` with `var(--icon-size-md)` for send icon
+  - **profile/setup/page.tsx**: Replaced `height: 38` with `var(--btn-height-lg)` for save button
+- **Impact**: All component sizes now use semantic tokens instead of hard-coded pixel values
+- **Maintainability**: Size adjustments can be made in one location (tokens.css)
+- **Consistency**: Common sizes (avatars, icons, card images) now have standardized token names
+
+### Component consolidation: Created reusable Avatar component
+- **Created new Avatar component** (`src/components/Avatar.tsx`):
+  - Reusable avatar image with automatic fallback handling
+  - Props: `src` (avatar URL), `alt`, `fallback` (fallback URL), `size` (width/height), `className`, `wrapperClassName`, `showPlaceholder` (boolean)
+  - Automatically falls back to placeholder image when `src` is null/undefined or image fails to load
+  - Exports `DEFAULT_PLACEHOLDER` constant for consistent fallback across app
+  - `showPlaceholder={false}` renders nothing when src is null (for conditional avatar display)
+  - Uses React state to handle image error events and swap to fallback
+- **Replaced 5 instances of duplicated avatar patterns**:
+  - **chats/page.tsx**: Replaced inline `<img src={chat.avatar || PLACEHOLDER}>` with `<Avatar src={chat.avatar} />`
+  - **crew/detail/page.tsx (owner overlay)**: Replaced conditional `{avatar_url ? <img> : <div><img fallback></div>}` with `<Avatar src={ownerProfile.avatar_url} fallback={AVATAR_PLACEHOLDER} />`
+  - **crew/detail/page.tsx (invite modal)**: Replaced `<img src={avatar} onError={...}>` with `<Avatar src={...} fallback={AVATAR_PLACEHOLDER} />`
+  - **MobileTopbar.tsx**: Replaced conditional `{!avatarLoading && profileAvatar && <img>}` with `<Avatar showPlaceholder={false} />`
+  - **home/page.tsx**: Replaced conditional `{currentAvatar && <img>}` with `<Avatar showPlaceholder={false} />`
+- **Impact**: Reduced code duplication by consolidating avatar+fallback logic into single component
+- **Maintainability**: All avatar fallback handling now centralized - easy to update default placeholder or add loading states
+- **Consistency**: Uniform avatar rendering behavior across all pages
+
+### Component consolidation: Created reusable BackBar component
+- **Created new BackBar component** (`src/components/BackBar.tsx`):
+  - Reusable back navigation bar with consistent styling across the app
+  - Props: `backHref` (Link URL), `backText` (defaults to "back"), `onBackClick` (button handler), `centerSlot` (custom center content), `rightSlot` (right-side content like menus), `className`
+  - Supports both Link-based navigation (`backHref`) and button-based navigation (`onBackClick`)
+  - `centerSlot` prop allows custom content (e.g., avatar + name in chat detail)
+  - `rightSlot` prop allows optional right-side content (e.g., three-dot menu)
+  - Uses existing CSS classes: `.chats-event-backbar`, `.chats-event-back`, `.chats-event-back-icon`, `.chats-event-back-title`
+- **Replaced 4 instances of duplicated back navigation UI**:
+  - **events/create/page.tsx**: Replaced manual back bar with `<BackBar backHref="/events" backText="back" className="events-detail-backbar" />`
+  - **events/detail/page.tsx**: Replaced with `<BackBar>` including `rightSlot` for dots menu
+  - **crew/detail/page.tsx**: Replaced with `<BackBar>` including `rightSlot` for full dropdown menu (invite, leave, delete options)
+  - **chats/[id]/page.tsx**: Replaced with `<BackBar>` using `centerSlot` for avatar+name display and `rightSlot` for menu
+- **Impact**: Reduced code duplication by consolidating 4 back navigation implementations into single component
+- **Maintainability**: Future back bar changes (styling, icons, behavior) can be made in one location
+- **Flexibility**: Component handles multiple use cases via slots pattern
+
+### Component consolidation: Created reusable EmptyState component
+- **Created new EmptyState component** (`src/components/EmptyState.tsx`):
+  - Reusable empty state indicator with consistent styling across the app
+  - Uses design tokens: `var(--fontfamily-inter)`, `var(--font-size-md)`, `var(--color-text-muted)`, `var(--space-xl)`
+  - Includes accessibility attributes: `role="status"`, `aria-live="polite"`
+  - Accepts optional `message` prop (defaults to "No items found") and `className` prop for custom styling
+  - Centralizes empty state UI pattern that was duplicated across 3 files
+- **Replaced 3 instances of duplicated empty state UI**:
+  - **chats/page.tsx**: Replaced `<p className="chats-subtitle">No messages yet. Say hi!</p>` with `<EmptyState message="No messages yet. Say hi!" />`
+  - **gyms/page.tsx**: Replaced `<p className="gyms-empty">No gyms found</p>` with `<EmptyState message="No gyms found" />`
+  - **dab/steps/LocationStep.tsx**: Replaced `<p className="onb-gym-empty">No gyms found</p>` with `<EmptyState message="No gyms found" />`
+- **Impact**: Reduced code duplication by consolidating 3 empty state implementations into single component
+- **Maintainability**: Future empty state changes (styling, icons, etc.) can be made in one location
+- **Consistency**: All empty states now have uniform appearance and accessibility features
+
+### Component consolidation: Created reusable LoadingState component
+- **Created new LoadingState component** (`src/components/LoadingState.tsx`):
+  - Reusable loading indicator with consistent styling across the app
+  - Uses design tokens: `var(--fontfamily-inter)`, `var(--font-size-md)`, `var(--color-text-muted)`, `var(--space-xl)`
+  - Includes accessibility attributes: `role="status"`, `aria-live="polite"`
+  - Accepts optional `message` prop (defaults to "Loading…") and `className` prop for custom styling
+  - Centralizes loading state UI pattern that was duplicated across 6 files
+- **Replaced 6 instances of duplicated loading UI**:
+  - **events/page.tsx**: Replaced `<p className="events-loading">Loading events…</p>` with `<LoadingState message="Loading events…" />`
+  - **chats/page.tsx**: Replaced `<p className="chats-subtitle">Loading chats…</p>` with `<LoadingState message="Loading chats…" />`
+  - **crew/page.tsx**: Replaced `<p className="events-loading">Loading crews…</p>` with `<LoadingState message="Loading crews…" />`
+  - **gyms/page.tsx**: Replaced `<p className="gyms-loading">Loading gyms…</p>` with `<LoadingState message="Loading gyms…" />`
+  - **dab/steps/LocationStep.tsx**: Replaced `<p className="onb-gym-loading">Loading gyms...</p>` with `<LoadingState message="Loading gyms..." />`
+  - **home/page.tsx**: Skipped - has custom loading animation with dot indicator (kept as-is)
+- **Impact**: Reduced code duplication by consolidating 5 loading state implementations into single component
+- **Maintainability**: Future loading state changes (styling, animation, etc.) can be made in one location
+- **Consistency**: All loading states now have uniform appearance and accessibility features
+
+### Code refactoring: Hard-coded spacing and typography values replaced with design tokens
+- **Fixed hard-coded spacing values across 8 files (25+ instances)**:
+  - **crew/detail/page.tsx**: Replaced `padding: '20px'` with `var(--button-padding-xxxxl)` (2 instances), `padding: '4px'` with `var(--space-xxs)`, `marginLeft: '8px'` with `var(--space-sm)`
+  - **chats/[id]/page.tsx**: No spacing-only changes (combined with font size fixes)
+  - **partner-finder/page.tsx**: Replaced `gap: '10px'` with `var(--btn-pad-md)`, `padding: '12px'` with `var(--space-md)`, `gap: '6px'` with `var(--space-xs)`, `gap: '8px'` with `var(--space-sm)` (2 instances), `borderRadius: '12px'` with `var(--radius-md)` (3 instances), `padding: '4px 10px'` with `var(--space-xxs) var(--btn-pad-md)`, `top: 10, left: 10` with `var(--btn-pad-md)`, `marginBottom: 10` with `var(--btn-pad-md)`
+  - **events/create/page.tsx**: Replaced `gap: '12px'` with `var(--space-md)`
+  - **check-in/page.tsx**: Replaced `gap: '12px'` with `var(--space-md)`, `gap: '8px'` with `var(--space-sm)`
+  - **dab/steps/PhoneStep.tsx**: Replaced `gap: '8px'` with `var(--space-sm)` (2 instances), `padding: '8px'` with `var(--space-sm)`
+  - **dab/steps/PledgeStep.tsx**: Replaced `marginTop: '8px'` with `var(--space-sm)`
+- **Fixed hard-coded font size values across 5 files (10+ instances)**:
+  - **crew/detail/page.tsx**: Replaced `fontSize: '14px'` with `var(--font-size-md)` (4 instances)
+  - **chats/[id]/page.tsx**: Replaced `fontSize: '14px'` with `var(--font-size-md)` (3 instances)
+  - **partner-finder/page.tsx**: Replaced `fontSize: '11px'` with `var(--font-size-xs)`
+  - **dab/steps/PhoneStep.tsx**: Replaced `fontSize: '13px'` with `var(--font-size-xs)`
+  - **dab/steps/PledgeStep.tsx**: Replaced `fontSize: '14px'` with `var(--font-size-md)`
+- **Impact**: All inline styles now use consistent design tokens for spacing, sizing, and typography
+- **Design system consistency**: Eliminates magic numbers and hard-coded values throughout the codebase
+- **Maintainability**: Future design changes can be made by updating token values in a single location
+
+### Code refactoring: Hard-coded color values replaced with design tokens
+- **Fixed hard-coded color values across 3 files**:
+  - Replaced `#ff4444` (hard-coded red) with `var(--color-state-red)` design token in `/crew/detail/page.tsx` (line 1047)
+  - Replaced `#ff4444` (hard-coded red) with `var(--color-state-red)` design token in `/chats/[id]/page.tsx` (line 619)
+  - Replaced `text-[#757575]` (hard-coded gray) with inline style `color: 'var(--color-text-muted)'` in `/dab/page.tsx` (line 111)
+- **Impact**: All delete action buttons (Delete Crew, Delete Event Chat) now use consistent design token for red color
+- **Impact**: Loading state text now uses consistent muted text color token
+- **Design system consistency**: Improved adherence to design token system, making future theme changes easier
+
+### Chat list & event create page styling updates
 - **Chat list (`/chats`) styling improvements**:
   - Changed `.chats-card` background from previous color to `var(--color-card)` design token
   - Changed `.chats-divider` background to `var(--color-text-darker)` design token

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import { supabase } from '@/lib/supabaseClient'
+import LoadingState from '@/components/LoadingState'
+import EmptyState from '@/components/EmptyState'
 
 /**
  * Onboarding Step 3: Your Walls (Gyms)
@@ -183,9 +185,9 @@ export default function LocationStep() {
                 {/* Gym grid - flex-wrap with gap 6px */}
                 <div className="onb-gym-grid" data-node-id="483:881">
                   {loading ? (
-                    <p className="onb-gym-loading">Loading gyms...</p>
+                    <LoadingState message="Loading gyms..." />
                   ) : gyms.length === 0 ? (
-                    <p className="onb-gym-empty">No gyms found</p>
+                    <EmptyState message="No gyms found" />
                   ) : (
                     <>
                       {/* "I climb outside" option */}

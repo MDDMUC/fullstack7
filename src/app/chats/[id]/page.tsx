@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import MobileNavbar from '@/components/MobileNavbar'
+import BackBar from '@/components/BackBar'
 import { ChatMessage } from '@/components/ChatMessage'
+import ActionMenu from '@/components/ActionMenu'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile } from '@/lib/profiles'
@@ -578,7 +580,7 @@ export default function ChatDetailPage() {
                 <img src={ICON_BACK} alt="" width={28} height={28} />
               </button>
               <div className="chat-gym-backbar-title">back</div>
-              <div style={{ position: 'relative' }} ref={groupMenuRef}>
+              <div style={{ position: 'relative' }}>
                 <button
                   type="button"
                   className="chat-detail-icon-btn"
@@ -587,78 +589,25 @@ export default function ChatDetailPage() {
                 >
                   <img src={ICON_MENU} alt="" width={28} height={28} />
                 </button>
-                {groupMenuOpen && (
-                  <div
-                    className="mh-silver-dropdown-menu mh-silver-dropdown-right"
-                    style={{
-                      position: 'absolute',
-                      top: 'calc(100% + 8px)',
-                      right: 0,
-                      zIndex: 1000,
-                      minWidth: '200px',
-                      background: 'var(--color-surface-card)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-stroke)',
-                      padding: '4px 0',
-                    }}
-                  >
-                    {isEventThread && isEventCreator && (
-                      <>
-                        <button
-                          type="button"
-                          className="mh-silver-dropdown-item"
-                          onClick={handleDeleteEventChat}
-                          disabled={deletingEvent}
-                          style={{
-                            display: 'block',
-                            width: '100%',
-                            padding: 'var(--space-md) var(--space-lg)',
-                            background: 'transparent',
-                            border: 'none',
-                            textAlign: 'left',
-                            color: deletingEvent ? 'var(--color-text-muted)' : '#ff4444',
-                            fontFamily: 'var(--fontfamily-inter)',
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            cursor: deletingEvent ? 'not-allowed' : 'pointer',
-                            opacity: deletingEvent ? 0.6 : 1,
-                          }}
-                        >
-                          {deletingEvent ? 'Deleting...' : 'Delete Event Chat'}
-                        </button>
-                        <div
-                          style={{
-                            height: '1px',
-                            background: 'var(--color-stroke)',
-                            margin: '4px 0',
-                          }}
-                        />
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      className="mh-silver-dropdown-item"
-                      onClick={handleLeaveChat}
-                      disabled={leaving}
-                      style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: 'var(--space-md) var(--space-lg)',
-                        background: 'transparent',
-                        border: 'none',
-                        textAlign: 'left',
-                        color: leaving ? 'var(--color-text-muted)' : 'var(--color-text-default)',
-                        fontFamily: 'var(--fontfamily-inter)',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        cursor: leaving ? 'not-allowed' : 'pointer',
-                        opacity: leaving ? 0.6 : 1,
-                      }}
-                    >
-                      {leaving ? 'Leaving...' : `Leave ${isEventThread ? 'event' : 'gym'} chat`}
-                    </button>
-                  </div>
-                )}
+                <ActionMenu
+                  open={groupMenuOpen}
+                  onClose={() => setGroupMenuOpen(false)}
+                  items={[
+                    ...(isEventThread && isEventCreator ? [{
+                      label: 'Delete Event Chat',
+                      onClick: handleDeleteEventChat,
+                      loading: deletingEvent,
+                      loadingLabel: 'Deleting...',
+                      danger: true,
+                    }] : []),
+                    {
+                      label: `Leave ${isEventThread ? 'event' : 'gym'} chat`,
+                      onClick: handleLeaveChat,
+                      loading: leaving,
+                      loadingLabel: 'Leaving...',
+                    },
+                  ]}
+                />
               </div>
             </div>
 
@@ -733,66 +682,42 @@ export default function ChatDetailPage() {
           </div>
         ) : (
           <div className="chat-detail-card">
-            <header className="chat-detail-header">
-              <button type="button" className="chat-detail-icon-btn" aria-label="Back" onClick={() => router.back()}>
-                <img src={ICON_BACK} alt="" width={24} height={24} />
-              </button>
-              <div className="chat-detail-partner">
-                <div className="chat-detail-avatar">
-                  <img src={otherProfile?.avatar_url || AVATAR_PLACEHOLDER} alt="" width={34} height={34} className="chat-detail-avatar-img" />
-                </div>
-                <div className="chat-detail-name">{otherFirstName}</div>
-              </div>
-              <div style={{ position: 'relative' }} ref={menuRef}>
-                <button
-                  type="button"
-                  className="chat-detail-icon-btn"
-                  aria-label="More options"
-                  onClick={() => setMenuOpen(!menuOpen)}
-                >
-                  <img src={ICON_MENU} alt="" width={24} height={24} />
-                </button>
-                {menuOpen && isDirect && (
-                  <div
-                    className="mh-silver-dropdown-menu mh-silver-dropdown-right"
-                    style={{
-                      position: 'absolute',
-                      top: 'calc(100% + 8px)',
-                      right: 0,
-                      zIndex: 1000,
-                      minWidth: '200px',
-                      background: 'var(--color-surface-card)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--color-stroke)',
-                      padding: '4px 0',
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="mh-silver-dropdown-item"
-                      onClick={handleLeaveChat}
-                      disabled={leaving}
-                      style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: 'var(--space-md) var(--space-lg)',
-                        background: 'transparent',
-                        border: 'none',
-                        textAlign: 'left',
-                        color: leaving ? 'var(--color-text-muted)' : 'var(--color-text-default)',
-                        fontFamily: 'var(--fontfamily-inter)',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                        cursor: leaving ? 'not-allowed' : 'pointer',
-                        opacity: leaving ? 0.6 : 1,
-                      }}
-                    >
-                      {leaving ? 'Leaving...' : `Leave chat with ${otherFirstName}`}
-                    </button>
+            <BackBar
+              onBackClick={() => router.back()}
+              className="chat-detail-header"
+              centerSlot={
+                <div className="chat-detail-partner">
+                  <div className="chat-detail-avatar">
+                    <img src={otherProfile?.avatar_url || AVATAR_PLACEHOLDER} alt="" width={34} height={34} className="chat-detail-avatar-img" />
                   </div>
-                )}
-              </div>
-            </header>
+                  <div className="chat-detail-name">{otherFirstName}</div>
+                </div>
+              }
+              rightSlot={
+                <div style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    className="chat-detail-icon-btn"
+                    aria-label="More options"
+                    onClick={() => setMenuOpen(!menuOpen)}
+                  >
+                    <img src={ICON_MENU} alt="" width={24} height={24} />
+                  </button>
+                  {isDirect && (
+                    <ActionMenu
+                      open={menuOpen}
+                      onClose={() => setMenuOpen(false)}
+                      items={[{
+                        label: `Leave chat with ${otherFirstName}`,
+                        onClick: handleLeaveChat,
+                        loading: leaving,
+                        loadingLabel: 'Leaving...',
+                      }]}
+                    />
+                  )}
+                </div>
+              }
+            />
 
             <div className="chat-detail-divider" />
 

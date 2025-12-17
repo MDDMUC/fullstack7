@@ -6,6 +6,7 @@ import { RequireAuth } from '@/components/RequireAuth'
 import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
+import LoadingState from '@/components/LoadingState'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
 
@@ -304,7 +305,7 @@ export default function EventsScreen() {
               </div>
             </Link>
 
-            {loading && <p className="events-loading">Loading events…</p>}
+            {loading && <LoadingState message="Loading events…" />}
             {!loading &&
               events.map(ev => (
                 <Link 

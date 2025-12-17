@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
+import Avatar from '@/components/Avatar'
 
 const IMG_BACK = 'https://www.figma.com/api/mcp/asset/66aa6b9e-8828-4ea6-b35f-7f40de2a84f9'
 const IMG_ICON = 'https://www.figma.com/api/mcp/asset/819ae93e-17ef-4b2b-9423-20ebaf8b10f1'
@@ -536,8 +537,13 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
             <Link href="/profile" className="mobile-topbar-profile-link">
               <div className="mobile-topbar-profile" data-name="profile" data-node-id="764:3073">
                 <div className="mobile-topbar-profile-icon" data-name="icon" data-node-id="764:3074">
-                  {!avatarLoading && profileAvatar && (
-                    <img src={profileAvatar} alt="Profile" className="mobile-topbar-profile-img" key={userId || 'avatar'} />
+                  {!avatarLoading && (
+                    <Avatar
+                      src={profileAvatar}
+                      alt="Profile"
+                      className="mobile-topbar-profile-img"
+                      showPlaceholder={false}
+                    />
                   )}
                 </div>
               </div>

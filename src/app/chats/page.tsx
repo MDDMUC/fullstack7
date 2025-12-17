@@ -7,6 +7,9 @@ import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
+import LoadingState from '@/components/LoadingState'
+import EmptyState from '@/components/EmptyState'
+import Avatar from '@/components/Avatar'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
 import { useAuthSession } from '@/hooks/useAuthSession'
@@ -463,9 +466,9 @@ export default function ChatsScreen() {
 
           {/* Chat List Card */}
           <div className="chats-card custom-scrollbar">
-            {isLoading && <p className="chats-subtitle">Loading chats…</p>}
+            {isLoading && <LoadingState message="Loading chats…" />}
             {!isLoading && items.length === 0 && (
-              <p className="chats-subtitle">No messages yet. Say hi!</p>
+              <EmptyState message="No messages yet. Say hi!" />
             )}
             {!isLoading &&
               items.map((chat, idx) => (
@@ -477,12 +480,8 @@ export default function ChatsScreen() {
                     <div className="chats-preview-cont">
                       <div className="chats-avatar-wrapper">
                         <div className="chats-avatar-bg" />
-                        <img
-                          src={
-                            chat.avatar ||
-                            'https://www.figma.com/api/mcp/asset/ed027546-d8d0-4b5a-87e8-12db5e07cdd7'
-                          }
-                          alt=""
+                        <Avatar
+                          src={chat.avatar}
                           className="chats-avatar-img"
                         />
                         {chat.unread && <UnreadDot />}

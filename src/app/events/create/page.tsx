@@ -6,6 +6,7 @@ import { useRef, useState } from 'react'
 
 import ButtonCta from '@/components/ButtonCta'
 import MobileNavbar from '@/components/MobileNavbar'
+import BackBar from '@/components/BackBar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
@@ -113,15 +114,11 @@ export default function EventCreatePage() {
       <div className="events-create-screen" data-name="/event/create">
         <div className="events-create-content">
           <div className="events-create-card">
-            <div className="events-detail-backbar">
-              <Link href="/events" className="events-detail-back-btn" aria-label="Back">
-                <img src="/icons/chevron-left.svg" alt="" className="events-detail-back-icon" />
-              </Link>
-              <div className="events-detail-back-text">back</div>
-              <div className="events-detail-dots">
-                <img src="/icons/dots.svg" alt="" className="events-detail-dots-img" />
-              </div>
-            </div>
+            <BackBar
+              backHref="/events"
+              backText="back"
+              className="events-detail-backbar"
+            />
 
             <div className={`events-create-hero ${!imageUrl ? 'events-create-hero-fallback' : ''}`}>
               {imageUrl && <img src={imageUrl} alt="" className="events-create-hero-img" />}
@@ -163,7 +160,7 @@ export default function EventCreatePage() {
                     className="events-create-file-input"
                   />
                 </div>
-                <div className="events-create-input" style={{ display: 'flex', gap: '12px', padding: 0 }}>
+                <div className="events-create-input" style={{ display: 'flex', gap: 'var(--space-md)', padding: 0 }}>
                   <input
                     type="number"
                     className="events-create-input"

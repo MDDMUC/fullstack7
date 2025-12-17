@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
+import LoadingState from '@/components/LoadingState'
+import EmptyState from '@/components/EmptyState'
 import { supabase } from '@/lib/supabaseClient'
 import { getBarHeightsForDay, getLiveIndicatorPosition, getDayName, getChartTimes, getCurrentOccupancy } from '@/lib/gymOccupancyData'
 
@@ -236,9 +238,9 @@ export default function GymsScreen() {
                 )}
               </div>
             </div>
-            {loading && <p className="gyms-loading">Loading gyms…</p>}
+            {loading && <LoadingState message="Loading gyms…" />}
             {!loading && gyms.length === 0 && (
-              <p className="gyms-empty">No gyms found</p>
+              <EmptyState message="No gyms found" />
             )}
             {!loading &&
               gyms.map(gym => (

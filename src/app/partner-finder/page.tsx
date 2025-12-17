@@ -145,7 +145,7 @@ export default function PartnerFinderPage() {
         ) : null}
       </section>
 
-      <section className="panel filter-panel" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr)) 100px', gap: '10px', alignItems: 'end' }}>
+      <section className="panel filter-panel" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr)) 100px', gap: 'var(--btn-pad-md)', alignItems: 'end' }}>
         <label className="field">
           <span>Gym</span>
           <select value={filters.gym} onChange={e => setFilters(prev => ({ ...prev, gym: e.target.value }))}>
@@ -196,11 +196,11 @@ export default function PartnerFinderPage() {
       <section className="session-grid">
         {filteredSessions.map(session => (
           <article key={session.id} className="session-card">
-            <div style={{ position: 'relative', overflow: 'hidden', borderRadius: '12px', border: '1px solid var(--color-stroke)', marginBottom: 10 }}>
+            <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-stroke)', marginBottom: 'var(--btn-pad-md)' }}>
               <img
                 src={sessionImages[Math.abs(session.id.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0)) % sessionImages.length]}
                 alt={session.gym}
-                style={{ width: '100%', height: '200px', objectFit: 'cover', display: 'block' }}
+                style={{ width: '100%', height: 'var(--card-image-height-md)', objectFit: 'cover', display: 'block' }}
               />
               <div
                 style={{
@@ -209,11 +209,11 @@ export default function PartnerFinderPage() {
                   background: 'linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.55))',
                   display: 'flex',
                   alignItems: 'flex-end',
-                  padding: '12px',
+                  padding: 'var(--space-md)',
                 }}
               >
-                <div style={{ display: 'grid', gap: '6px' }}>
-                  <div style={{ position: 'absolute', top: 10, left: 10, width: 52, height: 52, borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--color-stroke)' }}>
+                <div style={{ display: 'grid', gap: 'var(--space-xs)' }}>
+                  <div style={{ position: 'absolute', top: 'var(--btn-pad-md)', left: 'var(--btn-pad-md)', width: 'var(--avatar-size-md)', height: 'var(--avatar-size-md)', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--color-stroke)' }}>
                     <img src={gymThumbFor(session.gym)} alt={session.gym} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
@@ -224,8 +224,8 @@ export default function PartnerFinderPage() {
                     className="pill"
                     style={{
                       width: 'fit-content',
-                      padding: '4px 10px',
-                      fontSize: '11px',
+                      padding: 'var(--space-xxs) var(--btn-pad-md)',
+                      fontSize: 'var(--font-size-xs)',
                       lineHeight: 1.1,
                       border: '1px solid var(--color-stroke)',
                       background: 'rgba(12,14,18,0.65)',
@@ -239,7 +239,7 @@ export default function PartnerFinderPage() {
               </div>
             </div>
             <header>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', alignItems: 'center' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 'var(--space-sm)', alignItems: 'center' }}>
                 <div>
                   <p className="muted small" style={{ margin: 0 }}>{session.day} - {session.time}</p>
                   <p className="muted small" style={{ margin: 0 }}>Style: {session.style} • Grade: {session.grade}</p>
@@ -272,7 +272,7 @@ export default function PartnerFinderPage() {
               {session.tags.map(tag => <span key={tag} className="ghost-tag">{tag}</span>)}
             </div>
             <div className="session-actions">
-              <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+              <div style={{ display: 'flex', gap: 'var(--space-sm)', width: '100%' }}>
                 <button className="button-navlink" style={{ flex: 1 }} onClick={() => router.push('/gym-chat')}>Ask in wall</button>
                 <button className="button-navlink button-navlink-hover" style={{ flex: 1 }} onClick={handleJoin}>I&apos;m in</button>
               </div>
