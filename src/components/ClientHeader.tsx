@@ -6,8 +6,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-// Routes where the header should be hidden (onboarding flows, preview pages, mobile home/chats/events/profile/crew)
-const HIDDEN_HEADER_ROUTES = ['/dab', '/signup', '/chats', '/home', '/events', '/profile', '/crew', '/gyms']
+// Routes where the header should be hidden (onboarding flows, preview pages, mobile home/chats/events/profile/crew/notifications)
+const HIDDEN_HEADER_ROUTES = ['/dab', '/signup', '/chats', '/home', '/events', '/profile', '/crew', '/gyms', '/notifications']
 
 export default function ClientHeader() {
   const pathname = usePathname()

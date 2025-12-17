@@ -14302,3 +14302,239 @@ img.friend-tile-img {
   border-top: 1px solid var(--color-stroke);
   flex-shrink: 0;
 }
+
+/* ========================================
+   NOTIFICATIONS PAGE - Exact from Figma node 786:2988
+   ======================================== */
+.notifications-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-text-default);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.notifications-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* 16px */
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-lg); /* 16px */
+  padding-bottom: 0;
+  position: relative;
+  flex: 1 1 0;
+  box-sizing: border-box;
+}
+
+/* Full-width topbar/navbar inside content */
+.notifications-content .mobile-topbar,
+.notifications-content .mobile-navbar {
+  width: calc(100% + (var(--space-lg) * 2));
+  margin-left: calc(-1 * var(--space-lg));
+  margin-right: calc(-1 * var(--space-lg));
+}
+
+.notifications-content .mobile-topbar-content {
+  width: 100%;
+}
+
+/* Notification card container - matches Figma node 786:2988 */
+.notifications-card {
+  background: var(--color-surface-bg); /* #0c0e12 */
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  gap: var(--space-sm); /* 8px */
+  align-items: center;
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: clip;
+  padding: var(--space-lg); /* 16px */
+  position: relative;
+  border-radius: var(--radius-xl); /* 24px */
+  box-shadow: var(--shadow-base);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Notifications list - matches Figma node 786:2987 */
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm); /* 8px */
+  width: 100%;
+}
+
+/* Individual notification tile - matches Figma node 780:2917 */
+.notification-tile {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm); /* 8px */
+  padding: var(--space-xs); /* 6px */
+  background: var(--color-surface-card); /* #151927 */
+  border-radius: var(--radius-lg); /* 14px */
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.notification-tile:hover {
+  background: var(--color-surface-panel);
+}
+
+/* Notification avatar - matches Figma node 780:2908 */
+.notification-tile-avatar {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-tile-avatar-img {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md); /* 10px */
+  object-fit: cover;
+  background: var(--color-text-default); /* #e9eef7 - fallback bg */
+}
+
+/* Notification text container - matches Figma node 780:2912 */
+.notification-tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxxs); /* 2px */
+  flex: 1 0 0;
+  min-width: 0;
+  justify-content: center;
+}
+
+/* Notification title - matches body/base: 16px Medium */
+.notification-tile-title {
+  font-family: var(--fontfamily-inter);
+  font-weight: 500; /* Medium */
+  font-size: var(--font-size-md); /* 16px */
+  line-height: 1;
+  color: var(--color-text-default); /* #e9eef7 */
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Notification timestamp - matches body/xs: 12px Regular */
+.notification-tile-timestamp {
+  font-family: var(--fontfamily-inter);
+  font-weight: 400; /* Regular */
+  font-size: var(--font-size-sm); /* 12px */
+  line-height: 1;
+  color: var(--color-text-muted); /* #8ea0bd */
+  margin: 0;
+}
+
+/* Crew invite action buttons */
+.notification-tile-actions {
+  display: flex;
+  gap: var(--space-xs); /* 6px */
+  flex-shrink: 0;
+}
+
+.notification-action-accept,
+.notification-action-decline {
+  padding: var(--space-xxs) var(--space-sm); /* 4px 8px */
+  font-family: var(--fontfamily-inter);
+  font-weight: 600;
+  font-size: var(--font-size-xs); /* 10px */
+  border-radius: var(--radius-sm); /* 6px */
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.notification-action-accept {
+  background: var(--color-primary);
+  color: var(--color-surface-bg);
+}
+
+.notification-action-accept:hover {
+  background: var(--color-secondary);
+}
+
+.notification-action-accept:active {
+  transform: scale(0.96);
+}
+
+.notification-action-decline {
+  background: var(--color-surface-panel);
+  color: var(--color-text-muted);
+}
+
+.notification-action-decline:hover {
+  background: var(--color-stroke);
+  color: var(--color-text-default);
+}
+
+.notification-action-decline:active {
+  transform: scale(0.96);
+}
+
+/* Processing state for notification actions */
+.notification-action-accept.processing,
+.notification-action-decline.processing {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notification-action-accept:disabled,
+.notification-action-decline:disabled {
+  pointer-events: none;
+}
+
+/* Dismiss button for info notifications */
+.notification-dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm); /* 6px */
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.notification-dismiss:hover {
+  color: var(--color-text-default);
+  background: var(--color-surface-panel);
+}
+
+.notification-dismiss:active {
+  transform: scale(0.92);
+}
+
+.notification-dismiss svg {
+  width: 16px;
+  height: 16px;
+}

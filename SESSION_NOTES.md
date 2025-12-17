@@ -1,6 +1,18 @@
 ## Work Log (last ~8 hours)
 
-### Layout fix: Profile page MobileTopbar consistency (latest)
+### Behavior fix: MobileNavbar shows no active state on /profile, /gyms, /notifications (latest)
+- **Issue**: On `/profile`, `/gyms`, and `/notifications` pages, the MobileNavbar was incorrectly showing the "Dab" icon as active
+  - The existing logic set `resolvedActive` to `'Default'` for these pages
+  - But the `isActive` calculation had: `(resolvedActive === 'Default' && item.id === 'dab')` which made Dab active
+- **Fixed MobileNavbar.tsx**:
+  - Added `forceNoActive` state to track when we're on a page where no icon should be active
+  - Set `forceNoActive = true` for `/profile`, `/gyms`, `/notifications` paths
+  - Updated `isActive` logic: `!forceNoActive && (item.id === resolvedActive || (resolvedActive === 'Default' && item.id === 'dab'))`
+  - Now when `forceNoActive` is true, all icons show their default (inactive) state
+- **Impact**: MobileNavbar now correctly shows all icons in default state on /profile, /gyms, /notifications pages
+- **Verified**: Build passed successfully
+
+### Layout fix: Profile page MobileTopbar consistency
 - **Issue**: Profile page (`/profile`) had different layout behavior than other mobile pages
   - Used `position: fixed` instead of `position: relative`
   - Had dark background (`var(--color-surface-card)`) instead of light (`var(--color-text-default)`)
@@ -634,3 +646,53 @@
     - Added `!loading &&` gate to `specialTopChips` rendering
     - Added `key={profile?.id || 'profile-img'}` to force re-render on profile change
   - **Result**: Profile content only renders after data is loaded, preventing any stale/cached images from showing
+
+### Notifications page implementation (latest)
+- **Created dedicated `/notifications` page**:
+  - New page at `src/app/notifications/page.tsx` with MobileTopbar and MobileNavbar
+  - Fetches all notifications from Supabase: messages, crew invites (to user and from users), dabs
+  - Displays notification tiles with avatar, title text (16px Medium), and timestamp (12px Regular, muted)
+  - Styled using design tokens: `var(--color-surface-bg)`, `var(--color-surface-card)`, `var(--space-lg)`, `var(--radius-lg)`
+  - Added to `HIDDEN_HEADER_ROUTES` in `ClientHeader.tsx` to hide global header
+  - MobileNavbar shows no active state on `/notifications` (already handled by existing logic)
+
+- **Updated MobileTopbar to navigate to `/notifications`**:
+  - Replaced notification dropdown button with Link to `/notifications`
+  - Removed ~400 lines of dropdown code (accept/decline handlers, notification fetching)
+  - Kept simple unread check for bell icon dot indicator
+  - Bell icon now navigates to dedicated notifications page instead of opening dropdown
+
+- **Crew invite deduplication**:
+  - **Issue**: Same crew invite request from same user was showing multiple times
+  - **Solution**:
+    - Added deduplication logic when fetching crew invites: filters by `invitee_id + crew_id` combo
+    - Only shows most recent invite per unique user+crew pair
+    - When accepting/declining, updates ALL pending invites for the same user+crew combo
+  - **Result**: No more duplicate notifications for the same request
+
+- **Processing states for accept/decline buttons**:
+  - Added `processingIds` state to track which notifications are being processed
+  - Buttons show "..." and are disabled while processing to prevent double-clicks
+  - CSS: `.notification-action-accept.processing`, `.notification-action-decline.processing` with `opacity: 0.6`
+
+- **Dismiss functionality for info notifications**:
+  - Added X dismiss button for non-crew_invite notifications (dabs, messages)
+  - Dismissed notification IDs stored in localStorage (`dab_dismissed_notifications`)
+  - `getDismissedNotifications()` and `saveDismissedNotifications()` helpers
+  - Notifications filter out dismissed IDs when displaying
+  - CSS: `.notification-dismiss` button with hover/active states
+
+- **Unread indicator updates for dismissed notifications**:
+  - MobileTopbar now accounts for dismissed notifications when checking unread count
+  - Fetches actual dab IDs and filters out dismissed ones (not just count)
+  - Crew invites (pending) always count toward unread (can't be dismissed, only accepted/declined)
+  - Listens for `notifications-updated` custom event to re-check when notifications are dismissed on same page
+  - Listens for `storage` event to sync when dismissed in another tab
+  - Dispatches `notifications-updated` event when accepting/declining crew invites or dismissing notifications
+
+- **CSS additions**:
+  - `.notifications-screen`, `.notifications-content`, `.notifications-card` - page layout
+  - `.notifications-list`, `.notification-tile` - notification list and tiles
+  - `.notification-tile-avatar`, `.notification-tile-text`, `.notification-tile-title`, `.notification-tile-timestamp`
+  - `.notification-tile-actions`, `.notification-action-accept`, `.notification-action-decline` - crew invite buttons
+  - `.notification-dismiss` - dismiss X button for info notifications
