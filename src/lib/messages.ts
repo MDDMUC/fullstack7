@@ -79,3 +79,48 @@ export function subscribeToThread(threadId: string, cb: (msg: Message) => void) 
     )
     .subscribe()
 }
+
+/**
+ * Unified unread detection logic.
+ *
+ * Rules:
+ * - Direct chats: receiver_id === userId && sender_id !== userId && status !== 'read'
+ * - Group threads: sender_id !== userId && status !== 'read' (receiver_id unreliable in groups)
+ */
+export type UnreadCheckMessage = {
+  sender_id: string
+  receiver_id: string
+  status: string | null
+}
+
+export function isMessageUnread(
+  msg: UnreadCheckMessage,
+  userId: string,
+  isDirect: boolean
+): boolean {
+  const statusLower = (msg.status ?? '').toLowerCase()
+  const isRead = statusLower === 'read'
+  const notFromMe = msg.sender_id !== userId
+
+  if (isDirect) {
+    return msg.receiver_id === userId && notFromMe && !isRead
+  } else {
+    // Group threads: any unread message not from the current user
+    return notFromMe && !isRead
+  }
+}
+
+/**
+ * Check if a thread has any unread messages based on the latest message.
+ */
+export function isThreadUnread(
+  latestMsg: UnreadCheckMessage | null | undefined,
+  userId: string,
+  isDirect: boolean,
+  hasMessages: boolean
+): boolean {
+  // For direct chats with no messages yet, consider as "unread" to encourage interaction
+  if (!hasMessages && isDirect) return true
+  if (!latestMsg) return false
+  return isMessageUnread(latestMsg, userId, isDirect)
+}

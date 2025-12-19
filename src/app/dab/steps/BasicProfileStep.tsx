@@ -59,7 +59,7 @@ export default function BasicProfileStep() {
     setCurrentStep(2)
   }
 
-  const isValid = name.trim() !== '' && age.trim() !== '' && gender !== null
+  const isValid = name.trim() !== '' && age.trim() !== '' && gender !== null && imagePreview !== null
 
   return (
     <div 

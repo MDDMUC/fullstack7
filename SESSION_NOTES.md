@@ -696,3 +696,373 @@
   - `.notification-tile-avatar`, `.notification-tile-text`, `.notification-tile-title`, `.notification-tile-timestamp`
   - `.notification-tile-actions`, `.notification-action-accept`, `.notification-action-decline` - crew invite buttons
   - `.notification-dismiss` - dismiss X button for info notifications
+
+### Step 1: Chat send/read/unread hardening (chats/[id]/page.tsx)
+
+**File: `src/app/chats/[id]/page.tsx`**
+
+1. **Fixed mark-read effect to exclude sender's own messages** (lines 440-471)
+   - Added `m.sender_id !== userId` check to prevent marking sender's own messages as read
+   - This fixes the issue where group thread messages (which set `receiver_id` to the sender due to `otherUserId || userId` fallback at line 399) could be incorrectly marked as read by the sender
+   - Before: `messages.filter(m => m.receiver_id === userId)`
+   - After: `messages.filter(m => m.receiver_id === userId && m.sender_id !== userId)`
+
+2. **Enforced status flow: sent -> delivered -> read**
+   - Changed `toRead` filter from `m.status !== 'read'` to `m.status === 'delivered'`
+   - Now properly sequences updates: first mark 'sent' -> 'delivered', then 'delivered' -> 'read'
+   - Added follow-up update to mark newly delivered messages as 'read' immediately (for instant read on view)
+   - This respects the status state machine: sent -> delivered -> read
+
+3. **Improved realtime UPDATE handler** (lines 363-369)
+   - Changed from using `payload.old.id` to `payload.new.id` for more robust message matching
+   - `payload.old` may not always have all fields; `payload.new` is guaranteed to have the updated message
+   - Added comment explaining the handler updates status changes (delivered/read)
+
+**Issues identified for later steps:**
+- Group thread unread detection is broken by design: `receiver_id` is set to sender for groups, meaning other participants never see group messages as "unread" (requires `sender_id !== userId` check everywhere)
+- Unread logic duplicated in `chats/page.tsx` (lines 292-296) and `MobileNavbar.tsx` (lines 181-194) - should be unified in Step 2
+
+**Manual testing checklist:**
+- [ ] Open direct chat, send message - verify status shows as 'sent'
+- [ ] Have recipient open chat - verify sender's message status updates to 'read' via realtime
+- [ ] Verify sender's own messages are never marked 'read' by sender's mark-read effect
+- [ ] Open group chat, send message - verify no errors in console
+- [ ] Verify realtime status updates propagate when recipient reads messages
+
+### Additional fixes for group chat read receipts and notifications
+
+**Issue 1: Nested button hydration error in notifications page**
+- **File**: `src/app/notifications/page.tsx`
+- Changed outer notification tile from `<button>` to `<div role="button">` with proper keyboard handling
+- Added `e.stopPropagation()` to inner buttons (accept/decline/dismiss) to prevent event bubbling
+- This fixes the invalid HTML error: `<button> cannot be a descendant of <button>`
+
+**Issue 2: Group chat read receipts not working**
+- **Root cause**: For group threads, `receiver_id` is set to the sender (`otherUserId || userId` where `otherUserId` is null for groups). This meant other participants couldn't mark messages as read since `receiver_id !== their userId`.
+- **Fix in `src/app/chats/[id]/page.tsx`** (mark-read effect):
+  - For direct chats: use `receiver_id === userId && sender_id !== userId`
+  - For group chats: use `sender_id !== userId` (any message not from you can be marked read)
+
+**Issue 3: Notifications/unread indicators not showing for group chats**
+- Same root cause as above - unread detection used `receiver_id === userId` which is always false for group messages received by others.
+- **Fixed in 3 files:**
+  1. `src/components/MobileNavbar.tsx` (checkUnreadChats):
+     - Now fetches `sender_id` in message query
+     - Direct threads: `receiver_id === userId && sender_id !== userId && status !== 'read'`
+     - Group threads: `sender_id !== userId && status !== 'read'`
+  2. `src/components/MobileNavbar.tsx` (checkUnreadCrews):
+     - Changed from `receiver_id === userId` to `sender_id !== userId`
+  3. `src/app/chats/page.tsx` (isUnread calculation):
+     - Same logic: direct uses receiver_id check, groups use sender_id check
+
+### Day 1 AM Reliability Sweep - Unread Logic Unification & Send Error UI
+
+**1. Unified unread logic helper (src/lib/messages.ts)**
+- Created `isMessageUnread()` and `isThreadUnread()` helper functions
+- Centralized rules:
+  - Direct chats: `receiver_id === userId && sender_id !== userId && status !== 'read'`
+  - Group threads: `sender_id !== userId && status !== 'read'`
+- Exported `UnreadCheckMessage` type for consistent message shape
+- `isThreadUnread()` handles the "no messages yet" case for direct chats
+
+**2. Updated consumers to use shared helper**
+- **src/app/chats/page.tsx**: Replaced inline unread logic with `isThreadUnread()` call
+- **src/app/crew/page.tsx**: Replaced incorrect `receiver_id === userId` check with `isMessageUnread()` (isDirect=false for crews)
+- **src/components/MobileNavbar.tsx**:
+  - `checkUnreadChats()`: Now uses `isThreadUnread()` for all thread types
+  - `checkUnreadCrews()`: Now uses `isMessageUnread()` with isDirect=false
+
+**3. Send retry/error UI (src/app/chats/[id]/page.tsx)**
+- Added `sending` and `sendError` states
+- Updated `handleSend()` to:
+  - Set `sending=true` during send, clear on completion
+  - Store failed message body and error in `sendError` state
+  - Accept optional `retryBody` parameter for retry flow
+- Added `handleRetry()` to resend failed message
+- Added `handleClearError()` to restore draft and clear error
+- Input/send button disabled during `sending` state
+- Inline error UI with:
+  - Error text (tokenized `--color-state-red`)
+  - "Retry" button (tokenized `--color-primary` border)
+  - "Cancel" button (tokenized `--color-text-muted` border)
+- CSS added: `.chat-send-error`, `.chat-send-error-text`, `.chat-send-error-actions`, `.chat-send-error-retry`, `.chat-send-error-cancel`
+
+**4. Invite/accept error handling (src/app/notifications/page.tsx)**
+- Added `errorIds` state to track inline errors per invite
+- Updated `handleAcceptCrewInvite()`:
+  - Clear error on start, set on failure
+  - Clear error on success
+  - Replaced all `alert()` calls with inline error state
+  - Added error handling for missing thread
+- Updated `handleDeclineCrewInvite()`:
+  - Same error handling improvements
+  - Replaced `alert()` calls with inline error state
+- Updated JSX to show inline error above action buttons
+- CSS added: `.notification-tile-actions-wrapper`, `.notification-tile-error`
+
+**Files modified:**
+- `src/lib/messages.ts` - Added unified unread helpers
+- `src/app/chats/page.tsx` - Uses shared helper
+- `src/app/crew/page.tsx` - Uses shared helper (fixed incorrect receiver_id check)
+- `src/components/MobileNavbar.tsx` - Uses shared helper
+- `src/app/chats/[id]/page.tsx` - Send retry/error UI
+- `src/app/notifications/page.tsx` - Inline error handling
+- `src/app/globals.css` - Added error UI styles
+
+### BackBar Visibility Fix
+
+**Problem:** BackBar component (chevron, "back" text, dots menu) was not visible on card backgrounds due to:
+- `.chats-event-backbar` had `background: var(--color-text-muted)` (gray)
+- `.chats-event-back-title` had `color: var(--color-panel)` (dark)
+- SVG icons had hardcoded `#5B687C` fill (muted gray)
+
+**Solution:** Updated to use `--color-text-default` (#e9eef7) for visibility on dark card backgrounds:
+
+1. **CSS changes** (`src/app/globals.css`):
+   - `.chats-event-backbar`: Changed `background` from `var(--color-text-muted)` to `transparent`
+   - `.chats-event-back-title`: Changed `color` from `var(--color-panel)` to `var(--color-text-default)`
+
+2. **SVG icon updates**:
+   - `public/icons/chevron-left.svg`: Changed fill from `#5B687C` to `#e9eef7`
+   - `public/icons/dots.svg`: Changed fill from `#5B687C` to `#e9eef7`
+
+**Pages affected** (all use BackBar on card backgrounds):
+- `src/app/chats/[id]/page.tsx`
+- `src/app/crew/detail/page.tsx`
+- `src/app/events/detail/page.tsx`
+- `src/app/events/create/page.tsx`
+
+### Day 1 PM: Trust & Safety Features
+
+#### Block/Report functionality
+- **Created database tables** (SQL migrations in `/supabase/`):
+  - `blocks` table: Stores user-to-user blocks with `blocker_id`, `blocked_id`, `reason`, `created_at`
+  - `reports` table: Stores user/message reports with `reporter_id`, `reported_user_id`, `reported_message_id`, `report_type`, `reason`, `status`
+  - Added RLS policies: users can only view/manage their own blocks and reports
+  - Files: `supabase/create_blocks_table.sql`, `supabase/create_reports_table.sql`
+
+- **Created library functions** (`src/lib/`):
+  - `src/lib/blocks.ts`: `blockUser()`, `unblockUser()`, `isUserBlocked()`, `getBlockedUsers()`
+  - `src/lib/reports.ts`: `reportUser()`, `reportMessage()` with ReportType enum
+
+- **Created ReportModal component** (`src/components/ReportModal.tsx`):
+  - Modal with report type selection (harassment, inappropriate, spam, fraud, other)
+  - Text area for detailed reason
+  - Submit/cancel buttons with loading states
+  - Success confirmation message
+  - CSS added to globals.css for `.report-modal-*` classes
+
+- **Home page block/report** (`src/app/home/page.tsx`):
+  - Added three-dot menu button to profile card header (top-left)
+  - ActionMenu with "Block user" (red, danger) and "Report user" options
+  - Blocked users filtered from deck on load
+  - Block action removes user from deck immediately
+  - ReportModal opens when "Report user" is clicked
+  - CSS: `.home-card-menu-btn` styles added
+
+- **Chat detail block/report** (`src/app/chats/[id]/page.tsx`):
+  - Added "Block user" and "Report user" to direct chat ActionMenu
+  - Block action redirects to /chats after blocking
+  - ReportModal for direct chat users
+  - Imports added: ReportModal, blockUser
+
+#### Host kick/remove functionality
+- **FriendTile component enhancement** (`src/components/FriendTile.tsx`):
+  - Added `canKick` and `onKick` props
+  - Kick button (X icon) appears on hover for kickable participants
+  - Button styled with red background, positioned top-right
+  - CSS: `.friend-tile-kick-btn` styles with hover reveal
+
+- **Crew detail kick implementation** (`src/app/crew/detail/page.tsx`):
+  - Added `handleKickParticipant()` function
+  - Confirmation dialog before removing
+  - Removes from `thread_participants` table
+  - Updates local state immediately
+  - FriendTile shows kick button only for:
+    - Current user is crew creator (host)
+    - Participant is not the host
+    - Participant is not the current user
+
+#### Message rate limiting
+- **Chat detail page** (`src/app/chats/[id]/page.tsx`):
+  - Rate limit: max 5 messages per 10 seconds
+  - Uses `useRef` to track message timestamps
+  - Shows error message when rate limited
+  - Button disabled during rate limit period
+  - Automatic reset after window expires
+
+- **Crew detail page** (`src/app/crew/detail/page.tsx`):
+  - Same rate limiting implementation
+  - Error message displayed above input
+  - Consistent 5 messages / 10 seconds limit
+
+**Files modified:**
+- `supabase/create_blocks_table.sql` (new)
+- `supabase/create_reports_table.sql` (new)
+- `src/lib/blocks.ts` (new)
+- `src/lib/reports.ts` (new)
+- `src/components/ReportModal.tsx` (new)
+- `src/components/FriendTile.tsx` (added kick props)
+- `src/app/home/page.tsx` (block/report menu)
+- `src/app/chats/[id]/page.tsx` (block/report + rate limiting)
+- `src/app/crew/detail/page.tsx` (kick + rate limiting)
+- `src/app/globals.css` (ReportModal + kick button styles)
+
+#### Bug fix: Duplicate messages in crew chat
+- **Issue**: When sending messages rapidly, duplicate messages appeared with React key error
+- **Root cause**: Message added twice - once from local insert, once from realtime subscription
+- **Fix**: Added duplicate check in realtime INSERT handler (`src/app/crew/detail/page.tsx`):
+  ```javascript
+  setMessages(prev => {
+    if (prev.some(m => m.id === newMsg.id)) return prev
+    return [...prev, newMsg]
+  })
+  ```
+- **Note**: Chat detail page (`src/app/chats/[id]/page.tsx`) already had this fix
+
+#### Supabase setup verified
+- Created `blocks` table with RLS policies
+- Created `reports` table with RLS policies
+- All Day 1 PM features manually tested and confirmed working
+
+### Day 2 AM: Discovery & Onboarding
+
+#### Required fields in onboarding
+- **BasicProfileStep** (`src/app/dab/steps/BasicProfileStep.tsx`):
+  - Added photo requirement to validation: `imagePreview !== null`
+  - Button disabled until photo is uploaded
+- **LocationStep** (`src/app/dab/steps/LocationStep.tsx`):
+  - Added gym requirement: `selectedGyms.length > 0 || climbsOutside`
+  - User must select at least one gym OR check "I climb outside"
+- **InterestsStep**: Style was already required (no change needed)
+
+#### End-of-onboarding join prompt
+- **SuccessStep** (`src/app/dab/steps/SuccessStep.tsx`):
+  - Added "Get Started" section with quick-join options
+  - Three buttons: "Join Gym Chats", "Find Events", "Find a Crew"
+  - "Join Gym Chats" only shown if user selected gyms during onboarding
+  - "Skip for now" button redirects to /home
+  - Auto-redirect timer increased from 5s to 10s to give time to see options
+  - CSS: `.onb-quick-join-options`, `.onb-quick-join-btn`, `.onb-cta-btn-secondary`
+
+#### Suggested partners (mutual gyms/styles matching)
+- **Home page** (`src/app/home/page.tsx`):
+  - Added `currentUserGyms` and `currentUserStyles` memoized sets
+  - Added `getMatchScore()` function that calculates compatibility:
+    - +2 points for each mutual gym
+    - +1 point for each mutual climbing style
+  - `filteredDeck` now sorts by match score (highest first)
+  - Profiles with more in common appear first in the deck
+  - Profiles already sorted by `created_at` (recent) from database
+
+**Files modified:**
+- `src/app/dab/steps/BasicProfileStep.tsx` (photo required)
+- `src/app/dab/steps/LocationStep.tsx` (gym required)
+- `src/app/dab/steps/SuccessStep.tsx` (quick-join options)
+- `src/app/home/page.tsx` (suggested partners sorting)
+- `src/app/globals.css` (quick-join button styles)
+
+### Day 2 PM: Events/Crews/Gyms Clarity + Notifications
+
+#### Host badge on event/crew cards
+- **Events page** (`src/app/events/page.tsx`):
+  - Added `creatorName` property to state types
+  - Extracted creator's first name from profile username
+  - Added host badge UI in event card image area (top-left)
+- **Crew page** (`src/app/crew/page.tsx`):
+  - Same implementation as events page
+  - Added `creatorName` to both `crews` and `allCrews` state types
+  - Host badge shows "Host: {FirstName}" on each card
+- **CSS** (`src/app/globals.css`):
+  - `.events-tile-host-badge`: Positioned top-left, dark background with blur
+  - `.events-tile-host-label`: Small uppercase "Host:" label
+  - `.events-tile-host-name`: Primary color name display
+
+#### Attendee/member count display
+- **Crew page** (`src/app/crew/page.tsx`):
+  - Added `memberCount` property to state types
+  - Queries `thread_participants` to count members per crew thread
+  - Displays "{N} members" on crew cards
+  - Singular/plural handling ("1 member" vs "X members")
+- **Events page**: Already shows "{X} going · {Y} open" slot info
+
+#### Last activity/sender in lists
+- **Crew page**: Already shows "Last message by {Name}" (implemented earlier)
+- **Events page** (`src/app/events/page.tsx`):
+  - Added `formatTimeAgo()` helper function
+  - Shows "Active {time} ago" for events with recent thread activity
+  - Uses `thread.last_message_at` from thread data
+  - Only shows if activity within last 7 days
+  - CSS: Uses existing `.events-tile-last-message` class
+
+#### Clear occupancy labels for gyms
+- **Gyms page** (`src/app/gyms/page.tsx`):
+  - Replaced hardcoded "42 online" with dynamic occupancy display
+  - Shows "{X}% full" based on `getCurrentOccupancy()` data
+  - Shows "Closed" when gym is closed (occupancy returns null)
+  - Occupancy pills (Chill/Busy/Peaking) already working correctly
+
+#### In-app toasts/badges for messages/invites
+- **Created Toast notification system**:
+  - `src/components/Toast.tsx`: ToastProvider context and ToastItem components
+  - Types: 'message', 'invite', 'info', 'success', 'error'
+  - Auto-dismiss after 5 seconds (configurable duration)
+  - Entry/exit animations
+  - Click-to-navigate support
+- **Created MessageToastListener** (`src/components/MessageToastListener.tsx`):
+  - Subscribes to realtime message inserts
+  - Filters out messages from current user
+  - Filters out messages for current chat (avoids duplicate)
+  - Fetches sender profile name for toast title
+  - Gets thread info for context (crew name, gym name)
+  - Shows toast with truncated message preview
+  - Click navigates to the chat thread
+- **Created Providers wrapper** (`src/components/Providers.tsx`):
+  - Wraps ToastProvider and MessageToastListener
+  - Client-side wrapper for layout.tsx (server component)
+- **Updated layout** (`src/app/layout.tsx`):
+  - Added Providers wrapper around children and ClientHeader
+- **CSS** (`src/app/globals.css`):
+  - `.toast-container`: Fixed position, centered, z-index 9999
+  - `.toast-item`: Card styling with shadow and border
+  - `.toast-enter`, `.toast-exit`: Slide animations
+  - `.toast-icon`, `.toast-content`, `.toast-close`: Internal layout
+  - Type-specific border accents (primary, secondary, green, red, muted)
+- **Existing badges**: MobileNavbar already has unread dots for Chats and Crews
+
+**Files modified:**
+- `src/app/events/page.tsx` (host badge, last activity)
+- `src/app/crew/page.tsx` (host badge, member count)
+- `src/app/gyms/page.tsx` (dynamic occupancy)
+- `src/components/Toast.tsx` (new)
+- `src/components/MessageToastListener.tsx` (new)
+- `src/components/Providers.tsx` (new)
+- `src/app/layout.tsx` (added Providers)
+- `src/app/globals.css` (host badge, toast styles)
+
+### UX Polish Pass
+
+#### Empty states for events and crew pages
+- **Events page** (`src/app/events/page.tsx`):
+  - Added `EmptyState` import
+  - Shows "No events found" when events list is empty after loading
+- **Crew page** (`src/app/crew/page.tsx`):
+  - Added `EmptyState` import
+  - Shows "No crews found" when crew list is empty after loading
+
+#### Fixed "Join Chat" button on gyms page
+- **Gyms page** (`src/app/gyms/page.tsx`):
+  - Added `useRouter` import
+  - Added `router` to GymsScreen component
+  - Updated `GymDetailCard` component to accept `onJoinChat` prop
+  - Changed "Join Chat" from non-functional `<div>` to `<button>` with onClick
+  - Button navigates to `/chats` where gym threads are listed
+
+#### Filter consistency review
+- **Design decision**: Kept chats page with city/gym filters only (no style filter)
+- Rationale: Chats shows existing conversations, not discovery. Style filtering is more relevant for finding new events, crews, and people. City and gym filters make practical sense for filtering existing chats.
+
+**Files modified:**
+- `src/app/events/page.tsx` (empty state)
+- `src/app/crew/page.tsx` (empty state)
+- `src/app/gyms/page.tsx` (Join Chat button functionality)

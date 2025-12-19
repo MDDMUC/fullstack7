@@ -80,6 +80,7 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true)
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set())
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(() => getDismissedNotifications())
+  const [errorIds, setErrorIds] = useState<Record<string, string>>({}) // inviteId -> error message
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -313,22 +314,24 @@ export default function NotificationsPage() {
   const handleAcceptCrewInvite = async (e: React.MouseEvent, inviteId: string) => {
     e.stopPropagation()
     if (!userId || !supabase) return
-    
+
     // Prevent double-clicks
     if (processingIds.has(inviteId)) return
     setProcessingIds(prev => new Set(prev).add(inviteId))
-    
+    // Clear any previous error for this invite
+    setErrorIds(prev => { const next = { ...prev }; delete next[inviteId]; return next })
+
     try {
       const client = supabase
-      
-      const { data: inviteData } = await client
+
+      const { data: inviteData, error: fetchError } = await client
         .from('crew_invites')
         .select('inviter_id, invitee_id, crew_id')
         .eq('id', inviteId)
         .single()
-      
-      if (!inviteData) {
-        alert('Invite not found')
+
+      if (fetchError || !inviteData) {
+        setErrorIds(prev => ({ ...prev, [inviteId]: 'Invite not found' }))
         return
       }
 
@@ -336,57 +339,60 @@ export default function NotificationsPage() {
       const isInvite = inviteData.invitee_id === userId
 
       if (isRequest) {
-        const { data: threadData } = await client
+        const { data: threadData, error: threadError } = await client
           .from('threads')
           .select('id')
           .eq('crew_id', inviteData.crew_id)
           .eq('type', 'crew')
           .single()
 
-        if (threadData?.id) {
-          const { data: existingParticipant } = await client
+        if (threadError || !threadData?.id) {
+          setErrorIds(prev => ({ ...prev, [inviteId]: 'Crew thread not found' }))
+          return
+        }
+
+        const { data: existingParticipant } = await client
+          .from('thread_participants')
+          .select('user_id')
+          .eq('thread_id', threadData.id)
+          .eq('user_id', inviteData.invitee_id)
+          .maybeSingle()
+
+        if (!existingParticipant) {
+          const { error: addError } = await client
             .from('thread_participants')
-            .select('user_id')
-            .eq('thread_id', threadData.id)
-            .eq('user_id', inviteData.invitee_id)
-            .maybeSingle()
+            .insert({
+              thread_id: threadData.id,
+              user_id: inviteData.invitee_id,
+              role: 'member'
+            })
 
-          if (!existingParticipant) {
-            const { error: addError } = await client
-              .from('thread_participants')
-              .insert({
-                thread_id: threadData.id,
-                user_id: inviteData.invitee_id,
-                role: 'member'
-              })
-
-            if (addError) {
-              console.error('Error adding user to crew:', addError)
-              alert('Failed to approve request')
-              return
-            }
+          if (addError) {
+            console.error('Error adding user to crew:', addError)
+            setErrorIds(prev => ({ ...prev, [inviteId]: 'Failed to add user to crew' }))
+            return
           }
+        }
 
-          // Update ALL pending invites from this user for this crew (handles duplicates)
-          const { error: updateError } = await client
-            .from('crew_invites')
-            .update({ status: 'accepted', accepted_at: new Date().toISOString() })
-            .eq('invitee_id', inviteData.invitee_id)
-            .eq('crew_id', inviteData.crew_id)
-            .eq('status', 'pending')
-          
-          if (updateError) {
-            console.error('Error updating invite status:', updateError)
-          }
+        // Update ALL pending invites from this user for this crew (handles duplicates)
+        const { error: updateError } = await client
+          .from('crew_invites')
+          .update({ status: 'accepted', accepted_at: new Date().toISOString() })
+          .eq('invitee_id', inviteData.invitee_id)
+          .eq('crew_id', inviteData.crew_id)
+          .eq('status', 'pending')
+
+        if (updateError) {
+          console.error('Error updating invite status:', updateError)
         }
       } else if (isInvite) {
         const { error } = await client.rpc('accept_crew_invite', { invite_id: inviteId })
         if (error) {
           console.error('Error accepting invite:', error)
-          alert('Failed to accept invitation')
+          setErrorIds(prev => ({ ...prev, [inviteId]: 'Failed to accept invitation' }))
           return
         }
-        
+
         // Also update any duplicate invites for the same crew
         await client
           .from('crew_invites')
@@ -395,22 +401,23 @@ export default function NotificationsPage() {
           .eq('crew_id', inviteData.crew_id)
           .eq('status', 'pending')
       } else {
-        alert('You do not have permission to accept this invite')
+        setErrorIds(prev => ({ ...prev, [inviteId]: 'No permission to accept this invite' }))
         return
       }
-      
+
       // Remove all notifications related to this user+crew combo
       setNotifications(prev => prev.filter(n => {
         if (n.type !== 'crew_invite') return true
-        // Filter out any invite for the same crew+user combo
-        return !(n.crewId === inviteData.crew_id && 
+        return !(n.crewId === inviteData.crew_id &&
           (n.userId === inviteData.invitee_id || n.inviteId === inviteId))
       }))
+      // Clear error on success
+      setErrorIds(prev => { const next = { ...prev }; delete next[inviteId]; return next })
       // Notify MobileTopbar to re-check unread count
       window.dispatchEvent(new CustomEvent('notifications-updated'))
     } catch (err) {
       console.error('Error accepting invite:', err)
-      alert('Failed to accept invitation')
+      setErrorIds(prev => ({ ...prev, [inviteId]: 'Failed to accept invitation' }))
     } finally {
       setProcessingIds(prev => {
         const next = new Set(prev)
@@ -423,22 +430,24 @@ export default function NotificationsPage() {
   const handleDeclineCrewInvite = async (e: React.MouseEvent, inviteId: string) => {
     e.stopPropagation()
     if (!userId || !supabase) return
-    
+
     // Prevent double-clicks
     if (processingIds.has(inviteId)) return
     setProcessingIds(prev => new Set(prev).add(inviteId))
-    
+    // Clear any previous error for this invite
+    setErrorIds(prev => { const next = { ...prev }; delete next[inviteId]; return next })
+
     try {
       const client = supabase
-      
-      const { data: inviteData } = await client
+
+      const { data: inviteData, error: fetchError } = await client
         .from('crew_invites')
         .select('inviter_id, invitee_id, crew_id')
         .eq('id', inviteId)
         .single()
-      
-      if (!inviteData) {
-        alert('Invite not found')
+
+      if (fetchError || !inviteData) {
+        setErrorIds(prev => ({ ...prev, [inviteId]: 'Invite not found' }))
         return
       }
 
@@ -446,7 +455,7 @@ export default function NotificationsPage() {
       const isInvite = inviteData.invitee_id === userId
 
       if (!isRequest && !isInvite) {
-        alert('You do not have permission to decline this invite')
+        setErrorIds(prev => ({ ...prev, [inviteId]: 'No permission to decline this invite' }))
         return
       }
 
@@ -457,24 +466,26 @@ export default function NotificationsPage() {
         .eq('invitee_id', inviteData.invitee_id)
         .eq('crew_id', inviteData.crew_id)
         .eq('status', 'pending')
-      
+
       if (error) {
         console.error('Error declining invite:', error)
-        alert('Failed to decline invitation')
+        setErrorIds(prev => ({ ...prev, [inviteId]: 'Failed to decline invitation' }))
         return
       }
-      
+
       // Remove all notifications related to this user+crew combo
       setNotifications(prev => prev.filter(n => {
         if (n.type !== 'crew_invite') return true
-        return !(n.crewId === inviteData.crew_id && 
+        return !(n.crewId === inviteData.crew_id &&
           (n.userId === inviteData.invitee_id || n.inviteId === inviteId))
       }))
+      // Clear error on success
+      setErrorIds(prev => { const next = { ...prev }; delete next[inviteId]; return next })
       // Notify MobileTopbar to re-check unread count
       window.dispatchEvent(new CustomEvent('notifications-updated'))
     } catch (err) {
       console.error('Error declining invite:', err)
-      alert('Failed to decline invitation')
+      setErrorIds(prev => ({ ...prev, [inviteId]: 'Failed to decline invitation' }))
     } finally {
       setProcessingIds(prev => {
         const next = new Set(prev)
@@ -510,11 +521,13 @@ export default function NotificationsPage() {
             ) : (
               <div className="notifications-list" data-node-id="786:2987">
                 {visibleNotifications.map(notif => (
-                  <button
+                  <div
                     key={notif.id}
-                    type="button"
                     className="notification-tile"
+                    role="button"
+                    tabIndex={0}
                     onClick={() => handleNotificationClick(notif)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNotificationClick(notif) }}
                     data-node-id="780:2917"
                   >
                     <div className="notification-tile-avatar" data-node-id="780:2908">
@@ -536,29 +549,34 @@ export default function NotificationsPage() {
                       )}
                     </div>
                     {notif.type === 'crew_invite' && notif.inviteId ? (
-                      <div className="notification-tile-actions">
-                        <button
-                          type="button"
-                          className={`notification-action-accept ${processingIds.has(notif.inviteId) ? 'processing' : ''}`}
-                          onClick={(e) => handleAcceptCrewInvite(e, notif.inviteId!)}
-                          disabled={processingIds.has(notif.inviteId)}
-                        >
-                          {processingIds.has(notif.inviteId) ? '...' : 'Accept'}
-                        </button>
-                        <button
-                          type="button"
-                          className={`notification-action-decline ${processingIds.has(notif.inviteId) ? 'processing' : ''}`}
-                          onClick={(e) => handleDeclineCrewInvite(e, notif.inviteId!)}
-                          disabled={processingIds.has(notif.inviteId)}
-                        >
-                          {processingIds.has(notif.inviteId) ? '...' : 'Decline'}
-                        </button>
+                      <div className="notification-tile-actions-wrapper">
+                        {errorIds[notif.inviteId] && (
+                          <span className="notification-tile-error">{errorIds[notif.inviteId]}</span>
+                        )}
+                        <div className="notification-tile-actions">
+                          <button
+                            type="button"
+                            className={`notification-action-accept ${processingIds.has(notif.inviteId) ? 'processing' : ''}`}
+                            onClick={(e) => { e.stopPropagation(); handleAcceptCrewInvite(e, notif.inviteId!) }}
+                            disabled={processingIds.has(notif.inviteId)}
+                          >
+                            {processingIds.has(notif.inviteId) ? '...' : 'Accept'}
+                          </button>
+                          <button
+                            type="button"
+                            className={`notification-action-decline ${processingIds.has(notif.inviteId) ? 'processing' : ''}`}
+                            onClick={(e) => { e.stopPropagation(); handleDeclineCrewInvite(e, notif.inviteId!) }}
+                            disabled={processingIds.has(notif.inviteId)}
+                          >
+                            {processingIds.has(notif.inviteId) ? '...' : 'Decline'}
+                          </button>
+                        </div>
                       </div>
                     ) : (
                       <button
                         type="button"
                         className="notification-dismiss"
-                        onClick={(e) => handleDismissNotification(e, notif.id)}
+                        onClick={(e) => { e.stopPropagation(); handleDismissNotification(e, notif.id) }}
                         aria-label="Dismiss notification"
                       >
                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -566,7 +584,7 @@ export default function NotificationsPage() {
                         </svg>
                       </button>
                     )}
-                  </button>
+                  </div>
                 ))}
               </div>
             )}

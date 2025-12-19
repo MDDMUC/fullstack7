@@ -8,16 +8,17 @@ import { supabase } from '@/lib/supabaseClient'
 /**
  * Onboarding Step 6 (Final): Success / Welcome to the Crew
  * Figma node: 484-1457
- * 
+ *
  * Features:
  * - Celebratory animations for headline
  * - Confetti effect
- * - Auto-redirect after 5 seconds to /home
+ * - Quick-join options for gyms, events, crews
+ * - Auto-redirect after 10 seconds to /home
  */
 
 export default function SuccessStep() {
   const router = useRouter()
-  const { reset } = useOnboarding()
+  const { data, reset } = useOnboarding()
   const [confetti, setConfetti] = useState<Array<{
     id: number
     x: number
@@ -46,14 +47,14 @@ export default function SuccessStep() {
     setConfetti(confettiPieces)
   }, [])
 
-  // Auto-redirect after 5 seconds
+  // Auto-redirect after 10 seconds (longer to give time to see options)
   useEffect(() => {
     const timer = setTimeout(async () => {
       // Ensure user is logged in before redirecting
       if (supabase) {
         const { safeGetUser } = await import('@/lib/authUtils')
         const { user } = await safeGetUser(supabase)
-        
+
         if (user) {
           reset()
           router.push('/home')
@@ -66,7 +67,7 @@ export default function SuccessStep() {
         reset()
         router.push('/home')
       }
-    }, 5000)
+    }, 10000)
 
     return () => clearTimeout(timer)
   }, [router, reset])
@@ -75,6 +76,24 @@ export default function SuccessStep() {
     reset()
     router.push('/home')
   }
+
+  const handleJoinGyms = () => {
+    reset()
+    router.push('/gyms')
+  }
+
+  const handleFindEvents = () => {
+    reset()
+    router.push('/events')
+  }
+
+  const handleFindCrews = () => {
+    reset()
+    router.push('/crew')
+  }
+
+  // Check if user has selected gyms
+  const hasGyms = data.gym && data.gym.length > 0
 
   return (
     <div
@@ -138,14 +157,51 @@ export default function SuccessStep() {
         {/* CTA Card at bottom */}
         <div className="onb-signup-card onb-success-card-animate" data-node-id="484:1459">
           <div className="onb-signup-inner">
+            {/* Quick join header */}
+            <div className="onb-header-block">
+              <h2 className="onb-header-title">Get Started</h2>
+              <p className="onb-header-subtitle">Jump into the action or explore on your own</p>
+            </div>
+
+            {/* Quick join options */}
+            <div className="onb-quick-join-options">
+              {hasGyms && (
+                <button
+                  type="button"
+                  className="onb-quick-join-btn"
+                  onClick={handleJoinGyms}
+                >
+                  <span className="onb-quick-join-icon">🧗</span>
+                  <span className="onb-quick-join-text">Join Gym Chats</span>
+                </button>
+              )}
+              <button
+                type="button"
+                className="onb-quick-join-btn"
+                onClick={handleFindEvents}
+              >
+                <span className="onb-quick-join-icon">📅</span>
+                <span className="onb-quick-join-text">Find Events</span>
+              </button>
+              <button
+                type="button"
+                className="onb-quick-join-btn"
+                onClick={handleFindCrews}
+              >
+                <span className="onb-quick-join-icon">👥</span>
+                <span className="onb-quick-join-text">Find a Crew</span>
+              </button>
+            </div>
+
+            {/* Skip to home */}
             <div className="onb-cta-row" data-node-id="484:1466">
               <button
                 type="button"
-                className="onb-cta-btn"
+                className="onb-cta-btn onb-cta-btn-secondary"
                 onClick={handleContinue}
                 data-node-id="484:1467"
               >
-                YAY!
+                Skip for now
               </button>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { RequireAuth } from '@/components/RequireAuth'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
@@ -71,6 +72,7 @@ const removeUnfollowedGym = (gymId: string) => {
 }
 
 export default function GymsScreen() {
+  const router = useRouter()
   const [gyms, setGyms] = React.useState<GymRow[]>([])
   const [allGyms, setAllGyms] = React.useState<GymRow[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -256,6 +258,10 @@ export default function GymsScreen() {
                       addUnfollowedGym(gym.id)
                     }
                   }}
+                  onJoinChat={() => {
+                    // Navigate to chats page where gym threads are listed
+                    router.push('/chats')
+                  }}
                 />
               ))}
           </div>
@@ -319,7 +325,7 @@ function GymSelectTile({
 }
 
 // GymDetailCard component - exact Figma implementation
-function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => void }) {
+function GymDetailCard({ gym, onUnfollow, onJoinChat }: { gym: GymRow; onUnfollow: () => void; onJoinChat: () => void }) {
   const [selectedDay, setSelectedDay] = React.useState<number | null>(null) // null = today
   const [dayDropdownOpen, setDayDropdownOpen] = React.useState(false)
   const dayDropdownRef = React.useRef<HTMLDivElement | null>(null)
@@ -418,7 +424,7 @@ function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => voi
             <img src={IMG_ELLIPSE} alt="" className="gym-card-live-dot-img" />
           </div>
           <div className="gym-card-online-text" data-node-id="769:2937">
-            <p>42 online</p>
+            <p>{currentOccupancy !== null ? `${currentOccupancy}% full` : 'Closed'}</p>
           </div>
         </div>
       </div>
@@ -632,13 +638,19 @@ function GymDetailCard({ gym, onUnfollow }: { gym: GymRow; onUnfollow: () => voi
             </div>
           </div>
         </button>
-        <div className="gym-card-button-ghost" data-name="button-ghost" data-node-id="769:3304">
+        <button
+          type="button"
+          className="gym-card-button-ghost"
+          data-name="button-ghost"
+          data-node-id="769:3304"
+          onClick={onJoinChat}
+        >
           <div className="gym-card-ghost-cont" data-name="cont" data-node-id="I769:3304;475:11242">
             <div className="gym-card-ghost-text" data-node-id="I769:3304;475:11243">
               <p>Join Chat</p>
             </div>
           </div>
-        </div>
+        </button>
       </div>
     </div>
   )

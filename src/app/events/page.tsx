@@ -7,6 +7,7 @@ import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import LoadingState from '@/components/LoadingState'
+import EmptyState from '@/components/EmptyState'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
 
@@ -52,6 +53,7 @@ export default function EventsScreen() {
         isNew?: boolean
         creatorStyle?: string[]
         creatorGym?: string[]
+        creatorName?: string | null
       }
     >
   >([])
@@ -62,6 +64,7 @@ export default function EventsScreen() {
         isNew?: boolean
         creatorStyle?: string[]
         creatorGym?: string[]
+        creatorName?: string | null
       }
     >
   >([])
@@ -137,13 +140,15 @@ export default function EventsScreen() {
         const creator = ev.created_by ? creatorProfilesMap[ev.created_by] : null
         const creatorStyle = creator ? getStylesFromProfile(creator) : []
         const creatorGym = creator && Array.isArray(creator.gym) ? creator.gym : []
-        
+        const creatorName = creator?.username?.split(' ')[0] || null
+
         return {
           ...ev,
           thread: threadsMap[ev.id] ?? null,
           isNew,
           creatorStyle,
           creatorGym,
+          creatorName,
         }
       })
       
@@ -275,6 +280,22 @@ export default function EventsScreen() {
     })
   }
 
+  const formatTimeAgo = (iso?: string | null) => {
+    if (!iso) return null
+    const now = new Date()
+    const then = new Date(iso)
+    const diffMs = now.getTime() - then.getTime()
+    const diffMins = Math.floor(diffMs / (1000 * 60))
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays < 7) return `${diffDays}d ago`
+    return null // Don't show if older than a week
+  }
+
   return (
     <RequireAuth>
       <div className="events-screen" data-name="/ events">
@@ -306,11 +327,14 @@ export default function EventsScreen() {
             </Link>
 
             {loading && <LoadingState message="Loading events…" />}
+            {!loading && events.length === 0 && (
+              <EmptyState message="No events found" />
+            )}
             {!loading &&
               events.map(ev => (
-                <Link 
-                  key={ev.id} 
-                  href={`/events/detail?eventId=${ev.id}`} 
+                <Link
+                  key={ev.id}
+                  href={`/events/detail?eventId=${ev.id}`}
                   className={`events-tile ${ev.isNew ? 'events-tile-new' : ''}`}
                 >
                   <div className="events-tile-img">
@@ -319,6 +343,17 @@ export default function EventsScreen() {
                       alt=""
                       className="events-tile-img-el"
                     />
+                    {ev.creatorName && (
+                      <div className="events-tile-host-badge">
+                        <span className="events-tile-host-label">Host:</span>
+                        <span className="events-tile-host-name">{ev.creatorName}</span>
+                      </div>
+                    )}
+                    {ev.thread?.last_message_at && formatTimeAgo(ev.thread.last_message_at) && (
+                      <div className="events-tile-last-message">
+                        Active {formatTimeAgo(ev.thread.last_message_at)}
+                      </div>
+                    )}
                   </div>
                   <div className="events-tile-overlay" />
                   <div className="events-tile-text">

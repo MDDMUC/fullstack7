@@ -8,9 +8,11 @@ import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
 import LoadingState from '@/components/LoadingState'
+import EmptyState from '@/components/EmptyState'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
+import { isMessageUnread } from '@/lib/messages'
 
 type CrewRow = {
   id: string
@@ -62,6 +64,8 @@ export default function CrewScreen() {
         lastMessageSenderName?: string | null
         creatorStyle?: string[]
         creatorGym?: string[]
+        creatorName?: string | null
+        memberCount?: number
       }
     >
   >([])
@@ -73,6 +77,8 @@ export default function CrewScreen() {
         lastMessageSenderName?: string | null
         creatorStyle?: string[]
         creatorGym?: string[]
+        creatorName?: string | null
+        memberCount?: number
       }
     >
   >([])
@@ -118,6 +124,24 @@ export default function CrewScreen() {
     const threadIds = Object.values(threadsMap)
       .map(t => t.id)
       .filter(Boolean) as string[]
+
+    // Get member counts for each thread
+    let memberCountMap: Record<string, number> = {}
+    if (threadIds.length > 0) {
+      const { data: allParticipants } = await client
+        .from('thread_participants')
+        .select('thread_id')
+        .in('thread_id', threadIds)
+
+      if (allParticipants) {
+        // Count participants per thread
+        for (const p of allParticipants) {
+          if (p.thread_id) {
+            memberCountMap[p.thread_id] = (memberCountMap[p.thread_id] || 0) + 1
+          }
+        }
+      }
+    }
 
     let unreadMap: Record<string, boolean> = {}
     let lastMessageSenderMap: Record<string, string> = {}
@@ -175,11 +199,14 @@ export default function CrewScreen() {
           }
 
           // Check which threads have unread messages and map sender names
+          // Crew threads are group threads: use isMessageUnread with isDirect=false
           for (const [threadId, msg] of latestByThread.entries()) {
-            const isUnread =
-              msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
-            if (isUnread) {
-              // Find the crew_id for this thread
+            const unreadCheck = isMessageUnread(
+              { sender_id: msg.user_id, receiver_id: msg.receiver_id || '', status: msg.status },
+              userId,
+              false // isDirect = false for crew threads
+            )
+            if (unreadCheck) {
               const thread = Object.values(threadsMap).find(t => t.id === threadId)
               if (thread?.crew_id) {
                 unreadMap[thread.crew_id] = true
@@ -219,14 +246,20 @@ export default function CrewScreen() {
       const creator = crew.created_by ? creatorProfilesMap[crew.created_by] : null
       const creatorStyle = creator ? getStylesFromProfile(creator) : []
       const creatorGym = creator && Array.isArray(creator.gym) ? creator.gym : []
-      
+      const creatorName = creator?.username?.split(' ')[0] || null
+
+      const thread = threadsMap[crew.id] ?? null
+      const memberCount = thread ? (memberCountMap[thread.id] || 0) : 0
+
       return {
         ...crew,
-        thread: threadsMap[crew.id] ?? null,
+        thread,
         unread: unreadMap[crew.id] ?? false,
         lastMessageSenderName: lastMessageSenderMap[crew.id] ?? null,
         creatorStyle,
         creatorGym,
+        creatorName,
+        memberCount,
       }
     })
     setAllCrews(combined)
@@ -383,6 +416,9 @@ export default function CrewScreen() {
             </Link>
 
             {loading && <LoadingState message="Loading crews…" />}
+            {!loading && crews.length === 0 && (
+              <EmptyState message="No crews found" />
+            )}
             {!loading &&
               crews.map(crew => (
                 <Link key={crew.id} href={`/crew/detail?crewId=${crew.id}`} className="events-tile">
@@ -392,6 +428,12 @@ export default function CrewScreen() {
                       alt=""
                       className="events-tile-img-el"
                     />
+                    {crew.creatorName && (
+                      <div className="events-tile-host-badge">
+                        <span className="events-tile-host-label">Host:</span>
+                        <span className="events-tile-host-name">{crew.creatorName}</span>
+                      </div>
+                    )}
                     {crew.unread && <UnreadDot />}
                     {crew.lastMessageSenderName && (
                       <div className="events-tile-last-message">
@@ -403,6 +445,13 @@ export default function CrewScreen() {
                   <div className="events-tile-text">
                     <p className="events-tile-title">{crew.title}</p>
                     <p className="events-tile-subtitle">{crew.location || ''}</p>
+                    <div className="events-tile-info">
+                      <p className="events-tile-att">
+                        {crew.memberCount === 1
+                          ? '1 member'
+                          : `${crew.memberCount || 0} members`}
+                      </p>
+                    </div>
                   </div>
                 </Link>
               ))}

@@ -12,6 +12,7 @@ import EmptyState from '@/components/EmptyState'
 import Avatar from '@/components/Avatar'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
+import { isThreadUnread, UnreadCheckMessage } from '@/lib/messages'
 import { useAuthSession } from '@/hooks/useAuthSession'
 
 type ThreadRow = {
@@ -289,11 +290,11 @@ export default function ChatsScreen() {
           'https://www.figma.com/api/mcp/asset/d19fa6c1-2d62-4bd-940b-0bf7cbc80c45'
       const lastMessageAt = t.last_message_at ?? fallbackMsg?.created_at ?? t.created_at ?? null
       const hasMessages = !!fallbackMsg || !!t.last_message
-      const isUnread =
-        (!hasMessages && isDirect) ||
-        (!!fallbackMsg &&
-          fallbackMsg.receiver_id === userId &&
-          (fallbackMsg.status ?? '').toLowerCase() !== 'read')
+      // Use unified unread helper from lib/messages
+      const unreadMsg: UnreadCheckMessage | null = fallbackMsg
+        ? { sender_id: fallbackMsg.sender_id, receiver_id: fallbackMsg.receiver_id, status: fallbackMsg.status }
+        : null
+      const isUnread = isThreadUnread(unreadMsg, userId, isDirect, hasMessages)
       // Get city from profile (for direct chats) or from gym/event
       // Normalize city: extract first part before comma (e.g., "Munich, Germany" -> "Munich")
       // Store as-is (not lowercased) so filter dropdown shows proper case

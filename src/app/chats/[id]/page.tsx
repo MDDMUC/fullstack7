@@ -6,9 +6,11 @@ import MobileNavbar from '@/components/MobileNavbar'
 import BackBar from '@/components/BackBar'
 import { ChatMessage } from '@/components/ChatMessage'
 import ActionMenu from '@/components/ActionMenu'
+import ReportModal from '@/components/ReportModal'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile } from '@/lib/profiles'
+import { blockUser } from '@/lib/blocks'
 
 const ICON_BACK = '/icons/chevron-left.svg'
 const ICON_MENU = '/icons/dots.svg'
@@ -91,10 +93,20 @@ export default function ChatDetailPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [groupMenuOpen, setGroupMenuOpen] = useState(false)
   const [leaving, setLeaving] = useState(false)
+  const [blocking, setBlocking] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
   const [deletingEvent, setDeletingEvent] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<{ body: string; error: string } | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const groupMenuRef = useRef<HTMLDivElement | null>(null)
+
+  // Rate limiting: max 5 messages per 10 seconds
+  const RATE_LIMIT_MAX = 5
+  const RATE_LIMIT_WINDOW_MS = 10000
+  const messageTimes = useRef<number[]>([])
+  const [rateLimited, setRateLimited] = useState(false)
 
   const otherUserId = useMemo(() => {
     if (!thread || !userId) return null
@@ -346,11 +358,14 @@ export default function ChatDetailPage() {
         payload => {
           if (payload.eventType === 'INSERT') {
             const newMsg = payload.new as MessageRow
-            setMessages(prev => [...prev, newMsg])
+            // Only add if not already in the list (prevents duplicates from optimistic updates)
+            setMessages(prev => {
+              if (prev.some(m => m.id === newMsg.id)) return prev
+              return [...prev, newMsg]
+            })
             // Fetch profile for new message sender if not already cached
             if (newMsg.sender_id && newMsg.sender_id !== userId) {
               setProfiles(prev => {
-                // Only fetch if not already in cache
                 if (prev[newMsg.sender_id]) return prev
                 fetchProfiles(client, [newMsg.sender_id]).then(profiles => {
                   if (profiles.length > 0 && profiles[0].id) {
@@ -361,8 +376,9 @@ export default function ChatDetailPage() {
               })
             }
           } else if (payload.eventType === 'UPDATE') {
+            const updated = payload.new as MessageRow
             setMessages(prev =>
-              prev.map(m => (m.id === (payload.old as MessageRow)?.id ? (payload.new as MessageRow) : m)),
+              prev.map(m => (m.id === updated.id ? updated : m)),
             )
           }
         },
@@ -378,34 +394,52 @@ export default function ChatDetailPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleSend = async () => {
+  const handleSend = async (retryBody?: string) => {
     const client = supabase
-    if (!client || !userId || !chatId || !draft.trim()) return
+    const messageBody = retryBody || draft.trim()
+    if (!client || !userId || !chatId || !messageBody) return
     const isDirect = (thread?.type ?? 'direct') === 'direct'
     if (isDirect && !otherUserId) return
+
+    // Rate limiting check
+    const now = Date.now()
+    messageTimes.current = messageTimes.current.filter(t => now - t < RATE_LIMIT_WINDOW_MS)
+    if (messageTimes.current.length >= RATE_LIMIT_MAX) {
+      setRateLimited(true)
+      setSendError({ body: messageBody, error: 'Slow down! You can send up to 5 messages per 10 seconds.' })
+      setTimeout(() => setRateLimited(false), RATE_LIMIT_WINDOW_MS)
+      return
+    }
+    messageTimes.current.push(now)
+
+    setSending(true)
+    setSendError(null)
+    if (!retryBody) setDraft('')
+
     // Ensure membership for gym threads before sending
     if (!isDirect) {
       await client
         .from('thread_participants')
         .upsert({ thread_id: chatId, user_id: userId, role: 'member' })
     }
-    const body = draft.trim()
-    setDraft('')
+
     const { data, error } = await client
       .from('messages')
       .insert({
         thread_id: chatId,
         sender_id: userId,
         receiver_id: otherUserId || userId, // for group threads we still populate receiver_id to satisfy schema
-        body,
+        body: messageBody,
         status: 'sent',
       })
       .select('*')
       .single()
 
+    setSending(false)
+
     if (error) {
       console.error('Error sending message:', error?.message ?? error)
-      setDraft(body) // restore draft on failure
+      setSendError({ body: messageBody, error: error.message || 'Failed to send message' })
       return
     }
 
@@ -414,9 +448,22 @@ export default function ChatDetailPage() {
       // Update thread last_message / last_message_at for overview freshness
       await client
         .from('threads')
-        .update({ last_message: body, last_message_at: (data as MessageRow).created_at })
+        .update({ last_message: messageBody, last_message_at: (data as MessageRow).created_at })
         .eq('id', chatId)
     }
+  }
+
+  const handleRetry = () => {
+    if (sendError?.body) {
+      handleSend(sendError.body)
+    }
+  }
+
+  const handleClearError = () => {
+    if (sendError?.body) {
+      setDraft(sendError.body) // restore to draft for editing
+    }
+    setSendError(null)
   }
 
   // Close menus when clicking outside
@@ -438,29 +485,42 @@ export default function ChatDetailPage() {
   }, [menuOpen, groupMenuOpen])
 
   // Mark incoming messages as read when viewing the thread
+  // For direct chats: only mark messages where user is receiver AND not sender
+  // For group chats: mark any message not from current user (receiver_id is unreliable in groups)
   useEffect(() => {
     const client = supabase
     if (!client || !userId || !chatId || messages.length === 0) return
-    const incoming = messages.filter(m => m.receiver_id === userId)
+    // For group threads, receiver_id is set to sender, so we can't use it reliably
+    // Instead, mark any non-sender message as read for groups
+    const isGroup = isGroupThread
+    const incoming = isGroup
+      ? messages.filter(m => m.sender_id !== userId)
+      : messages.filter(m => m.receiver_id === userId && m.sender_id !== userId)
+    // Status flow: sent -> delivered -> read (respect sequence)
     const toDeliver = incoming.filter(m => m.status === 'sent').map(m => m.id)
-    const toRead = incoming.filter(m => m.status !== 'read').map(m => m.id)
+    const toRead = incoming.filter(m => m.status === 'delivered').map(m => m.id)
     if (toDeliver.length === 0 && toRead.length === 0) return
     ;(async () => {
+      // First mark 'sent' as 'delivered'
       if (toDeliver.length > 0) {
         await client.from('messages').update({ status: 'delivered' }).in('id', toDeliver)
       }
+      // Then mark 'delivered' as 'read' (only messages that were already delivered)
       if (toRead.length > 0) {
         await client.from('messages').update({ status: 'read' }).in('id', toRead)
       }
+      // Also mark newly delivered messages as read in next tick (for immediate read on view)
+      if (toDeliver.length > 0) {
+        await client.from('messages').update({ status: 'read' }).in('id', toDeliver)
+      }
       setMessages(prev =>
         prev.map(m => {
-          if (toRead.includes(m.id)) return { ...m, status: 'read' }
-          if (toDeliver.includes(m.id)) return { ...m, status: 'delivered' }
+          if (toRead.includes(m.id) || toDeliver.includes(m.id)) return { ...m, status: 'read' }
           return m
         }),
       )
     })()
-  }, [messages, chatId, userId])
+  }, [messages, chatId, userId, isGroupThread])
 
   const handleLeaveChat = async () => {
     const client = supabase
@@ -509,6 +569,25 @@ export default function ChatDetailPage() {
 
     // Redirect to chats list
     router.push('/chats')
+  }
+
+  const handleBlockUser = async () => {
+    if (!otherUserId) return
+    setBlocking(true)
+    try {
+      await blockUser(otherUserId)
+      setMenuOpen(false)
+      // After blocking, leave the chat and redirect
+      router.push('/chats')
+    } catch (err) {
+      console.error('block failed', err)
+    }
+    setBlocking(false)
+  }
+
+  const handleOpenReport = () => {
+    setMenuOpen(false)
+    setReportModalOpen(true)
   }
 
   const handleDeleteEventChat = async () => {
@@ -664,19 +743,34 @@ export default function ChatDetailPage() {
 
             <div className="chat-gym-divider" />
 
+            {sendError && (
+              <div className="chat-send-error">
+                <span className="chat-send-error-text">{sendError.error}</span>
+                <div className="chat-send-error-actions">
+                  <button type="button" className="chat-send-error-retry" onClick={handleRetry} disabled={sending}>
+                    {sending ? 'Sending...' : 'Retry'}
+                  </button>
+                  <button type="button" className="chat-send-error-cancel" onClick={handleClearError} disabled={sending}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="chat-gym-input">
               <input
                 type="text"
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') handleSend()
+                  if (e.key === 'Enter' && !sending) handleSend()
                 }}
                 placeholder="Type a message ..."
                 className="chat-gym-input-field"
+                disabled={sending}
               />
-              <button type="button" className="chat-gym-send-btn" onClick={handleSend}>
-                <img src={ICON_SEND} alt="" width={24} height={24} />
+              <button type="button" className="chat-gym-send-btn" onClick={() => handleSend()} disabled={sending}>
+                <img src={ICON_SEND} alt="" width={24} height={24} style={sending ? { opacity: 0.5 } : undefined} />
               </button>
             </div>
           </div>
@@ -707,12 +801,25 @@ export default function ChatDetailPage() {
                     <ActionMenu
                       open={menuOpen}
                       onClose={() => setMenuOpen(false)}
-                      items={[{
-                        label: `Leave chat with ${otherFirstName}`,
-                        onClick: handleLeaveChat,
-                        loading: leaving,
-                        loadingLabel: 'Leaving...',
-                      }]}
+                      items={[
+                        {
+                          label: `Leave chat with ${otherFirstName}`,
+                          onClick: handleLeaveChat,
+                          loading: leaving,
+                          loadingLabel: 'Leaving...',
+                        },
+                        {
+                          label: 'Block user',
+                          onClick: handleBlockUser,
+                          loading: blocking,
+                          loadingLabel: 'Blocking...',
+                          danger: true,
+                        },
+                        {
+                          label: 'Report user',
+                          onClick: handleOpenReport,
+                        },
+                      ]}
                     />
                   )}
                 </div>
@@ -747,24 +854,48 @@ export default function ChatDetailPage() {
 
             <div className="chat-detail-divider" />
 
+            {sendError && (
+              <div className="chat-send-error">
+                <span className="chat-send-error-text">{sendError.error}</span>
+                <div className="chat-send-error-actions">
+                  <button type="button" className="chat-send-error-retry" onClick={handleRetry} disabled={sending}>
+                    {sending ? 'Sending...' : 'Retry'}
+                  </button>
+                  <button type="button" className="chat-send-error-cancel" onClick={handleClearError} disabled={sending}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="chat-detail-input">
               <input
                 type="text"
                 value={draft}
                 onChange={e => setDraft(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') handleSend()
+                  if (e.key === 'Enter' && !sending) handleSend()
                 }}
                 placeholder="Type a message ..."
                 className="chat-detail-input-field"
+                disabled={sending}
               />
-              <button type="button" className="chat-detail-send-btn" onClick={handleSend}>
-                <img src={ICON_SEND} alt="" width={24} height={24} />
+              <button type="button" className="chat-detail-send-btn" onClick={() => handleSend()} disabled={sending}>
+                <img src={ICON_SEND} alt="" width={24} height={24} style={sending ? { opacity: 0.5 } : undefined} />
               </button>
             </div>
           </div>
         )}
         <MobileNavbar active="chats" />
+
+        {isDirect && otherUserId && (
+          <ReportModal
+            open={reportModalOpen}
+            onClose={() => setReportModalOpen(false)}
+            reportedUserId={otherUserId}
+            reportedUserName={otherFirstName}
+          />
+        )}
       </div>
     </div>
   )

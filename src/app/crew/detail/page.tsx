@@ -95,6 +95,13 @@ function CrewDetailContent() {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const inviteModalRef = useRef<HTMLDivElement | null>(null)
 
+  // Rate limiting: max 5 messages per 10 seconds
+  const RATE_LIMIT_MAX = 5
+  const RATE_LIMIT_WINDOW_MS = 10000
+  const messageTimes = useRef<number[]>([])
+  const [rateLimited, setRateLimited] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+
   // Fetch crew, thread, messages, and ensure participation
   useEffect(() => {
     let cancelled = false
@@ -326,9 +333,13 @@ function CrewDetailContent() {
         { event: '*', schema: 'public', table: 'messages', filter: `thread_id=eq.${thread.id}` },
         payload => {
           if (payload.eventType === 'INSERT') {
-            setMessages(prev => [...prev, payload.new as MessageRow])
-            // Fetch sender profile if new
             const newMsg = payload.new as MessageRow
+            setMessages(prev => {
+              // Prevent duplicates (message may already be added from local insert)
+              if (prev.some(m => m.id === newMsg.id)) return prev
+              return [...prev, newMsg]
+            })
+            // Fetch sender profile if new
             if (newMsg.sender_id && !profiles[newMsg.sender_id]) {
               client
                 .from('profiles')
@@ -364,8 +375,24 @@ function CrewDetailContent() {
     if (!client || !userId || !thread?.id || !draft.trim()) return
 
     const body = draft.trim()
+
+    // Rate limiting check
+    const now = Date.now()
+    messageTimes.current = messageTimes.current.filter(t => now - t < RATE_LIMIT_WINDOW_MS)
+    if (messageTimes.current.length >= RATE_LIMIT_MAX) {
+      setRateLimited(true)
+      setSendError('Slow down! You can send up to 5 messages per 10 seconds.')
+      setTimeout(() => {
+        setRateLimited(false)
+        setSendError(null)
+      }, RATE_LIMIT_WINDOW_MS)
+      return
+    }
+    messageTimes.current.push(now)
+
     setDraft('')
-    const { data, error: sendError } = await client
+    setSendError(null)
+    const { data, error: msgError } = await client
       .from('messages')
       .insert({
         thread_id: thread.id,
@@ -377,9 +404,10 @@ function CrewDetailContent() {
       .select('*')
       .single()
 
-    if (sendError) {
-      console.error('Error sending message:', sendError?.message ?? sendError)
+    if (msgError) {
+      console.error('Error sending message:', msgError?.message ?? msgError)
       setDraft(body) // restore draft on failure
+      setSendError('Failed to send message')
       return
     }
 
@@ -849,6 +877,31 @@ function CrewDetailContent() {
 
   const isCreator = crew?.created_by === userId
 
+  const handleKickParticipant = async (participantId: string, participantName: string) => {
+    if (!thread?.id || !userId) return
+
+    if (!confirm(`Are you sure you want to remove ${participantName} from this crew?`)) {
+      return
+    }
+
+    const client = supabase
+    if (!client) return
+
+    const { error } = await client
+      .from('thread_participants')
+      .delete()
+      .eq('thread_id', thread.id)
+      .eq('user_id', participantId)
+
+    if (error) {
+      console.error('Failed to kick participant:', error)
+      return
+    }
+
+    // Remove from local state
+    setParticipants(prev => prev.filter(p => p.id !== participantId))
+  }
+
   const statusIcon = (status?: string) => {
     if (status === 'read') return STATUS_ICON_SECONDARY
     if (status === 'delivered') return STATUS_ICON_PRIMARY
@@ -1003,16 +1056,22 @@ function CrewDetailContent() {
           {/* Friend tiles for all participants */}
           {participants.length > 0 && (
             <FriendTilesContainer>
-              {participants.map((participant, index) => (
-                <FriendTile
-                  key={participant.id || index}
-                  name={participant.username || 'User'}
-                  avatarUrl={participant.avatar_url || (participant as any)?.photo || null}
-                  placeholderUrl={AVATAR_PLACEHOLDER}
-                  imagePosition={(index % 6) + 1}
-                  isHost={participant.id === crew?.created_by}
-                />
-              ))}
+              {participants.map((participant, index) => {
+                const isParticipantHost = participant.id === crew?.created_by
+                const canKick = isCreator && !isParticipantHost && participant.id !== userId
+                return (
+                  <FriendTile
+                    key={participant.id || index}
+                    name={participant.username || 'User'}
+                    avatarUrl={participant.avatar_url || (participant as any)?.photo || null}
+                    placeholderUrl={AVATAR_PLACEHOLDER}
+                    imagePosition={(index % 6) + 1}
+                    isHost={isParticipantHost}
+                    canKick={canKick}
+                    onKick={() => handleKickParticipant(participant.id, participant.username || 'User')}
+                  />
+                )
+              })}
             </FriendTilesContainer>
           )}
 
@@ -1060,6 +1119,11 @@ function CrewDetailContent() {
           <div className="chats-event-divider" />
 
           <div className="chats-event-input-sticky">
+            {sendError && (
+              <div className="chat-send-error">
+                <span className="chat-send-error-text">{sendError}</span>
+              </div>
+            )}
             <div className="chats-event-input">
               <input
                 type="text"

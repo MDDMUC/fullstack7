@@ -4,6 +4,7 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
+import { isMessageUnread, isThreadUnread } from '@/lib/messages'
 
 type MobileNavbarState = 'Default' | 'chats' | 'events' | 'crew'
 
@@ -161,36 +162,35 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
           }
         })
 
-        const latestByThread: Record<string, { receiver_id: string; status: string | null }> = {}
+        const latestByThread: Record<string, { sender_id: string; receiver_id: string; status: string | null }> = {}
         const threadIds = fullyFilteredThreads.map(t => t.id).filter(Boolean) as string[]
         if (threadIds.length > 0) {
           const { data: latestMsgs } = await client
             .from('messages')
-            .select('id,thread_id,receiver_id,status')
+            .select('id,thread_id,sender_id,receiver_id,status')
             .in('thread_id', threadIds)
             .order('created_at', { ascending: false })
           if (latestMsgs) {
             for (const m of latestMsgs) {
               if (!latestByThread[m.thread_id]) {
-                latestByThread[m.thread_id] = { receiver_id: m.receiver_id, status: m.status }
+                latestByThread[m.thread_id] = { sender_id: m.sender_id, receiver_id: m.receiver_id, status: m.status }
               }
             }
           }
         }
 
-        // Check unread status using the exact same logic as /chats page
+        // Use unified unread helper from lib/messages
         const hasUnread = fullyFilteredThreads.some(t => {
           const fallbackMsg = latestByThread[t.id]
           const isDirect = (t.type ?? 'direct') === 'direct'
           const hasMessages = !!fallbackMsg || !!(t as any).last_message
-          
-          // Match /chats page logic exactly
-          const isUnread =
-            (!hasMessages && isDirect) ||
-            (!!fallbackMsg &&
-              fallbackMsg.receiver_id === userId &&
-              (fallbackMsg.status ?? '').toLowerCase() !== 'read')
-          return isUnread
+
+          return isThreadUnread(
+            fallbackMsg ? { sender_id: fallbackMsg.sender_id, receiver_id: fallbackMsg.receiver_id, status: fallbackMsg.status } : null,
+            userId,
+            isDirect,
+            hasMessages
+          )
         })
 
         setHasUnreadChats(hasUnread)
@@ -232,10 +232,10 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
         // Get latest message for each crew thread
         const { data: latestMessages, error: messagesError } = await client
           .from('messages')
-          .select('id,thread_id,receiver_id,status')
+          .select('id,thread_id,sender_id,receiver_id,status')
           .in('thread_id', threadIds)
           .order('created_at', { ascending: false })
-        
+
         if (messagesError) {
           console.error('Error fetching crew messages for unread check:', messagesError)
         }
@@ -253,10 +253,13 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
           }
         }
 
-        // Check if any crew thread has an unread message
-        // Match the logic from /chats page exactly: receiver_id === userId && status !== 'read'
+        // Use unified unread helper for crew threads (isDirect = false for all crew threads)
         const hasUnread = Array.from(latestByThread.values()).some(msg => {
-          return msg.receiver_id === userId && (msg.status ?? '').toLowerCase() !== 'read'
+          return isMessageUnread(
+            { sender_id: msg.sender_id, receiver_id: msg.receiver_id, status: msg.status },
+            userId,
+            false // isDirect = false for crew threads
+          )
         })
 
         setHasUnreadCrews(hasUnread)
@@ -270,20 +273,49 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
     checkUnreadCrews()
 
     // Subscribe to message changes
-    const channel = client
-      .channel('navbar-unread-check')
+    // Use unique channel per user with timestamp to avoid conflicts from React Strict Mode
+    const channelName = `navbar-unread-${userId}-${Date.now()}`
+    let isSubscribed = true
+
+    const channel = client.channel(channelName)
+
+    channel
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'messages' },
-        () => {
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        (payload) => {
+          if (!isSubscribed) return
+          console.log('[MobileNavbar] New message received')
           checkUnreadChats()
           checkUnreadCrews()
         },
       )
-      .subscribe()
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages' },
+        (payload) => {
+          if (!isSubscribed) return
+          checkUnreadChats()
+          checkUnreadCrews()
+        },
+      )
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('[MobileNavbar] Realtime connected')
+        }
+      })
+
+    // Poll every 10s as reliable fallback
+    const pollInterval = setInterval(() => {
+      if (!isSubscribed) return
+      checkUnreadChats()
+      checkUnreadCrews()
+    }, 10000)
 
     return () => {
-      client.removeChannel(channel)
+      isSubscribed = false
+      channel.unsubscribe()
+      clearInterval(pollInterval)
     }
   }, [userId])
 

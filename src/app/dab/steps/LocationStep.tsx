@@ -114,7 +114,7 @@ export default function LocationStep() {
     setCurrentStep(4)
   }
 
-  const isValid = homebase.trim() !== ''
+  const isValid = homebase.trim() !== '' && (selectedGyms.length > 0 || climbsOutside)
 
   return (
     <div 

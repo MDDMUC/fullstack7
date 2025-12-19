@@ -7,12 +7,15 @@ import MobileFilterBar from '@/components/MobileFilterBar'
 import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import Avatar from '@/components/Avatar'
+import ActionMenu from '@/components/ActionMenu'
+import ReportModal from '@/components/ReportModal'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile, fetchGymsFromTable, Gym } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import { sendSwipe } from '@/lib/swipes'
 import { checkAndCreateMatch } from '@/lib/matches'
+import { blockUser, getBlockedUsers } from '@/lib/blocks'
 
 // Figma mobile navbar - exact structure from node 628:4634
 // Using exact SVG files from /public/icons/
@@ -89,6 +92,10 @@ export default function HomeScreen() {
     gym: 'All',
   })
   const [gyms, setGyms] = useState<Gym[]>([])
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>([])
+  const [cardMenuOpen, setCardMenuOpen] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [blocking, setBlocking] = useState(false)
 
   // Fetch current user's profile to check for pro status
   useEffect(() => {
@@ -123,13 +130,25 @@ export default function HomeScreen() {
       setLoadingProfiles(true)
       try {
         const client = supabase ?? requireSupabase()
+
+        // Fetch blocked users first
+        let blocked: string[] = []
+        try {
+          blocked = await getBlockedUsers()
+          setBlockedUserIds(blocked)
+        } catch {
+          // Ignore if blocks table doesn't exist yet
+        }
+
         const normalized = await fetchProfiles(client)
-        const profiles: Profile[] = normalized.map(p => ({
-          ...p,
-          distance: p.distance ?? '10 km',
-        }))
+        const profiles: Profile[] = normalized
+          .filter(p => !blocked.includes(p.id)) // Filter out blocked users
+          .map(p => ({
+            ...p,
+            distance: p.distance ?? '10 km',
+          }))
         setDeck(profiles)
-        
+
         // Fetch gyms from the gyms table
         const gymsList = await fetchGymsFromTable(client)
         setGyms(gymsList)
@@ -177,11 +196,41 @@ export default function HomeScreen() {
     }
   }, [deck, gyms])
 
+  // Get current user's gyms and styles for matching
+  const currentUserGyms = useMemo(() => {
+    if (!currentUserProfile?.gym) return new Set<string>()
+    const gyms = Array.isArray(currentUserProfile.gym) ? currentUserProfile.gym : []
+    return new Set(gyms.map(g => String(g).toLowerCase()))
+  }, [currentUserProfile])
+
+  const currentUserStyles = useMemo(() => {
+    return new Set(getStylesFromProfile(currentUserProfile).map(s => s.toLowerCase()))
+  }, [currentUserProfile])
+
+  // Calculate match score for a profile (higher = better match)
+  const getMatchScore = (profile: Profile): number => {
+    let score = 0
+
+    // +2 points for each mutual gym
+    const profileGyms = Array.isArray(profile.gym) ? profile.gym : []
+    profileGyms.forEach(g => {
+      if (currentUserGyms.has(String(g).toLowerCase())) score += 2
+    })
+
+    // +1 point for each mutual style
+    const profileStyles = getStylesFromProfile(profile).map(s => s.toLowerCase())
+    profileStyles.forEach(s => {
+      if (currentUserStyles.has(s)) score += 1
+    })
+
+    return score
+  }
+
   const filteredDeck = useMemo(() => {
-    return deck.filter(p => {
+    const filtered = deck.filter(p => {
       // Exclude current user's own profile
       if (currentUserProfile?.id && p.id === currentUserProfile.id) return false
-      
+
       // Filter by city - case-insensitive match
       if (filters.city !== 'All') {
         const profileCity = (p.city || p.homebase || '').trim().toLowerCase()
@@ -190,7 +239,7 @@ export default function HomeScreen() {
           return false
         }
       }
-      
+
       // Filter by climbing style - case-insensitive match
       if (filters.style !== 'All') {
         const profileStyles = getStylesFromProfile(p).map(s => s.trim().toLowerCase())
@@ -199,18 +248,18 @@ export default function HomeScreen() {
           return false
         }
       }
-      
+
       // Filter by gym - check if profile's gym array includes the selected gym
       // The gym array may contain gym IDs (UUIDs) or gym names, so we check both
       if (filters.gym !== 'All') {
         const profileGyms = Array.isArray(p.gym) ? p.gym : []
         if (profileGyms.length === 0) return false
-        
+
         // Find the gym ID that matches the selected gym name
         const selectedGymId = Array.from(gymMap.entries()).find(
           ([_, name]) => name.trim().toLowerCase() === filters.gym.trim().toLowerCase()
         )?.[0]
-        
+
         // Check if profile has the gym by ID or by name (handles both cases)
         const hasGym = profileGyms.some(g => {
           if (!g || typeof g !== 'string') return false
@@ -219,13 +268,16 @@ export default function HomeScreen() {
           // Match by ID (UUID format) or by name
           return trimmed === selectedGymId?.toLowerCase() || trimmed === filterGym
         })
-        
+
         if (!hasGym) return false
       }
-      
+
       return true
     })
-  }, [deck, filters, currentUserProfile, gymMap])
+
+    // Sort by match score (suggested partners first), then by created_at (already in order)
+    return filtered.sort((a, b) => getMatchScore(b) - getMatchScore(a))
+  }, [deck, filters, currentUserProfile, gymMap, currentUserGyms, currentUserStyles])
 
   const current = useMemo(() => filteredDeck[0] ?? deck[0] ?? null, [filteredDeck, deck])
 
@@ -286,6 +338,26 @@ export default function HomeScreen() {
     setTimeout(() => setCelebrate(false), 2200)
   }
 
+  const handleBlock = async () => {
+    if (!current) return
+    setBlocking(true)
+    try {
+      await blockUser(current.id)
+      setBlockedUserIds(prev => [...prev, current.id])
+      // Remove blocked user from deck
+      setDeck(prev => prev.filter(p => p.id !== current.id))
+      setCardMenuOpen(false)
+    } catch (err) {
+      console.error('block failed', err)
+    }
+    setBlocking(false)
+  }
+
+  const handleOpenReport = () => {
+    setCardMenuOpen(false)
+    setReportModalOpen(true)
+  }
+
   return (
     <RequireAuth>
       <div className="home-screen" data-name="/home-mobile">
@@ -316,7 +388,33 @@ export default function HomeScreen() {
               <div className="home-card" data-name="usercard-mobile">
                 {showStatusRow && (
                   <div className="home-card-header">
-                    <div className="home-card-header-left" />
+                    <div className="home-card-header-left">
+                      <button
+                        type="button"
+                        className="home-card-menu-btn"
+                        aria-label="More options"
+                        onClick={() => setCardMenuOpen(!cardMenuOpen)}
+                      >
+                        <img src="/icons/dots.svg" alt="" width={24} height={24} />
+                      </button>
+                      <ActionMenu
+                        open={cardMenuOpen}
+                        onClose={() => setCardMenuOpen(false)}
+                        items={[
+                          {
+                            label: 'Block user',
+                            onClick: handleBlock,
+                            loading: blocking,
+                            loadingLabel: 'Blocking...',
+                            danger: true,
+                          },
+                          {
+                            label: 'Report user',
+                            onClick: handleOpenReport,
+                          },
+                        ]}
+                      />
+                    </div>
                     <div className="home-card-header-right">
                       {showOnlinePill && (
                         <span className="button-pill button-pill-focus button-pill-online-now">
@@ -445,6 +543,13 @@ export default function HomeScreen() {
                   </div>
                 </div>
               )}
+
+              <ReportModal
+                open={reportModalOpen}
+                onClose={() => setReportModalOpen(false)}
+                reportedUserId={current?.id || ''}
+                reportedUserName={current?.username?.split(' ')[0] || 'User'}
+              />
             </>
           )}
         </div>

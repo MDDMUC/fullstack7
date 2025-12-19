@@ -1,29 +1,52 @@
-# MVP To-Do (Priority)
+# MVP To-Do
 
-- Reliability hardening: fix chat send/read accuracy, invite/accept flows, unread indicators; add retry/error states.
-- Trust & safety: add block/report, host kick/remove, and simple message rate-limiting.
-- Notifications: in-app toasts/badges for new messages/invites; scope push if feasible.
-- Discovery boost: active/recent sorting, suggested partners (mutual gyms/styles), activity timestamps on cards.
-- Onboarding guardrails: require photo + style + gym; prompt user to join at least one crew/event/gym chat at the end.
-- Events/crews clarity: host badge, attendee count, last activity/sender in lists; one-tap join/leave.
-- Gyms truthfulness: wire real occupancy/online or clearly label placeholders; show friends-in-gym counts from real data.
-- UX polish: ensure filters and nav are consistent; single clear entry to chats.
+## Completed
 
-# 2-Day MVP Plan (Logic/Coding Focus)
+### Day 1 AM - Reliability Sweep ✓
+- [x] Unified unread helper (`src/lib/messages.ts`) - `isMessageUnread()`, `isThreadUnread()`
+- [x] Chat send/read/unread hardening - status flow `sent -> delivered -> read`
+- [x] Send retry/error UI in chat detail page
+- [x] Invite/accept error handling in notifications page
+- [x] BackBar visibility fix on dark backgrounds
+- [x] Group chat read receipts fixed
 
-- Day 1 AM: Reliability sweep (chat send/read, invite/accept edge cases, unread indicators) + add retry/error UI.
-- Day 1 PM: Trust/safety (block/report, host kick/remove, basic rate limit on message sends).
-- Day 2 AM: Discovery & onboarding (active/recent sort, suggested partners with mutual gyms/styles; require photo/style/gym; end-of-onboarding join prompt).
-- Day 2 PM: Events/crews/gyms clarity (host badges, attendee counts, last activity/sender; clear occupancy labels or real feed hookup) + in-app toasts/badges for messages/invites.
+### Day 1 PM - Trust & Safety ✓
+- [x] Block/report functionality
+  - `blocks` and `reports` Supabase tables created
+  - `src/lib/blocks.ts` and `src/lib/reports.ts` library functions
+  - `ReportModal` component with report type selection
+  - Block/report menu on home page profile cards
+  - Block/report menu in direct chat detail
+- [x] Host kick/remove for crews
+  - FriendTile component with `canKick`/`onKick` props
+  - Kick button appears on hover for host (crew creator)
+  - Confirmation dialog before removing
+- [x] Message rate limiting
+  - 5 messages per 10 seconds limit
+  - Error message displayed when rate limited
+  - Applied to both chat detail and crew detail pages
+- [x] Bug fix: duplicate messages in crew chat (realtime + local insert)
 
-# Claude Execution Prompt
+---
 
-You are Claude, acting as an implementation agent. Execute these steps in order and stop on errors:
+### Day 2 AM - Discovery & Onboarding ✓
+- [x] Active/recent sorting for profiles on /home (profiles sorted by created_at + match score)
+- [x] Suggested partners (mutual gyms/styles matching) - match score prioritizes compatible users
+- [x] Require photo + style + gym in onboarding flow
+- [x] End-of-onboarding prompt to join crew/event/gym chat
 
-1) Reliability: audit chat send/read + unread; fix delivery/read status and invite/accept edge cases; add retry/error states in UI.
-2) Trust/safety: add block/report, host kick/remove in groups/events/crews, and simple rate limiting on message sends.
-3) Notifications: add in-app toasts/badges for new messages and accepted invites; scope push if possible.
-4) Discovery/onboarding: add �Active/Recent� sort, suggested partners (mutual gyms/styles), require photo+style+gym, and prompt user to join one crew/event/gym chat after onboarding.
-5) Events/crews/gyms clarity: show host badge, attendee count, last activity/last sender in lists; wire real occupancy/online or clearly mark placeholders; show friends-in-gym counts where data is real.
-6) UX consistency: keep single clear entry to chats; ensure filters/nav match across pages.
-After each step, summarize changes, note tests run, and list any blockers.
+---
+
+### Day 2 PM - Events/Crews/Gyms Clarity + Notifications ✓
+- [x] Host badge on event/crew cards
+- [x] Attendee count display (member counts on crew cards)
+- [x] Last activity/sender in lists (events show "Active X ago")
+- [x] Clear occupancy labels for gyms (dynamic % full display)
+- [x] In-app toasts/badges for new messages and invites
+
+---
+
+## Backlog (Post-MVP)
+- [ ] Push notifications (scope if feasible)
+- [ ] Friends-in-gym counts from real data
+- [ ] UX polish: ensure filters and nav are consistent
