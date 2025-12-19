@@ -46,7 +46,13 @@
 
 ---
 
+### UX Polish Pass ✓
+- [x] Empty states for events and crew pages ("No events/crews found")
+- [x] Fixed non-functional "Join Chat" button on gyms page
+- [x] Filter consistency review (chats kept with city/gym only - design decision)
+
+---
+
 ## Backlog (Post-MVP)
 - [ ] Push notifications (scope if feasible)
 - [ ] Friends-in-gym counts from real data
-- [ ] UX polish: ensure filters and nav are consistent
