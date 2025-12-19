@@ -1066,3 +1066,97 @@
 - `src/app/events/page.tsx` (empty state)
 - `src/app/crew/page.tsx` (empty state)
 - `src/app/gyms/page.tsx` (Join Chat button functionality)
+
+### Friends in Gym - Phase 1 (Permissioned View)
+
+#### Overview
+Replaced hardcoded friend avatars on gym cards with real matched users who have the same gym in their profile. Permissioned view only shows mutual matches.
+
+#### New Component: GymFriendCard
+- **File:** `src/components/GymFriendCard.tsx` (NEW)
+- `GymFriendCard` - Individual friend card with avatar, name, style, availability, lookingFor
+- `GymFriendsSection` - Container with header showing count, maps through friends
+- `GymFriendsFallback` - Shows other gyms where user has matches (for empty state)
+- Props include profile data and onInvite/onMessage callbacks
+
+#### Match Fetching Logic
+- **File:** `src/app/gyms/page.tsx`
+- Added `useAuthSession` hook to get current user ID
+- Added `friendsByGym` state (Record<string, GymFriendProfile[]>)
+- New `loadMatchedFriends` useEffect:
+  1. Queries `matches` table for mutual matches
+  2. Extracts other user IDs from matches
+  3. Fetches profiles via `fetchProfiles()`
+  4. Groups profiles by gym ID (checking profile.gym array)
+- Replaced hardcoded friend tiles with `GymFriendsSection` component
+
+#### CTA Implementation
+- **Invite to climb:** Creates/gets direct thread, navigates to `/chats/{threadId}?invite={message}`
+  - Pre-filled message: "Hey! I'm at {gymName} today. Want to climb together?"
+- **Message:** Creates/gets direct thread, navigates to `/chats/{threadId}`
+- Uses `ensureDirectThreadForMatch()` from matches library
+
+#### Empty State
+- Shows "No matches at this gym yet. Keep swiping or explore other gyms." when no friends at gym
+- `GymFriendsFallback` component ready for showing other gyms with matches
+
+#### CSS Styles
+- **File:** `src/app/globals.css`
+- `.gym-friends-section` - Container with header and list
+- `.gym-friend-card` - Individual card with avatar, info, actions
+- `.gym-friend-card-invite` / `.gym-friend-card-message` - CTA buttons
+- `.gym-friends-empty` - Empty state styling
+- `.gym-friends-fallback` - Fallback section for other gyms
+
+**Files modified:**
+- `src/components/GymFriendCard.tsx` (NEW)
+- `src/app/gyms/page.tsx` (match fetching, dynamic friends)
+- `src/app/globals.css` (GymFriendCard styles)
+
+#### Bug Fix: Gym Data Format
+- **Issue:** Users not appearing in correct gym's friends list
+- **Root cause:** The `gym` column in `onboardingprofiles` is `text` type expecting JSON array string format `["uuid", "outside"]`, but some data was stored with PostgreSQL array format `{uuid,outside}` causing curly braces to be embedded in values
+- **Fix:** Update corrupted data with proper JSON array string format:
+  ```sql
+  UPDATE onboardingprofiles
+  SET gym = '["gym-uuid-here", "outside"]'
+  WHERE username ILIKE '%username%';
+  ```
+- **Debug logging:** Added `[Friends Debug]` console logs to help diagnose gym matching issues
+
+---
+
+## Session Summary
+
+### Completed Today
+1. **Day 2 PM - Events/Crews/Gyms Clarity + Notifications**
+   - Host badges on event/crew cards
+   - Attendee/member count display
+   - Last activity on event cards
+   - Dynamic gym occupancy labels
+   - Toast notification system for new messages
+
+2. **UX Polish Pass**
+   - Empty states for events and crew pages
+   - Fixed Join Chat button on gyms page
+   - Filter consistency review
+
+3. **Friends in Gym - Phase 1**
+   - GymFriendCard component with invite/message CTAs
+   - Match fetching and gym-based grouping
+   - Empty state messaging
+   - Debug logging for troubleshooting
+   - Bug fix for gym data format issue
+
+### MVP Status: Complete
+All planned MVP features have been implemented and tested:
+- Day 1 AM: Reliability Sweep ✓
+- Day 1 PM: Trust & Safety ✓
+- Day 2 AM: Discovery & Onboarding ✓
+- Day 2 PM: Events/Crews/Gyms Clarity ✓
+- UX Polish Pass ✓
+- Friends in Gym Phase 1 ✓
+
+### Remaining Backlog (Post-MVP)
+- Push notifications
+- Friends in Gym Phase 2 (opt-in check-ins)

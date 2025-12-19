@@ -8,7 +8,11 @@ import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import LoadingState from '@/components/LoadingState'
 import EmptyState from '@/components/EmptyState'
+import { GymFriendsSection, GymFriendsFallback, GymFriendProfile } from '@/components/GymFriendCard'
 import { supabase } from '@/lib/supabaseClient'
+import { useAuthSession } from '@/hooks/useAuthSession'
+import { fetchProfiles } from '@/lib/profiles'
+import { ensureDirectThreadForMatch } from '@/lib/matches'
 import { getBarHeightsForDay, getLiveIndicatorPosition, getDayName, getChartTimes, getCurrentOccupancy } from '@/lib/gymOccupancyData'
 
 // Asset URLs from Figma
@@ -73,6 +77,8 @@ const removeUnfollowedGym = (gymId: string) => {
 
 export default function GymsScreen() {
   const router = useRouter()
+  const { session } = useAuthSession()
+  const userId = session?.user?.id
   const [gyms, setGyms] = React.useState<GymRow[]>([])
   const [allGyms, setAllGyms] = React.useState<GymRow[]>([])
   const [loading, setLoading] = React.useState(false)
@@ -80,6 +86,10 @@ export default function GymsScreen() {
   const [dropdownPosition, setDropdownPosition] = React.useState<{ top: number; left: number } | null>(null)
   const addGymRef = React.useRef<HTMLDivElement | null>(null)
   const buttonRef = React.useRef<HTMLButtonElement | null>(null)
+
+  // Friends (matches) per gym - keyed by gym ID
+  const [friendsByGym, setFriendsByGym] = React.useState<Record<string, GymFriendProfile[]>>({})
+  const [matchesLoading, setMatchesLoading] = React.useState(false)
 
   React.useEffect(() => {
     const loadGyms = async () => {
@@ -132,6 +142,146 @@ export default function GymsScreen() {
     }
     loadGyms()
   }, [])
+
+  // Fetch matches and group by gym
+  React.useEffect(() => {
+    const loadMatchedFriends = async () => {
+      if (!supabase || !userId || gyms.length === 0) {
+        setFriendsByGym({})
+        return
+      }
+
+      setMatchesLoading(true)
+      try {
+        // Get all matches where current user is involved
+        const { data: matches, error: matchError } = await supabase
+          .from('matches')
+          .select('user_a,user_b')
+          .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+
+        if (matchError) {
+          console.error('Failed to load matches', matchError)
+          setFriendsByGym({})
+          return
+        }
+
+        if (!matches || matches.length === 0) {
+          setFriendsByGym({})
+          return
+        }
+
+        // Extract matched user IDs (the other person in each match)
+        const matchedUserIds = matches.map(m =>
+          m.user_a === userId ? m.user_b : m.user_a
+        ).filter(Boolean) as string[]
+
+        if (matchedUserIds.length === 0) {
+          setFriendsByGym({})
+          return
+        }
+
+        // Fetch profiles for matched users
+        const profiles = await fetchProfiles(supabase, matchedUserIds)
+
+        // Group profiles by gym ID
+        const gymFriendsMap: Record<string, GymFriendProfile[]> = {}
+
+        // Debug: log current user's gyms
+        console.log('[Friends Debug] Current user gyms:', gyms.map(g => ({ id: g.id, name: g.name })))
+
+        for (const profile of profiles) {
+          // Profile.gym is an array of gym IDs
+          const profileGyms = Array.isArray(profile.gym) ? profile.gym : []
+
+          // Debug: log matched user's gyms
+          console.log(`[Friends Debug] User ${profile.username} has gyms:`, profileGyms)
+
+          for (const gymId of profileGyms) {
+            if (!gymId) continue
+
+            // Convert to string for comparison (gym IDs might be UUIDs)
+            const gymIdStr = String(gymId).toLowerCase()
+
+            // Check if this gym is in user's gym list
+            const matchingGym = gyms.find(g => g.id.toLowerCase() === gymIdStr)
+
+            // Debug: log matching attempt
+            console.log(`[Friends Debug] Checking gym "${gymIdStr}" -> match:`, matchingGym?.name || 'NO MATCH')
+
+            if (matchingGym) {
+              if (!gymFriendsMap[matchingGym.id]) {
+                gymFriendsMap[matchingGym.id] = []
+              }
+
+              // Add profile if not already added
+              if (!gymFriendsMap[matchingGym.id].some(p => p.id === profile.id)) {
+                gymFriendsMap[matchingGym.id].push({
+                  id: profile.id,
+                  username: profile.username,
+                  avatar_url: profile.avatar_url,
+                  style: profile.style || null,
+                  availability: profile.availability || null,
+                  lookingFor: profile.lookingFor || null,
+                })
+              }
+            }
+          }
+        }
+
+        // Debug: log final result
+        console.log('[Friends Debug] Final friendsByGym:', Object.entries(gymFriendsMap).map(([gymId, friends]) => ({
+          gymId,
+          gymName: gyms.find(g => g.id === gymId)?.name,
+          friendCount: friends.length,
+          friends: friends.map(f => f.username)
+        })))
+
+        setFriendsByGym(gymFriendsMap)
+      } catch (err) {
+        console.error('Failed to load matched friends', err)
+        setFriendsByGym({})
+      } finally {
+        setMatchesLoading(false)
+      }
+    }
+
+    loadMatchedFriends()
+  }, [userId, gyms])
+
+  // Handle inviting a friend to climb
+  const handleInviteFriend = async (profile: GymFriendProfile, gymName: string) => {
+    if (!userId) return
+
+    try {
+      // Get or create direct thread with this user
+      const threadId = await ensureDirectThreadForMatch(userId, profile.id)
+
+      if (threadId) {
+        // Navigate to chat with pre-filled message context
+        // The message will be composed in the chat page
+        const inviteMessage = encodeURIComponent(`Hey! I'm at ${gymName} today. Want to climb together?`)
+        router.push(`/chats/${threadId}?invite=${inviteMessage}`)
+      }
+    } catch (err) {
+      console.error('Failed to invite friend', err)
+    }
+  }
+
+  // Handle messaging a friend
+  const handleMessageFriend = async (profile: GymFriendProfile) => {
+    if (!userId) return
+
+    try {
+      // Get or create direct thread with this user
+      const threadId = await ensureDirectThreadForMatch(userId, profile.id)
+
+      if (threadId) {
+        router.push(`/chats/${threadId}`)
+      }
+    } catch (err) {
+      console.error('Failed to open chat', err)
+    }
+  }
 
   // Handle click outside to close dropdown
   React.useEffect(() => {
@@ -262,6 +412,9 @@ export default function GymsScreen() {
                     // Navigate to chats page where gym threads are listed
                     router.push('/chats')
                   }}
+                  friends={friendsByGym[gym.id] || []}
+                  onInviteFriend={(profile) => handleInviteFriend(profile, gym.name)}
+                  onMessageFriend={handleMessageFriend}
                 />
               ))}
           </div>
@@ -325,7 +478,21 @@ function GymSelectTile({
 }
 
 // GymDetailCard component - exact Figma implementation
-function GymDetailCard({ gym, onUnfollow, onJoinChat }: { gym: GymRow; onUnfollow: () => void; onJoinChat: () => void }) {
+function GymDetailCard({
+  gym,
+  onUnfollow,
+  onJoinChat,
+  friends,
+  onInviteFriend,
+  onMessageFriend,
+}: {
+  gym: GymRow
+  onUnfollow: () => void
+  onJoinChat: () => void
+  friends: GymFriendProfile[]
+  onInviteFriend: (profile: GymFriendProfile) => void
+  onMessageFriend: (profile: GymFriendProfile) => void
+}) {
   const [selectedDay, setSelectedDay] = React.useState<number | null>(null) // null = today
   const [dayDropdownOpen, setDayDropdownOpen] = React.useState(false)
   const dayDropdownRef = React.useRef<HTMLDivElement | null>(null)
@@ -556,72 +723,13 @@ function GymDetailCard({ gym, onUnfollow, onJoinChat }: { gym: GymRow; onUnfollo
         </div>
       </div>
 
-      {/* Friends Climbing */}
-      <div className="gym-card-friends" data-name="friends-climbing" data-node-id="769:3164">
-        <div className="gym-card-friend" data-name="friend1" data-node-id="769:3165">
-          <div className="gym-card-friend-bg" aria-hidden="true">
-            <div className="gym-card-friend-img-wrapper">
-              <img src={IMG_FRIEND1} alt="" className="gym-card-friend-img gym-card-friend-img-1" />
-            </div>
-            <div className="gym-card-friend-overlay" />
-          </div>
-          <div className="gym-card-friend-name" data-node-id="769:3181">
-            <p>Anna</p>
-          </div>
-        </div>
-        <div className="gym-card-friend" data-name="friend1" data-node-id="769:3182">
-          <div className="gym-card-friend-bg" aria-hidden="true">
-            <div className="gym-card-friend-img-wrapper">
-              <img src={IMG_FRIEND2} alt="" className="gym-card-friend-img gym-card-friend-img-2" />
-            </div>
-            <div className="gym-card-friend-overlay" />
-          </div>
-          <div className="gym-card-friend-name" data-node-id="769:3183">
-            <p>Marco</p>
-          </div>
-        </div>
-        <div className="gym-card-friend" data-name="friend1" data-node-id="769:3186">
-          <div className="gym-card-friend-bg" aria-hidden="true">
-            <div className="gym-card-friend-img-wrapper">
-              <img 
-                src={IMG_FRIEND4} 
-                alt="" 
-                className="gym-card-friend-img gym-card-friend-img-4"
-                onError={(e) => {
-                  // Hide broken image to prevent blue placeholder
-                  e.currentTarget.style.display = 'none'
-                }}
-              />
-            </div>
-            <div className="gym-card-friend-overlay" />
-          </div>
-          <div className="gym-card-friend-name" data-node-id="769:3187">
-            <p>Finn</p>
-          </div>
-        </div>
-        <div className="gym-card-friend" data-name="friend1" data-node-id="769:3188">
-          <div className="gym-card-friend-bg" aria-hidden="true">
-            <div className="gym-card-friend-img-wrapper">
-              <img src={IMG_FRIEND5} alt="" className="gym-card-friend-img gym-card-friend-img-5" />
-            </div>
-            <div className="gym-card-friend-overlay" />
-          </div>
-          <div className="gym-card-friend-name" data-node-id="769:3189">
-            <p>Lena</p>
-          </div>
-        </div>
-        <div className="gym-card-friend" data-name="friend1" data-node-id="769:3190">
-          <div className="gym-card-friend-bg" aria-hidden="true">
-            <div className="gym-card-friend-img-wrapper">
-              <img src={IMG_FRIEND6} alt="" className="gym-card-friend-img gym-card-friend-img-6" />
-            </div>
-            <div className="gym-card-friend-overlay" />
-          </div>
-          <div className="gym-card-friend-name" data-node-id="769:3191">
-            <p>Max</p>
-          </div>
-        </div>
-      </div>
+      {/* Friends at this Gym */}
+      <GymFriendsSection
+        friends={friends}
+        gymName={gym.name}
+        onInvite={onInviteFriend}
+        onMessage={onMessageFriend}
+      />
 
       {/* CTA Row */}
       <div className="gym-card-ctarow" data-name="ctarow" data-node-id="769:3279">

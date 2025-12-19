@@ -15069,3 +15069,233 @@ img.friend-tile-img {
 .toast-info {
   border-left: 3px solid var(--color-text-muted);
 }
+
+/* ============================================
+   Gym Friends Section
+   ============================================ */
+.gym-friends-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface-card);
+  border-radius: var(--radius-md);
+}
+
+.gym-friends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gym-friends-title {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-default);
+  margin: 0;
+}
+
+.gym-friends-count {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.gym-friends-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* Individual Friend Card */
+.gym-friend-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm);
+  background: var(--color-surface-panel);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s ease;
+}
+
+.gym-friend-card:hover {
+  background: var(--color-surface-bg);
+}
+
+.gym-friend-card-avatar {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.gym-friend-card-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gym-friend-card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gym-friend-card-name {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-default);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gym-friend-card-style {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.gym-friend-card-availability {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.gym-friend-card-looking {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+.gym-friend-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.gym-friend-card-invite,
+.gym-friend-card-message {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.gym-friend-card-invite {
+  background: var(--color-primary);
+  color: var(--color-surface-bg);
+  border: none;
+}
+
+.gym-friend-card-invite:hover {
+  background: var(--color-secondary);
+}
+
+.gym-friend-card-message {
+  background: transparent;
+  color: var(--color-text-default);
+  border: 1px solid var(--color-border-default);
+}
+
+.gym-friend-card-message:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Empty State */
+.gym-friends-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  background: var(--color-surface-card);
+  border-radius: var(--radius-md);
+}
+
+.gym-friends-empty-text {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-muted);
+  margin: 0;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Fallback Section */
+.gym-friends-fallback {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--color-surface-panel);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-sm);
+}
+
+.gym-friends-fallback-title {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.gym-friends-fallback-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+
+.gym-friends-fallback-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.gym-friends-fallback-item:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-bg);
+}
+
+.gym-friends-fallback-name {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-default);
+}
+
+.gym-friends-fallback-count {
+  font-family: var(--fontfamily-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-primary);
+}
