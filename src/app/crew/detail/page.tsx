@@ -421,11 +421,11 @@ function CrewDetailContent() {
     }
   }
 
-  // Mark incoming messages as read when viewing
+  // Mark incoming messages as read when viewing (group thread)
   useEffect(() => {
     const client = supabase
     if (!client || !userId || !thread?.id || messages.length === 0) return
-    const incoming = messages.filter(m => m.receiver_id === userId && m.sender_id !== userId)
+    const incoming = messages.filter(m => m.sender_id !== userId)
     const toRead = incoming.filter(m => m.status !== 'read').map(m => m.id)
     if (toRead.length === 0) return
     ;(async () => {

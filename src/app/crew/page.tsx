@@ -48,7 +48,7 @@ type ThreadRow = {
 type MessageSlim = {
   id: string
   thread_id: string
-  user_id: string
+  sender_id: string
   receiver_id: string | null
   status: string | null
 }
@@ -162,7 +162,7 @@ export default function CrewScreen() {
       if (userThreadIds.size > 0) {
         const { data: latestMessages } = await client
           .from('messages')
-          .select('id,thread_id,user_id,receiver_id,status')
+          .select('id,thread_id,sender_id,receiver_id,status')
           .in('thread_id', Array.from(userThreadIds))
           .order('created_at', { ascending: false })
 
@@ -179,7 +179,7 @@ export default function CrewScreen() {
           const senderIds = Array.from(
             new Set(
               Array.from(latestByThread.values())
-                .map(msg => msg.user_id)
+                .map(msg => msg.sender_id)
                 .filter(Boolean) as string[]
             )
           )
@@ -202,7 +202,7 @@ export default function CrewScreen() {
           // Crew threads are group threads: use isMessageUnread with isDirect=false
           for (const [threadId, msg] of latestByThread.entries()) {
             const unreadCheck = isMessageUnread(
-              { sender_id: msg.user_id, receiver_id: msg.receiver_id || '', status: msg.status },
+              { sender_id: msg.sender_id, receiver_id: msg.receiver_id || '', status: msg.status },
               userId,
               false // isDirect = false for crew threads
             )
@@ -215,8 +215,8 @@ export default function CrewScreen() {
 
             // Map sender name for this thread
             const thread = Object.values(threadsMap).find(t => t.id === threadId)
-            if (thread?.crew_id && msg.user_id) {
-              const senderProfile = senderProfilesMap[msg.user_id]
+            if (thread?.crew_id && msg.sender_id) {
+              const senderProfile = senderProfilesMap[msg.sender_id]
               if (senderProfile) {
                 const firstName = senderProfile.username.trim().split(/\s+/)[0] || 'User'
                 lastMessageSenderMap[thread.crew_id] = firstName

@@ -3164,7 +3164,7 @@ input[type=number] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-xxxs);
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--space-sm);
   font-size: var(--font-pill-size);
@@ -3188,7 +3188,7 @@ input[type=number] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--space-xxxs);
   padding: var(--space-xs) var(--space-sm);
   border-radius: var(--space-sm);
   font-size: var(--font-pill-size);
@@ -5747,7 +5747,7 @@ input[type=number] {
 .gpc-chip.founder {
   background: var(--color-panel);
   border: 1px solid var(--color-special);
-  gap: 4px;
+  gap: var(--space-xxxs);
 }
 
 .gpc-chip.founder span {
@@ -5762,6 +5762,7 @@ input[type=number] {
 .gpc-chip.crew {
   background: var(--color-panel);
   border: 1px solid var(--color-special);
+  gap: var(--space-xxxs);
 }
 
 .gpc-chip.crew span {

@@ -3,7 +3,6 @@
 export const dynamic = 'force-dynamic'
 export const fetchCache = 'force-no-store'
 
-import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import React, { Suspense } from 'react'
 
@@ -12,7 +11,7 @@ import MobileNavbar from '@/components/MobileNavbar'
 import BackBar from '@/components/BackBar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
-import { supabase } from '@/lib/supabaseClient'
+import { supabase, requireSupabase } from '@/lib/supabaseClient'
 
 type EventRow = {
   id: string
@@ -70,62 +69,89 @@ function EventDetailContent() {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [joining, setJoining] = React.useState(false)
+  const [isGoing, setIsGoing] = React.useState(false)
+  const [rsvpLoading, setRsvpLoading] = React.useState(false)
+  const [rsvpError, setRsvpError] = React.useState<string | null>(null)
+
+  const loadEvent = React.useCallback(async (showLoading = true) => {
+    if (!eventId) {
+      setError('Event not found')
+      if (showLoading) setLoading(false)
+      return null
+    }
+    if (!supabase) {
+      setError('Unable to connect to Supabase')
+      if (showLoading) setLoading(false)
+      return null
+    }
+
+    if (showLoading) setLoading(true)
+    setError(null)
+
+    const { data: eventData, error: eventError } = await supabase
+      .from('events')
+      .select('id,title,location,description,start_at,slots_total,slots_open,image_url')
+      .eq('id', eventId)
+      .maybeSingle()
+
+    if (eventError || !eventData) {
+      setEvent(null)
+      setThread(null)
+      setError('Event not found')
+      if (showLoading) setLoading(false)
+      return null
+    }
+
+    const { data: threadData } = await supabase
+      .from('threads')
+      .select('id')
+      .eq('type', 'event')
+      .eq('event_id', eventId)
+      .maybeSingle()
+
+    setEvent(eventData)
+    setThread(threadData ?? null)
+    if (showLoading) setLoading(false)
+    return eventData
+  }, [eventId])
 
   React.useEffect(() => {
     let cancelled = false
-    const client = supabase
-    if (!eventId) {
-      setError('Event not found')
-      return
-    }
-    if (!client) {
-      setError('Unable to connect to Supabase')
-      return
-    }
+    if (!eventId || !supabase) return
 
-    const fetchEvent = async () => {
-      setLoading(true)
-      setError(null)
-      const { data: eventData, error: eventError } = await client
-        .from('events')
-        .select('id,title,location,description,start_at,slots_total,slots_open,image_url')
-        .eq('id', eventId)
-        .maybeSingle()
+    const fetchEventAndRsvp = async () => {
+      const eventData = await loadEvent(true)
+      if (cancelled || !eventData) return
 
-      if (cancelled) return
-
-      if (eventError || !eventData) {
-        setEvent(null)
-        setThread(null)
-        setError('Event not found')
-        setLoading(false)
+      if (!userId) {
+        setIsGoing(false)
         return
       }
 
-      const { data: threadData } = await client
-        .from('threads')
+      const { data: rsvp } = await requireSupabase()
+        .from('event_rsvps')
         .select('id')
-        .eq('type', 'event')
-        .eq('event_id', eventId)
+        .eq('event_id', eventData.id)
+        .eq('user_id', userId)
         .maybeSingle()
 
       if (cancelled) return
-
-      setEvent(eventData)
-      setThread(threadData ?? null)
-      setLoading(false)
+      setIsGoing(!!rsvp)
     }
 
-    fetchEvent()
+    fetchEventAndRsvp()
 
     return () => {
       cancelled = true
     }
-  }, [eventId])
+  }, [eventId, userId, loadEvent])
 
   const timeLabel = formatEventDate(event?.start_at)
   const goingLabel = formatGoing(event?.slots_total, event?.slots_open)
   const cityLabel = extractCity(event?.location) || 'Location'
+  const isFull = event?.slots_open != null && event.slots_open <= 0
+  const rsvpDisabled = rsvpLoading || !event || (!isGoing && isFull)
+  const rsvpLabel = isGoing ? 'Leave' : isFull ? 'Full' : "I'm Going"
 
   const handleJoinChat = async () => {
     if (!supabase || !userId || !event) {
@@ -164,10 +190,10 @@ function EventDetailContent() {
     const { error: partErr } = await supabase.from('thread_participants').upsert({ thread_id: threadId, user_id: userId })
     if (partErr) {
       // If direct insert fails due to RLS, try using the RPC function
-      const { error: rpcErr } = await supabase.rpc('add_thread_participant', { 
-        p_thread_id: threadId, 
+      const { error: rpcErr } = await supabase.rpc('add_thread_participant', {
+        p_thread_id: threadId,
         p_user_id: userId,
-        p_role: 'member'
+        p_role: 'member',
       })
       if (rpcErr) {
         console.error('Error joining thread:', rpcErr)
@@ -184,7 +210,7 @@ function EventDetailContent() {
         body: 'Joined event',
         sender_id: userId,
         receiver_id: userId,
-        status: 'unread',
+        status: 'sent',
       })
       .select('created_at')
       .maybeSingle()
@@ -192,6 +218,51 @@ function EventDetailContent() {
     await supabase.from('threads').update({ last_message_at: bumpAt, last_message: 'Joined event' }).eq('id', threadId)
     setJoining(false)
     router.push(`/chats/${threadId}`)
+  }
+
+  const handleRsvpToggle = async () => {
+    if (!supabase || !userId || !event) {
+      setRsvpError('You must be signed in to RSVP.')
+      return
+    }
+
+    if (!isGoing && isFull) {
+      setRsvpError('This event is full.')
+      return
+    }
+
+    setRsvpLoading(true)
+    setRsvpError(null)
+
+    try {
+      const { data: existing } = await supabase
+        .from('event_rsvps')
+        .select('id')
+        .eq('event_id', event.id)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (existing?.id) {
+        const { error: deleteError } = await supabase
+          .from('event_rsvps')
+          .delete()
+          .eq('id', existing.id)
+        if (deleteError) throw deleteError
+        setIsGoing(false)
+      } else {
+        const { error: insertError } = await supabase
+          .from('event_rsvps')
+          .insert({ event_id: event.id, user_id: userId, status: 'going' })
+        if (insertError) throw insertError
+        setIsGoing(true)
+      }
+
+      await loadEvent(false)
+    } catch (err: any) {
+      setRsvpError(err?.message || 'Unable to update RSVP.')
+    } finally {
+      setRsvpLoading(false)
+    }
   }
 
   return (
@@ -209,7 +280,7 @@ function EventDetailContent() {
             }
           />
 
-          {loading && <p className="events-detail-status">Loading event…</p>}
+          {loading && <p className="events-detail-status">Loading event...</p>}
           {!loading && error && <p className="events-detail-status events-detail-status-error">{error}</p>}
 
           {event && !loading && !error && (
@@ -250,11 +321,16 @@ function EventDetailContent() {
               </div>
 
               <div className="events-detail-cta-row">
-                    <ButtonCta onClick={handleJoinChat} disabled={joining || loading || !event}>
-                      {joining ? 'Joining…' : 'Join Chat'}
-                    </ButtonCta>
-                <ButtonCta>I’m Going</ButtonCta>
+                <ButtonCta onClick={handleJoinChat} disabled={joining || loading || !event}>
+                  {joining ? 'Joining...' : 'Join Chat'}
+                </ButtonCta>
+                <ButtonCta onClick={handleRsvpToggle} disabled={rsvpDisabled}>
+                  {rsvpLoading ? 'Saving...' : rsvpLabel}
+                </ButtonCta>
               </div>
+              {rsvpError && (
+                <p className="events-detail-status events-detail-status-error">{rsvpError}</p>
+              )}
             </>
           )}
         </div>
@@ -274,4 +350,6 @@ export default function EventDetailPage() {
     </RequireAuth>
   )
 }
+
+
 

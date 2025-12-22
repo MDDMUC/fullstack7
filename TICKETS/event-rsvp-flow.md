@@ -1,8 +1,8 @@
-﻿# Ticket: Event RSVP Flow + "I'm Going"
+# Ticket: Event RSVP Flow + "I'm Going"
 
 ID: TICKET-EVT-001
-Owner: Product/Eng
-Status: Proposed
+Owner: Eng
+Status: Done
 Priority: P1
 Created: 2025-12-22
 Last updated: 2025-12-22
@@ -82,3 +82,4 @@ Ship a lightweight RSVP flow that updates attendance and ties into event chats.
 - Date:
 - Decision:
 - Rationale:
+

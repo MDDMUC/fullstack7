@@ -1,4 +1,4 @@
-﻿# Ticket Index
+# Ticket Index
 
 | ID | Title | Status | Owner | Priority | File |
 |----|-------|--------|-------|----------|------|
@@ -8,8 +8,8 @@
 | TICKET-QA-001 | Pre-launch Product Readiness QA | Proposed | QA/Eng | P0 | `TICKETS/prelaunch-product-readiness-qa.md` |
 | TICKET-OPS-001 | Content Seeding (Pre-launch) | Proposed | Product/Ops | P0 | `TICKETS/content-seeding-prelaunch.md` |
 | TICKET-LEG-001 | Legal and Compliance (Pre-launch) | Proposed | Product/Legal | P0 | `TICKETS/legal-compliance-prelaunch.md` |
-| TICKET-CHAT-001 | Messaging Schema Alignment + Unread Reliability | Proposed | Eng | P1 | `TICKETS/messaging-schema-alignment.md` |
-| TICKET-EVT-001 | Event RSVP Flow + "I'm Going" | Proposed | Product/Eng | P1 | `TICKETS/event-rsvp-flow.md` |
+| TICKET-CHAT-001 | Messaging Schema Alignment + Unread Reliability | Done | Eng | P1 | `TICKETS/messaging-schema-alignment.md` |
+| TICKET-EVT-001 | Event RSVP Flow + "I'm Going" | Done | Eng | P1 | `TICKETS/event-rsvp-flow.md` |
 | TICKET-TNS-002 | Group Reporting + Message-level Reporting | Proposed | Product/Eng | P1 | `TICKETS/group-reporting-and-blocking.md` |
 | TICKET-PRES-002 | Presence Feature Gating (Check-ins, Gym Chat, Partner Finder) | Proposed | Product/Eng | P1 | `TICKETS/presence-feature-gating.md` |
 | TICKET-NOT-002 | Notifications v1 (Message, Event, Crew, Match) | Proposed | Eng | P1 | `TICKETS/notifications-v1.md` |
@@ -28,3 +28,8 @@
 | TICKET-RET-001 | Habit Loops and Retention Prompts | Proposed | Eng/Product | P2 | `TICKETS/habit-loops-retention.md` |
 | TICKET-UX-001 | Launch Polish Pack | Proposed | Product/Marketing | P2 | `TICKETS/launch-polish-pack.md` |
 | TICKET-PRES-001 | Friends in Gym Phase 2 (Opt-in Check-ins) | Parked | Eng/Product | P2 | `TICKETS/friends-in-gym-phase2.md` |
+
+
+
+
+

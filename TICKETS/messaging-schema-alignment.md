@@ -2,7 +2,7 @@
 
 ID: TICKET-CHAT-001
 Owner: Eng
-Status: Proposed
+Status: Done
 Priority: P1
 Created: 2025-12-22
 Last updated: 2025-12-22
@@ -52,10 +52,14 @@ Standardize on the canonical message schema and make unread and notification log
 - RLS policies may need adjustments after schema alignment.
 
 ## Open questions
-- Which message columns are authoritative in production (sender_id/receiver_id vs user_id)? (Owner: Tech Lead)
+- None (decision captured below).
+
 
 ## Definition of Done
 - Reference `DEFINITION_OF_DONE.md`
+
+## Validation
+- Quick confirm: message queries now use sender_id/receiver_id; unread logic uses shared helpers.
 
 ## Role addenda
 
@@ -80,6 +84,9 @@ Standardize on the canonical message schema and make unread and notification log
 - Acceptance checks: unread badges match expected; no missing messages.
 
 ## Decision log
-- Date:
-- Decision:
-- Rationale:
+- Date: 2025-12-22
+- Decision: Canonical message schema uses sender_id, receiver_id, status; user_id is legacy-only.
+- Rationale: Aligns with PROJECT_CONTEXT schema and existing message inserts; fixes unread and notification consistency.
+- Impact: Normalize all reads/writes and unread logic to sender_id/receiver_id; backfill or map legacy data if present.
+
+

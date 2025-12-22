@@ -1,4 +1,4 @@
-# DECISIONS.md
+﻿# DECISIONS.md
 
 Lightweight ADR log for DAB. Add a new entry when a decision changes architecture, product direction, or constraints.
 
@@ -38,3 +38,11 @@ Template
 - Rationale: Early paywalls reduce network effects.
 - Impact: Avoid paywalls, Pro tiers, or credits until criteria are met.
 - Links: `PROJECT_CONTEXT.md`
+
+## 2025-12-22 - Canonical messages schema
+- Decision: Use sender_id, receiver_id, status as the canonical message columns; treat user_id as legacy-only.
+- Rationale: Matches PROJECT_CONTEXT schema and current write paths.
+- Impact: Normalize message reads/writes, unread logic, and notifications to sender_id/receiver_id.
+- Links: `PROJECT_CONTEXT.md`, `TICKETS/messaging-schema-alignment.md`
+
+

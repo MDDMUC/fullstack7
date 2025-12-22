@@ -1,4 +1,5 @@
 import { supabase, requireSupabase } from './supabaseClient'
+import { fetchProfiles } from './profiles'
 
 export type Thread = {
   id: string
@@ -17,8 +18,10 @@ export type ProfileLite = { id: string; username: string; avatar_url: string | n
 export type Message = {
   id: string
   thread_id: string
-  user_id: string
+  sender_id: string
+  receiver_id: string | null
   body: string
+  status: string
   created_at: string
   profiles?: ProfileLite
 }
@@ -42,28 +45,51 @@ export async function fetchMessages(threadId: string) {
   const c = client()
   const { data, error } = await c
     .from('messages')
-    .select('id, thread_id, user_id, body, created_at, profiles:profiles!messages_user_id_fkey(id, username, avatar_url)')
+    .select('id, thread_id, sender_id, receiver_id, body, status, created_at')
     .eq('thread_id', threadId)
     .order('created_at', { ascending: true })
   if (error) throw error
-  return (data ?? []).map(row => ({
+
+  const rows = data ?? []
+  const senderIds = Array.from(new Set(rows.map(row => row.sender_id).filter(Boolean)))
+  let profilesMap: Record<string, ProfileLite> = {}
+
+  if (senderIds.length > 0) {
+    const profiles = await fetchProfiles(c, senderIds)
+    profilesMap = profiles.reduce<Record<string, ProfileLite>>((acc, profile) => {
+      acc[profile.id] = {
+        id: profile.id,
+        username: profile.username ?? 'Climber',
+        avatar_url: profile.avatar_url ?? null,
+      }
+      return acc
+    }, {})
+  }
+
+  return rows.map(row => ({
     id: row.id,
     thread_id: row.thread_id,
-    user_id: row.user_id,
+    sender_id: row.sender_id,
+    receiver_id: row.receiver_id ?? null,
     body: row.body,
+    status: row.status,
     created_at: row.created_at,
-    profiles: Array.isArray((row as any).profiles) ? (row as any).profiles[0] : (row as any).profiles,
+    profiles: profilesMap[row.sender_id],
   })) as Message[]
 }
 
-export async function sendMessage(threadId: string, body: string) {
+export async function sendMessage(threadId: string, body: string, receiverId?: string) {
   const c = client()
   const { data: userData, error: userErr } = await c.auth.getUser()
   if (userErr || !userData.user) throw new Error('Not authenticated')
+  const senderId = userData.user.id
+  const receiver_id = receiverId ?? senderId
   const { error } = await c.from('messages').insert({
     thread_id: threadId,
-    user_id: userData.user.id,
+    sender_id: senderId,
+    receiver_id,
     body,
+    status: 'sent',
   })
   if (error) throw error
 }
@@ -89,7 +115,7 @@ export function subscribeToThread(threadId: string, cb: (msg: Message) => void) 
  */
 export type UnreadCheckMessage = {
   sender_id: string
-  receiver_id: string
+  receiver_id: string | null
   status: string | null
 }
 
@@ -101,9 +127,10 @@ export function isMessageUnread(
   const statusLower = (msg.status ?? '').toLowerCase()
   const isRead = statusLower === 'read'
   const notFromMe = msg.sender_id !== userId
+  const receiverId = msg.receiver_id ?? ''
 
   if (isDirect) {
-    return msg.receiver_id === userId && notFromMe && !isRead
+    return receiverId === userId && notFromMe && !isRead
   } else {
     // Group threads: any unread message not from the current user
     return notFromMe && !isRead

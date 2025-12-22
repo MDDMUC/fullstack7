@@ -111,14 +111,14 @@ export default function NotificationsPage() {
         if (threadIds.size > 0) {
           const { data: recentMessages } = await client
             .from('messages')
-            .select('id,thread_id,body,created_at,user_id')
+            .select('id,thread_id,body,created_at,sender_id')
             .in('thread_id', Array.from(threadIds))
-            .neq('user_id', userId)
+            .neq('sender_id', userId)
             .order('created_at', { ascending: false })
             .limit(10)
 
           if (recentMessages && recentMessages.length > 0) {
-            const senderIds = Array.from(new Set(recentMessages.map(m => m.user_id).filter(Boolean) as string[]))
+            const senderIds = Array.from(new Set(recentMessages.map(m => m.sender_id).filter(Boolean) as string[]))
             let senderProfilesMap: Record<string, { username: string; avatar_url?: string }> = {}
             if (senderIds.length > 0) {
               const profiles = await fetchProfiles(client, senderIds)
@@ -129,7 +129,7 @@ export default function NotificationsPage() {
             }
 
             for (const msg of recentMessages) {
-              const sender = senderProfilesMap[msg.user_id]
+              const sender = senderProfilesMap[msg.sender_id]
               const firstName = sender?.username?.trim().split(/\s+/)[0] || 'Someone'
               const timeAgo = formatTimeAgo(msg.created_at)
               allNotifications.push({
@@ -138,7 +138,7 @@ export default function NotificationsPage() {
                 text: `${firstName} sent you a message`,
                 time: timeAgo,
                 link: `/chats/${msg.thread_id}`,
-                userId: msg.user_id,
+                userId: msg.sender_id,
                 avatarUrl: sender?.avatar_url,
               })
             }

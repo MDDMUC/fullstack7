@@ -1,4 +1,15 @@
-﻿## Work Log (last ~8 hours)
+## Work Log (last ~8 hours)
+
+### Implementation: message schema alignment (2025-12-22)
+- Standardized message queries to use sender_id/receiver_id and removed user_id usage.
+- Fixed crew group read logic and event join system message status.
+- Updated notifications and lib/messages to align with canonical message fields.
+- Quick confirm: message reads use sender_id/receiver_id; unread logic uses shared helpers.
+
+### Implementation: event RSVP flow (2025-12-22)
+- Added event_rsvps table and slot sync trigger in `supabase/create_event_rsvps_table.sql`.
+- Implemented RSVP toggle and state in event detail with full/leave handling.
+- Manual test: RSVP add/remove, full state, slot count updates confirmed.
 
 ### Product review: prelaunch alignment + ticket updates (2025-12-22)
 - Reviewed messaging schema mismatch and unread logic (sender_id vs user_id), event RSVP gap, group reporting gaps, and presence pages in the header.
@@ -146,13 +157,13 @@
   - Reusable loading indicator with consistent styling across the app
   - Uses design tokens: `var(--fontfamily-inter)`, `var(--font-size-md)`, `var(--color-text-muted)`, `var(--space-xl)`
   - Includes accessibility attributes: `role="status"`, `aria-live="polite"`
-  - Accepts optional `message` prop (defaults to "Loadingâ€¦") and `className` prop for custom styling
+  - Accepts optional `message` prop (defaults to "Loading…") and `className` prop for custom styling
   - Centralizes loading state UI pattern that was duplicated across 6 files
 - **Replaced 6 instances of duplicated loading UI**:
-  - **events/page.tsx**: Replaced `<p className="events-loading">Loading eventsâ€¦</p>` with `<LoadingState message="Loading eventsâ€¦" />`
-  - **chats/page.tsx**: Replaced `<p className="chats-subtitle">Loading chatsâ€¦</p>` with `<LoadingState message="Loading chatsâ€¦" />`
-  - **crew/page.tsx**: Replaced `<p className="events-loading">Loading crewsâ€¦</p>` with `<LoadingState message="Loading crewsâ€¦" />`
-  - **gyms/page.tsx**: Replaced `<p className="gyms-loading">Loading gymsâ€¦</p>` with `<LoadingState message="Loading gymsâ€¦" />`
+  - **events/page.tsx**: Replaced `<p className="events-loading">Loading events…</p>` with `<LoadingState message="Loading events…" />`
+  - **chats/page.tsx**: Replaced `<p className="chats-subtitle">Loading chats…</p>` with `<LoadingState message="Loading chats…" />`
+  - **crew/page.tsx**: Replaced `<p className="events-loading">Loading crews…</p>` with `<LoadingState message="Loading crews…" />`
+  - **gyms/page.tsx**: Replaced `<p className="gyms-loading">Loading gyms…</p>` with `<LoadingState message="Loading gyms…" />`
   - **dab/steps/LocationStep.tsx**: Replaced `<p className="onb-gym-loading">Loading gyms...</p>` with `<LoadingState message="Loading gyms..." />`
   - **home/page.tsx**: Skipped - has custom loading animation with dot indicator (kept as-is)
 - **Impact**: Reduced code duplication by consolidating 5 loading state implementations into single component
@@ -196,7 +207,7 @@
   - All styling now uses consistent design tokens
 - **MobileFilterBar animation update**:
   - Reversed the gradient divider animation direction (now animates from right-to-left instead of left-to-right)
-  - Updated `@keyframes filterbar-divider-slide` to change `background-position` from `0% 0%` â†’ `200% 0%` to `200% 0%` â†’ `0% 0%`
+  - Updated `@keyframes filterbar-divider-slide` to change `background-position` from `0% 0%` → `200% 0%` to `200% 0%` → `0% 0%`
 - **Event create page (`/events/create`) styling updates**:
   - Added fallback image for hero section when no image is uploaded
   - Fallback uses `/eventfallback.jpg` from public folder
@@ -306,6 +317,11 @@
 
 ## Work Log (last ~8 hours)
 
+### Implementation: message schema alignment (2025-12-22)
+- Standardized message queries to use sender_id/receiver_id and removed user_id usage.
+- Fixed crew group read logic and event join system message status.
+- Updated notifications and lib/messages to align with canonical message fields.
+- Quick confirm: message reads use sender_id/receiver_id; unread logic uses shared helpers.
 ### Supabase data model and seeding
 - Added gyms with slugs/locations/avatars for Munich: Boulderwelt West/Ost, DAV Freimann, DAV Thalkirchen, Einstein Boulderhalle, Heavens Gate. Ensured `avatar_url` is the sole image field.
 - Normalized `threads.gym_id` to `uuid`, added FK to `gyms(id)`, enforced unique `(gym_id, title)`.
@@ -324,7 +340,7 @@
 ### Styles/components
 - Implemented multiple tokenized mobile components (filter buttons, dropdowns, mobile navbar), special chips (pro/founder/crew), and landing page updates; globals.css is tokenized via tokens.css.
 - Recent CSS tweak requested: `GridProfileCard` needs padding 16px (top/bottom/left/right) and width/height to fit-content (pending application if not already done).
-- Chat preview (overview) aligned to Figma: avatar hover stroke uses primary, small shadow; overflow visible so stroke isnâ€™t clipped; title/subtitle hover color is primary; text gap 2px; body/sm on preview text; unread badge pulses; unread wave overlay added.
+- Chat preview (overview) aligned to Figma: avatar hover stroke uses primary, small shadow; overflow visible so stroke isn’t clipped; title/subtitle hover color is primary; text gap 2px; body/sm on preview text; unread badge pulses; unread wave overlay added.
 - Chat detail (1:1) header matches Figma: 24px back/dots icons, grid header with centered name, Inter 16px medium, token colors.
 - Input bar matches Figma: 38px height, bg `var(--color-text-default)`, radius `var(--radius-lg)`, Inter 14px medium `var(--color-text-darker)`, no border/outline; send icon uses `/icons/send.svg`.
 - Status indicator for outgoing messages uses Figma assets (double tick).
@@ -343,7 +359,7 @@
 - CTA buttons on /profile use tokenized components (`button-navlink` cancel, `onb-cta-btn` save) and full-width layout.
 - Profile name shows first name/email prefix only; chevron buttons left-align text/right-align chevron.
 - Dab => match => chat: dab button now writes a like swipe and, on reciprocal like, inserts a match and ensures a direct thread between the pair (reuses existing direct threads even if `type` was null).
-- Profile fetch scoped to user: onboarding rows are now filtered by requested IDs so a logged-in user never sees another userâ€™s onboarding data on /profile.
+- Profile fetch scoped to user: onboarding rows are now filtered by requested IDs so a logged-in user never sees another user’s onboarding data on /profile.
 - Swipes RLS fixed: select policy now allows swiper OR swipee to read rows (`swipes_select_self_or_target`), enabling reciprocal-like detection; mutual dabs now create matches and direct threads successfully.
 - Chats overview: direct threads show first name and real avatar (using merged onboarding/profile data), new matches show as unread and sort to top; unread wave slowed (5.4s) and masked to content; online pill dot set to 12px token size.
 
@@ -593,15 +609,15 @@
 
 ### City filter bug fix on /chats page (latest)
 - **Fixed city filter logic**:
-  - **Issue**: When selecting a city like "Bad TÃ¶lz", Munich gym threads were incorrectly showing up in the filtered results
+  - **Issue**: When selecting a city like "Bad Tölz", Munich gym threads were incorrectly showing up in the filtered results
   - **Root cause**: City values from `gym.area` could contain full location strings like "Munich, Germany", and the filter logic wasn't properly normalizing and matching cities
   - **Solution**:
-    - Added city normalization function that extracts the first part before comma (e.g., "Munich, Germany" â†’ "Munich")
+    - Added city normalization function that extracts the first part before comma (e.g., "Munich, Germany" → "Munich")
     - Cities are normalized when stored in `ChatListItem` (for both direct chats from profile city/homebase and gym threads from `gym.area`)
     - Filter options are normalized when extracting cities from items to avoid duplicates in dropdown
     - Filter comparison uses exact matching after normalization and lowercasing both sides
     - Removed partial matching logic that was causing incorrect cross-city matches
-  - **Result**: City filter now works correctly - selecting "Bad TÃ¶lz" shows only chats from Bad TÃ¶lz, selecting "Munich" shows only Munich chats (including Munich gym threads)
+  - **Result**: City filter now works correctly - selecting "Bad Tölz" shows only chats from Bad Tölz, selecting "Munich" shows only Munich chats (including Munich gym threads)
 
 ### Gym detail card friend tiles fix (latest)
 - **Removed Yara's friend tile**:
@@ -989,7 +1005,7 @@
   - Queries `thread_participants` to count members per crew thread
   - Displays "{N} members" on crew cards
   - Singular/plural handling ("1 member" vs "X members")
-- **Events page**: Already shows "{X} going Â· {Y} open" slot info
+- **Events page**: Already shows "{X} going · {Y} open" slot info
 
 #### Last activity/sender in lists
 - **Crew page**: Already shows "Last message by {Name}" (implemented earlier)
@@ -1155,16 +1171,20 @@ Replaced hardcoded friend avatars on gym cards with real matched users who have 
 
 ### MVP Status: Complete
 All planned MVP features have been implemented and tested:
-- Day 1 AM: Reliability Sweep âœ“
-- Day 1 PM: Trust & Safety âœ“
-- Day 2 AM: Discovery & Onboarding âœ“
-- Day 2 PM: Events/Crews/Gyms Clarity âœ“
-- UX Polish Pass âœ“
-- Friends in Gym Phase 1 âœ“
+- Day 1 AM: Reliability Sweep ✓
+- Day 1 PM: Trust & Safety ✓
+- Day 2 AM: Discovery & Onboarding ✓
+- Day 2 PM: Events/Crews/Gyms Clarity ✓
+- UX Polish Pass ✓
+- Friends in Gym Phase 1 ✓
 
 ### Remaining Backlog (Post-MVP)
 - Push notifications
 - Friends in Gym Phase 2 (opt-in check-ins)
+
+
+
+
 
 
 
