@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(npm run build:*)",
-      "Bash(/dev/null -exec grep -l \"CREATE TABLE.*threads\\\\|CREATE TABLE.*messages\\\\|CREATE TABLE.*swipes\\\\|CREATE TABLE.*gyms\" {} ;)"
+      "Bash(/dev/null -exec grep -l \"CREATE TABLE.*threads\\\\|CREATE TABLE.*messages\\\\|CREATE TABLE.*swipes\\\\|CREATE TABLE.*gyms\" {} ;)",
+      "Bash(dir:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(curl:*)"
     ]
   }
 }

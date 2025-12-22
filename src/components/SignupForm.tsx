@@ -138,3 +138,4 @@ export default function SignupForm({ compact = false, heading, subheading }: Pro
     </div>
   )
 }
+

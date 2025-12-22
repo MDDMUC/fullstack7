@@ -51,14 +51,14 @@ export default function ActionMenu({ items, open, onClose, className = '' }: Act
       className={`mh-silver-dropdown-menu mh-silver-dropdown-right ${className}`}
       style={{
         position: 'absolute',
-        top: 'calc(100% + 8px)',
+        top: 'calc(100% + var(--space-sm))',
         right: 0,
         zIndex: 1000,
         minWidth: '180px',
-        background: 'var(--color-surface-card)',
+        background: 'var(--color-card)',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--color-stroke)',
-        padding: '4px 0',
+        padding: 'var(--space-xxs) 0',
       }}
     >
       {items.map((item, index) => (
@@ -68,7 +68,7 @@ export default function ActionMenu({ items, open, onClose, className = '' }: Act
               style={{
                 height: '1px',
                 background: 'var(--color-stroke)',
-                margin: '4px 0',
+                margin: 'var(--space-xxs) 0',
               }}
             />
           )}
@@ -88,11 +88,11 @@ export default function ActionMenu({ items, open, onClose, className = '' }: Act
               border: 'none',
               textAlign: 'left',
               color: item.disabled || item.loading
-                ? 'var(--color-text-muted)'
+                ? 'var(--color-muted)'
                 : item.danger
-                ? 'var(--color-state-red)'
-                : 'var(--color-text-default)',
-              fontFamily: 'var(--fontfamily-inter)',
+                ? 'var(--color-red)'
+                : 'var(--color-text)',
+              fontFamily: 'var(--font-inter)',
               fontSize: 'var(--font-size-md)',
               fontWeight: 500,
               cursor: item.disabled || item.loading ? 'not-allowed' : 'pointer',

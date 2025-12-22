@@ -13,3 +13,4 @@ export async function safeGetUser(client: SupabaseClient) {
     return { user: null, error: err }
   }
 }
+

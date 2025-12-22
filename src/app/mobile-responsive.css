@@ -1,0 +1,263 @@
+/* ============================================================================
+   MOBILE RESPONSIVE STYLES - Landing Page
+   Breakpoints:
+   - Mobile: 0-767px
+   - Tablet: 768px-1023px
+   - Desktop: 1024px+
+   ============================================================================ */
+
+/* Mobile-First: Base styles are mobile, then override for larger screens */
+
+/* Landing Page Adjustments for Mobile */
+@media (max-width: 767px) {
+  /* Hide large background gradients on mobile for performance */
+  .landing-page::before,
+  .landing-page::after {
+    display: none;
+  }
+
+  .landing-bg-gradient {
+    opacity: 0.3; /* Reduce opacity on mobile */
+  }
+
+  /* Hero Section - Stack vertically */
+  .landing-hero-content {
+    flex-direction: column !important;
+    gap: var(--space-xl) !important;
+    padding: var(--space-lg) !important;
+  }
+
+  .landing-hero-left,
+  .landing-hero-right {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .landing-hero-title {
+    font-size: var(--font-size-xl) !important; /* Smaller on mobile */
+    line-height: 1.3 !important;
+  }
+
+  .landing-hero-description {
+    font-size: var(--font-size-md) !important;
+  }
+
+  .landing-hero-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .landing-hero-actions button {
+    width: 100% !important;
+  }
+
+  .landing-hero-badges {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Featured Climber Card - Full width on mobile */
+  .fc-card {
+    max-width: 100% !important;
+  }
+
+  .fc-content-row {
+    flex-direction: column !important;
+  }
+
+  .fc-image-wrapper {
+    width: 100% !important;
+    height: 300px !important; /* Fixed height on mobile */
+  }
+
+  .fc-tags-wrapper {
+    width: 100% !important;
+    padding: var(--space-md) 0 !important;
+  }
+
+  /* Grid Profiles Section - Stack vertically */
+  .grid-profiles-block-new {
+    flex-direction: column !important;
+    gap: var(--space-xl) !important;
+  }
+
+  .grid-profiles-text-filter-new,
+  .grid-profiles-right-new {
+    width: 100% !important;
+  }
+
+  /* Grid Profiles Grid - Single column on mobile */
+  .grid-profiles-grid-new {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-md) !important;
+  }
+
+  /* Grid Profile Card - Optimize for mobile */
+  .gpc-content {
+    flex-direction: column !important;
+  }
+
+  .gpc-left {
+    width: 100% !important;
+    height: 250px !important;
+  }
+
+  .gpc-right {
+    width: 100% !important;
+    padding: var(--space-md) 0 !important;
+  }
+
+  /* Filter Dropdowns - Stack vertically */
+  .grid-profiles-filters-row-new {
+    grid-template-columns: 1fr !important; /* Single column */
+    gap: var(--space-sm) !important;
+  }
+
+  .grid-filter-reset-new {
+    width: 100% !important; /* Full width reset button */
+  }
+
+  /* Signup Section - Stack vertically */
+  .landing-signup-content {
+    flex-direction: column !important;
+    gap: var(--space-xl) !important;
+    padding: var(--space-lg) !important;
+  }
+
+  .landing-signup-left,
+  .landing-signup-right {
+    width: 100% !important;
+  }
+
+  /* Signup Form - Full width on mobile */
+  .onb-signup-card {
+    max-width: 100% !important;
+    padding: var(--space-lg) !important;
+  }
+
+  .onb-pw-row {
+    flex-direction: column !important;
+  }
+
+  .onb-field-half {
+    width: 100% !important;
+  }
+
+  /* Activity Feed - Hide or simplify on mobile */
+  .landing-activity-feed {
+    max-height: 400px !important; /* Limit height on mobile */
+  }
+
+  .landing-activity-list {
+    max-height: 250px !important;
+  }
+
+  /* Footer - Stack vertically */
+  .landing-footer-content {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: var(--space-md) !important;
+  }
+
+  .landing-footer-links {
+    flex-direction: column !important;
+    gap: var(--space-sm) !important;
+  }
+}
+
+/* Tablet Adjustments (768px - 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Hero Section - Adjust for tablet */
+  .landing-hero-content {
+    padding: var(--space-xl) var(--space-lg) !important;
+  }
+
+  .landing-hero-left {
+    max-width: 60% !important;
+  }
+
+  .landing-hero-right {
+    max-width: 40% !important;
+  }
+
+  /* Grid Profiles Grid - 2 columns on tablet */
+  .grid-profiles-grid-new {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Signup Section - Keep side-by-side but smaller */
+  .landing-signup-left {
+    max-width: 55% !important;
+  }
+
+  .landing-signup-right {
+    max-width: 45% !important;
+  }
+}
+
+/* Desktop Optimizations (1024px+) */
+@media (min-width: 1024px) {
+  /* Ensure desktop layout uses full design */
+  .landing-hero-content {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+
+  .grid-profiles-container-new {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+
+  .landing-signup-content {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Utility Classes for Responsive Images */
+.responsive-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Touch Target Sizing for Mobile (44x44px minimum) */
+@media (max-width: 767px) {
+  button,
+  .button-navlink,
+  .onb-cta-btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+
+  /* Larger tap targets for filters */
+  .grid-filter-button-new {
+    min-height: 44px !important;
+  }
+}
+
+/* Prevent horizontal scroll on mobile */
+@media (max-width: 767px) {
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .landing-page {
+    overflow-x: hidden !important;
+    width: 100vw !important;
+  }
+
+  * {
+    max-width: 100% !important;
+  }
+
+  /* Fix any elements that might overflow */
+  .landing-hero-content,
+  .grid-profiles-container-new,
+  .landing-signup-content {
+    padding-left: var(--space-md) !important;
+    padding-right: var(--space-md) !important;
+  }
+}
+

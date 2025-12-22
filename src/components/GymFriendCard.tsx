@@ -160,3 +160,4 @@ export function GymFriendsFallback({
     </div>
   )
 }
+

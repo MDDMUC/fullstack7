@@ -1291,3 +1291,4 @@ export default function CrewDetailPage() {
     </RequireAuth>
   )
 }
+

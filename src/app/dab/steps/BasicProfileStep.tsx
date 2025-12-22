@@ -102,12 +102,12 @@ export default function BasicProfileStep() {
             <img src="/dab-logo.svg" alt="DAB" className="onb-step1-logo-img" />
           </div>
           
-          {/* Title - 52px Inter Extra Bold Italic #5ce1e6 - TWO LINES */}
+          {/* Title - 52px Inter Extra Bold Italic var(--color-primary) - TWO LINES */}
           <h1 className="onb-step1-title" data-node-id="516:239">
             LET'S<br />GOOOO!
           </h1>
           
-          {/* Subtitle - 16px Inter Medium #e9eef7 */}
+          {/* Subtitle - 16px Inter Medium var(--color-text) */}
           <p className="onb-step1-subtitle" data-node-id="528:789">
             Only takes one minute.
           </p>
@@ -237,3 +237,4 @@ export default function BasicProfileStep() {
     </div>
   )
 }
+

@@ -148,3 +148,4 @@ export function MessageToastListener() {
   // This component doesn't render anything - it's just a listener
   return null
 }
+

@@ -598,3 +598,4 @@ export async function loadCheckIns(): Promise<CheckIn[]> {
     return fallbackCheckins
   }
 }
+

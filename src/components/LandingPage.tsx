@@ -3,19 +3,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ButtonDab from './ButtonDab'
+import LoadingState from './LoadingState'
 import { fetchProfiles, Profile } from '@/lib/profiles'
 import { supabase } from '@/lib/supabaseClient'
 
-const FALLBACK_MALE = '/fallback-male.jpg'
-const FALLBACK_FEMALE = '/fallback-female.jpg'
-const FALLBACK_DEFAULT = FALLBACK_MALE
+const FALLBACK_AVATAR = '/fallback-male.jpg'
 
 const fallbackAvatarFor = (profile?: Profile | null) => {
-  const hint = (profile?.pronouns || profile?.bio || '').toLowerCase()
-  if (hint.includes('she ') || hint.includes(' her') || hint.includes('woman') || hint.includes('female')) {
-    return FALLBACK_FEMALE
-  }
-  return FALLBACK_DEFAULT
+  return FALLBACK_AVATAR
 }
 
 const formatJoinedAgo = (iso?: string) => {
@@ -103,9 +98,9 @@ const organizeTagsAndChips = (profile: Profile) => {
 
 type StatusState = { label: string; variant: 'live' | 'offline' | 'new' | 'omw' | 'dab' | 'climb' | 'herenow'; live: boolean }
 
-const ROCK_ICON = 'https://www.figma.com/api/mcp/asset/b40792a1-8803-46f4-8eda-7fffabd185d1'
-const PRO_ICON = 'https://www.figma.com/api/mcp/asset/e59c8273-cc79-465c-baea-a52bc6410ee6'
-const FOUNDER_ICON = 'https://www.figma.com/api/mcp/asset/678371f8-8c8a-45a5-bdfc-e9638de47c64'
+const ROCK_ICON = '/icons/rocknrollhand.svg'
+const PRO_ICON = '/icons/pro.svg'
+const FOUNDER_ICON = '/icons/rocknrollhand.svg'
 
 const statusForProfile = (profile: Profile): StatusState => {
   const raw = (profile.status || '').toLowerCase()
@@ -246,13 +241,13 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
         </div>
 
         {/* CTA Row */}
-        <div className="fc-cta-row" style={{ gap: 'var(--space-md)' }}>
-          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
-            <button className="button-navlink" style={{ width: '100%', height: 'var(--btn-height-lg)' }} onClick={onPass} aria-label="pass">
+        <div className="fc-cta-row">
+          <div className="fc-cta-wrapper">
+            <button className="button-navlink" onClick={onPass} aria-label="pass">
               Pass
             </button>
           </div>
-          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
+          <div className="fc-cta-wrapper">
             <ButtonDab onClick={onDab} aria-label="send a like" />
           </div>
         </div>
@@ -274,7 +269,7 @@ function Hero({ featured }: { featured?: Profile }) {
             DAB isn't for everyone. It's for the ones who chase the set. Drop in, see who's there, throw a dab. You're not climbing alone anymore.
           </p>
           <div className="landing-hero-actions">
-            <button className="button-navlink button-navlink-hover">Get Started</button>
+            <button className="button-cta">Get Started</button>
             <button className="button-navlink">Browse Climbers</button>
           </div>
           <div className="landing-hero-badges">
@@ -399,11 +394,11 @@ export function GridProfileCard({ profile, onPass, onDab }: { profile: Profile; 
         </div>
         
         {/* CTA Row */}
-        <div className="gpc-cta" style={{ gap: 'var(--space-md)' }}>
-          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
-            <button className="button-navlink" style={{ width: '100%', height: 'var(--btn-height-lg)' }} onClick={onPass} aria-label="pass">Pass</button>
+        <div className="gpc-cta">
+          <div className="fc-cta-wrapper">
+            <button className="button-navlink" onClick={onPass} aria-label="pass">Pass</button>
           </div>
-          <div className="fc-cta-wrapper" style={{ flex: 1 }}>
+          <div className="fc-cta-wrapper">
             <ButtonDab onClick={onDab} aria-label="send a like" />
           </div>
         </div>
@@ -996,7 +991,7 @@ function LandingSignupForm() {
 
         {/* CTA row */}
         <div className="onb-cta-row">
-          <button 
+          <button
             type="button"
             className="onb-cta-btn"
             onClick={handleSubmit}
@@ -1004,6 +999,12 @@ function LandingSignupForm() {
           >
             {loading ? 'Creating...' : "Let's Go"}
           </button>
+        </div>
+
+        {/* Sign In Link */}
+        <div className="onb-signin-link">
+          <span className="onb-signin-text">Already have an account?</span>
+          <a href="/signin" className="onb-signin-anchor">Sign In</a>
         </div>
       </div>
     </div>
@@ -1051,9 +1052,9 @@ function Footer() {
           <p>Built by climbers for climbers. Finding your crew made easy.</p>
         </div>
         <div className="landing-footer-links">
-          <a href="#">Community Guidelines</a>
-          <a href="#">Safety tips</a>
-          <a href="#">Contact</a>
+          <a href="/community-guidelines">Community Guidelines</a>
+          <a href="/safety">Safety Tips</a>
+          <a href="mailto:hello@dabapp.com">Contact</a>
         </div>
       </div>
     </footer>
@@ -1063,14 +1064,17 @@ function Footer() {
 export default function LandingPage() {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const loadProfiles = async () => {
       try {
         const data = await fetchProfiles()
         setProfiles(data || [])
+        setError(null)
       } catch (err) {
         console.error('Failed to load profiles:', err)
+        setError('Unable to load profiles. Please refresh the page.')
       } finally {
         setLoading(false)
       }
@@ -1081,7 +1085,20 @@ export default function LandingPage() {
   const featured = useMemo(() => (profiles.length ? profiles[0] : undefined), [profiles])
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div className="landing-page centered-state">
+        <LoadingState message="Loading climbers..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="landing-page centered-state-column">
+        <p className="error-message">{error}</p>
+        <button className="button-cta" onClick={() => window.location.reload()}>Reload</button>
+      </div>
+    )
   }
 
   return (
@@ -1097,4 +1114,5 @@ export default function LandingPage() {
     </div>
   )
 }
+
 

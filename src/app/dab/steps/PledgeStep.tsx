@@ -163,9 +163,9 @@ export default function PledgeStep() {
             
             {/* Header - text-center py-[10px] gap-[8px] */}
             <div className="onb-pledge-header" data-node-id="484:1269">
-              {/* Headline - 40px Inter Extra Bold Italic #5ce1e6 */}
+              {/* Headline - 40px Inter Extra Bold Italic var(--color-primary) */}
               <h2 className="onb-pledge-headline" data-node-id="484:1270">LAST STEP!</h2>
-              {/* Subtitle - 16px Inter Medium #e9eef7 */}
+              {/* Subtitle - 16px Inter Medium var(--color-text) */}
               <p className="onb-pledge-subtitle" data-node-id="484:1271">
                 Commit to the crew.<br />
                 You are what you create.
@@ -255,3 +255,4 @@ export default function PledgeStep() {
     </div>
   )
 }
+

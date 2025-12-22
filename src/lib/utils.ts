@@ -35,3 +35,4 @@ export const isSpecialChip = (tag: string): boolean => {
   return lower.includes('founder') || lower.includes('crew') || lower.includes('belay') || lower.includes('certified')
 }
 
+

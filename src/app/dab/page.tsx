@@ -108,7 +108,7 @@ export default function OnboardingPage() {
   if (checking) {
     return (
       <div className="bg-white flex items-center justify-center min-h-screen w-full">
-        <p style={{ color: 'var(--color-text-muted)' }}>Loading...</p>
+        <p style={{ color: 'var(--color-muted)' }}>Loading...</p>
       </div>
     )
   }
@@ -134,4 +134,5 @@ export default function OnboardingPage() {
 
   return <CurrentComponent />
 }
+
 

@@ -8,3 +8,4 @@ type EyebrowProps = {
 export default function Eyebrow({ children, as: Tag = 'p' }: EyebrowProps) {
   return <Tag className="eyebrow">{children}</Tag>
 }
+

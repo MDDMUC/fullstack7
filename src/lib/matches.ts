@@ -123,3 +123,4 @@ export async function listMatches() {
   }))
   return data.map(m => ({ ...m, profiles: [map.get(m.user_a), map.get(m.user_b)].filter(Boolean) }))
 }
+

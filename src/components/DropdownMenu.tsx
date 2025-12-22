@@ -45,7 +45,7 @@ export default function DropdownMenu({ label, value, options, onChange, classNam
           <path
             d={open ? 'M7 10L3 6h8L7 10z' : 'M7 4l4 4H3l4-4z'}
             fill="currentColor"
-            style={{ color: 'var(--color-text-muted)' }}
+            style={{ color: 'var(--color-muted)' }}
           />
         </svg>
       </button>
@@ -71,4 +71,5 @@ export default function DropdownMenu({ label, value, options, onChange, classNam
     </div>
   )
 }
+
 

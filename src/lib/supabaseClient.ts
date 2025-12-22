@@ -21,3 +21,4 @@ export function requireSupabase(): SupabaseClient {
   }
   return supabase
 }
+

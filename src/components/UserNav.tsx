@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import ButtonGhost from './ButtonGhost'
 import ButtonCta from './ButtonCta'
@@ -43,7 +43,7 @@ function UserNav() {
     return (
       <nav className="site-header-cta">
         <ButtonGhost disabled aria-live="polite" aria-busy>
-          Loading…
+          Loading...
         </ButtonGhost>
       </nav>
     )
@@ -66,3 +66,4 @@ function UserNav() {
 }
 
 export default UserNav
+

@@ -15,3 +15,4 @@ export default function UnreadDot({ className = '' }: UnreadDotProps) {
   return <span className={`unread-dot ${className}`} />
 }
 
+

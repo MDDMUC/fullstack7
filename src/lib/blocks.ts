@@ -75,3 +75,4 @@ export async function getBlockedUsers(): Promise<string[]> {
   if (error) throw error
   return (data ?? []).map(b => b.blocked_id)
 }
+

@@ -79,3 +79,4 @@ export default function Avatar({
 
 // Export the default placeholder for use in other components
 export { DEFAULT_PLACEHOLDER }
+

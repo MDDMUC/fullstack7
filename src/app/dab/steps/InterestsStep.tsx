@@ -91,12 +91,12 @@ export default function InterestsStep() {
             <img src="/dab-logo.svg" alt="DAB" className="onb-step1-logo-img" />
           </div>
           
-          {/* Title - 52px Inter Extra Bold Italic #5ce1e6 */}
+          {/* Title - 52px Inter Extra Bold Italic var(--color-primary) */}
           <h1 className="onb-step1-title" data-node-id="529:799">
             WHAT'S YOUR DEAL?
           </h1>
           
-          {/* Subtitle - 16px Inter Medium #e9eef7 */}
+          {/* Subtitle - 16px Inter Medium var(--color-text) */}
           <p className="onb-step1-subtitle" data-node-id="529:800">
             Three max. Be honest.
           </p>
@@ -177,3 +177,4 @@ export default function InterestsStep() {
     </div>
   )
 }
+

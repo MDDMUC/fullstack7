@@ -16,3 +16,4 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   if (!session) return null
   return <>{children}</>
 }
+

@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { FormEvent, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -118,7 +118,7 @@ export default function ProfileSetup() {
               <textarea name="bio" rows={3} defaultValue={profile?.bio} placeholder="Trad partner for desert season, training for alpine this summer." />
             </label>
             <button className="button-navlink button-navlink-hover" style={{ width: '100%', height: 'var(--btn-height-lg)' }} type="submit" disabled={loading} aria-busy={loading}>
-              {loading ? 'Saving…' : 'Save profile'}
+              {loading ? 'Saving...' : 'Save profile'}
             </button>
             {status && <p className="form-note" aria-live="polite">{status}</p>}
           </form>
@@ -127,3 +127,4 @@ export default function ProfileSetup() {
     </main>
   )
 }
+

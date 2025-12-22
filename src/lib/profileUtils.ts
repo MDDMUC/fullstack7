@@ -144,3 +144,4 @@ export async function upsertPublicProfile(
     return { data: null, error }
   }
 }
+

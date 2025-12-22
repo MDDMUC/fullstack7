@@ -124,3 +124,4 @@ export function isThreadUnread(
   if (!latestMsg) return false
   return isMessageUnread(latestMsg, userId, isDirect)
 }
+

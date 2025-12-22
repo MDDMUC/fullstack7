@@ -16,3 +16,4 @@ export default function LoginGuard({ children }: { children: React.ReactNode }) 
   if (session) return null
   return <>{children}</>
 }
+

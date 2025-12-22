@@ -143,7 +143,7 @@ export default function SuccessStep() {
             <img src="/dab-logo.svg" alt="DAB" className="onb-success-logo-img" />
           </div>
           
-          {/* Headline - 52px Inter Extra Bold Italic #5ce1e6 */}
+          {/* Headline - 52px Inter Extra Bold Italic var(--color-primary) */}
           <h1 className="onb-success-title onb-success-title-animate" data-node-id="484:1461">
             WELCOME TO THE CREW
           </h1>
@@ -210,3 +210,4 @@ export default function SuccessStep() {
     </div>
   )
 }
+

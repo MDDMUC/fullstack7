@@ -103,7 +103,7 @@ export default function SignupStep() {
     <div className="onb-screen">
       {/* ========================================
           BACKGROUND LAYERS - Exact from Figma
-          1. Base color: #0c0e12
+          1. Base color: var(--color-bg)
           2. Video with mix-blend-screen opacity-[0.08]
           3. Gradient overlay: from-transparent to-[rgba(0,0,0,0.2)]
           ======================================== */}
@@ -154,7 +154,7 @@ export default function SignupStep() {
         </div>
 
         {/* Signup card
-            bg-[#151927] border border-[#1f2633] rounded-[14px] w-full */}
+            bg-[var(--color-card)] border border-[var(--color-stroke)] rounded-[14px] w-full */}
         <div className="onb-signup-card">
           <div className="onb-signup-inner">
             {/* Header text block
@@ -268,3 +268,4 @@ export default function SignupStep() {
     </div>
   )
 }
+

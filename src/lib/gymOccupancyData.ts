@@ -621,3 +621,4 @@ export function getCurrentOccupancy(gymName: string): number | null {
   return hours[currentHour] || 0
 }
 
+

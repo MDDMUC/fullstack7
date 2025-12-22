@@ -19,3 +19,4 @@ export async function sendSwipe(swipeeId: string, action: SwipeAction) {
   if (error) throw error
   return data
 }
+

@@ -18,17 +18,17 @@ type NavItem = {
   iconSize?: 24 | 26
 }
 
-const ICON_EVENTS_DEFAULT = 'https://www.figma.com/api/mcp/asset/ac6d2090-a7bd-46ff-9758-9938c0cb1ebb'
-const ICON_EVENTS_ACTIVE = 'https://www.figma.com/api/mcp/asset/c26557db-77ce-49cf-966d-5bd4aa9aa047'
+const ICON_EVENTS_DEFAULT = '/icons/navbar-events.svg'
+const ICON_EVENTS_ACTIVE = '/icons/navbar-events.svg'
 
-const ICON_CHATS_DEFAULT = 'https://www.figma.com/api/mcp/asset/4a04fa08-1a51-4f98-82a1-df22a397af58'
-const ICON_CHATS_ACTIVE = 'https://www.figma.com/api/mcp/asset/507b4b02-9e52-4e7c-abed-25f75d60f0d8'
+const ICON_CHATS_DEFAULT = '/icons/navbar-chats.svg'
+const ICON_CHATS_ACTIVE = '/icons/navbar-chats.svg'
 
-const ICON_CREW_DEFAULT = 'https://www.figma.com/api/mcp/asset/a09a2aae-281e-4ee1-8315-b57790c3e6c5'
-const ICON_CREW_ACTIVE = 'https://www.figma.com/api/mcp/asset/0d875354-1561-4eae-aecd-c73d380c56b0'
+const ICON_CREW_DEFAULT = '/icons/navbar-crew.svg'
+const ICON_CREW_ACTIVE = '/icons/navbar-crew.svg'
 
-const ICON_DAB_DEFAULT = 'https://www.figma.com/api/mcp/asset/d1c5338d-0746-465f-8355-60fcdb5567a5'
-const ICON_DAB_ACTIVE = 'https://www.figma.com/api/mcp/asset/f2110be1-dffc-43d0-b46e-7f0f3091bfca'
+const ICON_DAB_DEFAULT = '/icons/navbar-dab.svg'
+const ICON_DAB_ACTIVE = '/icons/navbar-dab.svg'
 
 const NAV_ITEMS: NavItem[] = [
   {
@@ -344,4 +344,5 @@ export default function MobileNavbar({ active = 'Default' }: MobileNavbarProps) 
     </div>
   )
 }
+
 

@@ -476,3 +476,4 @@ export async function fetchAllGyms(client?: SupabaseClient, city?: string): Prom
     return []
   }
 }
+

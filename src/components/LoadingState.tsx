@@ -21,7 +21,7 @@ export default function LoadingState({
       style={{
         fontFamily: 'var(--fontfamily-inter)',
         fontSize: 'var(--font-size-md)',
-        color: 'var(--color-text-muted)',
+        color: 'var(--color-muted)',
         textAlign: 'center',
         padding: 'var(--space-xl)',
         margin: 0,
@@ -31,3 +31,4 @@ export default function LoadingState({
     </p>
   )
 }
+
