@@ -113,7 +113,7 @@ export default function SignupStep() {
         
         {/* Layer 2: Video background with blend mode */}
         <video
-          className="onb-bg-video"
+          className="onb-bg-video onb-bg-video-signup"
           autoPlay
           loop
           muted

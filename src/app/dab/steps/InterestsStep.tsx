@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 
 /**
@@ -31,33 +31,78 @@ const CLIMBING_STYLES = [
 const GRADES = ['Beginner', 'Mediate', 'Advanced'] as const
 type Grade = typeof GRADES[number]
 
+// Looking for options (what user wants from the app)
+// Product constraint: never explicitly position as "dating" to the user.
+const LOOKING_FOR_OPTIONS = ['Climbing Partner', 'Crew', 'Meet Climbers'] as const
+
 export default function InterestsStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [selectedStyles, setSelectedStyles] = useState<string[]>(data.styles || [])
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(
     (data.grade as Grade) || null
   )
+  const [selectedPurposes, setSelectedPurposes] = useState<string[]>(data.purposes || [])
+  const [styleLimitHit, setStyleLimitHit] = useState(false)
+  const styleLimitTimerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (styleLimitTimerRef.current !== null) {
+        window.clearTimeout(styleLimitTimerRef.current)
+      }
+    }
+  }, [])
 
   const handleStyleToggle = (style: string) => {
-    const newSelected = selectedStyles.includes(style)
-      ? selectedStyles.filter(s => s !== style)
-      : [...selectedStyles, style]
-    setSelectedStyles(newSelected)
+    if (selectedStyles.includes(style)) {
+      // Always allow deselection
+      setSelectedStyles(selectedStyles.filter(s => s !== style))
+    } else {
+      // Only allow selection if less than 3 styles are selected
+      if (selectedStyles.length < 3) {
+        setSelectedStyles([...selectedStyles, style])
+        setStyleLimitHit(false)
+        if (styleLimitTimerRef.current !== null) {
+          window.clearTimeout(styleLimitTimerRef.current)
+          styleLimitTimerRef.current = null
+        }
+      }
+      // Show feedback if already at max (3 styles)
+      if (selectedStyles.length >= 3) {
+        setStyleLimitHit(true)
+        if (styleLimitTimerRef.current !== null) {
+          window.clearTimeout(styleLimitTimerRef.current)
+        }
+        styleLimitTimerRef.current = window.setTimeout(() => {
+          setStyleLimitHit(false)
+          styleLimitTimerRef.current = null
+        }, 1500)
+      }
+    }
   }
 
   const handleGradeSelect = (grade: Grade) => {
     setSelectedGrade(grade)
   }
 
+  const handlePurposeToggle = (purpose: string) => {
+    setSelectedPurposes(prev =>
+      prev.includes(purpose)
+        ? prev.filter(p => p !== purpose)
+        : [...prev, purpose]
+    )
+  }
+
   const handleContinue = () => {
-    updateData({ 
-      styles: selectedStyles, 
-      grade: selectedGrade || undefined 
+    updateData({
+      styles: selectedStyles,
+      grade: selectedGrade || undefined,
+      purposes: selectedPurposes
     })
     setCurrentStep(3)
   }
 
-  const isValid = selectedStyles.length > 0
+  const isValid = selectedStyles.length > 0 && selectedPurposes.length > 0
 
   return (
     <div 
@@ -65,19 +110,9 @@ export default function InterestsStep() {
       data-name="onboarding / step2 / climbing"
       data-node-id="483:764"
     >
-      {/* BACKGROUND LAYERS */}
+      {/* BACKGROUND LAYERS - Static background only (video removed for FCP) */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
-        <video
-          className="onb-bg-video onb-bg-video-step2"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/hero-main.jpg"
-        >
-          <source src="/007.mp4" type="video/mp4" />
-        </video>
         <div className="onb-bg-gradient" />
       </div>
 
@@ -137,6 +172,11 @@ export default function InterestsStep() {
                     )
                   })}
                 </div>
+                {styleLimitHit && (
+                  <p className="onb-header-subtitle" style={{ color: 'var(--color-red)', marginTop: 'var(--space-xxs)' }}>
+                    Max 3 styles.
+                  </p>
+                )}
               </div>
 
               {/* Grade field */}
@@ -157,6 +197,31 @@ export default function InterestsStep() {
                   ))}
                 </div>
               </div>
+
+              {/* Looking for field */}
+              <div className="onb-field" data-node-id="looking-for-field">
+                <label className="onb-label">Looking for</label>
+                <p className="onb-header-subtitle" style={{ marginTop: 'var(--space-xxs)' }}>
+                  What brings you here? Select all that apply.
+                </p>
+                {/* Looking for select grid - flex-wrap with gap 6px */}
+                <div className="onb-style-grid" data-node-id="looking-for-grid">
+                  {LOOKING_FOR_OPTIONS.map((purpose) => {
+                    const isSelected = selectedPurposes.includes(purpose)
+                    return (
+                      <button
+                        key={purpose}
+                        type="button"
+                        className={`onb-style-btn ${isSelected ? 'onb-style-btn-active' : ''}`}
+                        onClick={() => handlePurposeToggle(purpose)}
+                        data-node-id={`purpose-${purpose}`}
+                      >
+                        {purpose}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             </div>
 
             {/* CTA row */}
@@ -168,7 +233,7 @@ export default function InterestsStep() {
                 disabled={!isValid}
                 data-node-id="483:784"
               >
-                Continue 2/5
+                Continue 2/4
               </button>
             </div>
           </div>
@@ -177,4 +242,3 @@ export default function InterestsStep() {
     </div>
   )
 }
-

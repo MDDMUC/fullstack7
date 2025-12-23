@@ -59,7 +59,9 @@ export default function BasicProfileStep() {
     setCurrentStep(2)
   }
 
-  const isValid = name.trim() !== '' && age.trim() !== '' && gender !== null && imagePreview !== null
+  const ageNumber = age.trim() ? Number(age) : NaN
+  const isAdult = Number.isFinite(ageNumber) && ageNumber >= 18
+  const isValid = name.trim() !== '' && isAdult && gender !== null && imagePreview !== null
 
   return (
     <div 
@@ -76,19 +78,9 @@ export default function BasicProfileStep() {
         style={{ display: 'none' }}
       />
 
-      {/* BACKGROUND LAYERS */}
+      {/* BACKGROUND LAYERS - Static background only (video removed for FCP) */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
-        <video
-          className="onb-bg-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/hero-main.jpg"
-        >
-          <source src="/001.mp4" type="video/mp4" />
-        </video>
         <div className="onb-bg-gradient" />
       </div>
 
@@ -184,6 +176,11 @@ export default function BasicProfileStep() {
                       data-node-id="I540:828;475:11322"
                     />
                   </div>
+                  {age.trim() !== '' && !isAdult && (
+                    <p className="onb-header-subtitle" style={{ color: 'var(--color-red)', marginTop: 'var(--space-xxs)' }}>
+                      You must be 18+ to use DAB.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -228,7 +225,7 @@ export default function BasicProfileStep() {
                 disabled={!isValid}
                 data-node-id="482:1332"
               >
-                Continue 1/5
+                Continue 1/4
               </button>
             </div>
           </div>

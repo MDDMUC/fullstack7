@@ -7255,7 +7255,7 @@ input[type=number] {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 100dvh; /* Dynamic viewport height for better mobile support */
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -7295,6 +7295,18 @@ input[type=number] {
 /* Step 2 video - scale up to push top-right luma logo out of view */
 .onb-bg-video-step2 {
   /* Scale up from bottom-left to push top-right out of view */
+  transform: scale(1.3);
+  transform-origin: bottom left;
+  /* Ensure it still covers fully */
+  object-fit: cover;
+  /* Extend beyond viewport to ensure no gaps */
+  width: 100%;
+  height: 100%;
+}
+
+/* Signup page video - scale up to push top-right luma watermark out of view */
+.onb-bg-video-signup {
+  /* Scale up from bottom-left to push top-right watermark out of view */
   transform: scale(1.3);
   transform-origin: bottom left;
   /* Ensure it still covers fully */
@@ -15131,5 +15143,92 @@ img.friend-tile-img {
 
 .btn-hover-elevate:active:not(:disabled) {
   transform: translateY(0);
+}
+
+
+/* ============================================
+   ONBOARDING: RESPONSIVE DESKTOP STYLES
+   Desktop-optimized layout for onboarding flow
+   ============================================ */
+
+@media (min-width: 768px) {
+  /* Desktop: Full-screen background with centered content */
+  .onb-screen {
+    min-height: 100vh;
+    background: var(--color-bg);
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-xl);
+  }
+
+  /* Desktop: Background layers cover full viewport */
+  .onb-bg-layers {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  /* Desktop: Center and limit content width */
+  .onb-content,
+  .onb-content-bottom,
+  .onb-content-step1-new,
+  .onb-content-step5 {
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Desktop: Signup card centered with max-width */
+  .onb-signup-card {
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Desktop: Logo watermark larger and more visible */
+  .onb-logo-watermark {
+    width: 400px;
+    height: 227px;
+    top: 10%;
+  }
+
+  /* Desktop: Step 1 text block - centered layout */
+  .onb-step1-textblock {
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Desktop: Success screen centered */
+  .onb-screen-success {
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-xl);
+  }
+
+  .onb-content-success-new {
+    max-width: 600px;
+    width: 100%;
+  }
+}
+
+/* Extra large desktop - even more spacious */
+@media (min-width: 1024px) {
+  .onb-content,
+  .onb-content-bottom,
+  .onb-content-step1-new,
+  .onb-content-step5 {
+    max-width: 540px;
+  }
+
+  .onb-signup-card {
+    max-width: 540px;
+  }
+
+  .onb-screen {
+    padding: var(--space-xxl);
+  }
 }
 

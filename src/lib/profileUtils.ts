@@ -8,14 +8,14 @@ type UpsertResult = { data: any; error: any }
  * @param client Supabase client
  * @param userId User ID
  * @param file Image file to upload
- * @param bucketName Storage bucket name (default: 'avatars')
+ * @param bucketName Storage bucket name (default: 'user-images')
  * @returns Public URL of uploaded image or null if error
  */
 export async function uploadImageToStorage(
   client: SupabaseClient,
   userId: string,
   file: File,
-  bucketName: string = 'avatars'
+  bucketName: string = 'user-images'
 ): Promise<string | null> {
   try {
     const fileExt = file.name.split('.').pop()
@@ -89,7 +89,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     avatar_url: mainPhoto,
     tags,
     goals: goalsText,
-    lookingfor: purposes || null,
+    "lookingFor": purposes || null,
     phone_number: data.phone || null,
     status: 'New member',
     gym: Array.isArray(data.gym) ? data.gym : (data.gym ? [data.gym] : []), // Ensure it's an array

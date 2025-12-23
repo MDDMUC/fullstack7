@@ -1,3 +1,201 @@
+
+### Bug Fix: Gyms query error - image_url column (2025-12-23)
+- **Fixed error**: "column gyms.image_url does not exist"
+- **Root cause**: Query assumed both `avatar_url` and `image_url` columns exist, but only `avatar_url` exists in gyms table
+- **Solution**: Graceful fallback query (`src/app/dab/steps/LocationStep.tsx:46-82`)
+  - First attempts to fetch with both `avatar_url` and `image_url`
+  - If `image_url` column doesn't exist, retries with only `avatar_url`
+  - Maps `avatar_url` to `image_url` for display consistency
+- **Impact**: LocationStep now loads gyms without console errors
+- **Build verified**: ✅ Passes successfully
+
+
+### Bug Fix: Signup page Luma watermark hidden (2025-12-23)
+- **Fixed Luma watermark** visible in top-right corner of signup page background video
+- **Changes:**
+  - `src/app/dab/steps/SignupStep.tsx:116` - Added `onb-bg-video-signup` class to video element
+  - `src/app/globals.css:7307-7317` - Added CSS transform to scale and reposition video
+- **Transform applied:**
+  - Scale: 1.3x (enlarges video)
+  - Origin: bottom-left (scales from bottom-left corner)
+  - Effect: Top-right watermark pushed out of viewport
+- **Impact**: Signup page now shows clean background video without Luma watermark
+- **Build verified**: ✅ Passes successfully
+
+
+### Bug Fixes: LocationStep ("Your Walls") improvements (2025-12-23)
+- **Label update**: Changed "Homebase" → "Your City" (`src/app/dab/steps/LocationStep.tsx:155`)
+  - More intuitive label for users
+  - Clearer what to input
+- **City autocomplete**: Added HTML5 datalist with 28 major European cities
+  - Placeholder updated: "e.g., Munich, Berlin, London..."
+  - Users get autocomplete suggestions as they type
+  - Cities include: Munich, Berlin, Hamburg, Frankfurt, London, Paris, Vienna, Zurich, etc.
+  - Native browser autocomplete (no extra dependencies)
+- **Gym avatars fixed**: Now pulls from Supabase `avatar_url` field
+  - Updated query to fetch both `avatar_url` and `image_url` (lines 47-60)
+  - Fallback chain: `avatar_url` → `image_url` → placeholder
+  - Type updated to include both fields
+  - Applies to both visible gyms and dropdown gyms
+- **Impact**: Better UX with clear labels, autocomplete, and correct gym images
+- **Build verified**: ✅ Passes successfully
+
+
+### Bug Fix: Onboarding viewport height issue (2025-12-23)
+- **Fixed critical bug**: Onboarding screens displaying in tiny scrollable container
+- **Root cause**: `.onb-screen` class had `height: 100%` (parent-relative) instead of `min-height: 100vh` (viewport-relative)
+- **Fix applied** (`src/app/globals.css:7257-7258`):
+  - Changed from `height: 100%` → `min-height: 100vh`
+  - Added `min-height: 100dvh` for dynamic viewport height (better mobile browser support)
+- **Impact**: All onboarding screens now fill full viewport on mobile and desktop
+- **Applies to**: All 4 onboarding steps + success screen
+- **Build verified**: ✅ Passes successfully
+- **Testing**: Verify screens now fill full viewport (no tiny scroll container)
+
+
+### Update: Responsive desktop layout for onboarding (2025-12-23)
+- **Added responsive desktop styles** to `src/app/globals.css`
+  - Desktop (≥768px): Centered content with max-width 480px, full-screen background
+  - Large desktop (≥1024px): Max-width increased to 540px for more spacious feel
+  - **Desktop features:**
+    - Fixed background layers covering full viewport
+    - Centered signup cards with shadow (0 20px 60px rgba(0,0,0,0.3))
+    - Larger logo watermark (400x227px)
+    - Responsive padding (xl on tablet, xxl on large desktop)
+  - **Mobile unchanged**: Full-width layout preserved (< 768px)
+- **Rationale**: Provide polished desktop experience while maintaining mobile-first design
+- **Impact**: Onboarding now displays beautifully on all screen sizes
+- **Build verified**: ✅ Passes successfully
+
+
+### Update: Mobile shell removed from onboarding (2025-12-23)
+- **Removed MobileTopbar and MobileNavbar** from `/dab` onboarding flow (`src/app/dab/page.tsx`)
+  - Rationale: Maximize screen space for seamless onboarding experience
+  - Onboarding is most critical feature - needs to be best-in-class
+  - Removed imports: MobileTopbar, MobileNavbar
+  - Removed wrapper div with flex layout
+  - Now renders step components directly (no shell overhead)
+- **Impact**: Full-screen onboarding, more space for content, cleaner UX
+- **Build verified**: ✅ Passes successfully
+
+### Update: "Dating" → "Meet Climbers" branding (2025-12-23)
+- **Branding change**: Replaced "Dating" with "Meet Climbers" throughout UI
+  - Product constraint: Never explicitly position as "dating" app
+  - `src/app/dab/steps/InterestsStep.tsx:36` - Updated to "Meet Climbers"
+  - `src/lib/profiles.ts:86-97` - Added legacy "Dating" → "Meet Climbers" mapping
+  - All profile reads automatically map old values to new branding
+- **Database verification**: ✅ No enum/CHECK constraints on `lookingFor` column (TEXT type)
+- **User-facing strings**: ✅ Verified zero "dating" mentions in src/ code
+- **Legacy data**: Users who selected "Dating" will see "Meet Climbers" in UI (no data migration needed)
+
+### Implementation: Onboarding flow optimization (TICKET-ONB-001) (2025-12-23)
+- **Ticket**: TICKET-ONB-001 - Onboarding Flow Optimization for 22-35 demographic
+- **Goal**: Reduce onboarding friction, improve activation, optimize for primary user group
+
+**Technical Fixes**:
+- Fixed `lookingFor` column mapping in `src/lib/profileUtils.ts` (line 92)
+  - Changed from lowercase `lookingfor` to camelCase `"lookingFor"` to match database schema
+  - Database column uses quoted identifier `"lookingFor"` (camelCase) per `supabase/migrations/001_profiles_table.sql`
+- Fixed photo storage bucket alignment in `src/lib/profileUtils.ts` (line 18)
+  - Changed default bucket from `'avatars'` to `'user-images'` to match canonical bucket used in `src/lib/profiles.ts`
+  - Ensures consistent photo upload and retrieval across onboarding and profile fetching
+
+**Step 2 (InterestsStep) - Climbing Intent**:
+- Added `looking_for` field (`purposes`) to Step 2 (`src/app/dab/steps/InterestsStep.tsx`)
+  - Added options: 'Belay Partner', 'Climbing Partner', 'Crew', 'Dating'
+  - Required field - validation ensures at least 1 purpose selected
+  - Saves to `purposes` array in OnboardingContext, maps to `lookingFor` column in DB
+- Enforced max 3 climbing styles selection (lines 45-56)
+  - Prevents selection of more than 3 styles (silently ignores clicks when at limit)
+  - Deselection always allowed
+  - Subtitle already says "Three max. Be honest."
+- Updated validation to require both styles and purposes (line 79)
+
+**Step 1 (BasicProfileStep) - Photo Validation**:
+- Verified minimum 1 photo enforcement already present (line 62)
+  - Validation: `imagePreview !== null` ensures photo is required
+  - No changes needed
+
+**Step 5 (PledgeStep) - Single-tap Agreement**:
+- Simplified pledge from 3 separate cards to single "I Agree" checkbox (`src/app/dab/steps/PledgeStep.tsx`)
+  - Removed `agreedPledges` array state, replaced with `agreedToPledge` boolean (line 46)
+  - Removed `handlePledgeToggle`, removed `allAgreed` check
+  - Display all 3 pledge values as read-only text (lines 166-185)
+  - Single clickable "I Agree" card with checkbox (lines 188-237)
+  - Validation requires `agreedToPledge` before enabling Continue button (line 252)
+- Maintains pledge content visibility while reducing friction (single tap vs 3 taps)
+
+**Video Background Removal**:
+- Removed `/001.mp4`, `/007.mp4`, `/010.mp4` video backgrounds from all 5 onboarding steps
+- Files modified:
+  - `src/app/dab/steps/BasicProfileStep.tsx` (lines 79-83)
+  - `src/app/dab/steps/InterestsStep.tsx` (lines 87-91)
+  - `src/app/dab/steps/LocationStep.tsx` (lines 125-131)
+  - `src/app/dab/steps/AvailabilityStep.tsx` (lines 60-64)
+  - `src/app/dab/steps/PledgeStep.tsx` (lines 126-130)
+- Replaced with static background layers (base + gradient only)
+- **Impact**: Improves First Contentful Paint (FCP) by eliminating large video file requests during onboarding
+
+**Mobile Shell Integration**:
+- Added MobileTopbar and MobileNavbar to `/dab` page (`src/app/dab/page.tsx`)
+  - Imported components (lines 7-8)
+  - Wrapped onboarding flow with shell structure (lines 139-174)
+  - MobileTopbar shows "Onboarding" breadcrumb (line 151)
+  - MobileNavbar visible but interaction-gated (lines 164-172)
+    - `pointerEvents: 'none'` disables all clicks/navigation
+    - `opacity: 0.5` provides visual indication of disabled state
+    - Active tab set to "dab"
+- **Impact**: Consistent app shell across all pages, users see familiar navigation even during onboarding
+
+**Database Schema Alignment**:
+- No schema changes made (per constraints)
+- Used existing `onboardingprofiles` columns:
+  - `homebase` (city)
+  - `gym` (TEXT[] - gym IDs)
+  - `styles` (TEXT[] - climbing styles)
+  - `"lookingFor"` (TEXT - purposes joined, camelCase column name)
+  - `photo`, `photos`, `avatar_url` (photo URLs)
+  - `username`, `age`, `gender`, `bio`, `grade`, `availability`
+- Upsert happens only on Step 5 (PledgeStep) after pledge agreement (line 109 in PledgeStep.tsx)
+
+**Current 5-step Flow** (unchanged structure, enhanced data collection):
+1. Step 1: Basic Profile (Name, Age, Gender, Photo) - 1 photo minimum enforced
+2. Step 2: Climbing Intent (Styles max 3, Grade, Looking For) - purposes now required
+3. Step 3: Location (Homebase, Gyms)
+4. Step 4: Availability (Time of day, Days)
+5. Step 5: Pledge (Single-tap "I Agree") - upsert to DB with all data
+
+**Files Modified**:
+- `src/lib/profileUtils.ts` - lookingFor column + bucket fix
+- `src/app/dab/page.tsx` - mobile shell integration
+- `src/app/dab/steps/InterestsStep.tsx` - looking_for field + max 3 styles
+- `src/app/dab/steps/PledgeStep.tsx` - single-tap pledge
+- `src/app/dab/steps/BasicProfileStep.tsx` - video removal
+- `src/app/dab/steps/LocationStep.tsx` - video removal
+- `src/app/dab/steps/AvailabilityStep.tsx` - video removal
+
+**Testing Notes**:
+- Build should pass (no schema changes, no breaking changes)
+- Manual testing required:
+  - iOS Safari and Android Chrome onboarding completion
+  - Verify 1-photo minimum enforced at Step 1
+  - Verify max-3 styles enforced at Step 2 (can't select 4th)
+  - Verify looking_for field required at Step 2
+  - Verify single-tap pledge at Step 5
+  - Verify no video requests in Network tab (FCP improvement)
+  - Verify MobileTopbar/MobileNavbar present but navbar interactions disabled
+
+**Bug Fix: Onboarding scroll issue (2025-12-23)**:
+- **Issue**: First screen of onboarding flow was cutting off the bottom with no scroll bar, preventing users from progressing to next step
+- **Root cause**: Two conflicting CSS configurations prevented scrolling:
+  1. Parent container had `overflow: 'hidden'` in `src/app/dab/page.tsx` (line 157)
+  2. `.onb-screen` used `min-height: 100vh` in `src/app/globals.css` (line 7257) which forced content to be viewport height but was inside a smaller flex container (due to MobileTopbar/MobileNavbar)
+- **Fix applied**:
+  - Changed onboarding content wrapper from `overflow: 'hidden'` to `overflow: 'auto'` in `src/app/dab/page.tsx` (line 157)
+  - Changed `.onb-screen` from `min-height: 100vh` to `height: 100%` in `src/app/globals.css` (line 7257)
+- **Impact**: Onboarding screen now scrolls properly when content exceeds viewport, Continue button accessible on all screen sizes
+- **Verified**: Build passes successfully with no TypeScript or compilation errors
+
 ## Work Log (last ~8 hours)
 
 ### Implementation: message schema alignment (2025-12-22)
@@ -1187,4 +1385,10 @@ All planned MVP features have been implemented and tested:
 
 
 
+
+
+### End of session (2025-12-22)
+- Closed tickets: TICKET-EVT-001 (Event RSVP Flow) and TICKET-CHAT-001 (Messaging Schema Alignment).
+- Manual RSVP verification completed in Supabase.
+- Next up: TICKET-ONB-001 (Onboarding Flow Optimization) unless you choose another P0/P1 ticket.
 

@@ -83,6 +83,19 @@ export const normalizeProfile = (profile: any): Profile => {
   const mainPhoto = ob.photo ?? profile.photo ?? ob.avatar_url ?? profile.avatar_url ?? profile.photo_url ?? null
   const gym = toArray(ob.gym ?? profile.gym ?? (profile as any).gyms)
 
+  // Map legacy "Dating" to "Meet Climbers" for display
+  const rawLookingFor =
+    ob.lookingfor ??
+    ob.lookingFor ??
+    profile.lookingfor ??
+    profile.looking_for ??
+    profile.intent ??
+    profile.goals ??
+    ''
+  const lookingFor = typeof rawLookingFor === 'string' && rawLookingFor.includes('Dating')
+    ? rawLookingFor.replace(/Dating/g, 'Meet Climbers')
+    : rawLookingFor
+
   return {
     id: profile.id ?? ob.id ?? crypto.randomUUID(),
     username: profile.username ?? profile.name ?? ob.username ?? 'Climber',
@@ -103,14 +116,7 @@ export const normalizeProfile = (profile: any): Profile => {
     status: ob.status ?? profile.status ?? profile.state ?? '',
     goals: ob.goals ?? profile.goals ?? profile.intent ?? '',
     distance: ob.distance ?? profile.distance ?? '10 km',
-    lookingFor:
-      ob.lookingfor ??
-      ob.lookingFor ??
-      profile.lookingfor ??
-      profile.looking_for ??
-      profile.intent ??
-      profile.goals ??
-      '',
+    lookingFor,
     gym,
   }
 }

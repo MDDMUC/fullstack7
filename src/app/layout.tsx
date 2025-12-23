@@ -18,7 +18,7 @@ const metal = Metal_Mania({ variable: "--font-dab", weight: "400", subsets: ["la
 
 export const metadata: Metadata = {
   title: "dab",
-  description: "Dating for climbers who think in grades.",
+  description: "Meet climbers who think in grades.",
 };
 
 export default function RootLayout({

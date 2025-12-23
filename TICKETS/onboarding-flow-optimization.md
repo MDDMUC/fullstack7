@@ -2,10 +2,10 @@
 
 ID: TICKET-ONB-001
 Owner: Product
-Status: Proposed
+Status: In Tech Review
 Priority: P0 (activation)
 Created: 2025-12-22
-Last updated: 2025-12-22
+Last updated: 2025-12-23
 Target window: After Step 1 analytics instrumentation, or in parallel if resourced
 Related docs: `STRATEGY_RESEARCH_DEMOGRAPHICS.md`, `PROJECT_CONTEXT.md`
 
@@ -29,26 +29,27 @@ Reduce onboarding time to first useful screen (<90 seconds) while preserving eno
    - Auth (email/Apple/Google)
    - Age confirmation
    - Name (or use auth profile name)
-2. Location + home gym
-   - Auto-detect city
-   - Select home gym (or "not sure yet")
-3. Climbing intent
-   - Looking for: partner / crew / dating
-   - Style: bouldering / top-rope / lead
-4. Profile essentials
-   - 1 photo minimum
-   - Short bio optional (prompt later)
-5. Safety + optional add-ons
-   - Safety pledge
-   - Phone verify (optional)
-   - Notifications (optional)
+2. Intent + climbing
+   - Looking for: climbing partner / crew / meet climbers
+   - Top styles: 1-3 (hard max with clear UI feedback)
+   - Grade optional
+3. Location + home gym
+   - Homebase (city) required (auto-detect if possible)
+   - Home gym optional ("not sure yet") + "I climb outside" toggle
+4. Pledge (safety/culture)
+   - Single-tap opt-in (no multi-confirm)
+5. Success (reward screen)
+   - Clear CTA to first value (/home) + optional next actions (gyms/events/crew)
 
 ## Requirements
-- Mandatory fields for match relevance: city, home gym (or "none"), looking_for, climbing_style, 1 photo.
-- Optional fields: phone, longer bio, advanced preferences.
+- Mandatory fields for match relevance: age >= 18, homebase (city), looking_for, climbing_style (1-3), 1 photo.
+- Optional fields: home gym, grade, phone, longer bio, advanced preferences, notifications.
 - Step indicators must match the live step count.
 - Enforce "three max" on climbing styles with clear UI feedback.
 - Align profile photo storage bucket across onboarding upload and profile fetch (use one canonical bucket).
+- Pledge step must be a single interaction to opt-in (1 tap/click), not multiple required pledge confirmations.
+- User-facing copy must not explicitly position DAB as a dating app (no "dating" language); frame as meeting climbers / making connections.
+- Remove background videos from onboarding steps (static backgrounds only) to improve load reliability and completion time.
 - No schema changes unless approved by Tech Lead.
 - Mobile-first UI with existing MobileTopbar and MobileNavbar.
 
@@ -60,10 +61,8 @@ Reduce onboarding time to first useful screen (<90 seconds) while preserving eno
 - First action within 24h: match_created or message_sent
 
 ## Analytics instrumentation
-- onboarding_step_started (step_name, step_index)
-- onboarding_step_completed (step_name, step_index, duration_ms)
-- onboarding_completed (total_duration_ms)
-- onboarding_abandoned (last_step)
+- Phase 1 (no schema changes): emit only `signup` with onboarding metadata inside `properties` (e.g., `onboarding_version`, `step_durations_ms`, `total_duration_ms`).
+- Phase 2 (requires Tech Lead approval): add onboarding step-level events (`onboarding_step_started`, `onboarding_step_completed`, `onboarding_abandoned`) to `analytics_events.event_name` allowed values and instrument per-step drop-off.
 
 ## Dependencies
 - Design spec for step layout and copy
@@ -77,9 +76,10 @@ Reduce onboarding time to first useful screen (<90 seconds) while preserving eno
   - Mitigation: rate limiting + report/block flows already in place
 
 ## Open questions
-- Minimum photos: 1 or 2? (Owner: Product)
-- Is bio optional or required? (Owner: Product/Design)
-- Any actions to require phone verification before? (Owner: Product/QA)
+- Minimum photos: 1 or 2? (Owner: Product) -> Proposed decision: 1 (require), prompt for more post-onboarding.
+- Is bio optional or required? (Owner: Product/Design) -> Proposed decision: optional (prompt later).
+- Any actions to require phone verification before? (Owner: Product/QA) -> Proposed decision: keep optional in v1; revisit gating if abuse/spam appears.
+- Pledge step UX: single-tap opt-in vs multi-confirm cards? (Owner: Product/Design/Eng) -> Proposed decision: single-tap opt-in (reduce friction).
 
 ## Decision log
 - Date: 2025-12-22

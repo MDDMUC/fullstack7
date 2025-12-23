@@ -98,7 +98,7 @@ export default function SuccessStep() {
   return (
     <div
       className="onb-screen"
-      data-name="onboarding / step7 / success"
+      data-name="onboarding / step5 / success"
       data-node-id="484:1457"
     >
       {/* BACKGROUND LAYERS */}

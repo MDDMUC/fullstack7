@@ -19,6 +19,7 @@ type Gym = {
   id: string
   name: string
   area: string
+  avatar_url?: string | null
   image_url?: string | null
 }
 
@@ -43,33 +44,41 @@ export default function LocationStep() {
       }
 
       try {
-        // First try with image_url column
-        let gymData: Gym[] | null = null
-        let error: any = null
-        
-        const resultWithImage = await supabase
+        // First try to fetch with both avatar_url and image_url
+        let gymData: any[] | null = null
+        let fetchError: any = null
+
+        const { data, error } = await supabase
           .from('gyms')
-          .select('id, name, area, image_url')
+          .select('id, name, area, avatar_url, image_url')
           .order('name', { ascending: true })
-        
-        gymData = resultWithImage.data
-        error = resultWithImage.error
+
+        gymData = data
+        fetchError = error
 
         // If image_url column doesn't exist, fetch without it
-        if (error?.message?.includes('image_url does not exist')) {
+        if (fetchError?.message?.includes('image_url does not exist')) {
           const result = await supabase
             .from('gyms')
-            .select('id, name, area')
+            .select('id, name, area, avatar_url')
             .order('name', { ascending: true })
-          // Map the data to include image_url as null
-          gymData = result.data?.map(gym => ({ ...gym, image_url: null })) || null
-          error = result.error
+
+          gymData = result.data
+          fetchError = result.error
         }
 
-        if (error) {
-          console.error('Error fetching gyms:', error.message)
+        if (fetchError) {
+          console.error('Error fetching gyms:', fetchError.message)
         } else if (gymData) {
-          setGyms(gymData)
+          // Map to use avatar_url or image_url (whichever is available)
+          const gymsWithImages = gymData.map(gym => ({
+            id: gym.id,
+            name: gym.name,
+            area: gym.area,
+            avatar_url: gym.avatar_url || null,
+            image_url: gym.avatar_url || gym.image_url || null
+          }))
+          setGyms(gymsWithImages)
         }
       } catch (err) {
         console.error('Failed to fetch gyms:', err)
@@ -114,7 +123,7 @@ export default function LocationStep() {
     setCurrentStep(4)
   }
 
-  const isValid = homebase.trim() !== '' && (selectedGyms.length > 0 || climbsOutside)
+  const isValid = homebase.trim() !== ''
 
   return (
     <div 
@@ -123,20 +132,10 @@ export default function LocationStep() {
       data-node-id="483:858"
     >
       {/* ========================================
-          BACKGROUND LAYERS - Same as other screens
+          BACKGROUND LAYERS - Static background only (video removed for FCP)
           ======================================== */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
-        <video
-          className="onb-bg-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/hero-main.jpg"
-        >
-          <source src="/001.mp4" type="video/mp4" />
-        </video>
         <div className="onb-bg-gradient" />
       </div>
 
@@ -153,25 +152,56 @@ export default function LocationStep() {
             <div className="onb-header-block" data-node-id="483:861">
               <h2 className="onb-header-title" data-node-id="483:862">Your Walls</h2>
               <p className="onb-header-subtitle" data-node-id="483:863">
-                Pick your favorite gyms and see what's going on,
+                Pick your favorite gyms (optional) and see what's going on,
               </p>
             </div>
 
             {/* Field row */}
             <div className="onb-field-row" data-node-id="483:864">
               
-              {/* Homebase field */}
+              {/* Your City field */}
               <div className="onb-field" data-node-id="483:865">
-                <label className="onb-label" data-node-id="483:866">Homebase</label>
+                <label className="onb-label" data-node-id="483:866">Your City</label>
                 <div className="onb-input-wrapper" data-node-id="483:868">
                   <input
                     type="text"
                     className="onb-input"
-                    placeholder="Start typing..."
+                    placeholder="e.g., Munich, Berlin, London..."
                     value={homebase}
                     onChange={(e) => setHomebase(e.target.value)}
                     data-node-id="I483:869;475:11322"
+                    list="city-suggestions"
                   />
+                  <datalist id="city-suggestions">
+                    <option value="Munich" />
+                    <option value="Berlin" />
+                    <option value="Hamburg" />
+                    <option value="Frankfurt" />
+                    <option value="Cologne" />
+                    <option value="Stuttgart" />
+                    <option value="Düsseldorf" />
+                    <option value="Dortmund" />
+                    <option value="Essen" />
+                    <option value="Leipzig" />
+                    <option value="Bremen" />
+                    <option value="Dresden" />
+                    <option value="Hanover" />
+                    <option value="Nuremberg" />
+                    <option value="London" />
+                    <option value="Paris" />
+                    <option value="Vienna" />
+                    <option value="Zurich" />
+                    <option value="Amsterdam" />
+                    <option value="Barcelona" />
+                    <option value="Madrid" />
+                    <option value="Rome" />
+                    <option value="Milan" />
+                    <option value="Prague" />
+                    <option value="Copenhagen" />
+                    <option value="Stockholm" />
+                    <option value="Oslo" />
+                    <option value="Helsinki" />
+                  </datalist>
                 </div>
               </div>
 
@@ -303,7 +333,7 @@ export default function LocationStep() {
                 disabled={!isValid}
                 data-node-id="483:886"
               >
-                Continue 3/5
+                Continue 3/4
               </button>
             </div>
           </div>
@@ -312,4 +342,3 @@ export default function LocationStep() {
     </div>
   )
 }
-

@@ -16,17 +16,19 @@ Primary responsibilities
 - Implement tickets with clean TypeScript and React patterns.
 - Reuse existing components and utilities before adding new ones.
 - Add or update tests and ensure lint/build viability.
-- Update notes when changes are significant.
+- Log code changes to SESSION_NOTES.md (required).
 
 Deliverables
 - Code changes in src/ and related files.
 - Test additions or a manual test plan when automation is not feasible.
-- Updates to SESSION_NOTES.md and DECISIONS.md when relevant.
+- Updates to SESSION_NOTES.md for every code change (include ticket ID and short summary).
+- Updates to DECISIONS.md when relevant.
 
 Constraints
 - Use path alias @/* for local imports.
 - Use design tokens; avoid hard-coded UI values.
 - New pages must include MobileTopbar and MobileNavbar.
+- Always log changes in SESSION_NOTES.md before handoff.
 - No monetization features in H1 2026.
 - No realtime check-ins (Friends in Gym Phase 2).
 - All new tables require RLS and input validation.

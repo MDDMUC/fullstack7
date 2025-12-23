@@ -57,19 +57,9 @@ export default function AvailabilityStep() {
       data-name="onboarding / step4 / availability vibe"
       data-node-id="483:928"
     >
-      {/* BACKGROUND LAYERS */}
+      {/* BACKGROUND LAYERS - Static background only (video removed for FCP) */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
-        <video
-          className="onb-bg-video onb-bg-video-step4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/hero-main.jpg"
-        >
-          <source src="/010.mp4" type="video/mp4" />
-        </video>
         <div className="onb-bg-gradient" />
       </div>
 

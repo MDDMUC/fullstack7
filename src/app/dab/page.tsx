@@ -5,7 +5,7 @@ import { useOnboarding } from '@/contexts/OnboardingContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import BasicProfileStep from './steps/BasicProfileStep'
-import AvailabilityStep from './steps/AvailabilityStep'
+
 import InterestsStep from './steps/InterestsStep'
 import LocationStep from './steps/LocationStep'
 import PledgeStep from './steps/PledgeStep'
@@ -19,9 +19,9 @@ export default function OnboardingPage() {
 
   // Only run the profile check once on initial mount, and only if not on final steps
   useEffect(() => {
-    // CRITICAL: Never run check if on final steps (7 pledge, 8 success)
+    // CRITICAL: Never run check if on final steps (4 pledge, 5 success)
     // This prevents redirects during active onboarding completion
-    if (currentStep >= 7) {
+    if (currentStep >= 4) {
       setChecking(false)
       hasCheckedRef.current = true // Mark as checked to prevent future runs
       return
@@ -53,7 +53,7 @@ export default function OnboardingPage() {
           const stepAtCheckTime = currentStep
           
           // CRITICAL: Never redirect if on final onboarding steps
-          if (stepAtCheckTime >= 7) {
+          if (stepAtCheckTime >= 4) {
             console.log('On final onboarding steps, skipping redirect check')
             return
           }
@@ -77,7 +77,7 @@ export default function OnboardingPage() {
           // 4. Testing mode is not enabled
           if (profile && !profileError && stepAtCheckTime < 4 && !isTestingMode) {
             // Final safety check - never redirect if somehow we got to final steps
-            if (currentStep >= 7) {
+            if (currentStep >= 4) {
               console.log('Step changed to final steps during check, aborting redirect')
               return
             }
@@ -113,14 +113,13 @@ export default function OnboardingPage() {
     )
   }
 
-  // Onboarding flow: 5 main steps + success
+  // Onboarding flow: 4 steps + success
   const steps = [
-    { component: BasicProfileStep, step: 1 }, // Step 1: Basic Profile (Avatar, Age, Gender)
-    { component: InterestsStep, step: 2 },    // Step 2: Climbing Style & Grade
-    { component: LocationStep, step: 3 },     // Step 3: Gyms Selection
-    { component: AvailabilityStep, step: 4 }, // Step 4: Availability (Time & Days)
-    { component: PledgeStep, step: 5 },       // Step 5: Pledge (Community Agreement)
-    { component: SuccessStep, step: 6 },      // Step 6: Success / Welcome to the Crew
+    { component: BasicProfileStep, step: 1 }, // Step 1: Basic Profile (Photo, Age, Gender)
+    { component: InterestsStep, step: 2 },    // Step 2: Intent + Climbing Style (max 3)
+    { component: LocationStep, step: 3 },     // Step 3: Homebase + Gyms (optional)
+    { component: PledgeStep, step: 4 },       // Step 4: Pledge (single-tap)
+    { component: SuccessStep, step: 5 },      // Step 5: Success / Welcome to the Crew
   ]
 
   const currentStepData = steps.find(s => s.step === currentStep)
@@ -129,9 +128,11 @@ export default function OnboardingPage() {
   if (!currentStepData) {
     console.warn(`Step ${currentStep} not found, defaulting to step 1`)
   }
-  
+
   const CurrentComponent = currentStepData?.component || BasicProfileStep
 
+  // Render step component directly - no mobile shell for maximum screen space
+  // Onboarding is our most critical feature and needs to be seamless
   return <CurrentComponent />
 }
 

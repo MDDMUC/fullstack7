@@ -43,17 +43,9 @@ const PLEDGES: PledgeItem[] = [
 
 export default function PledgeStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
-  const [agreedPledges, setAgreedPledges] = useState<string[]>([])
+  const [agreedToPledge, setAgreedToPledge] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
-
-  const handlePledgeToggle = (pledgeId: string) => {
-    setAgreedPledges(prev =>
-      prev.includes(pledgeId)
-        ? prev.filter(id => id !== pledgeId)
-        : [...prev, pledgeId]
-    )
-  }
 
   const handleContinue = async () => {
     if (!supabase) {
@@ -117,7 +109,7 @@ export default function PledgeStep() {
 
       // Update context and proceed to success step
       updateData({ pledgeAccepted: true })
-      setCurrentStep(6) // Go to Success step
+      setCurrentStep(5) // Go to Success step
     } catch (error: any) {
       console.error('Error submitting onboarding:', error)
       setSubmitError(error.message || 'An error occurred')
@@ -125,27 +117,15 @@ export default function PledgeStep() {
     }
   }
 
-  const allAgreed = agreedPledges.length === PLEDGES.length
-
   return (
     <div
       className="onb-screen"
-      data-name="onboarding / step5 / pledge"
+      data-name="onboarding / step4 / pledge"
       data-node-id="484:1266"
     >
-      {/* BACKGROUND LAYERS */}
+      {/* BACKGROUND LAYERS - Static background only (video removed for FCP) */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
-        <video
-          className="onb-bg-video"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/hero-main.jpg"
-        >
-          <source src="/001.mp4" type="video/mp4" />
-        </video>
         <div className="onb-bg-gradient" />
       </div>
 
@@ -172,63 +152,79 @@ export default function PledgeStep() {
               </p>
             </div>
 
-            {/* Pledge cards */}
-            {PLEDGES.map((pledge) => {
-              const isAgreed = agreedPledges.includes(pledge.id)
-              return (
-                <button
-                  key={pledge.id}
-                  type="button"
-                  className={`onb-pledge-card ${isAgreed ? 'onb-pledge-card-active' : ''}`}
-                  onClick={() => handlePledgeToggle(pledge.id)}
-                  data-node-id={`pledge-${pledge.id}`}
-                >
-                  <div className="onb-pledge-inner">
-                    {/* Checkbox circle */}
-                    <div className="onb-pledge-checkbox" data-node-id={`checkbox-${pledge.id}`}>
-                      <svg
-                        width="20"
-                        height="44"
-                        viewBox="0 0 20 44"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <circle
-                          cx="10"
-                          cy="22"
-                          r="9"
-                          stroke={isAgreed ? 'var(--color-primary)' : 'var(--color-stroke)'}
-                          strokeWidth="2"
-                          fill={isAgreed ? 'rgba(92, 225, 230, 0.1)' : 'transparent'}
-                        />
-                        {isAgreed && (
-                          <path
-                            d="M6 22L9 25L14 19"
-                            stroke="var(--color-primary)"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        )}
-                      </svg>
-                    </div>
-                    
-                    {/* Right content - py-[10px] gap-[8px] */}
-                    <div className="onb-pledge-content" data-node-id={`content-${pledge.id}`}>
-                      <h3 className="onb-pledge-item-title" data-node-id={`title-${pledge.id}`}>
-                        {pledge.title}
-                      </h3>
-                      <p className="onb-pledge-item-desc" data-node-id={`desc-${pledge.id}`}>
-                        {pledge.description}
-                      </p>
-                      <span className="onb-pledge-tap" data-node-id={`tap-${pledge.id}`}>
-                        Tap to agree (required)
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              )
-            })}
+            {/* Pledge content - display all pledges as text, single agree button */}
+            <div className="onb-pledge-list" style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-md)'
+            }}>
+              {PLEDGES.map((pledge) => (
+                <div key={pledge.id} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-xs)'
+                }}>
+                  <h3 className="onb-pledge-item-title" data-node-id={`title-${pledge.id}`}>
+                    {pledge.title}
+                  </h3>
+                  <p className="onb-pledge-item-desc" data-node-id={`desc-${pledge.id}`}>
+                    {pledge.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Single-tap agree checkbox */}
+            <button
+              type="button"
+              className={`onb-pledge-card ${agreedToPledge ? 'onb-pledge-card-active' : ''}`}
+              onClick={() => setAgreedToPledge(!agreedToPledge)}
+              data-node-id="pledge-agree"
+              style={{
+                marginTop: 'var(--space-md)'
+              }}
+            >
+              <div className="onb-pledge-inner">
+                {/* Checkbox circle */}
+                <div className="onb-pledge-checkbox">
+                  <svg
+                    width="20"
+                    height="44"
+                    viewBox="0 0 20 44"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <circle
+                      cx="10"
+                      cy="22"
+                      r="9"
+                      stroke={agreedToPledge ? 'var(--color-primary)' : 'var(--color-stroke)'}
+                      strokeWidth="2"
+                      fill={agreedToPledge ? 'rgba(92, 225, 230, 0.1)' : 'transparent'}
+                    />
+                    {agreedToPledge && (
+                      <path
+                        d="M6 22L9 25L14 19"
+                        stroke="var(--color-primary)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
+                  </svg>
+                </div>
+
+                {/* Agreement text */}
+                <div className="onb-pledge-content">
+                  <h3 className="onb-pledge-item-title">
+                    I Agree
+                  </h3>
+                  <p className="onb-pledge-item-desc">
+                    I commit to the crew and these community values.
+                  </p>
+                </div>
+              </div>
+            </button>
 
             {/* Error message */}
             {submitError && (
@@ -243,10 +239,10 @@ export default function PledgeStep() {
                 type="button"
                 className="onb-cta-btn"
                 onClick={handleContinue}
-                disabled={!allAgreed || isSubmitting}
+                disabled={!agreedToPledge || isSubmitting}
                 data-node-id="484:1288"
               >
-                {isSubmitting ? 'Saving...' : 'Continue 5/5'}
+                {isSubmitting ? 'Saving...' : 'Continue 4/4'}
               </button>
             </div>
           </div>
