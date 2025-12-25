@@ -404,6 +404,7 @@ gyms (
 ### Design Conventions
 
 **Always use design tokens** - No hard-coded colors, spacing, or sizes
+**No Figma URLs in production** - Use local assets in `public/` or `src/assets/`; Figma/MCP links are for extraction only
 **Mobile-first** - All designs optimized for mobile viewport
 **Dark theme only** - No light mode (for now)
 **Custom scrollbars** - Use `.custom-scrollbar` class for themed scrollbars

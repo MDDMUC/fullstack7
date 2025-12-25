@@ -8,9 +8,18 @@ import { fetchProfiles } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import Avatar from '@/components/Avatar'
 
-const IMG_BACK = 'https://www.figma.com/api/mcp/asset/66aa6b9e-8828-4ea6-b35f-7f40de2a84f9'
-const IMG_GYMS = 'https://www.figma.com/api/mcp/asset/49b9a635-3cbe-4fea-9a36-11dcaa538fca'
-const IMG_BELL = 'https://www.figma.com/api/mcp/asset/f04bae63-a13f-4ceb-920f-d32174597230'
+// Inline SVG icons for proper color inheritance
+const GymIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M5 12C5 8.13401 8.13401 5 12 5M16.4999 7.5L11.9999 12M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12ZM13 12C13 12.5523 12.5523 13 12 13C11.4477 13 11 12.5523 11 12C11 11.4477 11.4477 11 12 11C12.5523 11 13 11.4477 13 12Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
+
+const BellIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M9.35419 21C10.0593 21.6224 10.9856 22 12 22C13.0145 22 13.9407 21.6224 14.6458 21M18 8C18 6.4087 17.3679 4.88258 16.2427 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.8826 2.63214 7.75738 3.75736C6.63216 4.88258 6.00002 6.4087 6.00002 8C6.00002 11.0902 5.22049 13.206 4.34968 14.6054C3.61515 15.7859 3.24788 16.3761 3.26134 16.5408C3.27626 16.7231 3.31488 16.7926 3.46179 16.9016C3.59448 17 4.19261 17 5.38887 17H18.6112C19.8074 17 20.4056 17 20.5382 16.9016C20.6852 16.7926 20.7238 16.7231 20.7387 16.5408C20.7522 16.3761 20.3849 15.7859 19.6504 14.6054C18.7795 13.206 18 11.0902 18 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+)
 
 // LocalStorage key for dismissed notifications (shared with notifications page)
 const DISMISSED_NOTIFICATIONS_KEY = 'dab_dismissed_notifications'
@@ -47,6 +56,11 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
   const [profileAvatar, setProfileAvatar] = useState<string | null>(null)
   const [avatarLoading, setAvatarLoading] = useState(true)
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false)
+
+  // Check if current page matches icon route
+  const isProfilePage = pathname?.startsWith('/profile')
+  const isGymsPage = pathname?.startsWith('/gyms')
+  const isNotificationsPage = pathname?.startsWith('/notifications')
 
   useEffect(() => {
     // Reset avatar immediately when userId changes to prevent showing stale avatar
@@ -146,26 +160,11 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
     }
   }, [userId])
 
-  const handleBack = () => {
-    router.back()
-  }
-
-  const showBack =
-    pathname?.startsWith('/profile') ||
-    pathname?.startsWith('/notifications')
-
   return (
     <div className={`mobile-topbar ${className}`} data-name="mobile-topbar" data-node-id="764:3057">
       <div className="mobile-topbar-content" data-name="content" data-node-id="764:3058">
         <div className="mobile-topbar-left">
           <div className="mobile-topbar-breadcrumb" data-name="breadcrumb" data-node-id="764:3060">
-            {showBack && (
-              <button type="button" className="mobile-topbar-back" onClick={handleBack} aria-label="Back">
-                <div className="mobile-topbar-back-icon">
-                  <img src={IMG_BACK} alt="" className="mobile-topbar-back-img" />
-                </div>
-              </button>
-            )}
             <p className="mobile-topbar-breadcrumb-text" data-node-id="764:3063">
               {breadcrumb}
             </p>
@@ -173,7 +172,7 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
         </div>
         <div className="mobile-topbar-right">
           <div className="mobile-topbar-icons" data-name="icons" data-node-id="764:3161">
-            <Link href="/profile" className="mobile-topbar-profile-link">
+            <Link href="/profile" className={`mobile-topbar-profile-link ${isProfilePage ? 'active' : ''}`}>
               <div className="mobile-topbar-profile" data-name="profile" data-node-id="764:3073">
                 <div className="mobile-topbar-profile-icon" data-name="icon" data-node-id="764:3074">
                   {!avatarLoading && (
@@ -187,26 +186,18 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
                 </div>
               </div>
             </Link>
-            <Link href="/gyms" className="mobile-topbar-gyms-link">
+            <Link href="/gyms" className={`mobile-topbar-gyms-link ${isGymsPage ? 'active' : ''}`}>
               <div className="mobile-topbar-gyms" data-name="gyms" data-node-id="764:3157">
                 <div className="mobile-topbar-gyms-icon" data-name="icon" data-node-id="764:3158">
-                  <div className="mobile-topbar-bar-chart" data-name="bar-chart-square-up" data-node-id="768:2683">
-                    <div className="mobile-topbar-bar-chart-inner" data-name="Icon" data-node-id="I768:2683;633:5687">
-                      <img src={IMG_GYMS} alt="Gyms" className="mobile-topbar-bar-chart-img" />
-                    </div>
-                  </div>
+                  <GymIcon />
                 </div>
               </div>
             </Link>
-            <Link href="/notifications" className="mobile-topbar-notifications-link">
+            <Link href="/notifications" className={`mobile-topbar-notifications-link ${isNotificationsPage ? 'active' : ''}`}>
               <div className="mobile-topbar-notifications" data-name="notifications" data-node-id="768:2659">
                 <div className="mobile-topbar-notifications-icon" data-name="icon" data-node-id="768:2660">
-                  <div className="mobile-topbar-bell" data-name="bell-01" data-node-id="768:2661">
-                    <div className="mobile-topbar-bell-inner" data-name="Icon" data-node-id="I768:2661;633:7275">
-                      <img src={IMG_BELL} alt="Notifications" className="mobile-topbar-bell-img" />
-                    </div>
-                    {hasUnreadNotifications && <div className="unread-dot mobile-topbar-notifications-dot" />}
-                  </div>
+                  <BellIcon />
+                  {hasUnreadNotifications && <div className="unread-dot mobile-topbar-notifications-dot" />}
                 </div>
               </div>
             </Link>

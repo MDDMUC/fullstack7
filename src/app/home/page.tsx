@@ -28,9 +28,9 @@ type Profile = DbProfile & {
 
 const FIGMA_CARD_IMAGE = 'https://www.figma.com/api/mcp/asset/11d0ee86-62b7-427f-86c4-f30e4e38bbfb' // Figma node 633:14303
 
-const ROCK_ICON = 'https://www.figma.com/api/mcp/asset/b40792a1-8803-46f4-8eda-7fffabd185d1'
-const FOUNDER_ICON = 'https://www.figma.com/api/mcp/asset/678371f8-8c8a-45a5-bdfc-e9638de47c64'
-const PRO_ICON = 'https://www.figma.com/api/mcp/asset/e59c8273-cc79-465c-baea-a52bc6410ee6'
+const ROCK_ICON = '/icons/rocknrollhand.svg'
+const FOUNDER_ICON = '/icons/founder-badge.svg'
+const PRO_ICON = '/icons/pro-badge.svg'
 
 const FILTER_LABELS = ['city', 'style', 'gym'] as const
 type FilterKey = (typeof FILTER_LABELS)[number]

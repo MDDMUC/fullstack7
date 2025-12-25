@@ -18,14 +18,14 @@ type NavItem = {
   iconSize?: 24 | 26
 }
 
-const ICON_EVENTS_DEFAULT = '/icons/navbar-events.svg'
-const ICON_EVENTS_ACTIVE = '/icons/navbar-events.svg'
+const ICON_EVENTS_DEFAULT = '/icons/events.svg'
+const ICON_EVENTS_ACTIVE = '/icons/events.svg'
 
 const ICON_CHATS_DEFAULT = '/icons/navbar-chats.svg'
 const ICON_CHATS_ACTIVE = '/icons/navbar-chats.svg'
 
-const ICON_CREW_DEFAULT = '/icons/navbar-crew.svg'
-const ICON_CREW_ACTIVE = '/icons/navbar-crew.svg'
+const ICON_CREW_DEFAULT = '/icons/crew.svg'
+const ICON_CREW_ACTIVE = '/icons/crew.svg'
 
 const ICON_DAB_DEFAULT = '/icons/navbar-dab.svg'
 const ICON_DAB_ACTIVE = '/icons/navbar-dab.svg'

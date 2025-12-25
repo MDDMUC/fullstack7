@@ -62,6 +62,14 @@
   --btn-pad-xxxl: 18px;
   --btn-pad-xxxxl: 20px;
 
+  /* Aliases for consistency with existing usage */
+  --button-padding-xs: var(--btn-pad-xs);
+  --button-padding-sm: var(--btn-pad-sm);
+  --button-padding-md: var(--btn-pad-md);
+  --button-padding-lg: var(--btn-pad-lg);
+  --button-padding-xl: var(--btn-pad-xl);
+  --button-padding-xxl: var(--btn-pad-xxl);
+
   /* Component Sizes */
   --btn-height-lg: 38px;
   --btn-min-width-lg: 117px;

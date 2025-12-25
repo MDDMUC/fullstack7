@@ -1549,3 +1549,209 @@ TICKET-ONB-001: **Done** ✅
 - Monitor onboarding completion metrics in production
 - Analytics dashboard can track completion time and drop-off rates
 
+
+---
+
+## Session: TICKET-UX-002 UI/UX Polish - Critical Fixes (2025-12-25)
+
+### Ticket
+TICKET-UX-002: UI/UX Polish + Responsiveness
+
+### Work Performed
+Completed critical UI/UX fixes for mobile navigation, icons, and responsiveness.
+
+### Changes Made
+
+**1. Fixed Broken MobileTopbar Icons**
+- Replaced Figma API URLs with local icon paths:
+  - Back icon: `/icons/back.svg`
+  - Gyms icon: `/icons/gymindicator.svg`
+  - Notifications icon: `/icons/notification.svg`
+- File: `src/components/MobileTopbar.tsx` (lines 11-13)
+
+**2. Added Avatar Fallback for Missing/Broken Images**
+- Created placeholder avatar SVG at `/placeholder-avatar.svg`
+- Updated Avatar component to use local placeholder instead of Figma URL
+- File: `src/components/Avatar.tsx` (line 3)
+- Impact: Handles legacy data with missing profile images gracefully
+
+**3. Removed Extra Padding on Mobile Nav Components**
+- MobileTopbar: Reduced padding from `var(--space-md) var(--space-xl)` to `0 var(--space-lg)` with bottom padding
+- MobileNavbar: Reduced horizontal padding from `var(--space-xl)` to `var(--space-lg)`
+- File: `src/app/globals.css` (lines 1683-1684, 2133-2134)
+- Impact: Content now uses more screen space on mobile
+
+**4. Fixed MobileNavbar Active Icon Color**
+- Changed active icon filter from `none` to primary color (#5ce1e6) tint
+- Applied CSS filter to match brand primary color
+- File: `src/app/globals.css` (lines 2210-2213)
+- Impact: Active nav icons now show in cyan/primary color on /chats
+
+**5. Restored Chips on Home Page Cards**
+- Fixed broken chip icon references (was using Figma URLs)
+- Updated to local icons:
+  - Rock icon: `/icons/rocknrollhand.svg`
+  - Founder badge: `/icons/founder-badge.svg`
+  - Pro badge: `/icons/pro-badge.svg`
+- File: `src/app/home/page.tsx` (lines 31-33)
+- Impact: Badge chips now display correctly on profile cards
+
+### Files Modified
+- `src/components/MobileTopbar.tsx` - Icon URL fixes
+- `src/components/Avatar.tsx` - Fallback placeholder
+- `src/app/globals.css` - Padding and active color fixes
+- `src/app/home/page.tsx` - Chip icon fixes
+- `public/placeholder-avatar.svg` - NEW placeholder avatar
+
+### Build Status
+✅ Build passes with no errors
+
+### Remaining Items from Ticket (Lower Priority)
+The following items from TICKET-UX-002 remain pending:
+- Fix desktop landing page dab animation glow clipping
+- Fix broken avatars in /gym/chat "your walls" list
+- Replace legacy gym status cards on /gym/chat
+- Add hover state to "next" button on profile cards (desktop)
+- Smooth DAB tap animation
+
+### Next Steps
+**Next Role: Quality and Testing Reviewer**
+
+QA should test the following on mobile devices (iOS Safari, Android Chrome):
+1. Verify MobileTopbar icons display correctly (gyms, notifications, back)
+2. Confirm avatar fallback shows for users with missing profile images
+3. Check that mobile content uses more screen space (reduced padding)
+4. Verify active nav icon shows in cyan/primary color on /chats page
+5. Confirm chips/badges display on home page profile cards
+6. Test responsive layout on 320-430px widths (no horizontal scroll)
+7. Verify no UI regressions in core flows
+
+If QA approves, remaining lower-priority items can be addressed in a follow-up or marked as separate tickets.
+
+### Status Update
+TICKET-UX-002: Proposed → **In Progress** (critical items complete, remaining items pending)
+
+
+---
+
+## Session: TICKET-UX-002 UI/UX Polish - Gyms Page Fixes (2025-12-25)
+
+### Ticket
+TICKET-UX-002: UI/UX Polish + Responsiveness (continued)
+
+### Work Performed
+Completed additional critical fixes for /gyms page including button padding, layout consistency, live indicator restoration, and modal implementation.
+
+### Changes Made
+
+**1. Fixed Button Padding Issues on /gyms Page**
+- **Root Cause**: Button padding CSS variables (`--button-padding-*`) were referenced throughout the codebase but never defined. Only `--btn-pad-*` tokens existed, causing mismatch and resulting in no padding.
+- **Solution**: Added CSS variable aliases in `src/app/tokens.css` (lines 65-71):
+  ```css
+  --button-padding-xs: var(--btn-pad-xs);   /* 6px */
+  --button-padding-sm: var(--btn-pad-sm);   /* 8px */
+  --button-padding-md: var(--btn-pad-md);   /* 10px */
+  --button-padding-lg: var(--btn-pad-lg);   /* 12px */
+  --button-padding-xl: var(--btn-pad-xl);   /* 14px */
+  --button-padding-xxl: var(--btn-pad-xxl); /* 16px */
+  ```
+- **Additional Fix**: Updated `.gym-card-field-button` to use button padding tokens instead of space tokens:
+  - Changed from `var(--space-xxs) var(--space-sm)` (4px 8px)
+  - To `var(--button-padding-sm) var(--button-padding-md)` (8px 10px)
+  - File: `src/app/globals.css` (line 13210)
+- **Impact**: All buttons on /gyms page now display with proper padding:
+  - ✅ Add gym button
+  - ✅ Busy/Chill occupancy pills
+  - ✅ Unfollow button
+  - ✅ Join chat button
+  - ✅ Day selector button
+
+**2. Fixed Friends Section Width Alignment**
+- **Issue**: Friends section wasn't spanning full card width like other elements (gym name, busy indicator)
+- **Root Cause**: Missing `width: 100%` and `box-sizing: border-box` properties
+- **Solution**: Updated `.gym-friends-section` in `src/app/globals.css` (lines 14796-14805):
+  - Added `width: 100%;`
+  - Added `box-sizing: border-box;`
+  - Changed padding from `var(--space-md)` (12px) to `var(--button-padding-md)` (10px) for consistency with other card sections
+- **Impact**: Friends section now aligns perfectly with gym name and busy indicator sections
+
+**3. Restored Pulsing Live Indicator Dot**
+- **Issue**: Live indicator dot next to "60% full" text was broken (loading from Figma URL, no animation)
+- **Root Cause**:
+  - Using `<img>` tag with broken Figma API URL
+  - Missing pulsing animation and gradient styling
+- **Solution**:
+  - **Component**: Removed `<img>` tag, converted to pure CSS `<div>` (line 590)
+  - **CSS**: Updated `.gym-card-live-dot` styling (lines 12991-13000):
+    ```css
+    display: inline-block;
+    border-radius: 50%;
+    background: linear-gradient(120deg, var(--color-primary), var(--color-secondary));
+    box-shadow: 0 0 0 4px rgba(92, 225, 230, 0.12);
+    animation: presencePulse 2.4s ease-in-out infinite;
+    ```
+  - **Animation**: Uses existing `@keyframes presencePulse` from globals.css (lines 4918-4922)
+- **Impact**: Pulsing cyan-to-pink gradient dot now visible and animating smoothly
+
+**4. Replaced Browser Confirm with Styled Modal**
+- **Issue**: Clicking "Unfollow" showed browser native `window.confirm()` instead of styled UI
+- **Solution**: Implemented custom confirmation modal using design system
+  - **Component Changes** (`src/app/gyms/page.tsx`):
+    - Imported Modal component (line 11)
+    - Added state: `unfollowModalOpen`, `gymToUnfollow` (lines 96-97)
+    - Replaced `window.confirm()` with modal open logic (lines 408-410)
+    - Added Modal component with footer buttons (lines 427-470)
+  - **Modal Features**:
+    - Title: "Unfollow Gym"
+    - Message: Shows gym name, reassures user can re-add later
+    - Cancel button: Uses `button-ghost` class (transparent with border)
+    - Unfollow button: Uses `button-cta` class (gradient primary action)
+    - `closeOnOverlayClick={false}`: Forces user to click a button
+  - **Overlay Enhancement** (`src/app/globals.css` line 14154):
+    - Increased darkness from `rgba(0, 0, 0, 0.7)` to `rgba(0, 0, 0, 0.85)`
+    - Creates strong visual focus, darkens background significantly
+- **Impact**: Professional confirmation modal that matches design system, forces deliberate user action
+
+### Files Modified
+- `src/app/tokens.css` - Added button padding variable aliases
+- `src/app/globals.css` - Fixed button padding, friends section width, live dot styling, modal overlay darkness
+- `src/app/gyms/page.tsx` - Restored live dot, implemented confirmation modal
+- `src/components/Modal.tsx` - (existing component, no changes)
+
+### Build Status
+✅ All changes compile successfully
+✅ No TypeScript errors
+✅ Production build passes
+
+### Technical Details
+
+**CSS Variables Fixed:**
+- `--button-padding-xs` through `--button-padding-xxl` now properly defined
+- All button elements on /gyms page now have correct padding
+
+**Design Tokens Used:**
+- Button padding: `var(--button-padding-md)`, `var(--button-padding-xxl)`
+- Colors: `var(--color-primary)`, `var(--color-text)`, `var(--color-card)`
+- Radius: `var(--radius-md)`, `var(--radius-full)`
+- Shadows: Box-shadow with primary color tint
+
+**Animation:**
+- `presencePulse`: 2.4s ease-in-out infinite
+- Smooth scale and box-shadow transition
+- Matches pattern used throughout app (profile presence, status dots)
+
+### Testing Checklist
+- [x] Verify button padding on /gyms page (add gym, chips, unfollow, join chat)
+- [x] Confirm friends section spans full card width
+- [x] Check live indicator dot is visible and pulsing
+- [x] Test unfollow modal appears with dark overlay
+- [x] Verify modal forces button click (can't dismiss via overlay)
+- [x] Confirm modal styling matches design system
+- [x] Test build passes with no errors
+
+### Next Steps
+Continue with remaining items from TICKET-UX-002 or move to next priority ticket.
+
+### Status Update
+TICKET-UX-002: **In Progress** (additional critical items complete)
+

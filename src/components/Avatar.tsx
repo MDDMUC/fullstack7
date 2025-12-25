@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const DEFAULT_PLACEHOLDER = 'https://www.figma.com/api/mcp/asset/ed027546-d8d0-4b5a-87e8-12db5e07cdd7'
+const DEFAULT_PLACEHOLDER = '/placeholder-avatar.svg'
 
 interface AvatarProps {
   src?: string | null

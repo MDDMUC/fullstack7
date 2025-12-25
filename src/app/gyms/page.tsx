@@ -8,6 +8,7 @@ import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import LoadingState from '@/components/LoadingState'
 import EmptyState from '@/components/EmptyState'
+import Modal from '@/components/Modal'
 import { GymFriendsSection, GymFriendsFallback, GymFriendProfile } from '@/components/GymFriendCard'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
@@ -90,6 +91,10 @@ export default function GymsScreen() {
   // Friends (matches) per gym - keyed by gym ID
   const [friendsByGym, setFriendsByGym] = React.useState<Record<string, GymFriendProfile[]>>({})
   const [matchesLoading, setMatchesLoading] = React.useState(false)
+
+  // Unfollow confirmation modal state
+  const [unfollowModalOpen, setUnfollowModalOpen] = React.useState(false)
+  const [gymToUnfollow, setGymToUnfollow] = React.useState<GymRow | null>(null)
 
   React.useEffect(() => {
     const loadGyms = async () => {
@@ -400,13 +405,9 @@ export default function GymsScreen() {
                   key={gym.id}
                   gym={gym}
                   onUnfollow={() => {
-                    // Show confirmation dialog
-                    if (window.confirm('Are you sure you want to unfollow this gym?')) {
-                      // Remove from UI
-                      setGyms(prev => prev.filter(g => g.id !== gym.id))
-                      // Save to localStorage for persistence
-                      addUnfollowedGym(gym.id)
-                    }
+                    // Show confirmation modal
+                    setGymToUnfollow(gym)
+                    setUnfollowModalOpen(true)
                   }}
                   onJoinChat={() => {
                     // Navigate to chats page where gym threads are listed
@@ -421,6 +422,52 @@ export default function GymsScreen() {
           <MobileNavbar />
         </div>
       </div>
+
+      {/* Unfollow Confirmation Modal */}
+      <Modal
+        open={unfollowModalOpen}
+        onClose={() => {
+          setUnfollowModalOpen(false)
+          setGymToUnfollow(null)
+        }}
+        title="Unfollow Gym"
+        size="md"
+        closeOnOverlayClick={false}
+        footer={
+          <>
+            <button
+              type="button"
+              className="button-ghost"
+              onClick={() => {
+                setUnfollowModalOpen(false)
+                setGymToUnfollow(null)
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="button-cta"
+              onClick={() => {
+                if (gymToUnfollow) {
+                  // Remove from UI
+                  setGyms(prev => prev.filter(g => g.id !== gymToUnfollow.id))
+                  // Save to localStorage for persistence
+                  addUnfollowedGym(gymToUnfollow.id)
+                }
+                setUnfollowModalOpen(false)
+                setGymToUnfollow(null)
+              }}
+            >
+              Unfollow
+            </button>
+          </>
+        }
+      >
+        <p style={{ color: 'var(--color-text)', margin: 0, fontSize: 'var(--font-size-md)', lineHeight: '1.5' }}>
+          Are you sure you want to unfollow <strong>{gymToUnfollow?.name}</strong>? You can always re-add it later from the gym list.
+        </p>
+      </Modal>
     </RequireAuth>
   )
 }
@@ -587,9 +634,7 @@ function GymDetailCard({
           </div>
         </div>
         <div className="gym-card-live-indicator" data-name="live-indicator" data-node-id="769:2940">
-          <div className="gym-card-live-dot" data-node-id="769:2939">
-            <img src={IMG_ELLIPSE} alt="" className="gym-card-live-dot-img" />
-          </div>
+          <div className="gym-card-live-dot" data-node-id="769:2939" />
           <div className="gym-card-online-text" data-node-id="769:2937">
             <p>{currentOccupancy !== null ? `${currentOccupancy}% full` : 'Closed'}</p>
           </div>

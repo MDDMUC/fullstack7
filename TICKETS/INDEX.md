@@ -16,6 +16,7 @@
 | TICKET-NOT-002 | Notifications v1 (Message, Event, Crew, Match) | Proposed | Eng | P1 | `TICKETS/notifications-v1.md` |
 | TICKET-GRO-001 | Growth Activation Readiness | Proposed | Product/Eng | P1 | `TICKETS/growth-activation-readiness.md` |
 | TICKET-LOC-001 | Location-First Discovery | Proposed | Eng/Product | P1 | `TICKETS/location-first-discovery.md` |
+| TICKET-UX-003 | Replace Figma MCP URLs with Local Assets | Proposed | Eng | P1 | `TICKETS/figma-mcp-url-replacement.md` |
 | TICKET-OPS-002 | Week 1 Launch Monitoring Plan | Proposed | Product | P1 | `TICKETS/launch-monitoring-week1.md` |
 | TICKET-MKT-001 | Landing Page + Waitlist | Proposed | Marketing/Eng | P1 | `TICKETS/landing-page-waitlist.md` |
 | TICKET-MKT-002 | Social Accounts Setup | Proposed | Marketing | P1 | `TICKETS/social-accounts-setup.md` |
