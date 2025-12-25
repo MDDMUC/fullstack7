@@ -24,7 +24,8 @@ const MENU_ICON = '/icons/dots.svg'
 const STATUS_ICON_PRIMARY = 'https://www.figma.com/api/mcp/asset/9669b4a0-521f-4460-b5ea-398ba81c3620'
 const STATUS_ICON_SECONDARY = 'https://www.figma.com/api/mcp/asset/a7a888de-184f-46cf-a824-bf78fa777b31'
 const ICON_SEND = '/icons/send.svg'
-const AVATAR_PLACEHOLDER = 'https://www.figma.com/api/mcp/asset/ed027546-d8d0-4b5a-87e8-12db5e07cdd7'
+const AVATAR_PLACEHOLDER = '/avatar-fallback.jpg'
+const CREW_IMAGE_FALLBACK = '/crew-fallback.jpg'
 
 type CrewRow = {
   id: string
@@ -91,6 +92,9 @@ function CrewDetailContent() {
   const [ownerProfile, setOwnerProfile] = useState<Profile | null>(null)
   const [requestingInvite, setRequestingInvite] = useState(false)
   const [showNotMemberOverlay, setShowNotMemberOverlay] = useState(false)
+  const [removeModalOpen, setRemoveModalOpen] = useState(false)
+  const [participantToRemove, setParticipantToRemove] = useState<{ id: string; name: string } | null>(null)
+  const [removingParticipant, setRemovingParticipant] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const inviteModalRef = useRef<HTMLDivElement | null>(null)
@@ -213,21 +217,31 @@ function CrewDetailContent() {
 
       // If user is the creator but not a participant, automatically add them
       if (isCreator && !userIsParticipant && threadId) {
+        console.log('Creator is not a participant, attempting to add them', { userId, threadId })
         const { error: addError } = await client
           .from('thread_participants')
           .upsert({ thread_id: threadId, user_id: userId, role: 'owner' })
-        
-        if (!addError) {
-          userIsParticipant = true
-          // Re-fetch participant data
-          const { data: newParticipantData } = await client
-            .from('thread_participants')
-            .select('user_id')
-            .eq('thread_id', threadId)
-            .eq('user_id', userId)
-            .maybeSingle()
-          participantCheck = newParticipantData
+
+        if (addError) {
+          console.error('CRITICAL: Failed to add creator to thread_participants:', addError)
+          console.error('Error message:', addError.message)
+          console.error('Error details:', addError.details)
+          console.error('Error hint:', addError.hint)
+          setError(`Failed to join crew chat: ${addError.message}. Please contact support.`)
+          setLoading(false)
+          return
         }
+
+        userIsParticipant = true
+        console.log('Successfully added creator to thread_participants')
+        // Re-fetch participant data
+        const { data: newParticipantData } = await client
+          .from('thread_participants')
+          .select('user_id')
+          .eq('thread_id', threadId)
+          .eq('user_id', userId)
+          .maybeSingle()
+        participantCheck = newParticipantData
       }
 
       setIsParticipant(userIsParticipant)
@@ -877,29 +891,51 @@ function CrewDetailContent() {
 
   const isCreator = crew?.created_by === userId
 
-  const handleKickParticipant = async (participantId: string, participantName: string) => {
-    if (!thread?.id || !userId) return
+  const handleKickParticipant = (participantId: string, participantName: string) => {
+    setParticipantToRemove({ id: participantId, name: participantName })
+    setRemoveModalOpen(true)
+  }
 
-    if (!confirm(`Are you sure you want to remove ${participantName} from this crew?`)) {
+  const confirmRemoveParticipant = async () => {
+    if (!thread?.id || !userId || !participantToRemove) return
+
+    setRemovingParticipant(true)
+    const client = supabase
+    if (!client) {
+      setRemovingParticipant(false)
       return
     }
-
-    const client = supabase
-    if (!client) return
 
     const { error } = await client
       .from('thread_participants')
       .delete()
       .eq('thread_id', thread.id)
-      .eq('user_id', participantId)
+      .eq('user_id', participantToRemove.id)
 
     if (error) {
       console.error('Failed to kick participant:', error)
+      setRemovingParticipant(false)
       return
     }
 
     // Remove from local state
-    setParticipants(prev => prev.filter(p => p.id !== participantId))
+    setParticipants(prev => prev.filter(p => p.id !== participantToRemove.id))
+    setCurrentParticipantIds(prev => {
+      const updated = new Set(prev)
+      updated.delete(participantToRemove.id)
+      return updated
+    })
+
+    // Close modal and reset
+    setRemoveModalOpen(false)
+    setParticipantToRemove(null)
+    setRemovingParticipant(false)
+  }
+
+  const cancelRemoveParticipant = () => {
+    setRemoveModalOpen(false)
+    setParticipantToRemove(null)
+    setRemovingParticipant(false)
   }
 
   const statusIcon = (status?: string) => {
@@ -1040,7 +1076,7 @@ function CrewDetailContent() {
           <div className="chats-event-hero">
             <div
               className="chats-event-hero-bg"
-              style={{ backgroundImage: `url(${crew.image_url || AVATAR_PLACEHOLDER})` }}
+              style={{ backgroundImage: `url(${crew.image_url || CREW_IMAGE_FALLBACK})` }}
             />
             <div className="chats-event-hero-overlay" />
             <div className="chats-event-hero-text">
@@ -1136,35 +1172,15 @@ function CrewDetailContent() {
                     if (draft.trim()) handleSend()
                   }
                 }}
-                style={{
-                  flex: 1,
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  fontFamily: 'var(--fontfamily-inter)',
-                  fontWeight: 500,
-                  fontSize: 'var(--font-size-md)',
-                  color: 'var(--color-text-darker)',
-                  minWidth: 0,
-                }}
               />
-              {draft.trim() && (
-                <button
-                  type="button"
-                  onClick={handleSend}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 'var(--space-xxs)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginLeft: 'var(--space-sm)',
-                  }}
-                >
-                  <img src={ICON_SEND} alt="Send" style={{ width: 'var(--icon-size-md)', height: 'var(--icon-size-md)' }} />
-                </button>
-              )}
+              <button
+                type="button"
+                className="chats-event-send-btn"
+                onClick={handleSend}
+                disabled={!draft.trim()}
+              >
+                <img src={ICON_SEND} alt="Send" width={24} height={24} />
+              </button>
             </div>
           </div>
         </div>
@@ -1276,6 +1292,40 @@ function CrewDetailContent() {
               )
             })
           )}
+        </div>
+      </Modal>
+
+      {/* Remove Participant Confirmation Modal */}
+      <Modal
+        open={removeModalOpen}
+        onClose={cancelRemoveParticipant}
+        title="Remove Member"
+        size="sm"
+        footer={
+          <div className="report-modal-footer">
+            <button
+              type="button"
+              className="report-modal-cancel"
+              onClick={cancelRemoveParticipant}
+              disabled={removingParticipant}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="report-modal-submit"
+              onClick={confirmRemoveParticipant}
+              disabled={removingParticipant}
+            >
+              {removingParticipant ? 'Removing...' : 'Remove'}
+            </button>
+          </div>
+        }
+      >
+        <div className="report-modal-form">
+          <p style={{ margin: 0, color: 'var(--color-text)', lineHeight: 1.5 }}>
+            Are you sure you want to remove <strong>{participantToRemove?.name}</strong> from this crew?
+          </p>
         </div>
       </Modal>
     </div>

@@ -272,11 +272,11 @@ function EventDetailContent() {
           <BackBar
             backHref="/events"
             backText="back"
-            className="events-detail-backbar"
+            className="chats-event-backbar"
             rightSlot={
-              <div className="events-detail-dots">
-                <img src="/icons/dots.svg" alt="" className="events-detail-dots-img" />
-              </div>
+              <button type="button" className="chats-event-menu" aria-label="Menu">
+                <img src="/icons/dots.svg" alt="" className="chats-event-menu-icon" />
+              </button>
             }
           />
 

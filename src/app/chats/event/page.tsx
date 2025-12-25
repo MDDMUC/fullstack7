@@ -1,13 +1,12 @@
 'use client'
 
-import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
 import MobileNavbar from '@/components/MobileNavbar'
+import BackBar from '@/components/BackBar'
 
 const HERO_IMG = 'https://www.figma.com/api/mcp/asset/6adb3ca3-0513-4775-88ca-40e2e7b63cd3'
 const AVATAR_IMG = 'https://www.figma.com/api/mcp/asset/875a43ce-f895-4170-893e-c2d83c8a6e56'
-const BACK_ICON = 'https://www.figma.com/api/mcp/asset/5fed23cc-cd2b-40b2-baae-f59643e79b0b'
-const MENU_ICON = 'https://www.figma.com/api/mcp/asset/ccc45227-14b0-4a26-bcc6-3cf30f676a51'
+const MENU_ICON = '/icons/dots.svg'
 const STATUS_ICON_PRIMARY = 'https://www.figma.com/api/mcp/asset/9669b4a0-521f-4460-b5ea-398ba81c3620'
 const STATUS_ICON_SECONDARY = 'https://www.figma.com/api/mcp/asset/a7a888de-184f-46cf-a824-bf78fa777b31'
 
@@ -17,15 +16,16 @@ export default function ChatsEventPage() {
       <div className="chats-event-screen" data-name="/chats/event">
         <div className="chats-event-content">
           <div className="chats-event-card">
-            <div className="chats-event-backbar">
-              <Link href="/chats" className="chats-event-back" aria-label="Back">
-                <img src={BACK_ICON} alt="" className="chats-event-back-icon" />
-              </Link>
-              <div className="chats-event-back-title">back</div>
-              <button type="button" className="chats-event-menu" aria-label="Menu">
-                <img src={MENU_ICON} alt="" className="chats-event-menu-icon" />
-              </button>
-            </div>
+            <BackBar
+              backHref="/chats"
+              backText="back"
+              className="chats-event-backbar"
+              rightSlot={
+                <button type="button" className="chats-event-menu" aria-label="Menu">
+                  <img src={MENU_ICON} alt="" className="chats-event-menu-icon" />
+                </button>
+              }
+            />
 
             <div className="chats-event-hero">
               <div className="chats-event-hero-bg" style={{ backgroundImage: `url(${HERO_IMG})` }} />

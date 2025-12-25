@@ -6,12 +6,13 @@ import { useRef, useState } from 'react'
 
 import ButtonCta from '@/components/ButtonCta'
 import MobileNavbar from '@/components/MobileNavbar'
+import BackBar from '@/components/BackBar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 import { uploadImageToStorage } from '@/lib/profileUtils'
 
-const HERO_PLACEHOLDER = '/icons/event-placeholder.svg'
+const CREW_IMAGE_FALLBACK = '/crew-fallback.jpg'
 
 export default function CrewCreatePage() {
   const router = useRouter()
@@ -56,18 +57,75 @@ export default function CrewCreatePage() {
       created_by: session.user.id,
     }
 
-    const { error: insertError } = await supabase.from('crews').insert(payload)
+    // Step 1: Create the crew
+    const { data: crewData, error: insertError } = await supabase
+      .from('crews')
+      .insert(payload)
+      .select('id, title')
+      .single()
 
     if (insertError) {
       setError(insertError.message)
-    } else {
-      setStatus('Crew created! Redirecting…')
-      setTimeout(() => {
-        router.push('/crew')
-      }, 400)
+      setSubmitting(false)
+      return
     }
 
+    if (!crewData) {
+      setError('Failed to create crew')
+      setSubmitting(false)
+      return
+    }
+
+    // Step 2: Create a thread for the crew
+    const { data: threadData, error: threadError } = await supabase
+      .from('threads')
+      .insert({
+        type: 'crew',
+        crew_id: crewData.id,
+        title: crewData.title,
+        created_by: session.user.id,
+        last_message: 'Crew chat created',
+        last_message_at: new Date().toISOString(),
+      })
+      .select('id')
+      .single()
+
+    if (threadError || !threadData) {
+      console.error('Failed to create thread:', threadError)
+      setError('Crew created but failed to set up chat. Please try accessing it from the crew list.')
+      setSubmitting(false)
+      // Still redirect since crew was created
+      setTimeout(() => {
+        router.push('/crew')
+      }, 2000)
+      return
+    }
+
+    // Step 3: Add creator as first participant (owner)
+    const { error: participantError } = await supabase
+      .from('thread_participants')
+      .insert({
+        thread_id: threadData.id,
+        user_id: session.user.id,
+        role: 'owner',
+      })
+
+    if (participantError) {
+      console.error('Failed to add creator to participants:', participantError)
+      setError('Crew created but you may need to refresh to see it. Please check the crew list.')
+      setSubmitting(false)
+      setTimeout(() => {
+        router.push('/crew')
+      }, 2000)
+      return
+    }
+
+    // Success!
+    setStatus('Crew created! Redirecting…')
     setSubmitting(false)
+    setTimeout(() => {
+      router.push('/crew')
+    }, 400)
   }
 
   const handleImageSelect = async (file?: File | null) => {
@@ -104,56 +162,28 @@ export default function CrewCreatePage() {
       <div className="events-create-screen" data-name="/crew/create">
         <div className="events-create-content">
           <div className="events-create-card">
-            <div className="events-detail-backbar">
-              <Link href="/crew" className="events-detail-back-btn" aria-label="Back">
-                <img src="/icons/chevron-left.svg" alt="" className="events-detail-back-icon" />
-              </Link>
-              <div className="events-detail-back-text">back</div>
-              <div className="events-detail-dots">
-                <img src="/icons/dots.svg" alt="" className="events-detail-dots-img" />
-              </div>
-            </div>
+            <BackBar backText="create crew" backHref="/crew" />
 
             <div className="events-create-hero">
-              <img src={imageUrl || HERO_PLACEHOLDER} alt="" className="events-create-hero-img" />
+              <img src={imageUrl || CREW_IMAGE_FALLBACK} alt="" className="events-create-hero-img" />
               <div className="events-create-hero-overlay" />
               <div className="events-create-hero-text">
-                <p className="events-detail-title">{title || 'CREW Title'}</p>
-                <p className="events-detail-subtitle">{location || 'Location Name'}</p>
-                <div className="events-detail-info-row">
-                  <p className="events-detail-info-loc">{location ? '' : 'City'}</p>
-                </div>
+                <p className="events-detail-title">{title || 'Crew Name'}</p>
+                <p className="events-detail-subtitle">{location || 'Location'}</p>
               </div>
             </div>
 
             <form className="events-create-form" onSubmit={handleSubmit}>
               <div className="events-create-field">
-                <p className="events-create-label">BASICS</p>
+                <p className="events-create-label">NAME</p>
                 <input
                   type="text"
                   className="events-create-input"
-                  placeholder="Crew Title..."
+                  placeholder="Enter crew name..."
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   required
                 />
-                <div className="events-create-upload-row">
-                  <button
-                    type="button"
-                    className="events-create-upload"
-                    onClick={onPickImage}
-                    disabled={uploadingImage}
-                  >
-                    {uploadingImage ? 'Uploading…' : imageUrl ? 'Replace Image' : 'Upload Image'}
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={onFileChange}
-                    className="events-create-file-input"
-                  />
-                </div>
               </div>
 
               <div className="events-create-field">
@@ -161,7 +191,7 @@ export default function CrewCreatePage() {
                 <input
                   type="text"
                   className="events-create-input"
-                  placeholder="Enter Location..."
+                  placeholder="City, State or Address..."
                   value={location}
                   onChange={e => setLocation(e.target.value)}
                 />
@@ -171,11 +201,35 @@ export default function CrewCreatePage() {
                 <p className="events-create-label">DESCRIPTION</p>
                 <textarea
                   className="events-create-input"
-                  placeholder="Enter Description..."
+                  placeholder="What's this crew about?..."
                   value={description}
                   onChange={e => setDescription(e.target.value)}
-                  rows={3}
+                  rows={4}
                 />
+              </div>
+
+              <div className="events-create-field">
+                <p className="events-create-label">COVER IMAGE</p>
+                <div className="events-create-upload-row">
+                  <button
+                    type="button"
+                    className="events-create-upload"
+                    onClick={onPickImage}
+                    disabled={uploadingImage}
+                  >
+                    {uploadingImage ? 'Uploading…' : imageUrl ? 'Change Image' : 'Upload Image'}
+                  </button>
+                  {imageUrl && (
+                    <span className="events-create-upload-status">✓ Image uploaded</span>
+                  )}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onFileChange}
+                    className="events-create-file-input"
+                  />
+                </div>
               </div>
 
               {(error || status) && (

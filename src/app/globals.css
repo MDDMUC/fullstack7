@@ -26,8 +26,7 @@
   justify-content: flex-start;
   min-width: 0;
   min-height: 0;
-  padding: var(--space-lg) 16px 0 16px; /* pt: space/lg, px: space/lg, pb: 0 */
-  padding-bottom: 0; /* No bottom padding as navbar is sticky */
+  padding: 0; /* No padding - topbar should be flush with screen edges */
   position: relative;
   flex: 1 1 0;
   box-sizing: border-box;
@@ -35,11 +34,12 @@
 }
 
 .profile-card {
-  width: 100%;
   background: var(--color-white);
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-base); /* shadow/base */
-  padding: var(--space-xl); /* 24px */
+  padding: var(--space-xl); /* 24px internal padding */
+  margin: 0 var(--space-lg); /* 16px horizontal margin for spacing from screen edges */
+  width: calc(100% - (var(--space-lg) * 2)); /* Explicit width accounting for margins */
   display: flex;
   flex-direction: column;
   gap: var(--space-md); /* 12px */
@@ -430,6 +430,14 @@ body {
   overflow: hidden;
 }
 
+/* Topbar, filterbar, and navbar should span full width */
+.events-screen > .mobile-topbar,
+.events-screen > .mobile-filterbar,
+.events-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none; /* Override any max-width constraints */
+}
+
 .events-content {
   width: 100%;
   max-width: 420px;
@@ -441,12 +449,13 @@ body {
   justify-content: flex-start;
   min-width: 0;
   min-height: 0;
-  padding: var(--space-lg); /* 16px */
-  padding-bottom: 0;
+  padding: var(--space-lg); /* 16px padding on all sides */
+  background: var(--color-bg); /* BG token background */
   position: relative;
   flex: 1 1 0;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto; /* Allow scrolling */
+  overflow-x: hidden;
 }
 
 .events-card {
@@ -458,11 +467,13 @@ body {
   align-items: center;
   min-width: 0;
   min-height: 0;
-  padding: var(--space-xl); /* 24px */
+  padding: var(--space-xl); /* 24px internal padding */
+  margin: 0 var(--space-lg); /* 16px horizontal margin for spacing from screen edges */
+  width: calc(100% - (var(--space-lg) * 2)); /* Explicit width accounting for margins */
   position: relative;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-base); /* shadow/base */
-  width: 100%;
+  box-sizing: border-box;
 }
 
 .events-createbar {
@@ -589,21 +600,35 @@ body {
   height: 160px;
   min-height: 160px;
   width: 100%;
-  outline: 1px solid var(--color-primary);
-  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(var(--color-card), var(--color-card)) padding-box,
+    linear-gradient(120deg, var(--color-primary), var(--color-secondary)) border-box;
+  border: 4px solid transparent; /* gradient stroke via border-box */
+  border-radius: var(--radius-lg); /* radius/lg */
   padding: var(--space-lg); /* 16px */
-  border-radius: var(--radius-lg); /* 14px */
   overflow: hidden;
-  box-shadow: var(--shadow-small); /* shadow/small */
+  box-shadow: var(--shadow-base); /* shadow/base - matching home card */
+  box-sizing: border-box;
+  isolation: isolate; /* Create new stacking context */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0); /* Force GPU layer for crisp rendering */
 }
 
 .events-tile-img,
 .chat-tile-img {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
-  border-radius: var(--radius-lg);
+  border-radius: calc(var(--radius-lg) - 4px); /* Adjusted for 4px border to align with outer radius */
   z-index: 0;
+  box-sizing: border-box;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .events-tile-img-el {
@@ -613,6 +638,12 @@ body {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  display: block;
+  border: none;
+  outline: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Global unread dot indicator - used across app for consistent styling */
@@ -631,8 +662,8 @@ body {
 
 .events-tile-last-message {
   position: absolute;
-  top: var(--space-xs); /* 6px */
-  right: calc(var(--space-xs) + 12px + var(--space-xs)); /* 6px (dot right) + 12px (dot width) + 6px (gap) = 24px */
+  top: var(--space-lg);
+  right: calc(var(--space-lg) + 12px + var(--space-xs));
   font-family: var(--fontfamily-inter);
   font-size: var(--font-size-sm); /* 12px - xs token */
   font-weight: var(--font-weight-regular);
@@ -645,8 +676,8 @@ body {
 
 .events-tile-host-badge {
   position: absolute;
-  top: var(--space-xs);
-  left: var(--space-xs);
+  top: var(--space-lg);
+  left: var(--space-lg);
   display: flex;
   align-items: center;
   gap: var(--space-xxs);
@@ -673,6 +704,22 @@ body {
   color: var(--color-primary);
 }
 
+.events-tile-icon {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  width: 24px;
+  height: 24px;
+  z-index: 3;
+  opacity: 0.9;
+}
+
+.events-tile-icon img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .chat-tile-img-el {
   position: absolute;
   height: 127.73%;
@@ -685,7 +732,7 @@ body {
 .events-tile-overlay {
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-lg);
+  border-radius: calc(var(--radius-lg) - 4px); /* Adjusted for 4px border */
   background: linear-gradient(180deg, rgba(17, 20, 28, 0) 40%, var(--color-bg) 100%);
   pointer-events: none;
   z-index: 1;
@@ -694,7 +741,7 @@ body {
 .events-tile-overlay-primary {
   position: absolute;
   inset: 0;
-  border-radius: var(--radius-lg);
+  border-radius: calc(var(--radius-lg) - 4px); /* Adjusted for 4px border */
   background: linear-gradient(180deg, rgba(17, 20, 28, 0) 40%, var(--color-primary) 100%);
   pointer-events: none;
   opacity: 0;
@@ -1038,7 +1085,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
-  background: linear-gradient(180deg, var(--color-text) 0%, var(--color-accent-warm-cream) 100%);
+  background: var(--color-text); /* Solid background like other pages */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1240,6 +1287,13 @@ body {
 
 .events-create-file-input {
   display: none;
+}
+
+.events-create-upload-status {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-primary);
 }
 .events-bottom-row {
   display: flex;
@@ -1561,6 +1615,84 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   cursor: not-allowed;
 }
 
+/* ============================================
+   CREATE BUTTON - Global component for create actions
+   ============================================ */
+.create-button {
+  display: flex;
+  flex-direction: row; /* Ensure horizontal layout */
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm); /* 8px gap between icon and text */
+  width: 100%;
+  height: var(--btn-height-lg); /* 38px */
+  padding: var(--btn-pad-md) var(--btn-pad-xxl); /* 10px 16px */
+  border-radius: var(--radius-md); /* 10px */
+  font-family: var(--font-inter);
+  font-size: var(--font-size-md); /* 15px */
+  font-weight: var(--font-weight-semibold); /* 600 */
+  text-decoration: none;
+  text-align: center;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 150ms ease;
+  box-sizing: border-box;
+}
+
+.create-button-ghost {
+  background: transparent;
+  border: 1px solid var(--color-stroke);
+  color: var(--color-text);
+}
+
+.create-button-ghost:hover {
+  background: var(--color-card);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.create-button-ghost:hover .create-button-icon svg {
+  stroke: var(--color-primary);
+}
+
+.create-button-primary {
+  background: linear-gradient(247.35deg, var(--color-secondary) 11.56%, var(--color-primary) 87.69%);
+  border: 1px solid var(--color-primary);
+  color: var(--color-bg);
+}
+
+.create-button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(92, 225, 230, 0.3);
+}
+
+.create-button-primary .create-button-icon svg {
+  stroke: var(--color-bg);
+}
+
+.create-button-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.create-button-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  transition: stroke 150ms ease;
+}
+
+.create-button-text {
+  font: inherit;
+  color: inherit;
+  white-space: nowrap;
+  text-transform: lowercase;
+}
+
 /* ----------------------------------------
    BUTTON.FILTER.MOBILE (node 634:15799)
    ---------------------------------------- */
@@ -1687,18 +1819,18 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   box-sizing: border-box;
 }
 
-/* Ensure topbar spans full width inside padded content containers */
+/* Ensure topbar spans full width inside content containers */
 .chats-content .mobile-topbar,
-.events-content .mobile-topbar,
 .home-content .mobile-topbar,
 .events-detail-content .mobile-topbar,
 .events-create-content .mobile-topbar,
 .profile-content .mobile-topbar,
 .gyms-content .mobile-topbar {
-  width: calc(100% + (var(--space-lg) * 2));
-  margin-left: calc(-1 * var(--space-lg));
-  margin-right: calc(-1 * var(--space-lg));
+  width: 100%; /* Full width, no calc needed since horizontal padding removed from parent */
+  margin-left: 0;
+  margin-right: 0;
 }
+
 
 .chats-content .mobile-topbar-content,
 .events-content .mobile-topbar-content,
@@ -2159,8 +2291,8 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   background: var(--color-card);
   padding-top: var(--space-md);
   padding-bottom: var(--space-md);
-  padding-left: var(--space-lg); /* Reduced from xl for full-screen content */
-  padding-right: var(--space-lg); /* Reduced from xl for full-screen content */
+  padding-left: var(--space-lg); /* 16px horizontal padding to push icons inward */
+  padding-right: var(--space-lg); /* 16px horizontal padding to push icons inward */
   height: 100px;
   border-radius: 0;
   box-sizing: border-box;
@@ -2168,10 +2300,8 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   margin: 0;
 }
 
-/* Ensure full-width navbar inside padded mobile content wrappers */
-/* All content containers with horizontal padding need this to span full width */
+/* Ensure full-width navbar inside mobile content wrappers */
 .chats-content .mobile-navbar,
-.events-content .mobile-navbar,
 .home-content .mobile-navbar,
 .events-detail-content .mobile-navbar,
 .events-create-content .mobile-navbar,
@@ -2180,10 +2310,11 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
 .chat-detail-content .mobile-navbar,
 .chat-gym-content .mobile-navbar,
 .gyms-content .mobile-navbar {
-  width: calc(100% + (var(--space-lg) * 2));
-  margin-left: calc(-1 * var(--space-lg));
-  margin-right: calc(-1 * var(--space-lg));
+  width: 100%; /* Full width, no calc needed since horizontal padding removed from parent */
+  margin-left: 0;
+  margin-right: 0;
 }
+
 
 .mobile-navbar-item {
   display: flex;
@@ -3273,10 +3404,10 @@ input[type=number] {
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
-  background: var(--color-text);
+  background: var(--color-bg); /* BG token background */
   display: flex;
   justify-content: center;
-  padding: var(--space-lg);
+  padding: 0; /* No padding - navbar should be flush with screen edges */
   box-sizing: border-box;
 }
 
@@ -3291,14 +3422,17 @@ input[type=number] {
 }
 
 .chat-detail-card {
-  background: var(--color-card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-small);
-  padding: var(--space-xl);
+  background: transparent; /* No card background */
+  border-radius: 0; /* No rounded corners */
+  box-shadow: none; /* No shadow */
+  padding: 0 var(--space-lg) 0; /* Only left and right padding - gap handles top spacing */
+  margin: 0; /* No margin - fill screen */
+  width: 100%; /* Full width */
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
   flex: 1 1 auto;
+  box-sizing: border-box;
 }
 
 .chat-detail-header {
@@ -3308,6 +3442,7 @@ input[type=number] {
   justify-content: center;
   column-gap: var(--space-sm);
   min-height: 44px;
+  padding-top: var(--space-lg); /* 16px top spacing */
 }
 
 .chat-detail-icon-btn {
@@ -3605,13 +3740,13 @@ input[type=number] {
 
 /* Gym chat page (node 634-15474) */
 .chat-gym-screen {
-  background: var(--color-text);
+  background: var(--color-bg); /* BG token background */
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: var(--space-lg);
+  padding: 0; /* No padding - navbar should be flush with screen edges */
   box-sizing: border-box;
 }
 
@@ -3626,14 +3761,17 @@ input[type=number] {
 }
 
 .chat-gym-card {
-  background: var(--color-card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-small);
-  padding: var(--space-xl);
+  background: transparent; /* No card background */
+  border-radius: 0; /* No rounded corners */
+  box-shadow: none; /* No shadow */
+  padding: var(--space-lg) var(--space-lg) 0; /* 16px top, left, right padding */
+  margin: 0; /* No margin - fill screen */
+  width: 100%; /* Full width */
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
   flex: 1 1 auto;
+  box-sizing: border-box;
 }
 
 .chat-gym-backbar {
@@ -3662,15 +3800,19 @@ input[type=number] {
   flex-direction: column;
   justify-content: flex-end;
   box-shadow: var(--shadow-small);
+  background: var(--color-panel); /* Prevent background showing through */
 }
 
 .chat-gym-hero-img {
   position: absolute;
   inset: 0;
-  width: 104%;
-  height: 128%;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
   object-fit: cover;
-  transform: translate(-2%, -10%);
+  object-position: center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0); /* Force GPU rendering for crisp edges */
 }
 
 .chat-gym-hero-gradient {
@@ -3684,7 +3826,7 @@ input[type=number] {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxs);
+  gap: var(--space-xxs); /* 4px spacing between title, description, location */
   z-index: 1;
 }
 
@@ -3693,6 +3835,8 @@ input[type=number] {
   font-weight: 800; /* heading/sm */
   font-size: var(--font-size-xxl);
   color: var(--color-text);
+  margin: 0; /* Remove default paragraph margin */
+  line-height: 1.2; /* Tighter line-height for better spacing control */
 }
 
 .chat-gym-name {
@@ -3700,6 +3844,8 @@ input[type=number] {
   font-weight: 500; /* body/base */
   font-size: var(--font-size-lg);
   color: var(--color-text);
+  margin: 0; /* Remove default paragraph margin */
+  line-height: 1.2; /* Tighter line-height for better spacing control */
 }
 
 .chat-gym-info-row {
@@ -3709,14 +3855,18 @@ input[type=number] {
   color: var(--color-muted);
   font-family: var(--font-inter, 'Inter', sans-serif);
   font-weight: 400;
+  margin: 0; /* Remove default paragraph margin */
+  line-height: 1.2; /* Tighter line-height for better spacing control */
 }
 
 .chat-gym-city {
   font-size: var(--font-size-xs); /* body/xs */
+  margin: 0; /* Remove default paragraph margin */
 }
 
 .chat-gym-people {
   font-size: var(--font-size-xxs); /* body/xxs */
+  margin: 0; /* Remove default paragraph margin */
 }
 
 .chat-gym-divider {
@@ -3813,20 +3963,23 @@ input[type=number] {
 }
 
 .chat-gym-input {
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
+  height: 38px; /* Match one-on-one chat */
   background: var(--color-text);
   border-radius: var(--radius-lg);
-  padding: var(--space-md) var(--space-md);
+  padding: var(--space-sm) var(--space-md); /* Match one-on-one chat */
+  display: flex;
+  align-items: center;
+  border: none;
+  gap: var(--space-sm); /* Match one-on-one chat */
 }
 
 .chat-gym-input-field {
   border: none;
   background: transparent;
-  flex: 1 1 0;
-  font-family: var(--font-inter, 'Inter', sans-serif);
+  width: 100%; /* Match one-on-one chat */
+  font-family: var(--font-inter);
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium); /* Match one-on-one chat */
   color: var(--color-text-darker);
 }
 
@@ -3839,6 +3992,11 @@ input[type=number] {
   background: transparent;
   padding: 0;
   cursor: pointer;
+  display: inline-flex; /* Match one-on-one chat */
+  align-items: center; /* Match one-on-one chat */
+  justify-content: center; /* Match one-on-one chat */
+  width: 24px; /* Match one-on-one chat */
+  height: 24px; /* Match one-on-one chat */
 }
 
 /* Pro Chip
@@ -3848,15 +4006,22 @@ input[type=number] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm);
-  background: var(--color-bg);
+  gap: var(--space-xxxs);
+  background: var(--color-panel);
   border: 1px solid var(--color-special);
-  color: var(--color-special);
   padding: var(--space-xs) var(--space-sm); /* 6px 8px */
   border-radius: var(--space-sm); /* 8px */
   font-size: var(--font-pill-size); /* 12px */
   font-weight: var(--font-weight-regular); /* 400 */
   font-family: var(--font-inter);
+}
+
+.fc-chip-pro .fc-chip-text {
+  background: linear-gradient(90deg, var(--color-yellow), var(--color-red));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 }
 
 /* Standard Chip
@@ -4410,9 +4575,9 @@ input[type=number] {
 .chat-intro-text .tag { display: inline-block; padding: var(--space-xs) 10px; border-radius: var(--radius-circle); background: #0f131d; border: 1px solid var(--color-stroke); color: var(--color-primary); }
 .chat-thread { display: grid; gap: var(--space-md); width: 100%; max-width: 700px; margin: 0 auto; }
 .bubble-row { display: grid; gap: var(--space-xxs); justify-items: start; }
-.bubble { padding: var(--space-md) 14px; border-radius: var(--radius-lg); background: #0f131d; border: 1px solid var(--color-stroke); display: inline-flex; align-items: center; gap: var(--space-sm); max-width: 100%; color: var(--color-text); }
-.bubble.them { background: #0f131d; }
-.bubble.you { background: #0e63c2; border-color: #0e63c2; box-shadow: 0 8px 24px rgba(14, 99, 194, 0.35); color: #eaf3ff; justify-self: end; }
+.bubble { padding: var(--space-md) 14px; border-radius: var(--radius-lg); background: var(--color-text); border: 1px solid var(--color-stroke); display: inline-flex; align-items: center; gap: var(--space-sm); width: fit-content; max-width: 280px; color: var(--color-panel); }
+.bubble.them { background: var(--color-text); color: var(--color-panel); }
+.bubble.you { background: var(--color-primary); border-color: var(--color-primary); box-shadow: var(--shadow-small); color: var(--color-panel); justify-self: end; }
 .bubble-meta { display: flex; align-items: center; gap: var(--space-xs); font-size: var(--font-size-xs); color: var(--color-muted); margin-left: 6px; }
 .sticky-actions { display: grid; gap: var(--space-md); height: 100%; grid-template-rows: 1fr auto; }
 .sticky-actions .card-actions,
@@ -10677,6 +10842,14 @@ div.mh-silver-card[data-name="card2"] {
   overflow: hidden;
 }
 
+/* Ensure topbar, filterbar, and navbar are full width as siblings of content */
+.home-screen > .mobile-topbar,
+.home-screen > .mobile-filterbar,
+.home-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none;
+}
+
 .home-content {
   width: 100%;
   max-width: 420px;
@@ -10688,8 +10861,10 @@ div.mh-silver-card[data-name="card2"] {
   justify-content: flex-end;
   flex: 1 1 0;
   min-height: 0;
-  overflow: hidden;
-  padding: var(--space-lg) 16px 0 16px; /* pt: space/lg, px: space/lg, pb: 0 */
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden;
+  padding: var(--space-lg); /* 16px padding on all sides */
+  background: var(--color-bg); /* BG token background */
   box-sizing: border-box;
 }
 
@@ -10973,14 +11148,15 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 .home-card {
-  width: 100%;
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-md); /* 12px - space/md token */
-  padding: var(--space-xl); /* 24px - space/xl token */
+  padding: var(--space-xl); /* 24px internal padding */
+  margin: 0; /* No margin - extends full width of container */
+  width: 100%; /* Full width */
   background:
-    linear-gradient(var(--color-bg), var(--color-bg)) padding-box,
+    linear-gradient(var(--color-card), var(--color-card)) padding-box,
     linear-gradient(120deg, var(--color-primary), var(--color-secondary)) border-box;
   border: 4px solid transparent; /* gradient stroke via border-box */
   border-radius: var(--radius-lg); /* radius/lg */
@@ -11073,7 +11249,7 @@ div.mh-silver-card[data-name="card2"] {
   height: 100%;
   object-fit: cover;
   object-position: 50% 50%;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md); /* 10px - accounts for 4px border (14px outer - 4px border = 10px inner) */
   max-width: none;
 }
 
@@ -11089,7 +11265,7 @@ div.mh-silver-card[data-name="card2"] {
   width: 100%;
   height: 100%;
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.75));
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md); /* 10px - matches image radius to prevent gap */
   box-sizing: border-box;
   pointer-events: none; /* gradient only; text layers are positioned above */
 }
@@ -11383,6 +11559,14 @@ div.mh-silver-card[data-name="card2"] {
   overflow: hidden;
 }
 
+/* Ensure topbar, filterbar, and navbar are full width as siblings of content */
+.chats-screen > .mobile-topbar,
+.chats-screen > .mobile-filterbar,
+.chats-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none;
+}
+
 /* Content wrapper: gap-[var(---lg,16px)] pb-0 pt-[var(---lg,16px)] px-[var(---lg,16px)] */
 .chats-content {
   width: 100%;
@@ -11395,12 +11579,13 @@ div.mh-silver-card[data-name="card2"] {
   justify-content: flex-start;
   min-width: 0;
   min-height: 0;
-  padding: var(--space-lg) 16px 0 16px; /* pt: space/lg, px: space/lg, pb: 0 */
-  padding-bottom: 0; /* No bottom padding as navbar is sticky */
+  padding: var(--space-lg); /* 16px padding on all sides */
+  background: var(--color-bg); /* BG token background */
   position: relative;
   flex: 1 1 0;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden;
 }
 
 /* Global Mobile Filter Bar - Figma node 765:1754 */
@@ -11553,11 +11738,13 @@ div.mh-silver-card[data-name="card2"] {
   align-items: center;
   min-width: 0;
   min-height: 0;
-  padding: var(--space-xl); /* space/xl */
+  padding: var(--space-xl); /* 24px internal padding */
+  margin: 0 var(--space-lg); /* 16px horizontal margin for spacing from screen edges */
+  width: calc(100% - (var(--space-lg) * 2)); /* Explicit width accounting for margins */
   position: relative;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-base); /* shadow/base */
-  width: 100%;
+  box-sizing: border-box;
   flex-shrink: 1;
 }
 
@@ -11592,10 +11779,17 @@ div.mh-silver-card[data-name="card2"] {
   width: 60px;
   height: 60px;
   flex-shrink: 0;
-  background: var(--color-text); /* color/text/default placeholder */
+  background: transparent; /* Transparent to prevent any visible border bleeding */
   border: none;
+  outline: none; /* Ensure no outline */
+  box-shadow: none; /* Explicitly no shadow in normal state */
   overflow: hidden;
   transition: box-shadow 160ms ease, transform 160ms ease;
+  -webkit-backface-visibility: hidden; /* Prevent sub-pixel rendering issues */
+  backface-visibility: hidden;
+  isolation: isolate; /* Create new stacking context to prevent blending artifacts */
+  contain: layout paint; /* Optimize rendering and isolate from external factors */
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 .chats-avatar-bg {
@@ -11616,12 +11810,21 @@ div.mh-silver-card[data-name="card2"] {
 
 .chats-avatar-img {
   position: absolute;
+  top: -1px;
+  left: -1px;
   max-width: none;
   object-fit: cover;
-  object-position: 50% 50%;
-  border-radius: var(--radius-md); /* radius/md */
-  width: 100%;
-  height: 100%;
+  object-position: center center;
+  width: calc(100% + 2px); /* Extend 1px beyond edges to cover sub-pixel gaps */
+  height: calc(100% + 2px); /* Extend 1px beyond edges to cover sub-pixel gaps */
+  display: block; /* Remove any inline spacing */
+  border: none; /* Ensure no border */
+  outline: none; /* Ensure no outline */
+  box-shadow: none; /* Ensure no shadow */
+  -webkit-backface-visibility: hidden; /* Prevent sub-pixel rendering issues */
+  backface-visibility: hidden;
+  transform: translateZ(0); /* Force GPU rendering for crisp edges */
+  will-change: transform; /* Optimize rendering */
 }
 
 /* Text container: gap-[var(---xs,6px)] */
@@ -11629,7 +11832,7 @@ div.mh-silver-card[data-name="card2"] {
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xxxs); /* 2px token */
+  gap: var(--space-xxs); /* Equal spacing between title, preview, and timestamp */
   align-items: flex-start;
   justify-content: center; /* vertical centering */
   min-width: 0;
@@ -11645,8 +11848,8 @@ div.mh-silver-card[data-name="card2"] {
 
 /* Title: font-['Inter:Extra_Bold'] text-[16px] text-[color:var(---panel,var(--color-panel))] */
 .chats-title {
-  font-family: 'Inter', sans-serif; /* Inter:Extra_Bold */
-  font-weight: 800; /* Extra Bold */
+  font-family: 'Inter', sans-serif;
+  font-weight: 500; /* Medium - same size but not bold */
   font-size: var(--font-size-lg); /* heading/xs */
   color: var(--color-text);
   position: relative;
@@ -11691,6 +11894,25 @@ div.mh-silver-card[data-name="card2"] {
   line-height: 1; /* 100% */
   white-space: nowrap;
   letter-spacing: 0;
+}
+
+/* Timestamp: below subtitle, small text with darker color */
+.chats-timestamp {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular */
+  font-size: var(--font-size-xs); /* XS size */
+  color: var(--color-darker); /* color/darker */
+  position: relative;
+  flex-shrink: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  letter-spacing: 0;
+  margin: 0; /* Use parent gap for spacing */
+}
+
+.chats-preview:hover .chats-timestamp,
+.chats-preview:focus-visible .chats-timestamp {
+  color: var(--color-primary);
 }
 
 /* Unread Badge: absolute left-[43px] size-[12px] top-[6px] */
@@ -11907,7 +12129,7 @@ div.mh-silver-card[data-name="card2"] {
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
-  background: var(--color-text); /* color/text */
+  background: var(--color-bg); /* BG token background */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -11926,19 +12148,19 @@ div.mh-silver-card[data-name="card2"] {
   gap: var(--space-lg); /* 16px */
   align-items: center;
   justify-content: flex-end;
-  padding: var(--space-lg);
-  padding-bottom: 0;
+  padding: 0; /* No padding - navbar should be flush with screen edges */
   box-sizing: border-box;
   flex: 1 1 0;
   min-height: 0;
 }
 
 .chats-event-card {
-  width: 100%;
-  background: var(--color-card);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-base); /* shadow/base */
-  padding: var(--space-xl); /* 24px */
+  background: transparent; /* No card background */
+  border-radius: 0; /* No rounded corners */
+  box-shadow: none; /* No shadow */
+  padding: var(--space-lg) var(--space-lg) 0; /* 16px top, left, right padding */
+  margin: 0; /* No margin - fill screen */
+  width: 100%; /* Full width */
   display: flex;
   flex-direction: column;
   gap: var(--space-sm); /* 8px */
@@ -11946,6 +12168,7 @@ div.mh-silver-card[data-name="card2"] {
   min-height: 0;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .chats-event-card-with-sticky-input {
@@ -11982,10 +12205,11 @@ div.mh-silver-card[data-name="card2"] {
 .chats-event-backbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start; /* Changed from space-between to align properly */
   width: 100%;
   height: 44px;
   background: transparent;
+  position: relative; /* For absolute positioning of center title */
 }
 
 .chats-event-back,
@@ -11999,26 +12223,35 @@ div.mh-silver-card[data-name="card2"] {
   border: none;
   padding: 0;
   cursor: pointer;
+  color: var(--color-text) !important; /* Override global link color for SVG currentColor inheritance */
 }
 
-.chats-event-back-icon {
-  width: 16px;
-  height: 16px;
+.chats-event-back:hover,
+.chats-event-menu:hover {
+  color: var(--color-text) !important; /* Maintain text color on hover, don't use link hover color */
+}
+
+.chats-event-back svg {
+  width: 24px;
+  height: 24px;
+  display: block;
 }
 
 .chats-event-back-title {
   font-family: 'Inter', sans-serif;
   font-weight: 500; /* body/base */
   font-size: var(--font-size-lg);
-  color: var(--color-text);
-  flex: 1 1 0;
+  color: var(--color-text) !important; /* Override any inherited link colors */
+  position: absolute; /* Absolute positioning for true centering */
+  left: 50%;
+  transform: translateX(-50%); /* Center horizontally */
   text-align: center;
+  pointer-events: none; /* Allow clicking through to back button if needed */
 }
 
 .chats-event-menu-icon {
-  width: 28px;
-  height: 28px;
-  transform: rotate(90deg);
+  width: 24px; /* Match one-on-one chat standard size */
+  height: 24px;
 }
 
 .chats-event-hero {
@@ -12225,7 +12458,8 @@ div.mh-silver-card[data-name="card2"] {
   font-weight: 400;
   line-height: 1.4;
   word-wrap: break-word;
-  max-width: 280px;
+  width: fit-content; /* Hug content */
+  max-width: 280px; /* Still constrain very long messages */
 }
 
 .chat-message-bubble-incoming {
@@ -12236,8 +12470,8 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 .chat-message-bubble-outgoing {
-  background: var(--color-primary); /* var(--color-primary) */
-  color: var(--color-text-white);
+  background: var(--color-primary); /* primary blue background */
+  color: var(--color-panel); /* dark text */
   border-radius: 16px 4px 16px 16px;
   box-shadow: var(--shadow-small);
 }
@@ -12521,13 +12755,42 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 .chats-event-input {
+  height: 38px; /* Match global input */
   width: 100%;
-  background: var(--color-text); /* color/text */
-  border-radius: var(--radius-lg); /* 14px */
-  padding: var(--space-sm) var(--space-md); /* 8px 12px */
+  background: var(--color-text);
+  border-radius: var(--radius-lg);
+  padding: var(--space-sm) var(--space-md); /* Match global input */
   box-sizing: border-box;
   display: flex;
   align-items: center;
+  border: none;
+  gap: var(--space-sm); /* Match global input */
+}
+
+.chats-event-input input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-darker);
+}
+
+.chats-event-input input:focus {
+  outline: none;
+}
+
+.chats-event-send-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
 }
 
 .chats-event-input-placeholder {
@@ -12543,12 +12806,60 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 /* ========================================
+   CREW SCREEN
+   ======================================== */
+
+/* Screen container */
+.crew-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Ensure topbar, filterbar, and navbar are full width as siblings of content */
+.crew-screen > .mobile-topbar,
+.crew-screen > .mobile-filterbar,
+.crew-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none;
+}
+
+/* Content wrapper */
+.crew-content {
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--space-lg); /* 16px padding on all sides */
+  background: var(--color-bg); /* BG token background */
+  position: relative;
+  flex: 1 1 0;
+  box-sizing: border-box;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden;
+}
+
+/* ========================================
    GYMS PAGE - Exact from Figma node 768:2698
    ======================================== */
 .gyms-screen {
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-text);
+  background: var(--color-bg); /* BG token background */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12570,8 +12881,7 @@ div.mh-silver-card[data-name="card2"] {
   justify-content: flex-start;
   min-width: 0;
   min-height: 0;
-  padding: var(--space-lg); /* 16px */
-  padding-bottom: 0;
+  padding: 0; /* No padding - topbar should be flush with screen edges */
   position: relative;
   flex: 1 1 0;
   box-sizing: border-box;
@@ -12579,9 +12889,13 @@ div.mh-silver-card[data-name="card2"] {
 
 .gyms-content .mobile-topbar,
 .gyms-content .mobile-navbar {
-  width: calc(100% + (var(--space-lg) * 2));
-  margin-left: calc(-1 * var(--space-lg));
-  margin-right: calc(-1 * var(--space-lg));
+  width: 100%; /* Full width, no need for calc since there's no padding to compensate for */
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.gyms-content .mobile-navbar {
+  margin-top: calc(-1 * var(--space-lg)); /* Remove 16px gap before navbar */
 }
 
 .gyms-content .mobile-topbar-content {
@@ -12589,7 +12903,7 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 .gyms-card {
-  background: var(--color-card); /* var(--color-card) */
+  background: transparent; /* No card background */
   display: flex;
   flex: 1 0 0;
   flex-direction: column;
@@ -12599,12 +12913,13 @@ div.mh-silver-card[data-name="card2"] {
   min-width: 0;
   overflow-y: auto;
   overflow-x: clip;
-  padding: var(--space-xl); /* 24px */
-  position: relative;
-  border-radius: var(--radius-card); /* exact Figma value */
-  box-shadow: var(--shadow-base); /* shadow/base */
-  flex-shrink: 0;
+  padding: 0 var(--space-lg) 0; /* Only left and right padding - gap handles top spacing */
+  margin: 0;
   width: 100%;
+  position: relative;
+  border-radius: 0;
+  box-shadow: none;
+  flex-shrink: 0;
   box-sizing: border-box;
 }
 
@@ -12674,6 +12989,7 @@ div.mh-silver-card[data-name="card2"] {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .gyms-add-dropdown {
@@ -12854,7 +13170,7 @@ div.mh-silver-card[data-name="card2"] {
 /* Gym Detail Card */
 .gym-detail-card {
   background: var(--color-panel); /* var(--color-panel) */
-  border: 1px solid var(--color-primary); /* var(--color-primary) */
+  border: 1px solid var(--color-stroke); /* Match profile cards */
   display: flex;
   flex-direction: column;
   gap: var(--space-sm); /* 8px */
@@ -13211,6 +13527,8 @@ div.mh-silver-card[data-name="card2"] {
   flex-shrink: 0;
   cursor: pointer;
   width: 100%;
+  height: 20px; /* Match LIVE chip height */
+  box-sizing: border-box;
 }
 
 .gym-card-day-dropdown {
@@ -13384,8 +13702,9 @@ div.mh-silver-card[data-name="card2"] {
   background: linear-gradient(to bottom, var(--color-primary), var(--color-card));
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-full); /* 999px */
-  flex-shrink: 0;
-  width: 10px;
+  flex: 1 1 0;
+  min-width: 6px;
+  max-width: 12px;
 }
 
 .gym-card-legend {
@@ -14375,7 +14694,7 @@ img.friend-tile-img {
 .notifications-screen {
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-text);
+  background: var(--color-bg); /* BG token background */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14397,8 +14716,7 @@ img.friend-tile-img {
   justify-content: flex-start;
   min-width: 0;
   min-height: 0;
-  padding: var(--space-lg); /* 16px */
-  padding-bottom: 0;
+  padding: 0; /* No padding - topbar should be flush with screen edges */
   position: relative;
   flex: 1 1 0;
   box-sizing: border-box;
@@ -14407,9 +14725,9 @@ img.friend-tile-img {
 /* Full-width topbar/navbar inside content */
 .notifications-content .mobile-topbar,
 .notifications-content .mobile-navbar {
-  width: calc(100% + (var(--space-lg) * 2));
-  margin-left: calc(-1 * var(--space-lg));
-  margin-right: calc(-1 * var(--space-lg));
+  width: 100%; /* Full width, no calc needed since horizontal padding removed from parent */
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .notifications-content .mobile-topbar-content {
@@ -14418,7 +14736,7 @@ img.friend-tile-img {
 
 /* Notification card container - matches Figma node 786:2988 */
 .notifications-card {
-  background: var(--color-bg); /* var(--color-bg) */
+  background: transparent; /* No card background */
   display: flex;
   flex: 1 0 0;
   flex-direction: column;
@@ -14428,12 +14746,13 @@ img.friend-tile-img {
   min-width: 0;
   overflow-y: auto;
   overflow-x: clip;
-  padding: var(--space-lg); /* 16px */
+  padding: var(--space-lg) var(--space-lg) 0; /* 16px top, left, right padding */
+  margin: 0; /* No margin - fill screen */
+  width: 100%; /* Full width */
   position: relative;
-  border-radius: var(--radius-xl); /* 24px */
-  box-shadow: var(--shadow-base);
+  border-radius: 0; /* No rounded corners */
+  box-shadow: none; /* No shadow */
   flex-shrink: 0;
-  width: 100%;
   box-sizing: border-box;
 }
 

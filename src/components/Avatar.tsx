@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const DEFAULT_PLACEHOLDER = '/placeholder-avatar.svg'
+const DEFAULT_PLACEHOLDER = '/avatar-fallback.jpg'
 
 interface AvatarProps {
   src?: string | null
@@ -10,6 +10,8 @@ interface AvatarProps {
   className?: string
   wrapperClassName?: string
   showPlaceholder?: boolean
+  loading?: 'eager' | 'lazy'
+  fetchPriority?: 'high' | 'low' | 'auto'
 }
 
 /**
@@ -32,6 +34,8 @@ export default function Avatar({
   className = '',
   wrapperClassName,
   showPlaceholder = true,
+  loading = 'lazy',
+  fetchPriority = 'auto',
 }: AvatarProps) {
   const [imgSrc, setImgSrc] = useState(src || (showPlaceholder ? fallback : null))
   const [hasError, setHasError] = useState(false)
@@ -67,6 +71,8 @@ export default function Avatar({
       className={className}
       onError={handleError}
       style={size ? { width: size, height: size } : undefined}
+      loading={loading}
+      fetchPriority={fetchPriority}
     />
   )
 

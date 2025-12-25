@@ -91,6 +91,25 @@ export default function ChatsScreen() {
     return msg.length > 60 ? `${msg.slice(0, 57)}...` : msg
   }
 
+  const formatTimestamp = (iso: string | null) => {
+    if (!iso) return ''
+    const now = new Date()
+    const then = new Date(iso)
+    const diffMs = now.getTime() - then.getTime()
+    const diffMins = Math.floor(diffMs / (1000 * 60))
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m ago`
+    if (diffHours < 24) return `${diffHours}h ago`
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays}d ago`
+
+    // For older messages, show the date
+    return then.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  }
+
   const fetchThreads = React.useCallback(async () => {
     if (!supabase || !userId) return
     setIsLoading(true)
@@ -280,9 +299,21 @@ export default function ChatsScreen() {
       // Crew threads are excluded from /chats - they only appear on /crew page
       const fallbackMsg = latestByThread[t.id]
       const firstName = (profile?.username || '').trim().split(/\s+/)[0] || 'Dabber'
-      const title = isDirect
-        ? firstName
-        : `${gym?.name || ev?.title || 'Gym'} ${t.title || 'thread'}`.trim()
+
+      // Build title based on thread type
+      let title: string
+      if (isDirect) {
+        title = firstName
+      } else if (t.type === 'gym' && gym) {
+        // For gym threads: "Gym Name channel-name" (e.g., "DAV Thalkirchen general")
+        title = `${gym.name} ${t.title || 'thread'}`.trim()
+      } else if (t.type === 'event' && ev) {
+        // For event threads: Just show the event title (no duplication)
+        title = ev.title || 'Event'
+      } else {
+        // Fallback for other group threads
+        title = t.title || 'Group chat'
+      }
       const avatar = isDirect
         ? profile?.avatar_url ?? null
         : ev?.image_url ||
@@ -455,53 +486,48 @@ export default function ChatsScreen() {
   return (
     <RequireAuth>
       <div className="chats-screen" data-name="/ chats">
+        <MobileTopbar breadcrumb="Chats" />
+        {/* Top Navigation - Filters: city, gym */}
+        <MobileFilterBar
+          filters={filters}
+          filterOptions={filterOptions}
+          onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+          filterKeys={['city', 'gym']}
+        />
+
         <div className="chats-content">
-          <MobileTopbar breadcrumb="Chats" />
-          {/* Top Navigation - Filters: city, gym */}
-          <MobileFilterBar
-            filters={filters}
-            filterOptions={filterOptions}
-            onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
-            filterKeys={['city', 'gym']}
-          />
-
-          {/* Chat List Card */}
-          <div className="chats-card custom-scrollbar">
-            {isLoading && <LoadingState message="Loading chats…" />}
-            {!isLoading && items.length === 0 && (
-              <EmptyState message="No messages yet. Say hi!" />
-            )}
-            {!isLoading &&
-              items.map((chat, idx) => (
-                <React.Fragment key={chat.threadId}>
-                  <Link
-                    href={`/chats/${chat.threadId}`}
-                    className={`chats-preview ${chat.unread ? 'chats-preview-unread' : ''}`}
-                  >
-                    <div className="chats-preview-cont">
-                      <div className="chats-avatar-wrapper">
-                        <div className="chats-avatar-bg" />
-                        <Avatar
-                          src={chat.avatar}
-                          className="chats-avatar-img"
-                        />
-                        {chat.unread && <UnreadDot />}
-                      </div>
-                      <div className="chats-text">
-                        <p className="chats-title">{chat.title}</p>
-                        <p className="chats-subtitle">{chat.subtitle}</p>
-                      </div>
-                    </div>
-                  </Link>
-                  {idx < items.length - 1 && (
-                    <div className="chats-divider" />
-                  )}
-                </React.Fragment>
-              ))}
-          </div>
-
-          <MobileNavbar active="chats" />
+          {isLoading && <LoadingState message="Loading chats…" />}
+          {!isLoading && items.length === 0 && (
+            <EmptyState message="No messages yet. Say hi!" />
+          )}
+          {!isLoading &&
+            items.map((chat) => (
+              <Link
+                key={chat.threadId}
+                href={`/chats/${chat.threadId}`}
+                className={`chats-preview ${chat.unread ? 'chats-preview-unread' : ''}`}
+              >
+                <div className="chats-preview-cont">
+                  <div className="chats-avatar-wrapper">
+                    <Avatar
+                      src={chat.avatar}
+                      className="chats-avatar-img"
+                    />
+                    {chat.unread && <UnreadDot />}
+                  </div>
+                  <div className="chats-text">
+                    <p className="chats-title">{chat.title}</p>
+                    <p className="chats-subtitle">{chat.subtitle}</p>
+                    {chat.lastMessageAt && (
+                      <p className="chats-timestamp">{formatTimestamp(chat.lastMessageAt)}</p>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
         </div>
+
+        <MobileNavbar active="chats" />
       </div>
     </RequireAuth>
   )

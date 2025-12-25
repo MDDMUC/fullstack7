@@ -117,7 +117,7 @@ export default function EventCreatePage() {
             <BackBar
               backHref="/events"
               backText="back"
-              className="events-detail-backbar"
+              className="chats-event-backbar"
             />
 
             <div className={`events-create-hero ${!imageUrl ? 'events-create-hero-fallback' : ''}`}>

@@ -37,6 +37,8 @@ Complete a focused polish pass that also hardens responsiveness across mobile de
 - Add avatar fallback for users with missing/broken profile images (handle legacy live data).
 - Remove extra padding on mobile MobileTopbar (left/right/top) and MobileNavbar (left/right) so content uses full screen.
 - Smooth the DAB tap animation (avoid stop-motion/wiggly behavior).
+- Replace CSS filter-based recolors with inline assets using tokenized colors.
+- Update chat text color styles to align with design tokens.
 
 ## Requirements
 - Mobile-first (iOS Safari, Android Chrome).

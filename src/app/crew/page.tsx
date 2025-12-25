@@ -9,6 +9,7 @@ import MobileTopbar from '@/components/MobileTopbar'
 import UnreadDot from '@/components/UnreadDot'
 import LoadingState from '@/components/LoadingState'
 import EmptyState from '@/components/EmptyState'
+import CreateButton from '@/components/CreateButton'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
@@ -25,6 +26,8 @@ type CrewRow = {
 }
 
 type FilterKey = 'city' | 'style' | 'gym'
+
+const CREW_IMAGE_FALLBACK = '/crew-fallback.jpg'
 
 // Extract styles from profile.style field
 const getStylesFromProfile = (profile?: any): string[] => {
@@ -376,89 +379,62 @@ export default function CrewScreen() {
 
   return (
     <RequireAuth>
-      <div className="events-screen" data-name="/ crew">
-        <div className="events-content">
-          <MobileTopbar breadcrumb="Crew" />
-          {/* Filters */}
-          <MobileFilterBar
-            filters={filters}
-            filterOptions={filterOptions}
-            onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
-            filterKeys={['city', 'style', 'gym']}
-          />
-            <div className="events-card custom-scrollbar">
-            <Link href="/crew/create" className="events-createbar" data-name="create-crew-mobile" data-node-id="636:2102">
-              <div className="events-createbar-left">
-                <div className="events-createbar-plus" data-name="plus" data-node-id="636:2101">
-                  <div className="events-createbar-plus-inner" data-name="plus" data-node-id="636:2099">
-                    <div className="events-createbar-icon" data-name="Icon" data-node-id="I636:2099;633:7054">
-                      <div className="events-createbar-stroke">
-                        <img src="/icons/plus.svg" alt="" />
-                      </div>
+      <div className="crew-screen" data-name="/ crew">
+        <MobileTopbar breadcrumb="Crew" />
+        <MobileFilterBar
+          filters={filters}
+          filterOptions={filterOptions}
+          onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+          filterKeys={['city', 'style', 'gym']}
+        />
+        <div className="crew-content">
+          <CreateButton href="/crew/create" label="Create Crew" variant="ghost" />
+
+          {loading && <LoadingState message="Loading crews…" />}
+          {!loading && crews.length === 0 && (
+            <EmptyState message="No crews found" />
+          )}
+          {!loading &&
+            crews.map(crew => (
+              <Link key={crew.id} href={`/crew/detail?crewId=${crew.id}`} className="events-tile">
+                <div className="events-tile-img">
+                  <img
+                    src={crew.image_url || CREW_IMAGE_FALLBACK}
+                    alt=""
+                    className="events-tile-img-el"
+                  />
+                  {crew.creatorName && (
+                    <div className="events-tile-host-badge">
+                      <span className="events-tile-host-label">Host:</span>
+                      <span className="events-tile-host-name">{crew.creatorName}</span>
                     </div>
+                  )}
+                  {crew.unread && <UnreadDot />}
+                  {crew.lastMessageSenderName && (
+                    <div className="events-tile-last-message">
+                      Last message by {crew.lastMessageSenderName}
+                    </div>
+                  )}
+                  <div className="events-tile-icon">
+                    <img src="/icons/crew.svg" alt="" />
                   </div>
                 </div>
-              </div>
-              <div className="events-createbar-center" data-name="name" data-node-id="636:2092">
-                <p className="events-createbar-text">create crew</p>
-              </div>
-              <div className="events-createbar-right" data-name="Auto Layout Horizontal" data-node-id="636:2094">
-                <div className="events-createbar-ghost">
-                  <div className="events-createbar-ghost-inner">
-                    <div className="events-createbar-ghost-frame">
-                      <div className="events-createbar-ghost-img">
-                        <img src="/icons/dots.svg" alt="" />
-                      </div>
-                    </div>
+                <div className="events-tile-overlay" />
+                <div className="events-tile-text">
+                  <p className="events-tile-title">{crew.title}</p>
+                  <p className="events-tile-subtitle">{crew.location || ''}</p>
+                  <div className="events-tile-info">
+                    <p className="events-tile-att">
+                      {crew.memberCount === 1
+                        ? '1 member'
+                        : `${crew.memberCount || 0} members`}
+                    </p>
                   </div>
                 </div>
-              </div>
-            </Link>
-
-            {loading && <LoadingState message="Loading crews…" />}
-            {!loading && crews.length === 0 && (
-              <EmptyState message="No crews found" />
-            )}
-            {!loading &&
-              crews.map(crew => (
-                <Link key={crew.id} href={`/crew/detail?crewId=${crew.id}`} className="events-tile">
-                  <div className="events-tile-img">
-                    <img
-                      src={crew.image_url || '/icons/event-placeholder.svg'}
-                      alt=""
-                      className="events-tile-img-el"
-                    />
-                    {crew.creatorName && (
-                      <div className="events-tile-host-badge">
-                        <span className="events-tile-host-label">Host:</span>
-                        <span className="events-tile-host-name">{crew.creatorName}</span>
-                      </div>
-                    )}
-                    {crew.unread && <UnreadDot />}
-                    {crew.lastMessageSenderName && (
-                      <div className="events-tile-last-message">
-                        Last message by {crew.lastMessageSenderName}
-                      </div>
-                    )}
-                  </div>
-                  <div className="events-tile-overlay" />
-                  <div className="events-tile-text">
-                    <p className="events-tile-title">{crew.title}</p>
-                    <p className="events-tile-subtitle">{crew.location || ''}</p>
-                    <div className="events-tile-info">
-                      <p className="events-tile-att">
-                        {crew.memberCount === 1
-                          ? '1 member'
-                          : `${crew.memberCount || 0} members`}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-          </div>
-
-          <MobileNavbar active="crew" />
+              </Link>
+            ))}
         </div>
+        <MobileNavbar active="crew" />
       </div>
     </RequireAuth>
   )

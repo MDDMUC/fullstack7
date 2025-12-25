@@ -12,7 +12,7 @@ type FriendTileProps = {
   onKick?: () => void // Called when kick button is clicked
 }
 
-const DEFAULT_PLACEHOLDER = 'https://www.figma.com/api/mcp/asset/ed027546-d8d0-4b5a-87e8-12db5e07cdd7'
+const DEFAULT_PLACEHOLDER = '/avatar-fallback.jpg'
 
 export function FriendTile({
   name,

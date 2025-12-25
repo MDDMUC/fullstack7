@@ -9,6 +9,7 @@ import MobileTopbar from '@/components/MobileTopbar'
 import LoadingState from '@/components/LoadingState'
 import EmptyState from '@/components/EmptyState'
 import Modal from '@/components/Modal'
+import CreateButton from '@/components/CreateButton'
 import { GymFriendsSection, GymFriendsFallback, GymFriendProfile } from '@/components/GymFriendCard'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
@@ -86,7 +87,6 @@ export default function GymsScreen() {
   const [addGymOpen, setAddGymOpen] = React.useState(false)
   const [dropdownPosition, setDropdownPosition] = React.useState<{ top: number; left: number } | null>(null)
   const addGymRef = React.useRef<HTMLDivElement | null>(null)
-  const buttonRef = React.useRef<HTMLButtonElement | null>(null)
 
   // Friends (matches) per gym - keyed by gym ID
   const [friendsByGym, setFriendsByGym] = React.useState<Record<string, GymFriendProfile[]>>({})
@@ -306,8 +306,8 @@ export default function GymsScreen() {
   // Recalculate position on window resize
   React.useEffect(() => {
     const handleResize = () => {
-      if (addGymOpen && buttonRef.current) {
-        const rect = buttonRef.current.getBoundingClientRect()
+      if (addGymOpen && addGymRef.current) {
+        const rect = addGymRef.current.getBoundingClientRect()
         const dropdownWidth = Math.min(400, window.innerWidth - 48) // 48px = space-xl * 2
         const leftPosition = (window.innerWidth - dropdownWidth) / 2
         setDropdownPosition({
@@ -321,8 +321,8 @@ export default function GymsScreen() {
   }, [addGymOpen])
 
   const handleAddGymClick = () => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect()
+    if (addGymRef.current) {
+      const rect = addGymRef.current.getBoundingClientRect()
       // Position dropdown centered on screen, below button
       // space-xl = 24px, so 24 * 2 = 48px total padding
       const dropdownWidth = Math.min(400, window.innerWidth - 48)
@@ -358,42 +358,35 @@ export default function GymsScreen() {
         <div className="gyms-content">
           <MobileTopbar breadcrumb="Gyms" />
           <div className="gyms-card custom-scrollbar">
-            <div className="gyms-header">
-              <p className="gyms-title">My Gyms</p>
-              <div className="gyms-add-wrapper" ref={addGymRef}>
-                <button
-                  ref={buttonRef}
-                  className="gyms-add-button"
-                  type="button"
-                  onClick={handleAddGymClick}
-                  aria-expanded={addGymOpen}
+            <div className="gyms-add-wrapper" ref={addGymRef}>
+              <CreateButton
+                onClick={handleAddGymClick}
+                label="Add Gym"
+                variant="ghost"
+              />
+              {addGymOpen && dropdownPosition && (
+                <div
+                  className="gyms-add-dropdown mh-silver-dropdown-menu"
+                  style={{
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                  }}
                 >
-                  <p>Add Gym</p>
-                </button>
-                {addGymOpen && dropdownPosition && (
-                  <div
-                    className="gyms-add-dropdown mh-silver-dropdown-menu"
-                    style={{
-                      top: `${dropdownPosition.top}px`,
-                      left: `${dropdownPosition.left}px`,
-                    }}
-                  >
-                    {allGyms.length === 0 ? (
-                      <div className="mh-silver-dropdown-empty">
-                        <p>No gyms available</p>
-                      </div>
-                    ) : (
-                      allGyms.map(gym => (
-                        <GymSelectTile
-                          key={gym.id}
-                          gym={gym}
-                          onClick={() => handleAddGym(gym.id)}
-                        />
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
+                  {allGyms.length === 0 ? (
+                    <div className="mh-silver-dropdown-empty">
+                      <p>No gyms available</p>
+                    </div>
+                  ) : (
+                    allGyms.map(gym => (
+                      <GymSelectTile
+                        key={gym.id}
+                        gym={gym}
+                        onClick={() => handleAddGym(gym.id)}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
             </div>
             {loading && <LoadingState message="Loading gyms…" />}
             {!loading && gyms.length === 0 && (

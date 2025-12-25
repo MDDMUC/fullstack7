@@ -20,7 +20,7 @@ const ICON_SEND = '/icons/send.svg'
 const STATUS_BIG = 'https://www.figma.com/api/mcp/asset/73d0a820-9b34-4bea-b239-5d0244d7c4a5'
 const STATUS_SMALL = 'https://www.figma.com/api/mcp/asset/8a1f46ba-167c-42fb-911b-b54ae9cb70dc'
 
-const AVATAR_PLACEHOLDER = 'https://www.figma.com/api/mcp/asset/ed027546-d8d0-4b5a-87e8-12db5e07cdd7'
+const AVATAR_PLACEHOLDER = '/avatar-fallback.jpg'
 
 type ThreadRow = {
   id: string
@@ -654,24 +654,24 @@ export default function ChatDetailPage() {
       <div className={isGroupThread ? 'chat-gym-content' : 'chat-detail-content'}>
         {isGroupThread ? (
           <div className="chat-gym-card">
-            <div className="chat-gym-backbar">
-              <button type="button" className="chat-detail-icon-btn" aria-label="Back" onClick={() => router.back()}>
-                <img src={ICON_BACK} alt="" width={28} height={28} />
-              </button>
-              <div className="chat-gym-backbar-title">back</div>
-              <div style={{ position: 'relative' }}>
-                <button
-                  type="button"
-                  className="chat-detail-icon-btn"
-                  aria-label="More options"
-                  onClick={() => setGroupMenuOpen(!groupMenuOpen)}
-                >
-                  <img src={ICON_MENU} alt="" width={28} height={28} />
-                </button>
-                <ActionMenu
-                  open={groupMenuOpen}
-                  onClose={() => setGroupMenuOpen(false)}
-                  items={[
+            <BackBar
+              onBackClick={() => router.back()}
+              backText="back"
+              className="chats-event-backbar"
+              rightSlot={
+                <div style={{ position: 'relative' }}>
+                  <button
+                    type="button"
+                    className="chats-event-menu"
+                    aria-label="More options"
+                    onClick={() => setGroupMenuOpen(!groupMenuOpen)}
+                  >
+                    <img src={ICON_MENU} alt="" className="chats-event-menu-icon" />
+                  </button>
+                  <ActionMenu
+                    open={groupMenuOpen}
+                    onClose={() => setGroupMenuOpen(false)}
+                    items={[
                     ...(isEventThread && isEventCreator ? [{
                       label: 'Delete Event Chat',
                       onClick: handleDeleteEventChat,
@@ -688,7 +688,8 @@ export default function ChatDetailPage() {
                   ]}
                 />
               </div>
-            </div>
+            }
+            />
 
             <div className="chat-gym-hero">
               <img src={heroImage} alt="" className="chat-gym-hero-img" />
@@ -775,7 +776,7 @@ export default function ChatDetailPage() {
             </div>
           </div>
         ) : (
-          <div className="chat-detail-card">
+          <>
             <BackBar
               onBackClick={() => router.back()}
               className="chat-detail-header"
@@ -828,7 +829,8 @@ export default function ChatDetailPage() {
 
             <div className="chat-detail-divider" />
 
-            <div className="chat-detail-messages">
+            <div className="chat-detail-card">
+              <div className="chat-detail-messages">
               <div className="chat-detail-system">
                 You connected with {otherFirstName} on 11/07/2023.
               </div>
@@ -884,7 +886,8 @@ export default function ChatDetailPage() {
                 <img src={ICON_SEND} alt="" width={24} height={24} style={sending ? { opacity: 0.5 } : undefined} />
               </button>
             </div>
-          </div>
+            </div>
+          </>
         )}
         <MobileNavbar active="chats" />
 

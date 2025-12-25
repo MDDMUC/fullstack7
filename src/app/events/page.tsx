@@ -8,6 +8,7 @@ import MobileNavbar from '@/components/MobileNavbar'
 import MobileTopbar from '@/components/MobileTopbar'
 import LoadingState from '@/components/LoadingState'
 import EmptyState from '@/components/EmptyState'
+import CreateButton from '@/components/CreateButton'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
 
@@ -299,81 +300,68 @@ export default function EventsScreen() {
   return (
     <RequireAuth>
       <div className="events-screen" data-name="/ events">
+        <MobileTopbar breadcrumb="Events" />
+        {/* Filters */}
+        <MobileFilterBar
+          filters={filters}
+          filterOptions={filterOptions}
+          onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+          filterKeys={['city', 'style', 'gym']}
+        />
+
         <div className="events-content">
-          <MobileTopbar breadcrumb="Events" />
-          {/* Filters */}
-          <MobileFilterBar
-            filters={filters}
-            filterOptions={filterOptions}
-            onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
-            filterKeys={['city', 'style', 'gym']}
-          />
-            <div className="events-card custom-scrollbar">
-            <Link href="/events/create" className="events-createbar" data-name="create-event-mobile" data-node-id="636:2102">
-              <div className="events-createbar-left">
-                <div className="events-createbar-plus" data-name="plus" data-node-id="636:2101">
-                  <div className="events-createbar-plus-inner" data-name="plus" data-node-id="636:2099">
-                    <div className="events-createbar-icon" data-name="Icon" data-node-id="I636:2099;633:7054">
-                      <div className="events-createbar-stroke">
-                        <img src="/icons/plus.svg" alt="" />
-                      </div>
+          <CreateButton href="/events/create" label="Create Event" variant="ghost" />
+
+          {loading && <LoadingState message="Loading events…" />}
+          {!loading && events.length === 0 && (
+            <EmptyState message="No events found" />
+          )}
+          {!loading &&
+            events.map(ev => (
+              <Link
+                key={ev.id}
+                href={`/events/detail?eventId=${ev.id}`}
+                className={`events-tile ${ev.isNew ? 'events-tile-new' : ''}`}
+              >
+                <div className="events-tile-img">
+                  <img
+                    src={ev.image_url || '/icons/event-placeholder.svg'}
+                    alt=""
+                    className="events-tile-img-el"
+                  />
+                  {ev.creatorName && (
+                    <div className="events-tile-host-badge">
+                      <span className="events-tile-host-label">Host:</span>
+                      <span className="events-tile-host-name">{ev.creatorName}</span>
                     </div>
+                  )}
+                  {ev.thread?.last_message_at && formatTimeAgo(ev.thread.last_message_at) && (
+                    <div className="events-tile-last-message">
+                      Active {formatTimeAgo(ev.thread.last_message_at)}
+                    </div>
+                  )}
+                  <div className="events-tile-icon">
+                    <img src="/icons/events.svg" alt="" />
                   </div>
                 </div>
-              </div>
-              <div className="events-createbar-center" data-name="name" data-node-id="636:2092">
-                <p className="events-createbar-text">create event</p>
-              </div>
-            </Link>
-
-            {loading && <LoadingState message="Loading events…" />}
-            {!loading && events.length === 0 && (
-              <EmptyState message="No events found" />
-            )}
-            {!loading &&
-              events.map(ev => (
-                <Link
-                  key={ev.id}
-                  href={`/events/detail?eventId=${ev.id}`}
-                  className={`events-tile ${ev.isNew ? 'events-tile-new' : ''}`}
-                >
-                  <div className="events-tile-img">
-                    <img
-                      src={ev.image_url || '/icons/event-placeholder.svg'}
-                      alt=""
-                      className="events-tile-img-el"
-                    />
-                    {ev.creatorName && (
-                      <div className="events-tile-host-badge">
-                        <span className="events-tile-host-label">Host:</span>
-                        <span className="events-tile-host-name">{ev.creatorName}</span>
-                      </div>
-                    )}
-                    {ev.thread?.last_message_at && formatTimeAgo(ev.thread.last_message_at) && (
-                      <div className="events-tile-last-message">
-                        Active {formatTimeAgo(ev.thread.last_message_at)}
-                      </div>
-                    )}
+                <div className="events-tile-overlay" />
+                <div className="events-tile-text">
+                  <p className="events-tile-title">{ev.title}</p>
+                  <p className="events-tile-subtitle">{ev.location || ''}</p>
+                  <div className="events-tile-info">
+                    <p className="events-tile-loc">{formatDate(ev.start_at)}</p>
+                    <p className="events-tile-att">
+                      {ev.slots_total != null && ev.slots_open != null
+                        ? `${ev.slots_total - ev.slots_open} going · ${ev.slots_open} open`
+                        : 'Slots TBD'}
+                    </p>
                   </div>
-                  <div className="events-tile-overlay" />
-                  <div className="events-tile-text">
-                    <p className="events-tile-title">{ev.title}</p>
-                    <p className="events-tile-subtitle">{ev.location || ''}</p>
-                    <div className="events-tile-info">
-                      <p className="events-tile-loc">{formatDate(ev.start_at)}</p>
-                      <p className="events-tile-att">
-                        {ev.slots_total != null && ev.slots_open != null
-                          ? `${ev.slots_total - ev.slots_open} going · ${ev.slots_open} open`
-                          : 'Slots TBD'}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-          </div>
-
-          <MobileNavbar active="events" />
+                </div>
+              </Link>
+            ))}
         </div>
+
+        <MobileNavbar active="events" />
       </div>
     </RequireAuth>
   )

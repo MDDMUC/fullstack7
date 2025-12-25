@@ -96,6 +96,7 @@ export default function HomeScreen() {
   const [cardMenuOpen, setCardMenuOpen] = useState(false)
   const [reportModalOpen, setReportModalOpen] = useState(false)
   const [blocking, setBlocking] = useState(false)
+  const [transitioning, setTransitioning] = useState(false)
 
   // Fetch current user's profile to check for pro status
   useEffect(() => {
@@ -303,6 +304,27 @@ export default function HomeScreen() {
 
   const currentAvatar = current?.avatar_url ?? (current as any)?.photo ?? null
 
+  // Preload next 3 profile images for instant transitions
+  useEffect(() => {
+    if (!filteredDeck || filteredDeck.length <= 1) return
+
+    const preloadImages = filteredDeck.slice(1, 4).map(profile => {
+      const avatarUrl = profile?.avatar_url ?? (profile as any)?.photo
+      if (!avatarUrl) return null
+
+      const img = new Image()
+      img.src = avatarUrl
+      return img
+    }).filter(Boolean)
+
+    // Cleanup function
+    return () => {
+      preloadImages.forEach(img => {
+        if (img) img.src = ''
+      })
+    }
+  }, [filteredDeck])
+
   // Check if the displayed profile is the logged-in user
   const isCurrentUser = useMemo(() => {
     return currentUserProfile && current?.id && currentUserProfile.id === current.id
@@ -318,11 +340,17 @@ export default function HomeScreen() {
   const showStatusRow = showOnlinePill
 
   const handleNext = () => {
+    if (transitioning) return // Prevent rapid clicks
+
+    setTransitioning(true)
     setDeck(prev => {
       if (prev.length <= 1) return prev
       const [first, ...rest] = prev
       return [...rest, first]
     })
+
+    // Reset transitioning state after a brief delay
+    setTimeout(() => setTransitioning(false), 100)
   }
 
   const handleDab = async () => {
@@ -361,30 +389,27 @@ export default function HomeScreen() {
   return (
     <RequireAuth>
       <div className="home-screen" data-name="/home-mobile">
+        {!loadingProfiles && current && (
+          <>
+            <MobileTopbar breadcrumb="DAB" />
+            <MobileFilterBar
+              filters={filters}
+              filterOptions={filterOptions}
+              onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
+              filterKeys={FILTER_LABELS}
+            />
+          </>
+        )}
         <div className="home-content">
           {loadingProfiles ? (
-            <>
-              <div className="home-loading" role="status" aria-label="Loading profiles">
-                <span className="home-loading-dot" />
-                <span className="home-loading-text">Loading…</span>
-              </div>
-              <MobileNavbar active="dab" />
-            </>
+            <div className="home-loading" role="status" aria-label="Loading profiles">
+              <span className="home-loading-dot" />
+              <span className="home-loading-text">Loading…</span>
+            </div>
           ) : !current ? (
-            <>
-              <div className="home-empty">No profiles available.</div>
-              <MobileNavbar active="dab" />
-            </>
+            <div className="home-empty">No profiles available.</div>
           ) : (
             <>
-              <MobileTopbar breadcrumb="DAB" />
-              <MobileFilterBar
-                filters={filters}
-                filterOptions={filterOptions}
-                onFilterChange={(key, val) => setFilters(prev => ({ ...prev, [key]: val }))}
-                filterKeys={FILTER_LABELS}
-              />
-
               <div className="home-card" data-name="usercard-mobile">
                 {showStatusRow && (
                   <div className="home-card-header">
@@ -439,8 +464,8 @@ export default function HomeScreen() {
                           if (isPro) chipClass += ' fc-chip-pro'
                           else if (isFounder) chipClass += ' fc-chip-founder'
                           else if (isCrew) chipClass += ' fc-chip-crew'
-                          const iconSrc = isPro ? PRO_ICON : isFounder ? FOUNDER_ICON : ROCK_ICON
-                          const needsGradient = isFounder || isCrew
+                          const iconSrc = ROCK_ICON // All special chips use rock and roll hand
+                          const needsGradient = isPro || isFounder || isCrew
                           return (
                             <span key={`special-top-${chip}`} className={chipClass}>
                               <img src={iconSrc} alt="" className="fc-chip-icon" />
@@ -455,6 +480,8 @@ export default function HomeScreen() {
                       alt={current?.username || 'Profile'}
                       className="home-image"
                       showPlaceholder={false}
+                      loading="eager"
+                      fetchPriority="high"
                     />
                     <div className="home-image-overlay">
                       <div className="home-name-row">
@@ -484,9 +511,9 @@ export default function HomeScreen() {
                           else if (isBelayCertified) chipClass += ' fc-chip-belay'
                           else chipClass += ' fc-chip-standard'
 
-                          const needsGradient = isFounder || isCrew
+                          const needsGradient = isPro || isFounder || isCrew
                           const showIcon = isPro || isFounder || isCrew
-                          const iconSrc = isPro ? PRO_ICON : isFounder ? FOUNDER_ICON : ROCK_ICON
+                          const iconSrc = ROCK_ICON // All special chips use rock and roll hand
 
                           return (
                             <span key={`chip-${chip}-${idx}`} className={chipClass}>
@@ -524,9 +551,6 @@ export default function HomeScreen() {
                 </div>
               </div>
 
-              {/* Mobile Navbar - Exact from Figma node 628:4634 */}
-              <MobileNavbar active="dab" />
-
               {celebrate && (
                 <div className="home-dab-toast" role="status">
                   <div className="home-dab-confetti-burst" aria-hidden="true" />
@@ -553,6 +577,8 @@ export default function HomeScreen() {
             </>
           )}
         </div>
+        {/* Mobile Navbar - Exact from Figma node 628:4634 */}
+        <MobileNavbar active="dab" />
       </div>
     </RequireAuth>
   )
