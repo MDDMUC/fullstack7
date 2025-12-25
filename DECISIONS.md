@@ -46,3 +46,27 @@ Template
 - Links: `PROJECT_CONTEXT.md`, `TICKETS/messaging-schema-alignment.md`
 
 
+
+## 2025-12-25 - Orchestrator CI trigger criteria (later)
+- Decision: Defer orchestrator CI until clear volume threshold; document trigger criteria.
+- Rationale: Setup/maintenance overhead vs. current ticket volume; automation only pays when handoff friction is recurring.
+- Impact: Revisit when any trigger is met: 8-10 active tickets/week with 3+ roles; or 5+ handoffs/day; or 2+ handoff slips/week due to status ambiguity.
+- Links: `AGENTS.md`, `TICKETS/INDEX.md`
+
+## 2025-12-25 - Onboarding mobile nav exception
+- Decision: Allow onboarding flow on mobile to omit MobileTopbar and MobileNavbar; desktop can still show top and bottom nav bars.
+- Rationale: In order to make onboarding flow as seamless and fast as possible, the user does not need a top nav bar or mobile bottom nav bar before signup; these elements are non-interactive and can add confusion.
+- Impact: Global constraint updated with this exception; onboarding mobile pages omit MobileTopbar/MobileNavbar and focus on completion.
+- Links: `AGENT_START.md`, `AGENTS.md`, `PROJECT_CONTEXT.md`, `TICKETS/onboarding-flow-optimization.md`
+
+## 2025-12-25 - Defer real-time check-ins until Phase II readiness gates
+- Decision: Defer real-time check-ins (Friends in Gym Phase 2) until density, safety, and engagement thresholds are met.
+- Rationale: Presence features need local density and trust; early rollout creates empty states and privacy risk.
+- Impact: No availability or check-in features in MVP; Phase II gate: consistent peak-hour activity in 2-3 gyms, block/report stability for 4+ weeks, Day 7 retention >40%, match within 24h >60%.
+- Links: `PROJECT_CONTEXT.md`, `AGENTS.md`
+
+## 2025-12-25 - Defer Playwright automation until regression pain
+- Decision: Keep QA manual for now; defer Playwright automation setup.
+- Rationale: UI is still changing and test infra is not wired; automation would be brittle and slower than manual verification at current scale.
+- Impact: Revisit when testing cost exceeds 2-3 hours/week, or 2+ regressions/week, or when launch smoke tests are needed.
+- Links: `DEFINITION_OF_DONE.md`, `TICKETS/README.md`

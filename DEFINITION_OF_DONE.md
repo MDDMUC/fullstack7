@@ -5,7 +5,7 @@ This is the checklist for finishing any task in DAB.
 ## Product and UX
 - Requirements and acceptance criteria met.
 - Mobile-first layout verified (iOS Safari, Android Chrome).
-- New pages include MobileTopbar and MobileNavbar.
+- New pages include MobileTopbar and MobileNavbar, except the onboarding flow on mobile (desktop can include).
 - No new empty states without seed data or fallback.
 
 ## Design System

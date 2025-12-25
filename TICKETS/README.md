@@ -57,6 +57,13 @@ Area codes (suggested)
 6. Implementation fixes and closes.
 7. Marketing Lead plans launch and acquisition after build stability.
 
+## Workflow Path (Triage)
+Every ticket must include a Workflow Path label in its header.
+- Fast Lane: Product + Implementation + QA. Small UI fixes, copy tweaks, low-risk polish.
+- Standard: Product + Design + Implementation + QA. New/revised user-facing flows/screens without schema/API changes.
+- Full Pipeline: Product + Design + Tech Lead + Implementation + QA. Schema/RLS/API, auth/permissions, trust/safety, performance-sensitive, or activation-critical flows.
+- Escalate the path if scope or risk increases.
+
 ## Required handoff usage
 - Every role must use the AGENTS.md handoff template.
 - Each handoff must include the Ticket ID and link to the ticket file.

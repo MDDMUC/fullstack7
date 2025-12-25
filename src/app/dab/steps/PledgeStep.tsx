@@ -4,9 +4,10 @@ import { useState } from 'react'
 import { useOnboarding } from '@/contexts/OnboardingContext'
 import { supabase } from '@/lib/supabaseClient'
 import { upsertOnboardingProfile, uploadImageToStorage } from '@/lib/profileUtils'
+import { logSignupEvent } from '@/lib/analytics'
 
 /**
- * Onboarding Step 5: Pledge
+ * Onboarding Step 4: Pledge
  * Figma node: 484-1266
  * 
  * LAYOUT FROM FIGMA:
@@ -42,8 +43,7 @@ const PLEDGES: PledgeItem[] = [
 ]
 
 export default function PledgeStep() {
-  const { data, updateData, setCurrentStep } = useOnboarding()
-  const [agreedToPledge, setAgreedToPledge] = useState(false)
+  const { data, updateData, setCurrentStep, startTime } = useOnboarding()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -107,6 +107,28 @@ export default function PledgeStep() {
         return
       }
 
+      // Log analytics event
+      try {
+        const completionTimeMs = Date.now() - startTime
+        const completionTimeSeconds = Math.floor(completionTimeMs / 1000)
+        
+        await logSignupEvent(user.id, {
+          onboarding_step: 4,
+          completion_time_seconds: completionTimeSeconds,
+          acquisition_source: 'organic', // Default for now
+          gyms_count: data.gym?.filter(id => id !== 'outside').length || 0,
+          climbing_styles: data.styles || [],
+          looking_for: data.purposes || [],
+          // Metadata for Phase 1 as requested in TICKET-ONB-001
+          ...({
+            onboarding_version: 'v2-optimized',
+            total_duration_ms: completionTimeMs,
+          } as any)
+        })
+      } catch (analyticsError) {
+        console.warn('Failed to log signup event:', analyticsError)
+      }
+
       // Update context and proceed to success step
       updateData({ pledgeAccepted: true })
       setCurrentStep(5) // Go to Success step
@@ -152,7 +174,7 @@ export default function PledgeStep() {
               </p>
             </div>
 
-            {/* Pledge content - display all pledges as text, single agree button */}
+            {/* Pledge content - display all pledges as text */}
             <div className="onb-pledge-list" style={{
               display: 'flex',
               flexDirection: 'column',
@@ -174,58 +196,6 @@ export default function PledgeStep() {
               ))}
             </div>
 
-            {/* Single-tap agree checkbox */}
-            <button
-              type="button"
-              className={`onb-pledge-card ${agreedToPledge ? 'onb-pledge-card-active' : ''}`}
-              onClick={() => setAgreedToPledge(!agreedToPledge)}
-              data-node-id="pledge-agree"
-              style={{
-                marginTop: 'var(--space-md)'
-              }}
-            >
-              <div className="onb-pledge-inner">
-                {/* Checkbox circle */}
-                <div className="onb-pledge-checkbox">
-                  <svg
-                    width="20"
-                    height="44"
-                    viewBox="0 0 20 44"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <circle
-                      cx="10"
-                      cy="22"
-                      r="9"
-                      stroke={agreedToPledge ? 'var(--color-primary)' : 'var(--color-stroke)'}
-                      strokeWidth="2"
-                      fill={agreedToPledge ? 'rgba(92, 225, 230, 0.1)' : 'transparent'}
-                    />
-                    {agreedToPledge && (
-                      <path
-                        d="M6 22L9 25L14 19"
-                        stroke="var(--color-primary)"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    )}
-                  </svg>
-                </div>
-
-                {/* Agreement text */}
-                <div className="onb-pledge-content">
-                  <h3 className="onb-pledge-item-title">
-                    I Agree
-                  </h3>
-                  <p className="onb-pledge-item-desc">
-                    I commit to the crew and these community values.
-                  </p>
-                </div>
-              </div>
-            </button>
-
             {/* Error message */}
             {submitError && (
               <div className="onb-error-message" style={{ color: 'var(--color-red)', fontSize: 'var(--font-size-md)', textAlign: 'center', marginTop: 'var(--space-sm)' }}>
@@ -233,16 +203,25 @@ export default function PledgeStep() {
               </div>
             )}
 
-            {/* CTA row */}
+            {/* Agreement text */}
+            <p className="onb-header-subtitle" style={{ 
+              marginTop: 'var(--space-md)', 
+              textAlign: 'center',
+              fontSize: 'var(--font-size-xs)'
+            }}>
+              By continuing, you agree to commit to the crew and these community values.
+            </p>
+
+            {/* CTA row - Single tap opt-in */}
             <div className="onb-cta-row" data-node-id="484:1287">
               <button
                 type="button"
                 className="onb-cta-btn"
                 onClick={handleContinue}
-                disabled={!agreedToPledge || isSubmitting}
+                disabled={isSubmitting}
                 data-node-id="484:1288"
               >
-                {isSubmitting ? 'Saving...' : 'Continue 4/4'}
+                {isSubmitting ? 'Saving...' : 'I Agree & Finish'}
               </button>
             </div>
           </div>

@@ -33,8 +33,9 @@ Constraints
 Handoff
 - Input: strategy ticket and constraints.
 - Output: design spec using the AGENTS.md handoff template.
+- In the Task section, explicitly name the next role for handoff.
 
 Role prompt (copy/paste)
 ```
-You are the Experience Designer for DAB. REQUIRED: Read AGENT_START.md, PROJECT_CONTEXT.md, and AGENTS.md before this file. Output only the AGENTS.md handoff template. Use design tokens, specify states and empty states, and note your model in the Model section.
+You are the Experience Designer for DAB. REQUIRED: Read AGENT_START.md, PROJECT_CONTEXT.md, and AGENTS.md before this file. Output only the AGENTS.md handoff template. In the Task section, explicitly state the next role for handoff. Use design tokens, specify states and empty states, and note your model in the Model section.
 ```

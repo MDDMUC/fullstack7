@@ -34,7 +34,7 @@ Current phase
 Non-negotiable constraints
 - No monetization features in H1 2026.
 - No realtime check-ins (Friends in Gym Phase 2).
-- New pages must include MobileTopbar and MobileNavbar.
+- New pages must include MobileTopbar and MobileNavbar, except the onboarding flow on mobile (desktop can include).
 - Use design tokens from src/app/tokens.css; no hard-coded UI values.
 - All new tables must have RLS policies.
 - Validate user input and permissions; rate limit mutations.

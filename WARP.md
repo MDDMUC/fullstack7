@@ -72,7 +72,7 @@ Navigation on mobile is standardized via:
 - `src/components/MobileTopbar.tsx` – top bar with breadcrumb, profile avatar, gyms icon, and notifications bell (pulls Supabase data for avatar and notification badge state).
 - `src/components/MobileNavbar.tsx` – bottom nav tabs (Events, Chats, Crew, Dab), with unread dots for chats/crews based on unified unread logic.
 
-New user-facing pages are expected to integrate both `MobileTopbar` and `MobileNavbar` (see `AGENT_START.md`/`AGENTS.md`).
+New user-facing pages are expected to integrate both `MobileTopbar` and `MobileNavbar` except the onboarding flow on mobile (desktop can include) (see `AGENT_START.md`/`AGENTS.md`).
 
 ### 3.2 Data & domain layer (Supabase-centric)
 
@@ -157,7 +157,7 @@ Key non-negotiable constraints (summarized from `AGENT_START.md`, `AGENTS.md`, `
   - No B2C monetization features (paywalls, Pro tiers, credits) in **H1 2026**.
   - No realtime check-ins / "Friends in Gym Phase 2" yet; that is explicitly deferred.
 - **Navigation & UX**:
-  - New user-facing pages must include `MobileTopbar` and `MobileNavbar` and be mobile-first (iOS Safari + Android Chrome).
+  - New user-facing pages must include `MobileTopbar` and `MobileNavbar` except the onboarding flow on mobile (desktop can include), and be mobile-first (iOS Safari + Android Chrome).
   - Avoid new empty states; seed data or provide fallbacks for new features.
 - **Design system**:
   - Use design tokens from `tokens.css` for colors/spacing/sizing; do not introduce ad-hoc hard-coded values except where explicitly documented.

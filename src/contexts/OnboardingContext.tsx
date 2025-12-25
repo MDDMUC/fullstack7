@@ -37,6 +37,7 @@ type OnboardingContextType = {
   updateData: (updates: Partial<OnboardingData>) => void
   currentStep: number
   setCurrentStep: (step: number) => void
+  startTime: number
   reset: () => void
 }
 
@@ -52,6 +53,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     photos: [],
   })
   const [currentStep, setCurrentStep] = useState(1)
+  const [startTime] = useState<number>(Date.now())
 
   const updateData = (updates: Partial<OnboardingData>) => {
     setData(prev => ({ ...prev, ...updates }))
@@ -70,7 +72,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <OnboardingContext.Provider value={{ data, updateData, currentStep, setCurrentStep, reset }}>
+    <OnboardingContext.Provider value={{ data, updateData, currentStep, setCurrentStep, startTime, reset }}>
       {children}
     </OnboardingContext.Provider>
   )

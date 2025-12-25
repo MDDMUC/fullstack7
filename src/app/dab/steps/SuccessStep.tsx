@@ -104,16 +104,6 @@ export default function SuccessStep() {
       {/* BACKGROUND LAYERS */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
-        <video
-          className="onb-bg-video onb-bg-video-success"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/hero-main.jpg"
-        >
-          <source src="/008.mp4" type="video/mp4" />
-        </video>
         <div className="onb-bg-gradient" />
       </div>
 

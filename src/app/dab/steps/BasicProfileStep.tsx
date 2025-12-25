@@ -17,11 +17,6 @@ export default function BasicProfileStep() {
   const { data, updateData, setCurrentStep } = useOnboarding()
   const [name, setName] = useState(data.username || '')
   const [age, setAge] = useState(data.age || '')
-  const [gender, setGender] = useState<'Man' | 'Woman' | 'Other' | null>(
-    data.gender === 'Man' || data.gender === 'Woman' || data.gender === 'Other' 
-      ? data.gender 
-      : null
-  )
   const [imagePreview, setImagePreview] = useState<string | null>(
     typeof data.photo === 'string' ? data.photo : null
   )
@@ -44,15 +39,10 @@ export default function BasicProfileStep() {
     }
   }
 
-  const handleGenderSelect = (value: 'Man' | 'Woman' | 'Other') => {
-    setGender(value)
-  }
-
   const handleContinue = () => {
     updateData({
       username: name.trim(),
       age: age,
-      gender: gender || undefined,
       photo: imagePreview || undefined,
       photos: imageFile ? [imageFile, ...(data.photos || [])] : data.photos,
     })
@@ -61,7 +51,7 @@ export default function BasicProfileStep() {
 
   const ageNumber = age.trim() ? Number(age) : NaN
   const isAdult = Number.isFinite(ageNumber) && ageNumber >= 18
-  const isValid = name.trim() !== '' && isAdult && gender !== null && imagePreview !== null
+  const isValid = name.trim() !== '' && isAdult && imagePreview !== null
 
   return (
     <div 
@@ -78,7 +68,7 @@ export default function BasicProfileStep() {
         style={{ display: 'none' }}
       />
 
-      {/* BACKGROUND LAYERS - Static background only (video removed for FCP) */}
+      {/* BACKGROUND LAYERS - Static background only */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
         <div className="onb-bg-gradient" />
@@ -181,37 +171,6 @@ export default function BasicProfileStep() {
                       You must be 18+ to use DAB.
                     </p>
                   )}
-                </div>
-              </div>
-
-              {/* Gender field */}
-              <div className="onb-field" data-node-id="482:1321">
-                <label className="onb-label" data-node-id="482:1322">Gender</label>
-                <div className="onb-gender-select" data-node-id="483:763">
-                  <button
-                    type="button"
-                    className={`onb-gender-btn ${gender === 'Man' ? 'onb-gender-btn-active' : ''}`}
-                    onClick={() => handleGenderSelect('Man')}
-                    data-node-id="482:1323"
-                  >
-                    Male
-                  </button>
-                  <button
-                    type="button"
-                    className={`onb-gender-btn ${gender === 'Woman' ? 'onb-gender-btn-active' : ''}`}
-                    onClick={() => handleGenderSelect('Woman')}
-                    data-node-id="483:755"
-                  >
-                    Female
-                  </button>
-                  <button
-                    type="button"
-                    className={`onb-gender-btn ${gender === 'Other' ? 'onb-gender-btn-active' : ''}`}
-                    onClick={() => handleGenderSelect('Other')}
-                    data-node-id="483:759"
-                  >
-                    Other
-                  </button>
                 </div>
               </div>
             </div>

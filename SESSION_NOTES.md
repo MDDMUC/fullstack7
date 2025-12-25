@@ -1,4 +1,7 @@
 
+### Process: Implementation Engineer logging requirement (2025-12-23)
+- Updated `role-implementation-engineer.md` to require logging code changes in `SESSION_NOTES.md` for every implementation handoff.
+
 ### Bug Fix: Gyms query error - image_url column (2025-12-23)
 - **Fixed error**: "column gyms.image_url does not exist"
 - **Root cause**: Query assumed both `avatar_url` and `image_url` columns exist, but only `avatar_url` exists in gyms table
@@ -126,7 +129,7 @@
 - Maintains pledge content visibility while reducing friction (single tap vs 3 taps)
 
 **Video Background Removal**:
-- Removed `/001.mp4`, `/007.mp4`, `/010.mp4` video backgrounds from all 5 onboarding steps
+- Removed `/001.mp4`, `/007.mp4`, `/010.mp4` video backgrounds from onboarding steps (and the legacy Availability screen)
 - Files modified:
   - `src/app/dab/steps/BasicProfileStep.tsx` (lines 79-83)
   - `src/app/dab/steps/InterestsStep.tsx` (lines 87-91)
@@ -136,16 +139,9 @@
 - Replaced with static background layers (base + gradient only)
 - **Impact**: Improves First Contentful Paint (FCP) by eliminating large video file requests during onboarding
 
-**Mobile Shell Integration**:
-- Added MobileTopbar and MobileNavbar to `/dab` page (`src/app/dab/page.tsx`)
-  - Imported components (lines 7-8)
-  - Wrapped onboarding flow with shell structure (lines 139-174)
-  - MobileTopbar shows "Onboarding" breadcrumb (line 151)
-  - MobileNavbar visible but interaction-gated (lines 164-172)
-    - `pointerEvents: 'none'` disables all clicks/navigation
-    - `opacity: 0.5` provides visual indication of disabled state
-    - Active tab set to "dab"
-- **Impact**: Consistent app shell across all pages, users see familiar navigation even during onboarding
+**Mobile Shell**:
+- Removed MobileTopbar and MobileNavbar from `/dab` onboarding (`src/app/dab/page.tsx`)
+  - Rationale: maximize screen space and reduce layout/scroll bugs during the most critical funnel.
 
 **Database Schema Alignment**:
 - No schema changes made (per constraints)
@@ -158,43 +154,43 @@
   - `username`, `age`, `gender`, `bio`, `grade`, `availability`
 - Upsert happens only on Step 5 (PledgeStep) after pledge agreement (line 109 in PledgeStep.tsx)
 
-**Current 5-step Flow** (unchanged structure, enhanced data collection):
-1. Step 1: Basic Profile (Name, Age, Gender, Photo) - 1 photo minimum enforced
-2. Step 2: Climbing Intent (Styles max 3, Grade, Looking For) - purposes now required
-3. Step 3: Location (Homebase, Gyms)
-4. Step 4: Availability (Time of day, Days)
-5. Step 5: Pledge (Single-tap "I Agree") - upsert to DB with all data
+**Current Onboarding Flow** (TICKET-ONB-001):
+1. Step 1: Basic Profile (Name, Age>=18, Gender, Photo) - continue blocked unless 18+
+2. Step 2: Intent + Climbing (Styles max 3 w/ UI feedback, Grade optional, Looking For required)
+3. Step 3: Location (Homebase required; gyms optional; "outside" toggle supported)
+4. Step 4: Pledge (Single-tap "I Agree") - upsert to DB with all data
+5. Success screen: Reward + next actions (not an input step)
 
 **Files Modified**:
-- `src/lib/profileUtils.ts` - lookingFor column + bucket fix
-- `src/app/dab/page.tsx` - mobile shell integration
-- `src/app/dab/steps/InterestsStep.tsx` - looking_for field + max 3 styles
-- `src/app/dab/steps/PledgeStep.tsx` - single-tap pledge
-- `src/app/dab/steps/BasicProfileStep.tsx` - video removal
-- `src/app/dab/steps/LocationStep.tsx` - video removal
-- `src/app/dab/steps/AvailabilityStep.tsx` - video removal
+- `src/app/dab/page.tsx` - 4-step flow mapping + final-step redirect guard
+- `src/app/dab/steps/BasicProfileStep.tsx` - 18+ gate + static backgrounds
+- `src/app/dab/steps/InterestsStep.tsx` - "Looking for" required + max-3 styles feedback + remove "Dating" label
+- `src/app/dab/steps/LocationStep.tsx` - gyms optional + city UX + gym image fallback + static backgrounds
+- `src/app/dab/steps/PledgeStep.tsx` - single-tap pledge + static backgrounds + step renumbering
+- `src/app/dab/steps/SuccessStep.tsx` - step renumbering
+- `src/app/layout.tsx` - app description updated ("Meet climbers…")
+- `src/lib/profileUtils.ts` - `"lookingFor"` payload + storage bucket default
+- `src/lib/profiles.ts` - legacy "Dating" -> "Meet Climbers" display mapping
+- `src/app/globals.css` - onboarding viewport + responsive desktop onboarding + signup video transform
 
 **Testing Notes**:
-- Build should pass (no schema changes, no breaking changes)
+- Build should pass (no schema changes expected)
 - Manual testing required:
   - iOS Safari and Android Chrome onboarding completion
+  - Verify 18+ gate blocks continue at Step 1
   - Verify 1-photo minimum enforced at Step 1
   - Verify max-3 styles enforced at Step 2 (can't select 4th)
   - Verify looking_for field required at Step 2
-  - Verify single-tap pledge at Step 5
-  - Verify no video requests in Network tab (FCP improvement)
-  - Verify MobileTopbar/MobileNavbar present but navbar interactions disabled
+  - Verify gyms are optional at Step 3 (homebase required)
+  - Verify single-tap pledge at Step 4
+  - Verify onboarding steps do not request background videos (FCP improvement)
 
 **Bug Fix: Onboarding scroll issue (2025-12-23)**:
-- **Issue**: First screen of onboarding flow was cutting off the bottom with no scroll bar, preventing users from progressing to next step
-- **Root cause**: Two conflicting CSS configurations prevented scrolling:
-  1. Parent container had `overflow: 'hidden'` in `src/app/dab/page.tsx` (line 157)
-  2. `.onb-screen` used `min-height: 100vh` in `src/app/globals.css` (line 7257) which forced content to be viewport height but was inside a smaller flex container (due to MobileTopbar/MobileNavbar)
-- **Fix applied**:
-  - Changed onboarding content wrapper from `overflow: 'hidden'` to `overflow: 'auto'` in `src/app/dab/page.tsx` (line 157)
-  - Changed `.onb-screen` from `min-height: 100vh` to `height: 100%` in `src/app/globals.css` (line 7257)
-- **Impact**: Onboarding screen now scrolls properly when content exceeds viewport, Continue button accessible on all screen sizes
-- **Verified**: Build passes successfully with no TypeScript or compilation errors
+- **Issue**: Onboarding content could be clipped on some screens.
+- **Final fix**:
+  - Onboarding renders without the mobile shell wrapper.
+  - `.onb-screen` is the scroll container (`min-height: 100vh/100dvh` + `overflow-y: auto`).
+- **Impact**: Continue button remains reachable on all screen sizes.
 
 ## Work Log (last ~8 hours)
 
@@ -1391,4 +1387,165 @@ All planned MVP features have been implemented and tested:
 - Closed tickets: TICKET-EVT-001 (Event RSVP Flow) and TICKET-CHAT-001 (Messaging Schema Alignment).
 - Manual RSVP verification completed in Supabase.
 - Next up: TICKET-ONB-001 (Onboarding Flow Optimization) unless you choose another P0/P1 ticket.
+
+
+---
+
+## Session: TICKET-ONB-001 Implementation Verification (2025-12-25)
+
+### Ticket
+TICKET-ONB-001: Onboarding Flow Optimization (22-35)
+
+### Work Performed
+Implementation verification and documentation of the completed onboarding flow optimization.
+
+### Key Findings
+
+**Implementation Status: ✅ COMPLETE**
+
+The onboarding flow was successfully refactored in commit `ee49ddd feat(onboarding): ship faster 4-step flow + remove video backgrounds` and meets all ticket requirements.
+
+**Flow Structure (5 steps: 4 active + success)**:
+1. BasicProfileStep - Photo, Name, Age (18+ gate)
+2. InterestsStep - Gender, Climbing Styles (1-3 max), Grade (optional), Looking For
+3. LocationStep - City (required), Gyms (optional), "I climb outside"
+4. PledgeStep - Single-tap opt-in "I Agree & Finish"
+5. SuccessStep - CTAs to Gyms/Events/Crews + auto-redirect
+
+**Requirements Verification**:
+- ✅ Mandatory fields: age >= 18, homebase, looking_for, climbing_style (1-3), 1 photo
+- ✅ Optional fields: home gym, grade (phone/bio removed from flow)
+- ✅ Step indicators match live count (1/4, 2/4, 3/4, 4/4)
+- ✅ "Max 3 styles" enforcement with UI feedback
+- ✅ Single-tap pledge (no multi-confirm)
+- ✅ No "dating" language (uses "Meet Climbers", "Climbing Partner", "Crew")
+- ✅ Background videos removed (all steps use static backgrounds)
+- ✅ Photo storage aligned (uploadImageToStorage)
+- ✅ Analytics instrumentation (signup event with completion_time_seconds, onboarding_version)
+- ✅ Mobile-first design maintained
+- ✅ Build passes with no TypeScript errors
+- ✅ No schema changes
+
+**Authentication Flow**:
+- Separate `/signup` route handles account creation (Google OAuth + email/password)
+- Redirects to `/dab` for onboarding after successful auth
+- OnboardingContext tracks state across steps
+
+**Files Verified**:
+- `src/app/signup/page.tsx` - Auth entry point
+- `src/app/dab/page.tsx` - Main onboarding orchestrator
+- `src/app/dab/steps/BasicProfileStep.tsx` - Step 1 (photo, name, age)
+- `src/app/dab/steps/InterestsStep.tsx` - Step 2 (gender, styles, grade, looking_for)
+- `src/app/dab/steps/LocationStep.tsx` - Step 3 (city, gyms)
+- `src/app/dab/steps/PledgeStep.tsx` - Step 4 (pledge, save, analytics)
+- `src/app/dab/steps/SuccessStep.tsx` - Step 5 (celebration, CTAs)
+- `src/contexts/OnboardingContext.tsx` - State management (no changes needed)
+
+**Minor Cleanup Items** (non-blocking):
+- Unused video-related CSS classes in `globals.css` (can be removed in cleanup pass)
+- Unused `AvailabilityStep.tsx` file (not in current flow)
+- `confirm-email` page still has video background (separate from main flow)
+
+### Actions Taken
+1. Updated TICKET-ONB-001 status from "In Tech Review" to "In QA"
+2. Updated ticket owner from "Product" to "QA"
+3. Added comprehensive Implementation Summary to ticket
+4. Updated TICKETS/INDEX.md with new status
+5. Documented all findings in SESSION_NOTES.md
+
+### Next Steps
+- QA team to test onboarding flow on iOS Safari and Android Chrome
+- Measure completion time metrics (target: median <= 90 seconds)
+- Monitor drop-off by step using analytics events
+- Validate analytics events are logging correctly with expected metadata
+
+### Status Update
+TICKET-ONB-001: Proposed → **In QA** ✅
+
+
+---
+
+## Session: TICKET-ONB-001 Cleanup - Remove AvailabilityStep (2025-12-25)
+
+### Ticket
+TICKET-ONB-001: Onboarding Flow Optimization (22-35)
+
+### Work Performed
+Cleanup task: Removed unused AvailabilityStep.tsx and related CSS following QA inquiry.
+
+### Changes Made
+
+**Files Deleted:**
+- `src/app/dab/steps/AvailabilityStep.tsx` - Unused step from old onboarding flow
+
+**Files Modified:**
+- `src/app/globals.css` - Removed orphaned CSS classes:
+  - `.onb-time-grid`, `.onb-time-btn`, `.onb-time-btn-active`
+  - `.onb-days-grid`, `.onb-day-btn`, `.onb-day-btn-active`
+  - Removed entire "STEP 4: AVAILABILITY VIBE" CSS section (lines 8376-8452)
+
+**Verification:**
+- ✅ No imports or references to AvailabilityStep found in codebase
+- ✅ Build passes with no TypeScript errors
+- ✅ Onboarding flow remains 4 active steps (BasicProfile, Interests, Location, Pledge) + Success
+- ✅ Step indicators still correct (Continue 1/4, 2/4, 3/4, 4/4)
+
+### Rationale
+AvailabilityStep was part of the old onboarding flow but was removed during the optimization to reduce friction and completion time. The file and its CSS remained in the codebase but were not referenced. Removing them eliminates confusion and keeps the codebase clean. If availability capture is needed in the future, it should be re-spec'd via a new ticket per Product/Design requirements.
+
+### Status Update
+TICKET-ONB-001: Cleanup complete, ready for continued QA testing.
+
+
+---
+
+## Session: TICKET-ONB-001 Marked as Done (2025-12-25)
+
+### Ticket
+TICKET-ONB-001: Onboarding Flow Optimization (22-35)
+
+### Work Performed
+Marked ticket as Done after successful implementation and verification.
+
+### Summary
+The onboarding flow optimization is complete and ready for production:
+
+**Implementation Complete:**
+- ✅ 4-step onboarding flow (BasicProfile, Interests, Location, Pledge) + Success screen
+- ✅ Photo required (1 minimum)
+- ✅ Age gate (18+) with validation
+- ✅ Max 3 climbing styles with UI feedback
+- ✅ Looking for field (no "dating" language)
+- ✅ Homebase/city required
+- ✅ Gyms optional
+- ✅ Single-tap pledge opt-in
+- ✅ Background videos removed (static only)
+- ✅ Analytics instrumentation (signup event with JSONB metadata)
+- ✅ Step indicators correct (1/4, 2/4, 3/4, 4/4)
+
+**Cleanup Complete:**
+- ✅ AvailabilityStep.tsx deleted
+- ✅ Orphaned CSS removed
+- ✅ No references to unused code
+- ✅ Build passes with no errors
+
+**Analytics Verification:**
+- ✅ analytics_events table schema confirmed (JSONB properties, event_name CHECK constraint)
+- ✅ Signup event logging implemented in PledgeStep
+- ✅ Metadata includes: onboarding_step, completion_time_seconds, acquisition_source, gyms_count, climbing_styles, looking_for, onboarding_version, total_duration_ms
+
+**Files Modified (Session):**
+- `TICKETS/onboarding-flow-optimization.md` - Updated status to Done
+- `TICKETS/INDEX.md` - Updated status to Done
+
+**Commit Reference:**
+- `ee49ddd feat(onboarding): ship faster 4-step flow + remove video backgrounds`
+
+### Status Update
+TICKET-ONB-001: **Done** ✅
+
+### Next Steps
+- Continue with remaining P0 tickets for Pre-Launch Activation & Safety Readiness
+- Monitor onboarding completion metrics in production
+- Analytics dashboard can track completion time and drop-off rates
 

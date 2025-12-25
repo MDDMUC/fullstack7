@@ -41,6 +41,11 @@ export default function InterestsStep() {
   const [selectedGrade, setSelectedGrade] = useState<Grade | null>(
     (data.grade as Grade) || null
   )
+  const [gender, setGender] = useState<'Man' | 'Woman' | 'Other' | null>(
+    data.gender === 'Man' || data.gender === 'Woman' || data.gender === 'Other' 
+      ? data.gender 
+      : null
+  )
   const [selectedPurposes, setSelectedPurposes] = useState<string[]>(data.purposes || [])
   const [styleLimitHit, setStyleLimitHit] = useState(false)
   const styleLimitTimerRef = useRef<number | null>(null)
@@ -85,6 +90,10 @@ export default function InterestsStep() {
     setSelectedGrade(grade)
   }
 
+  const handleGenderSelect = (value: 'Man' | 'Woman' | 'Other') => {
+    setGender(value)
+  }
+
   const handlePurposeToggle = (purpose: string) => {
     setSelectedPurposes(prev =>
       prev.includes(purpose)
@@ -97,12 +106,13 @@ export default function InterestsStep() {
     updateData({
       styles: selectedStyles,
       grade: selectedGrade || undefined,
+      gender: gender || undefined,
       purposes: selectedPurposes
     })
     setCurrentStep(3)
   }
 
-  const isValid = selectedStyles.length > 0 && selectedPurposes.length > 0
+  const isValid = selectedStyles.length > 0 && selectedPurposes.length > 0 && gender !== null
 
   return (
     <div 
@@ -110,7 +120,7 @@ export default function InterestsStep() {
       data-name="onboarding / step2 / climbing"
       data-node-id="483:764"
     >
-      {/* BACKGROUND LAYERS - Static background only (video removed for FCP) */}
+      {/* BACKGROUND LAYERS - Static background only */}
       <div aria-hidden="true" className="onb-bg-layers">
         <div className="onb-bg-base" />
         <div className="onb-bg-gradient" />
@@ -152,6 +162,34 @@ export default function InterestsStep() {
             {/* Field row */}
             <div className="onb-field-row" data-node-id="483:773">
               
+              {/* Gender field */}
+              <div className="onb-field" data-node-id="gender-field">
+                <label className="onb-label">Gender</label>
+                <div className="onb-gender-select" data-node-id="gender-select">
+                  <button
+                    type="button"
+                    className={`onb-gender-btn ${gender === 'Man' ? 'onb-gender-btn-active' : ''}`}
+                    onClick={() => handleGenderSelect('Man')}
+                  >
+                    Male
+                  </button>
+                  <button
+                    type="button"
+                    className={`onb-gender-btn ${gender === 'Woman' ? 'onb-gender-btn-active' : ''}`}
+                    onClick={() => handleGenderSelect('Woman')}
+                  >
+                    Female
+                  </button>
+                  <button
+                    type="button"
+                    className={`onb-gender-btn ${gender === 'Other' ? 'onb-gender-btn-active' : ''}`}
+                    onClick={() => handleGenderSelect('Other')}
+                  >
+                    Other
+                  </button>
+                </div>
+              </div>
+
               {/* Climbing Style field */}
               <div className="onb-field" data-node-id="483:774">
                 <label className="onb-label" data-node-id="483:775">Climbing Style</label>

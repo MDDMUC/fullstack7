@@ -12,13 +12,16 @@ Use this file to start any new work item.
 - Assign a new ID (TICKET-<AREA>-<NNN>)
 - Add it to `TICKETS/INDEX.md`
 
-3) Add role addenda
+3) Set workflow path
+- Add the Workflow Path label to the ticket header (Fast Lane / Standard / Full Pipeline)
+
+4) Add role addenda
 - Design: `TICKETS/TEMPLATE_DESIGN.md`
 - Technical Lead: `TICKETS/TEMPLATE_TECH_LEAD.md`
 - Implementation: `TICKETS/TEMPLATE_IMPLEMENTATION.md`
 - QA: `TICKETS/TEMPLATE_QA.md`
 
-4) Run the workflow
+5) Run the workflow
 - Every role uses the AGENTS.md handoff template
 - Include Ticket ID and file path in every handoff
 

@@ -5,6 +5,7 @@ Title:
 Owner:
 Status:
 Priority:
+Workflow Path:
 Created:
 Last updated:
 Related ticket:

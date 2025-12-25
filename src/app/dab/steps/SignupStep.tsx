@@ -101,27 +101,10 @@ export default function SignupStep() {
 
   return (
     <div className="onb-screen">
-      {/* ========================================
-          BACKGROUND LAYERS - Exact from Figma
-          1. Base color: var(--color-bg)
-          2. Video with mix-blend-screen opacity-[0.08]
-          3. Gradient overlay: from-transparent to-[rgba(0,0,0,0.2)]
-          ======================================== */}
+      {/* BACKGROUND LAYERS - Static background only */}
       <div aria-hidden="true" className="onb-bg-layers">
         {/* Layer 1: Base background color */}
         <div className="onb-bg-base" />
-        
-        {/* Layer 2: Video background with blend mode */}
-        <video
-          className="onb-bg-video onb-bg-video-signup"
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/hero-main.jpg"
-        >
-          <source src="/001.mp4" type="video/mp4" />
-        </video>
         
         {/* Layer 3: Gradient overlay */}
         <div className="onb-bg-gradient" />

@@ -331,7 +331,7 @@ gyms (
 
 **crew-cover** - Crew cover images
 **event-cover** - Event cover images
-**profile-photos** - User profile photos
+**user-images** - User profile photos and avatars
 
 **RLS Policies:** All buckets allow authenticated users to upload/read
 
@@ -789,7 +789,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000  # Optional, for auth redirects
 - Phase 2 feature, not MVP
 
 **❌ Do NOT create new pages without mobile layouts**
-- Must have MobileTopbar and MobileNavbar
+- Must have MobileTopbar and MobileNavbar, except the onboarding flow on mobile (desktop can include)
 - Must be responsive on iOS Safari and Android Chrome
 
 **❌ Do NOT hard-code values (colors, spacing, sizes)**

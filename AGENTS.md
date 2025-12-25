@@ -32,6 +32,12 @@ Ticketing system: see `TICKETS/README.md` and `TICKETS/INDEX.md`.
 6. Implementation resolves issues and finalizes.
 7. Marketing plans launch and acquisition after build is stable.
 
+## Workflow Triage Rule
+- Fast Lane: Product + Implementation + QA. Use for small UI fixes, copy tweaks, and low-risk polish with no schema/API/auth/permissions changes.
+- Standard: Product + Design + Implementation + QA. Use for new or revised user-facing flows/screens without schema/API changes.
+- Full Pipeline: Product + Design + Tech Lead + Implementation + QA. Required for schema/RLS/API changes, auth/permissions, trust/safety, performance-sensitive work, or activation-critical flows (e.g., onboarding).
+- Escalate the workflow path if scope or risk increases.
+
 ## Sign-off gates
 - QA sign-off required for every change.
 - Technical Lead sign-off required for schema, RLS, API contracts, or performance changes.
@@ -47,6 +53,9 @@ Model:
 Ticket:
 - ID and file path
 
+Workflow Path:
+- Fast Lane | Standard | Full Pipeline
+
 Context:
 - Goal and current status
 - Files touched or links
@@ -56,6 +65,9 @@ Decisions:
 
 Task:
 - Next actions to take
+
+Handoff To:
+- Role to receive this handoff
 
 Constraints:
 - Do-not-do rules for this task
@@ -72,7 +84,10 @@ Artifacts/Links:
 ## Global Constraints (non-negotiable)
 - No monetization features in H1 2026.
 - No realtime check-ins (Friends in Gym Phase 2).
-- New pages must include MobileTopbar and MobileNavbar.
+- New pages must include MobileTopbar and MobileNavbar, except the onboarding flow on mobile (desktop can include).
 - Use design tokens only (no hard-coded colors/spacing/sizes).
 - New tables must have RLS policies.
+
+## Agent Notes
+- All roles: Be adversarial, challenge assumptions, and only confirm ideas with credible research (otherwise label as hypothesis).
 
