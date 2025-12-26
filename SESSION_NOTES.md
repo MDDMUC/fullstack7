@@ -2634,3 +2634,209 @@ avatarUrl: '/placeholder-avatar.svg' // ✓ Exists, consistent
 ### Status Update
 All broken images fixed. Gym-chat page now displays proper placeholder images for all gyms and users.
 
+
+
+
+---
+
+## Session: Fixed Critical Profile Deck, Messaging, and Notification Bugs (2025-12-26)
+
+### Tickets
+- TICKET-TNS-001: Safety and Moderation Readiness (continued QA testing)
+- Multiple critical bug fixes discovered during testing
+
+### Work Performed
+Fixed four critical bugs that prevented core functionality from working during QA testing with 3 test accounts.
+
+### Issues Fixed
+
+#### 1. Profile Deck Not Rotating (CRITICAL)
+**Symptoms:**
+- Clicking "Next" button on /home page didn't show different users
+- Same profile always appeared first regardless of button clicks
+- Users reported: "Eventually I see another user but it's always the same single other user"
+
+**Root Cause:**
+```typescript
+// handleNext rotated the deck array:
+setDeck(prev => [...rest, first])
+
+// But filteredDeck re-sorted by match score every render:
+return filtered.sort((a, b) => getMatchScore(b) - getMatchScore(a))
+
+// Result: Same profile always at position [0] regardless of rotation
+```
+
+**Solution:**
+Changed handleNext to remove current profile instead of rotating:
+```typescript
+// Remove the current profile from deck (don't rotate)
+setDeck(prev => prev.filter(p => p.id !== current.id))
+```
+
+**Files Modified:**
+- `src/app/home/page.tsx` - Updated handleNext function
+
+---
+
+#### 2. RLS Policy Blocking Message Sends (CRITICAL)
+**Symptoms:**
+- Error when sending messages: "new row violates row-level security policy for table 'messages'"
+- HTTP 403 on message insert
+
+**Root Cause:**
+RLS policy on messages table requires sender to exist in `thread_participants`:
+```sql
+EXISTS (SELECT 1 FROM thread_participants WHERE thread_id = messages.thread_id AND user_id = auth.uid())
+```
+
+But code only created thread_participants for group threads, not direct messages.
+
+**Solution:**
+Ensure thread_participants exist for BOTH users in direct threads before sending:
+```typescript
+if (isDirect && otherUserId) {
+  await client
+    .from('thread_participants')
+    .upsert([
+      { thread_id: chatId, user_id: userId, role: 'member' },
+      { thread_id: chatId, user_id: otherUserId, role: 'member' }
+    ])
+}
+```
+
+**RLS Policy Fix:**
+Fixed infinite recursion in thread_participants SELECT policy by only referencing threads table:
+```sql
+CREATE POLICY "Users can view thread participants"
+  ON thread_participants FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM threads
+      WHERE id = thread_participants.thread_id
+      AND (user_a = auth.uid() OR user_b = auth.uid())
+    )
+  );
+```
+
+**Files Modified:**
+- `src/app/chats/[id]/page.tsx` - Added thread_participants upsert for direct threads
+
+**SQL Migrations:**
+- Fixed thread_participants RLS policies (SELECT, INSERT, UPDATE, DELETE)
+
+---
+
+#### 3. Notifications Sent to Wrong Users (CRITICAL SECURITY)
+**Symptoms:**
+- User A sent message to User C
+- User B (NOT in conversation) also received notification
+- Privacy violation: Users saw message previews for conversations they weren't part of
+
+**Root Cause:**
+MessageToastListener subscribed to ALL message inserts without filtering by participation:
+```typescript
+channel.on(
+  'postgres_changes',
+  { event: 'INSERT', schema: 'public', table: 'messages' },
+  handleNewMessage
+)
+```
+
+Only filtered out:
+1. Messages sent by current user
+2. Messages in currently viewed thread
+
+**Never checked if user was a participant!**
+
+**Solution:**
+Added participant verification before showing toast:
+```typescript
+// Check thread_participants table
+const { data: participantEntry } = await client
+  .from('thread_participants')
+  .select('id')
+  .eq('thread_id', message.thread_id)
+  .eq('user_id', userId)
+  .maybeSingle()
+
+// Fallback: check if direct thread where user is user_a or user_b
+if (!participantEntry) {
+  const { data: thread } = await client
+    .from('threads')
+    .select('user_a, user_b, type')
+    .eq('id', message.thread_id)
+    .maybeSingle()
+
+  if (!thread) return
+  
+  const isParticipant = thread.user_a === userId || thread.user_b === userId
+  if (!isParticipant) return // User is not part of this thread
+}
+```
+
+**Security Impact:**
+Before fix: Users could see toast notifications (including message preview text) for private conversations they weren't part of.
+
+**Files Modified:**
+- `src/components/MessageToastListener.tsx` - Added participant verification
+
+---
+
+#### 4. Toast Notifications Missing Sender Avatar (UX Enhancement)
+**Request:**
+Add sender's profile picture to message toast notifications for better UX.
+
+**Solution:**
+1. Added optional `avatarUrl` field to Toast type
+2. Updated ToastItem component to display circular avatar when available (falls back to icon)
+3. Modified MessageToastListener to fetch sender's avatar along with name
+4. Added CSS styles for toast-avatar (40px circular image)
+
+**Implementation:**
+```typescript
+// Fetch sender info including avatar
+const getSenderInfo = async (senderId: string): Promise<{ name: string; avatarUrl: string | null }> => {
+  const profile = profiles[0]
+  const name = profile.username?.split(' ')[0] || 'Someone'
+  const avatarUrl = profile.avatar_url || profile.photo || null
+  return { name, avatarUrl }
+}
+
+// Pass to toast
+addToast({
+  type: 'message',
+  title,
+  message: truncatedBody,
+  avatarUrl: senderInfo.avatarUrl,  // New field
+  duration: 5000,
+  onClick: () => router.push(`/chats/${message.thread_id}`)
+})
+```
+
+**Files Modified:**
+- `src/components/Toast.tsx` - Added avatarUrl field and rendering logic
+- `src/components/MessageToastListener.tsx` - Fetch and pass avatar
+- `src/app/globals.css` - Added .toast-avatar and .toast-avatar-img styles
+
+---
+
+### Testing Results
+✅ User A, B, C can all see each other on /home profile deck  
+✅ Clicking "Next" properly rotates through different profiles  
+✅ Messages send successfully between all users  
+✅ Notifications only appear for actual conversation participants  
+✅ Toast notifications show sender's profile picture  
+
+### Commits
+1. `b850c2f` - fix: profile deck not rotating - remove instead of rotate
+2. `e96ad06` - fix: RLS policy violation when sending messages
+3. `acda37b` - fix: CRITICAL - notifications sent to wrong users
+4. `2829b53` - feat: add sender avatar to message toast notifications
+
+### Security Notes
+The notification privacy bug (Issue #3) was a **critical security vulnerability**. Users were receiving notifications with message previews for conversations they had no access to. This has been completely fixed with proper participant verification.
+
+### Status Update
+All critical bugs fixed. Core messaging functionality is now working correctly with proper privacy controls. Ready to continue QA testing of safety and moderation features.
