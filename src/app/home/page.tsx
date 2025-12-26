@@ -256,46 +256,47 @@ export default function HomeScreen() {
       // Exclude current user's own profile
       if (currentUserProfile?.id && p.id === currentUserProfile.id) return false
 
+      // TEMPORARILY DISABLED FILTERS FOR QA TESTING
       // Filter by city - case-insensitive match
-      if (filters.city !== 'All') {
-        const profileCity = (p.city || p.homebase || '').trim().toLowerCase()
-        const filterCity = filters.city.trim().toLowerCase()
-        if (profileCity !== filterCity) {
-          return false
-        }
-      }
+      // if (filters.city !== 'All') {
+      //   const profileCity = (p.city || p.homebase || '').trim().toLowerCase()
+      //   const filterCity = filters.city.trim().toLowerCase()
+      //   if (profileCity !== filterCity) {
+      //     return false
+      //   }
+      // }
 
-      // Filter by climbing style - case-insensitive match
-      if (filters.style !== 'All') {
-        const profileStyles = getStylesFromProfile(p).map(s => s.trim().toLowerCase())
-        const filterStyle = filters.style.trim().toLowerCase()
-        if (!profileStyles.includes(filterStyle)) {
-          return false
-        }
-      }
+      // // Filter by climbing style - case-insensitive match
+      // if (filters.style !== 'All') {
+      //   const profileStyles = getStylesFromProfile(p).map(s => s.trim().toLowerCase())
+      //   const filterStyle = filters.style.trim().toLowerCase()
+      //   if (!profileStyles.includes(filterStyle)) {
+      //     return false
+      //   }
+      // }
 
-      // Filter by gym - check if profile's gym array includes the selected gym
-      // The gym array may contain gym IDs (UUIDs) or gym names, so we check both
-      if (filters.gym !== 'All') {
-        const profileGyms = Array.isArray(p.gym) ? p.gym : []
-        if (profileGyms.length === 0) return false
+      // // Filter by gym - check if profile's gym array includes the selected gym
+      // // The gym array may contain gym IDs (UUIDs) or gym names, so we check both
+      // if (filters.gym !== 'All') {
+      //   const profileGyms = Array.isArray(p.gym) ? p.gym : []
+      //   if (profileGyms.length === 0) return false
 
-        // Find the gym ID that matches the selected gym name
-        const selectedGymId = Array.from(gymMap.entries()).find(
-          ([_, name]) => name.trim().toLowerCase() === filters.gym.trim().toLowerCase()
-        )?.[0]
+      //   // Find the gym ID that matches the selected gym name
+      //   const selectedGymId = Array.from(gymMap.entries()).find(
+      //     ([_, name]) => name.trim().toLowerCase() === filters.gym.trim().toLowerCase()
+      //   )?.[0]
 
-        // Check if profile has the gym by ID or by name (handles both cases)
-        const hasGym = profileGyms.some(g => {
-          if (!g || typeof g !== 'string') return false
-          const trimmed = g.trim().toLowerCase()
-          const filterGym = filters.gym.trim().toLowerCase()
-          // Match by ID (UUID format) or by name
-          return trimmed === selectedGymId?.toLowerCase() || trimmed === filterGym
-        })
+      //   // Check if profile has the gym by ID or by name (handles both cases)
+      //   const hasGym = profileGyms.some(g => {
+      //     if (!g || typeof g !== 'string') return false
+      //     const trimmed = g.trim().toLowerCase()
+      //     const filterGym = filters.gym.trim().toLowerCase()
+      //     // Match by ID (UUID format) or by name
+      //     return trimmed === selectedGymId?.toLowerCase() || trimmed === filterGym
+      //   })
 
-        if (!hasGym) return false
-      }
+      //   if (!hasGym) return false
+      // }
 
       return true
     })
