@@ -2494,28 +2494,33 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   border: none;
   border-radius: var(--radius-md);
   background-image: linear-gradient(247.35416303387024deg, var(--color-secondary) 11.557%, var(--color-primary) 87.691%);
-  font-family: Inter, var(--fontfamily-inter), sans-serif; /* button/base */
-  font-size: var(--font-size-md); /* button/base */
+  font-family: Inter, var(--fontfamily-inter), sans-serif;
+  font-size: var(--font-size-md);
   font-style: normal;
-  font-weight: 700; /* button/base */
+  font-weight: 700;
   line-height: normal;
-  color: var(--color-bg, var(--color-bg));
+  color: var(--color-bg);
   text-align: center;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0); /* Transparent shadow - exact same dimensions as hover */
+  outline: none;
+  outline-offset: -1px; /* Makes outline render inside like a border */
+  position: relative;
+  will-change: transform;
   justify-content: center;
   min-width: var(--btn-min-width-lg);
   cursor: pointer;
-  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+  transition: outline-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 }
 
 .button-cta:hover:not(:disabled),
 .site-header-cta-btn:hover:not(:disabled) {
-  border: 1px solid var(--color-primary); /* color/primary */
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(92, 225, 230, 0.3);
-  color: var(--color-bg, var(--color-bg)) !important;
+  outline: 1px solid var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-dab-glow);
+  color: var(--color-bg) !important;
   text-decoration: none;
 }
 
@@ -4261,22 +4266,126 @@ input[type=number] {
 /* Old button classes removed - replaced by Figma button component system */
 
 /* Responsive - smaller screens */
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .fc-card {
     width: 100%;
+    max-width: 100%;
+    position: relative;
+    z-index: 1; /* Prevent overlay issues */
   }
-  
+
+  .fc-inner {
+    padding: var(--space-lg);
+    gap: var(--space-lg);
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fc-pills-row {
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
   .fc-content-row {
     flex-direction: column;
     height: auto;
+    gap: var(--space-md);
+    flex-shrink: 0;
   }
-  
+
+  .fc-image-wrapper {
+    width: 100%;
+    height: 240px;
+    flex: none;
+    flex-shrink: 0;
+  }
+
+  .fc-tags-wrapper {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    overflow: visible; /* Show all chips */
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .fc-tags-row {
+    justify-content: flex-start;
+    overflow: visible; /* Show all chips */
+    position: relative;
+    z-index: 1;
+  }
+
+  .fc-bio {
+    margin-top: var(--space-md);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+  }
+
+  .fc-cta-row {
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .fc-card {
+    width: 100%;
+    margin: 0;
+  }
+
+  .fc-inner {
+    padding: var(--space-md);
+    gap: var(--space-md);
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fc-pills-row {
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    overflow: visible;
+    flex-shrink: 0;
+  }
+
+  .fc-content-row {
+    gap: var(--space-sm);
+    flex-shrink: 0;
+  }
+
   .fc-image-wrapper {
     height: 200px;
+    flex-shrink: 0;
   }
-  
+
   .fc-tags-wrapper {
+    overflow: visible;
+    min-height: 0;
     height: auto;
+    flex-shrink: 0;
+  }
+
+  .fc-tags-row {
+    overflow: visible;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .fc-bio {
+    font-size: var(--font-size-sm);
+    margin-top: var(--space-md);
+    flex-shrink: 0;
+    position: relative;
+    clear: both;
+  }
+
+  .fc-cta-row {
+    margin-top: var(--space-md);
+    flex-shrink: 0;
   }
 }
 
@@ -5427,7 +5536,7 @@ input[type=number] {
    z-index: 1 to be above background gradients */
 .landing-content {
   max-width: 1200px;
-  width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: var(--space-xl);
   display: flex;
@@ -5463,6 +5572,13 @@ input[type=number] {
   flex-direction: column;
   gap: var(--space-sm);
   align-items: flex-start;
+}
+
+/* Override min-width on smaller screens */
+@media (max-width: 640px) {
+  .landing-hero-left {
+    min-width: 0;
+  }
 }
 
 /* Eyebrow - font-bold text-[14px] text-[var(--color-primary)] uppercase */
@@ -5502,12 +5618,14 @@ input[type=number] {
   flex-wrap: wrap;
   gap: var(--space-md);
   align-items: flex-start;
-  padding: calc(var(--space-lg) + 2px) 0 var(--space-lg) 0; /* Extra top padding for hover elevation */
+  padding: var(--space-lg) 0; /* Consistent vertical padding */
+  margin: var(--space-xxs) 0; /* Extra margin for button hover effects */
 }
 
 /* Prevent layout shift from button hover transforms */
 .landing-hero-actions button {
   will-change: transform;
+  margin: var(--space-xxs) 0; /* Vertical margin to prevent affecting siblings */
 }
 
 /* Hero Badges - flex flex-wrap gap-[8px] pb-[16px] */
@@ -5561,7 +5679,7 @@ input[type=number] {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  overflow: clip;
+  overflow: visible;
   width: 100%;
 }
 
@@ -5807,14 +5925,14 @@ input[type=number] {
   color: var(--color-primary);
 }
 
-/* Grid Profiles Grid - flex flex-wrap gap-[6px] justify-between p-[20px] */
+/* Grid Profiles Grid - flex flex-wrap gap-[16px] justify-between p-[20px] */
 .grid-profiles-grid-new {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-xs);
+  gap: var(--space-lg); /* 16px spacing between cards */
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 20px;
+  align-items: stretch; /* All cards in a row match the tallest card height */
+  padding: var(--btn-pad-xxxxl);
   width: 100%;
   align-content: flex-start;
 }
@@ -5826,7 +5944,7 @@ input[type=number] {
 
 /* Card Container
    Figma: bg-[var(--color-card)] border border-[var(--color-stroke)] min-w-[366px] w-[366px] rounded-[14px]
-   Fixed height for consistent card sizing */
+   Cards stretch to match tallest in row */
 .gpc {
   background: var(--color-card);
   border: 1px solid var(--color-stroke);
@@ -5834,23 +5952,24 @@ input[type=number] {
   min-width: 0;
   width: 100%;
   max-width: 366px;
-  height: auto;
   flex: 1 1 320px;
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Card Inner
    Figma: flex flex-col gap-[12px] p-[20px] overflow-clip rounded-[inherit] w-[366px]
-   Using justify-between to spread content evenly
-   Note: overflow changed to visible to allow button hover effects */
+   Note: overflow changed to visible to allow button hover effects
+   Note: removed justify-content: space-between to allow buttons to stick to bottom via margin-top: auto
+   Note: min-height ensures buttons can float to bottom */
 .gpc-inner {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: var(--space-md);
   padding: var(--space-lg); /* 16px - space/lg token for consistent card padding */
   width: 100%;
-  height: auto;
+  min-height: 460px; /* Ensures space for content + buttons to float to bottom */
   min-width: 0;
   overflow: visible; /* Changed from clip to allow button hover effects */
   border-radius: inherit;
@@ -6051,12 +6170,12 @@ input[type=number] {
 
 /* Status Dot - 8px pulsing */
 .gpc-dot {
-  width: 8px;
-  height: 8px;
+  width: var(--space-sm);
+  height: var(--space-sm);
   border-radius: 50%;
   background: var(--color-primary);
   display: inline-block;
-  margin-right: 6px;
+  margin-right: var(--space-xs);
   flex-shrink: 0;
 }
 
@@ -6084,7 +6203,7 @@ input[type=number] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xs) 10px;
+  padding: var(--space-xs) var(--btn-pad-md);
   border-radius: var(--radius-circle);
   font-size: var(--font-size-xs);
   font-weight: 700;
@@ -6111,8 +6230,8 @@ input[type=number] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xs) 8px;
-  border-radius: 8px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-chip);
   font-size: var(--font-size-xs);
   font-weight: 400;
   font-family: 'Inter', sans-serif;
@@ -6168,21 +6287,22 @@ input[type=number] {
    Figma: bg-[var(--color-panel)] border border-[var(--color-red)] text-[var(--color-red)]
    px-[8px] py-[6px] rounded-[8px] text-[12px] Inter Regular */
 .gpc-chip.pro {
-  background: var(--color-panel); /* color/panel */
-  border: 1px solid var(--color-red); /* color/red */
-  color: var(--color-red); /* color/red */
-  padding: var(--space-xs) 8px; /* py: button/padding/xs, px: button/padding/sm */
-  border-radius: 8px; /* space/sm */
-  font-size: var(--font-size-xs); /* body/xs */
-  font-weight: 400; /* Regular */
+  background: var(--color-panel);
+  border: 1px solid var(--color-red);
+  color: var(--color-red);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-chip);
+  font-size: var(--font-size-xs);
+  font-weight: 400;
 }
 
 /* Bio
-   Figma: flex gap-[8px] py-[10px] w-full */
+   Figma: flex gap-[8px] py-[10px] w-full
+   Note: removed vertical padding to reduce gap before buttons */
 .gpc-bio {
   display: flex;
   gap: var(--space-sm);
-  padding: 10px 0;
+  padding: 0;
   width: 100%;
   align-items: flex-start;
   flex-shrink: 0;
@@ -6207,13 +6327,14 @@ input[type=number] {
    Changed overflow: clip to visible to allow button hover effects (elevation + glow) */
 .gpc-cta {
   display: flex;
-  gap: var(--space-sm); /* 8px - space/sm from UI library */
+  gap: var(--space-sm);
   align-items: center;
   width: 100%;
   overflow: visible; /* Changed from clip to allow button hover transform */
   flex-shrink: 0;
-  padding-top: 2px; /* Allow space for hover elevation */
-  padding-bottom: 2px; /* Allow space for glow shadow */
+  padding-top: var(--space-xxxs); /* Allow space for hover elevation */
+  padding-bottom: var(--space-xxxs); /* Allow space for glow shadow */
+  margin-top: auto; /* Sticky to bottom of card */
 }
 
 /* Pass Button
@@ -6223,7 +6344,7 @@ input[type=number] {
   flex: 1 0 0;
   min-width: 1px;
   min-height: 1px;
-  padding: 10px 16px;
+  padding: var(--btn-pad-md) var(--btn-pad-xxl);
   border: 1px solid var(--color-stroke);
   background: transparent;
   color: var(--color-text);
@@ -6256,12 +6377,12 @@ input[type=number] {
   flex: 1 0 0;
   min-width: 1px;
   min-height: 1px;
-  height: 38px;
-  padding: 10px 16px;
+  height: var(--btn-height-lg);
+  padding: var(--btn-pad-md) var(--btn-pad-xxl);
   border: 1px solid var(--color-primary);
   background: transparent;
   border-radius: var(--radius-md);
-  box-shadow: 0px 0px 20px 0px rgba(92, 225, 230, 0.4);
+  box-shadow: var(--shadow-dab-glow);
   cursor: pointer;
   transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
   display: flex;
@@ -6881,7 +7002,7 @@ input[type=number] {
   border-radius: var(--radius-lg);
   display: flex;
   align-items: flex-start;
-  overflow: clip;
+  overflow: visible;
 }
 
 /* Left Side - flex flex-col gap-[8px] p-[20px] */
@@ -6901,7 +7022,7 @@ input[type=number] {
   gap: var(--space-sm); /* 8px - space/sm */
   padding: var(--btn-pad-xxxxl); /* 20px - button/padding/xxxxl from UI library */
   width: 100%;
-  overflow: clip;
+  overflow: visible;
 }
 
 .landing-signup-text {
@@ -7435,10 +7556,10 @@ input[type=number] {
 /* Footer - bg-[var(--color-bg)] px-[24px] py-[16px] shadow-[0px_20px_60px_0px_rgba(0,0,0,0.4)] w-full */
 .landing-footer {
   background: var(--color-bg);
-  padding: var(--space-lg) 24px;
+  padding: var(--space-lg) var(--space-xl);
   box-shadow: var(--shadow-base);
   width: 100%;
-  overflow: clip;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -7526,81 +7647,466 @@ input[type=number] {
   color: var(--color-text);
 }
 
+/* ============================================
+   SAFETY & GUIDELINES PAGES
+   ============================================ */
+
+/* Hide mobile navigation on desktop, show footer */
+@media (min-width: 769px) {
+  .safety-page > .mobile-topbar,
+  .safety-page .mobile-topbar,
+  .safety-page > .mobile-navbar,
+  .safety-page .mobile-navbar,
+  .guidelines-page > .mobile-topbar,
+  .guidelines-page .mobile-topbar,
+  .guidelines-page > .mobile-navbar,
+  .guidelines-page .mobile-navbar {
+    display: none !important;
+  }
+
+  .safety-page .desktop-footer,
+  .guidelines-page .desktop-footer {
+    display: block !important;
+  }
+
+  .safety-page,
+  .guidelines-page {
+    padding-bottom: 0;
+  }
+}
+
+/* Hide footer on mobile, show mobile navbar */
+@media (max-width: 768px) {
+  .safety-page .desktop-footer,
+  .guidelines-page .desktop-footer {
+    display: none !important;
+  }
+}
+
 /* Landing Page Responsive */
 @media (max-width: 1200px) {
   .landing-content {
     padding: var(--space-lg);
   }
-  
+
   .landing-hero-content {
     flex-direction: column;
   }
-  
+
   .landing-hero-right {
     width: 100%;
     min-width: 0;
+    max-width: 100%;
   }
-  
+
   .landing-grid-profiles-content {
     flex-direction: column;
   }
-  
+
   .landing-grid-profiles-right {
     width: 100%;
     min-width: 0;
   }
-  
+
   .landing-signup-content {
     flex-direction: column;
   }
-  
+
   .landing-signup-right {
     width: 100%;
     min-width: 0;
   }
-  
+
   .landing-signup-form-card {
     width: 100%;
+    min-width: 0;
+  }
+
+  /* Grid profiles block - stack vertically */
+  .grid-profiles-block-new {
+    flex-direction: column;
+    gap: var(--space-xl);
+  }
+
+  .grid-profiles-text-filter-new {
+    height: auto;
+    min-height: 0;
+  }
+
+  .grid-profiles-right-new {
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
   }
 }
 
 @media (max-width: 768px) {
+  .landing-content {
+    padding: var(--space-lg);
+    gap: var(--space-xxl); /* Increased gap between major sections */
+  }
+
   .landing-navbar-content {
     flex-wrap: wrap;
   }
-  
+
   .landing-navlinks {
     order: 3;
     width: 100%;
     justify-content: flex-start;
   }
-  
+
+  /* Hero section - stack vertically with proper order */
+  .landing-hero {
+    margin-top: 0;
+    margin-bottom: var(--space-xl);
+    display: block;
+    width: 100%;
+  }
+
+  .landing-hero-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xl);
+    display: flex;
+  }
+
+  .landing-eyebrow {
+    display: block;
+    visibility: visible;
+  }
+
   .landing-hero-title {
     font-size: var(--font-size-xxxl);
+    display: block;
+    visibility: visible;
+    width: 100%;
   }
-  
-  .landing-grid-title {
-    font-size: 24px;
+
+  .landing-hero-description {
+    display: block;
+    visibility: visible;
+    width: 100%;
   }
-  
+
+  .landing-hero-left {
+    min-width: 0 !important;
+    width: 100%;
+    max-width: 100%;
+    order: 1; /* Text and CTAs first */
+    display: flex !important;
+    flex-direction: column;
+    gap: var(--space-sm);
+    visibility: visible !important;
+    flex: 1 1 100%;
+  }
+
+  .landing-hero-right {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    order: 2; /* Featured card second */
+    display: block;
+    visibility: visible;
+  }
+
+  .landing-hero-actions {
+    display: flex;
+    width: 100%;
+    visibility: visible;
+  }
+
+  /* Featured card adjustments */
+  .fc-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Grid profiles section */
+  .grid-profiles-section-new {
+    margin-bottom: var(--space-xl);
+  }
+
+  .grid-profiles-container-new {
+    overflow: visible; /* Prevent clipping */
+  }
+
+  .grid-profiles-block-new {
+    padding: var(--space-lg);
+    overflow: visible; /* Prevent clipping */
+  }
+
+  .grid-profiles-title-new {
+    font-size: var(--font-size-xl);
+  }
+
+  .grid-profiles-filters-row-new {
+    padding-top: var(--space-md);
+  }
+
+  /* Grid - single column on mobile */
+  .grid-profiles-grid-new {
+    padding: var(--space-lg);
+    gap: var(--space-lg);
+    justify-content: center;
+  }
+
+  /* Grid profile cards - full width on mobile */
+  .gpc {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* Signup section */
+  .landing-signup {
+    margin-top: var(--space-xl);
+  }
+
+  .landing-signup-content {
+    overflow: visible; /* Prevent clipping */
+  }
+
   .landing-signup-title {
-    font-size: 24px;
+    font-size: var(--font-size-xl);
   }
-  
-  .landing-profiles-grid {
-    grid-template-columns: 1fr;
+
+  .landing-signup-text-block {
+    padding: var(--space-lg);
   }
-  
+
+  .landing-signup-form-wrapper {
+    padding: var(--space-lg);
+  }
+
+  .landing-signup-form-card {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .landing-signup-form-card-inner {
+    width: 100%;
+    padding: var(--space-lg);
+  }
+
+  .landing-signup-right {
+    min-width: 0;
+    padding: var(--space-lg);
+  }
+
+  .landing-activity-feed {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .landing-activity-feed-inner {
+    padding: var(--space-lg);
+  }
+
+  .landing-activity-number {
+    font-size: var(--font-size-xxxl);
+  }
+
+  /* Footer */
+  .landing-footer {
+    padding: var(--space-lg) var(--space-md);
+  }
+
   .landing-footer-content {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-md);
+    padding: 0;
   }
-  
+
   .landing-footer-links {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .landing-footer-links a {
+    padding: var(--space-sm) var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .landing-page {
+    padding-top: 0;
+  }
+
+  .landing-content {
+    padding: var(--space-lg) var(--space-md);
+    gap: var(--space-xl); /* Proper spacing between sections */
+  }
+
+  /* Hero - ensure it's at the top */
+  .landing-hero {
+    margin-top: 0;
+    margin-bottom: var(--space-xl);
+    padding-top: 0;
+    display: block;
+    width: 100%;
+  }
+
+  .landing-hero-content {
+    gap: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .landing-hero-left {
+    gap: var(--space-md);
+    order: 1;
+    display: flex !important;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    visibility: visible;
+    flex: 1 1 100%;
+  }
+
+  .landing-eyebrow {
+    margin-top: 0;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+  }
+
+  .landing-hero-title {
+    font-size: var(--font-size-display); /* 52px - large display size */
+    margin-top: 0;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .landing-hero-description {
+    font-size: var(--font-size-sm);
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .landing-hero-actions {
+    width: 100%;
+    gap: var(--space-sm);
+    padding-top: var(--space-md);
+    display: flex;
+    visibility: visible;
+  }
+
+  .landing-hero-actions button {
+    width: 100%;
+  }
+
+  .landing-hero-badges {
+    padding-bottom: var(--space-md);
+    display: flex;
+  }
+
+  /* Featured climber card - prevent overlay */
+  .landing-hero-right {
+    margin-top: var(--space-md);
+    order: 2;
+    display: block;
+    width: 100%;
+    visibility: visible;
+  }
+
+  /* Grid profiles - hide on smallest screens */
+  .grid-profiles-section-new {
+    display: none;
+  }
+
+  .gpc-content {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .gpc-left {
+    width: 100%;
+    min-width: 0;
+    height: 200px;
+  }
+
+  .gpc-right {
+    width: 100%;
+    height: auto;
+  }
+
+  .gpc-tags {
+    justify-content: flex-start;
+  }
+
+  /* Signup */
+  .landing-signup-text-block {
+    padding: var(--space-md);
+  }
+
+  .landing-signup-form-wrapper {
+    padding: var(--space-md);
+  }
+
+  .landing-signup-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .landing-signup-eyebrow {
+    font-size: var(--font-size-md);
+  }
+
+  .landing-signup-description {
+    font-size: var(--font-size-sm);
+  }
+
+  .landing-signup-form-card-inner {
+    padding: var(--space-md);
+  }
+
+  .landing-signup-right {
+    padding: var(--space-md);
+  }
+
+  .landing-activity-feed-inner {
+    padding: var(--space-md);
+  }
+
+  .landing-activity-number {
+    font-size: var(--font-size-xxl);
+  }
+
+  .landing-activity-label {
+    font-size: var(--font-size-lg);
+  }
+
+  /* Footer */
+  .landing-footer {
+    padding: var(--space-md) var(--space-sm);
+  }
+
+  .footer-logo-img {
+    height: 32px;
+  }
+
+  .landing-footer-text {
+    font-size: var(--font-size-sm);
+  }
+
+  .landing-footer-links {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .landing-footer-links a {
+    width: 100%;
+    padding: var(--space-sm);
   }
 }
 
@@ -11541,7 +12047,7 @@ div.mh-silver-card[data-name="card2"] {
   align-items: stretch; /* stretch children to equal height/width */
   width: 100%;
   flex-shrink: 0;
-  margin-top: var(--space-md);
+  margin-top: auto; /* Sticky to bottom of card */
 }
 
 /* Button Row Wrapper - EXACT from Figma

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { RequireAuth } from '@/components/RequireAuth'
 import MobileTopbar from '@/components/MobileTopbar'
 import MobileNavbar from '@/components/MobileNavbar'
@@ -210,6 +211,50 @@ export default function ProfilePage() {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Help & Safety Links */}
+          <div style={{
+            padding: 'var(--space-lg)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-md)',
+            marginBottom: 'var(--space-xl)'
+          }}>
+            <h3 style={{
+              fontSize: 'var(--font-size-md)',
+              fontWeight: 'bold',
+              color: 'var(--color-text)',
+              marginBottom: 'var(--space-xs)'
+            }}>
+              Help & Safety
+            </h3>
+            <Link
+              href="/community-guidelines"
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-primary)',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-xs)'
+              }}
+            >
+              Community Guidelines →
+            </Link>
+            <Link
+              href="/safety"
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-primary)',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-xs)'
+              }}
+            >
+              Safety Guidelines →
+            </Link>
           </div>
 
           <MobileNavbar active="Default" />
