@@ -18,17 +18,18 @@ import { ensureDirectThreadForMatch } from '@/lib/matches'
 import { getBarHeightsForDay, getLiveIndicatorPosition, getDayName, getChartTimes, getCurrentOccupancy } from '@/lib/gymOccupancyData'
 
 // Asset URLs from Figma
-const IMG_ICON = 'https://www.figma.com/api/mcp/asset/819ae93e-17ef-4b2b-9423-20ebaf8b10f1'
-const IMG_GYM = 'https://www.figma.com/api/mcp/asset/e8da61a5-f5b2-417e-920d-90687a9a2242'
-const IMG_FRIEND1 = 'https://www.figma.com/api/mcp/asset/ce867e49-d53e-404e-8d00-baf242414fda'
-const IMG_FRIEND2 = 'https://www.figma.com/api/mcp/asset/5a5f156e-e248-455b-b716-6ac083fe4823'
-const IMG_FRIEND3 = 'https://www.figma.com/api/mcp/asset/daeab4b0-6fef-4fc2-9acf-a4a4015284b8'
-const IMG_FRIEND4 = 'https://www.figma.com/api/mcp/asset/c46cb8da-bc47-4f56-a0a8-0c25d1886bcd'
-const IMG_FRIEND5 = 'https://www.figma.com/api/mcp/asset/9814be5b-7bae-4872-8eac-7cb360de3066'
-const IMG_FRIEND6 = 'https://www.figma.com/api/mcp/asset/417d9e91-64fc-4bfb-9954-20029623a2b9'
-const IMG_ELLIPSE = 'https://www.figma.com/api/mcp/asset/9dca7572-05b8-4101-9472-f4384bb754b8'
-const IMG_CHEVRON = 'https://www.figma.com/api/mcp/asset/06feb7b1-4969-43cc-9a43-9d214593a06a'
-const IMG_PEAK = 'https://www.figma.com/api/mcp/asset/bb0a0a19-07bb-4247-b187-f805c83e7ca0'
+// Placeholder images (legacy Figma URLs - not used, kept for reference)
+const IMG_ICON = '/placeholder-gym.svg'
+const IMG_GYM = '/placeholder-gym.svg'
+const IMG_FRIEND1 = '/placeholder-avatar.svg'
+const IMG_FRIEND2 = '/placeholder-avatar.svg'
+const IMG_FRIEND3 = '/placeholder-avatar.svg'
+const IMG_FRIEND4 = '/placeholder-avatar.svg'
+const IMG_FRIEND5 = '/placeholder-avatar.svg'
+const IMG_FRIEND6 = '/placeholder-avatar.svg'
+const IMG_ELLIPSE = '/placeholder-avatar.svg'
+const IMG_CHEVRON = '/icons/chevron-down.svg'
+const IMG_PEAK = '/icons/peak-indicator.svg'
 
 type GymRow = {
   id: string

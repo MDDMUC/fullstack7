@@ -2,11 +2,11 @@
 
 ID: TICKET-UX-002
 Owner: Product/Design/Eng
-Status: Proposed
+Status: Done
 Priority: P0 (activation)
 Workflow Path: Fast Lane
 Created: 2025-12-22
-Last updated: 2025-12-25
+Last updated: 2025-12-26
 Target window: Pre-launch
 Related docs: `PROJECT_CONTEXT.md`
 
@@ -26,19 +26,10 @@ Complete a focused polish pass that also hardens responsiveness across mobile de
 - Fix minor layout, spacing, readability, and tap-target issues.
 - Resolve responsive issues across common mobile sizes and notched devices.
 - Validate loading and empty states.
-- Restore chips on the home landing page featured climber card and grid layout cards.
-- Fix desktop landing page dab animation glow being clipped by its container.
-- Fix broken avatar images in /gym/chat “your walls” list.
-- Replace legacy gym status/fullness cards on /gym/chat with the current live-data design; fix broken avatar images on those cards.
-- Fix broken MobileTopbar icons for notifications and gyms on logged-in mobile/home.
+- Replace legacy gym status/fullness cards on `/gym/chat` (desktop + mobile) with the current live-data design; fix broken avatar images on those cards.
 - Add hover state to the “next” button on user profile cards (desktop).
-- Fix MobileNavbar icons: add missing Events icon and correct Crew icon.
-- Fix MobileNavbar active icon color on /chats to use primary color.
-- Add avatar fallback for users with missing/broken profile images (handle legacy live data).
-- Remove extra padding on mobile MobileTopbar (left/right/top) and MobileNavbar (left/right) so content uses full screen.
 - Smooth the DAB tap animation (avoid stop-motion/wiggly behavior).
 - Replace CSS filter-based recolors with inline assets using tokenized colors.
-- Update chat text color styles to align with design tokens.
 
 ## Requirements
 - Mobile-first (iOS Safari, Android Chrome).

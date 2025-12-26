@@ -2363,24 +2363,31 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   height: 24px;
 }
 
+.mobile-navbar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-darker); /* Inactive: darker token */
+}
+
+.mobile-navbar-icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .mobile-navbar-icon.default-state {
-  /* Default: text color (muted gray) */
-  filter: brightness(0) saturate(100%) invert(56%) sepia(9%) saturate(572%) hue-rotate(184deg) brightness(95%) contrast(90%);
+  color: var(--color-darker); /* Inactive: darker token */
 }
 
-.mobile-navbar-item:hover .mobile-navbar-icon {
-  /* Hover: primary color (#5ce1e6) */
-  filter: brightness(0) saturate(100%) invert(84%) sepia(26%) saturate(1487%) hue-rotate(127deg) brightness(99%) contrast(97%);
-}
-
+.mobile-navbar-item:hover .mobile-navbar-icon,
 .mobile-navbar-icon.active {
-  /* Active: primary color (#5ce1e6) */
-  filter: brightness(0) saturate(100%) invert(84%) sepia(26%) saturate(1487%) hue-rotate(127deg) brightness(99%) contrast(97%);
+  color: var(--color-primary); /* Active/hover: primary token */
 }
 
 .mobile-navbar-label {
   height: 14px;
-  color: var(--color-text);
+  color: var(--color-text); /* Inactive: default/text token */
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   line-height: 1;
@@ -2390,11 +2397,11 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
 }
 
 .mobile-navbar-item:hover .mobile-navbar-label {
-  color: var(--color-primary);
+  color: var(--color-primary); /* Hover: primary token */
 }
 
 .mobile-navbar-label.active {
-  color: var(--color-primary);
+  color: var(--color-primary); /* Active: primary token */
 }
 
 .mobile-navbar-dot {
@@ -2587,9 +2594,11 @@ input[type=number] {
 
 /* Navlink Hover - property2="hover"
    Figma: bg-[var(--color-card)] text-[color:var(---text,var(--color-text))] */
-.button-navlink-hover {
+.button-navlink-hover,
+.button-navlink:hover:not(:disabled) {
   background: var(--color-card); /* color/card - EXACT from Figma */
   color: var(--color-text); /* color/text - EXACT from Figma */
+  transition: background 150ms ease, color 150ms ease;
 }
 
 .button-navlink:focus-visible {
@@ -5000,6 +5009,7 @@ input[type=number] {
 
 .gym-chat-grid { display: grid; grid-template-columns: minmax(260px, 300px) 1fr minmax(260px, 320px); gap: var(--space-lg); align-items: start; }
 .gym-chat-grid .panel { display: flex; flex-direction: column; gap: var(--space-md); height: 100%; }
+.gym-chat-grid aside.panel { padding: var(--space-lg); }
 .thread-panel { display: grid; grid-template-rows: auto auto 1fr auto; gap: 10px; min-height: 520px; }
 .thread-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 .thread-tab { position: relative; background: #0f131d; border: 1px solid var(--color-stroke); border-radius: 12px; padding: var(--space-md); text-align: left; color: var(--color-text); transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }
@@ -6104,7 +6114,7 @@ input[type=number] {
   height: 22px;
   width: 36.5px;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
+  /* TODO: Replace with primary-colored SVG icon asset using var(--color-primary) */
 }
 
 /* ============================================
@@ -7575,8 +7585,8 @@ input[type=number] {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* Tint the white SVG to match the muted color */
-  filter: brightness(0) saturate(100%) invert(68%) sepia(11%) saturate(548%) hue-rotate(175deg) brightness(91%) contrast(87%);
+  /* TODO: Replace with SVG logo using var(--color-muted) instead of filter recolor */
+  opacity: 0.7;
 }
 
 /* Content Container
@@ -10904,7 +10914,7 @@ div.mh-silver-card[data-name="card2"] {
   justify-content: center;
   font-size: 28px;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.25);
-  animation: thumb-pop 0.4s ease-out;
+  animation: thumb-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .home-dab-confetti-burst {
@@ -10916,7 +10926,7 @@ div.mh-silver-card[data-name="card2"] {
     radial-gradient(circle at 80% 25%, var(--color-secondary) 0 7%, transparent 9%),
     radial-gradient(circle at 60% 70%, var(--color-text) 0 7%, transparent 9%),
     radial-gradient(circle at 30% 80%, var(--color-bg) 0 6%, transparent 8%);
-  animation: confetti-burst 1.2s ease-out;
+  animation: confetti-burst 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   mix-blend-mode: screen;
 }
 
@@ -11027,27 +11037,23 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 @keyframes orb-drift-1 {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
   50% { transform: translate(12px, -10px) scale(1.1); opacity: 1; }
-  100% { transform: translate(-4px, 6px) scale(0.95); opacity: 0.8; }
 }
 
 @keyframes orb-drift-2 {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
   50% { transform: translate(-10px, -6px) scale(1.05); opacity: 1; }
-  100% { transform: translate(6px, 8px) scale(0.9); opacity: 0.8; }
 }
 
 @keyframes orb-drift-3 {
-  0% { transform: translate(0, 0) scale(1); opacity: 0.8; }
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.8; }
   50% { transform: translate(8px, 10px) scale(1.12); opacity: 1; }
-  100% { transform: translate(-6px, -4px) scale(0.92); opacity: 0.8; }
 }
 
 @keyframes sparkle-twinkle {
-  0% { opacity: 0.2; transform: scale(0.95); }
+  0%, 100% { opacity: 0.2; transform: scale(0.95); }
   50% { opacity: 0.9; transform: scale(1.05); }
-  100% { opacity: 0.2; transform: scale(0.95); }
 }
 
 .home-loading {
@@ -12802,7 +12808,8 @@ div.mh-silver-card[data-name="card2"] {
 
 /* Active chats icon should be cyan */
 .chats-bottom-active .chats-nav-icon-wrapper[data-name="message-chat-square"] .chats-nav-icon-img {
-  filter: brightness(0) saturate(100%) invert(79%) sepia(47%) saturate(522%) hue-rotate(127deg) brightness(97%) contrast(92%);
+  /* TODO: Replace with primary-colored SVG icon asset using var(--color-primary) */
+  opacity: 1;
 }
 
 /* ========================================
@@ -13369,6 +13376,8 @@ div.mh-silver-card[data-name="card2"] {
   flex-shrink: 0;
   width: 60px;
   height: 60px;
+  overflow: hidden; /* Hide any text overflow/alt text */
+  background: var(--color-card); /* Background for loading state */
 }
 
 .gym-card-info-img-el {

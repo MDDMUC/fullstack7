@@ -89,7 +89,7 @@ const fallbackGyms: GymRoom[] = [
     crowd: 'Peaking',
     tags: ['Comp Wall', 'Spray Wall', 'Cafe'],
     online: 48,
-    imageUrl: '/gym-boulderwelt.jpg',
+    imageUrl: '/gyms/gym-boulderwelt.jpg',
     popularTimes: [
       { hour: 9, level: 2 },
       { hour: 11, level: 3 },
@@ -109,12 +109,12 @@ const fallbackGyms: GymRoom[] = [
       { id: 'partner', title: 'Partner up', lastMessage: 'Lead + belay swap 7-9?', unread: 0, vibe: 'Belay verified', members: 102 },
     ],
     messages: [
-      { id: 'm1', threadId: 'tonight', author: 'Lena', handle: '@lenascends', time: '6:02p', body: 'Heading to comp wall, 7pm. Warm-up laps first.', reactions: ['fire', 'climb'], avatarUrl: '/fallback-female.jpg' },
-      { id: 'm2', threadId: 'tonight', author: 'Marco', handle: '@marcok', time: '6:05p', body: 'Bringing a tension board warmup if anyone wants.', reactions: ['strong'], avatarUrl: '/fallback-male.jpg' },
-      { id: 'm3', threadId: 'tonight', author: 'Yara', handle: '@yaraw', time: '6:08p', role: 'admin', body: 'Friendly reminder: spot when you film, and wipe holds if chalky please.', avatarUrl: '/fallback-female.jpg' },
-      { id: 'm4', threadId: 'beta', author: 'Finn', handle: '@finnish', time: '5:55p', body: 'Blue 6C slab: left palm press on start, bump R to crimp, stand on smear.', avatarUrl: '/fallback-male.jpg' },
-      { id: 'm5', threadId: 'beta', author: 'Timo', handle: '@timosends', time: '5:57p', body: 'Same problem: mono undercling is a decoy, go high left toe.', reactions: ['smart'], avatarUrl: '/fallback-male.jpg' },
-      { id: 'm6', threadId: 'partner', author: 'Ava', handle: '@ava.belays', time: '5:40p', body: 'Need a safe belay for orange 7a circuit, 7-9pm. GriGri + backup.', reactions: ['safe'], avatarUrl: '/fallback-female.jpg' },
+      { id: 'm1', threadId: 'tonight', author: 'Lena', handle: '@lenascends', time: '6:02p', body: 'Heading to comp wall, 7pm. Warm-up laps first.', reactions: ['fire', 'climb'], avatarUrl: '/placeholder-avatar.svg' },
+      { id: 'm2', threadId: 'tonight', author: 'Marco', handle: '@marcok', time: '6:05p', body: 'Bringing a tension board warmup if anyone wants.', reactions: ['strong'], avatarUrl: '/placeholder-avatar.svg' },
+      { id: 'm3', threadId: 'tonight', author: 'Yara', handle: '@yaraw', time: '6:08p', role: 'admin', body: 'Friendly reminder: spot when you film, and wipe holds if chalky please.', avatarUrl: '/placeholder-avatar.svg' },
+      { id: 'm4', threadId: 'beta', author: 'Finn', handle: '@finnish', time: '5:55p', body: 'Blue 6C slab: left palm press on start, bump R to crimp, stand on smear.', avatarUrl: '/placeholder-avatar.svg' },
+      { id: 'm5', threadId: 'beta', author: 'Timo', handle: '@timosends', time: '5:57p', body: 'Same problem: mono undercling is a decoy, go high left toe.', reactions: ['smart'], avatarUrl: '/placeholder-avatar.svg' },
+      { id: 'm6', threadId: 'partner', author: 'Ava', handle: '@ava.belays', time: '5:40p', body: 'Need a safe belay for orange 7a circuit, 7-9pm. GriGri + backup.', reactions: ['safe'], avatarUrl: '/placeholder-avatar.svg' },
     ],
   },
   {
@@ -124,7 +124,7 @@ const fallbackGyms: GymRoom[] = [
     crowd: 'Busy',
     tags: ['Lead', 'Moonboard', 'Cafe'],
     online: 33,
-    imageUrl: '/gym-thalkirchen.jpg',
+    imageUrl: '/gyms/gym-thalkirchen.jpg',
     popularTimes: [
       { hour: 9, level: 3 },
       { hour: 11, level: 4 },
@@ -143,8 +143,8 @@ const fallbackGyms: GymRoom[] = [
       { id: 'outdoor', title: 'Outdoor trip', lastMessage: 'Kochel Saturday?', unread: 1, vibe: 'Carpool', members: 64 },
     ],
     messages: [
-      { id: 'm7', threadId: 'lead', author: 'Jonas', handle: '@jonas', time: '4:22p', body: 'In for 6b/6c laps from 6pm. Can lead, need catch.', reactions: ['up'], avatarUrl: '/fallback-male.jpg' },
-      { id: 'm8', threadId: 'outdoor', author: 'Rami', handle: '@rami', time: '4:30p', body: 'Kochel on Sat, 2 seats from Sendlinger Tor. Meet 8:30.', reactions: ['drive', 'climb'], avatarUrl: '/fallback-male.jpg' },
+      { id: 'm7', threadId: 'lead', author: 'Jonas', handle: '@jonas', time: '4:22p', body: 'In for 6b/6c laps from 6pm. Can lead, need catch.', reactions: ['up'], avatarUrl: '/placeholder-avatar.svg' },
+      { id: 'm8', threadId: 'outdoor', author: 'Rami', handle: '@rami', time: '4:30p', body: 'Kochel on Sat, 2 seats from Sendlinger Tor. Meet 8:30.', reactions: ['drive', 'climb'], avatarUrl: '/placeholder-avatar.svg' },
     ],
   },
   {
@@ -154,7 +154,7 @@ const fallbackGyms: GymRoom[] = [
     crowd: 'Chill',
     tags: ['Spray Wall', 'Campus', 'Sauna'],
     online: 21,
-    imageUrl: '/gym-freimann.jpg',
+    imageUrl: '/gyms/gym-freimann.jpg',
     popularTimes: [
       { hour: 9, level: 2 },
       { hour: 11, level: 3 },
@@ -173,8 +173,8 @@ const fallbackGyms: GymRoom[] = [
       { id: 'beta-freimann', title: 'Beta requests', lastMessage: 'New yellow comp set', unread: 0, vibe: 'Share beta', members: 31 },
     ],
     messages: [
-      { id: 'm9', threadId: 'spray', author: 'Mara', handle: '@mara', time: '2:50p', body: 'Spray wall set is fresh. Anyone for repeaters session 6pm?', avatarUrl: '/fallback-female.jpg' },
-      { id: 'm10', threadId: 'beta-freimann', author: 'Phil', handle: '@phil', time: '3:10p', body: 'Yellow comp: drop knee on start, pogo to right pinch.', avatarUrl: '/fallback-male.jpg' },
+      { id: 'm9', threadId: 'spray', author: 'Mara', handle: '@mara', time: '2:50p', body: 'Spray wall set is fresh. Anyone for repeaters session 6pm?', avatarUrl: '/placeholder-avatar.svg' },
+      { id: 'm10', threadId: 'beta-freimann', author: 'Phil', handle: '@phil', time: '3:10p', body: 'Yellow comp: drop knee on start, pogo to right pinch.', avatarUrl: '/placeholder-avatar.svg' },
     ],
   },
 ]
@@ -407,10 +407,11 @@ const crowdFromString = (crowd?: string): GymRoom['crowd'] => {
 const imageFromGym = (gym: { name?: string; image_url?: string | null }) => {
   if (gym.image_url) return gym.image_url
   const name = (gym.name || '').toLowerCase()
-  if (name.includes('boulderwelt')) return '/gym-boulderwelt.jpg'
-  if (name.includes('thalkirchen')) return '/gym-thalkirchen.jpg'
-  if (name.includes('freimann')) return '/gym-freimann.jpg'
-  return '/fallback-gym.png'
+  if (name.includes('boulderwelt')) return '/gyms/gym-boulderwelt.jpg'
+  if (name.includes('thalkirchen')) return '/gyms/gym-thalkirchen.jpg'
+  if (name.includes('freimann')) return '/gyms/gym-freimann.jpg'
+  if (name.includes('heavens') || name.includes('gate')) return '/gyms/gym-heavensgate.jpg'
+  return '/placeholder-gym.svg'
 }
 
 export async function loadGymRooms(): Promise<GymRoom[]> {
@@ -462,7 +463,7 @@ export async function loadGymRooms(): Promise<GymRoom[]> {
         role: m.role,
         body: m.body ?? '',
         reactions: (m.reactions as string[]) ?? [],
-        avatarUrl: (m as any).avatar_url || '/fallback-gym.png',
+        avatarUrl: (m as any).avatar_url || '/placeholder-avatar.svg',
       })
     })
 

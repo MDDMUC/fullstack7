@@ -70,3 +70,9 @@ Template
 - Rationale: UI is still changing and test infra is not wired; automation would be brittle and slower than manual verification at current scale.
 - Impact: Revisit when testing cost exceeds 2-3 hours/week, or 2+ regressions/week, or when launch smoke tests are needed.
 - Links: `DEFINITION_OF_DONE.md`, `TICKETS/README.md`
+
+## 2025-12-25 - Event creation public-first; defer invite-only
+- Decision: Support user-created events as public by default; defer invite-only/private events.
+- Rationale: Public events increase discovery and density; invite-only adds complexity (privacy rules, RLS edge cases) and fragments discovery before traction.
+- Impact: Use Crews/DMs for private coordination; revisit unlisted or invite-only after demand or safety signals justify.
+- Links: `PROJECT_CONTEXT.md`, `TICKETS/event-rsvp-flow.md`

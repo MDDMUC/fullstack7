@@ -399,7 +399,7 @@ export function getOccupancyData(gymName: string): { [dayOfWeek: number]: number
   
   // Try to find matching gym
   for (const [key, value] of Object.entries(GYM_OCCUPANCY)) {
-    if (key.toLowerCase() === normalizedName || normalizedName.includes(key.toLowerCase())) {
+    if (key.toLowerCase() === normalizedName || key.toLowerCase().includes(normalizedName)) {
       return value
     }
   }
