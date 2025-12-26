@@ -1,4 +1,141 @@
 
+## 2025-12-26 - Group Reporting & Message-level Reporting Implementation
+
+### Ticket
+- **ID**: TICKET-TNS-002
+- **Title**: Group Reporting + Message-level Reporting
+- **Status**: Implementation complete, verified and ready for QA
+
+### Features
+- **Message-level reporting**: Users can now report specific messages in any thread type.
+- **Group thread reporting**: Added entry points for reporting users and messages in Crew, Gym, and Event chats.
+- **Blocking in groups**: Added "Block User" action directly from group chat messages.
+- **Message filtering**: Messages from blocked users are now automatically filtered out of the UI in all chat types.
+- **Thread filtering**: Direct threads with blocked users are now hidden from the chats list.
+
+### Components
+- **ReportModal** (`src/components/ReportModal.tsx`): Updated to handle both user and message reporting with a preview of the reported content.
+  - Supports `reportedMessageId` and `reportedMessageBody` for message reporting
+  - Supports `reportedUserId` and `reportedUserName` for user reporting
+  - Uses design tokens for styling
+- **ChatMessage** (`src/components/ChatMessage.tsx`): Added an ActionMenu trigger for incoming messages to facilitate reporting and blocking.
+  - New props: `onReportMessage`, `onReportUser`, `onBlockUser`
+  - ActionMenu shows: "Report Message", "Report User", "Block User"
+
+### Technical Changes
+- Updated `src/app/chats/[id]/page.tsx`:
+  - Added `reportTarget` state to track report modal target
+  - Added `blockedUserIds` state and fetching via `getBlockedUsers()`
+  - Filter messages by `!blockedUserIds.includes(msg.sender_id)` (lines 765, 896)
+  - Pass handlers to ChatMessage: `onReportMessage`, `onReportUser`, `onBlockUser`
+  - Redirect to `/chats` when blocking user in direct chat
+- Updated `src/app/crew/detail/page.tsx`:
+  - Added `reportTarget` state and `blockedUserIds` state
+  - Filter messages by `!blockedUserIds.includes(msg.sender_id)` (line 1172)
+  - Pass handlers to ChatMessage for reporting/blocking
+- Updated `src/app/chats/page.tsx`:
+  - Fetch blocked users via `getBlockedUsers()`
+  - Filter direct threads: `if (item.type === 'direct' && item.otherUserId && blockedIds.includes(item.otherUserId)) return false` (lines 363-367)
+- Added design-token-compliant CSS for message actions in `src/app/globals.css`:
+  - `.report-modal-*` classes for modal styling
+  - All styles use CSS custom properties from `tokens.css`
+
+### UI Improvement: Styled Block Confirmation Modal
+- **Issue**: Block user confirmation was using browser's native `confirm()` dialog
+- **Solution**: Created `BlockConfirmModal` component matching ReportModal styling
+- **Changes**:
+  - Created `src/components/BlockConfirmModal.tsx` - Styled confirmation modal
+  - Updated `src/app/chats/[id]/page.tsx` - Replaced `confirm()` with modal
+  - Updated `src/app/crew/detail/page.tsx` - Replaced `confirm()` with modal
+- **Benefits**:
+  - Consistent design system (uses design tokens)
+  - Mobile-first and dark theme compliant
+  - Better UX with loading state during blocking
+  - Matches ReportModal styling for consistency
+
+### UX Improvement: Remove Redundant Message Actions in Direct Chats
+- **Issue**: Direct chats had duplicate three-dot menus (one in top bar, one on each message)
+- **Solution**: Only show message-level actions in group chats (gym, event, crew)
+- **Changes**:
+  - Updated `src/app/chats/[id]/page.tsx` - Conditionally pass handlers only for group chats
+  - Direct chats: Use top bar menu for "Leave", "Block", "Report"
+  - Group chats: Show message-level "Report Message", "Report User", "Block User"
+- **Benefits**:
+  - Eliminates UI redundancy in one-on-one chats
+  - Cleaner message interface for direct conversations
+  - Maintains full functionality in group chats where message-level reporting is important
+
+### UI Polish: Three-Dot Menu Icon with Design Tokens
+- **Issue**: Three-dot menu icon was an image tag and couldn't properly use design tokens
+- **Solution**: Converted to inline SVG with token-based styling
+- **Changes**:
+  - Updated `src/components/ChatMessage.tsx` - Replaced `<img>` with inline `<ThreeDotsIcon>` SVG component
+  - Updated `src/app/globals.css` (`.chat-message-more-btn`)
+    - Default: `color: var(--color-text-darker)` (#5b687c) - Very subtle/dark
+    - Hover background: `var(--color-card)` - Subtle highlight
+    - Hover text: `color: var(--color-text)` - Full brightness
+    - Uses `padding: var(--space-xs)` instead of hard-coded value
+    - Added `transition: color 0.2s` for smooth color change
+  - Removed all non-token values (opacity, filter, brightness)
+- **Benefits**:
+  - Fully compliant with design token system
+  - Very subtle by default with `--color-text-darker`
+  - Brightens significantly on hover for clear feedback
+  - SVG scales perfectly at any resolution
+
+### UI Component: Animated Gradient Border (Reusable)
+- **Component Name**: `.animated-gradient-border`
+- **Feature**: 4px animated gradient border with flowing colors
+- **Usage**: Add class to any element: `<div className="animated-gradient-border">`
+
+- **Implementation**:
+  - Standalone reusable CSS component in `globals.css`
+  - Uses `@property --gradient-angle` for smooth CSS animation
+  - `::before` pseudo-element creates the border effect
+  - CSS mask technique isolates border-only rendering
+  - 8-second continuous gradient flow animation
+
+- **Technical Details**:
+  - Border width: 4px (via `inset: -4px`)
+  - Gradient: Conic gradient cycling between primary and secondary colors
+  - Animation: Colors flow around static border (border itself doesn't rotate)
+  - Performance: `pointer-events: none` and `z-index: -1`
+  - Compatibility: Uses `border-radius: inherit` to match parent
+
+- **Design tokens used**:
+  - `--color-primary` (#5ce1e6 - Cyan)
+  - `--color-secondary` (#e68fff - Magenta)
+  - Inherits border-radius from parent element
+
+- **Tokens used**:
+  - `--border-width-animated: 4px` (border width)
+  - All sizing uses tokens, no hard-coded pixels
+
+- **Applied to**:
+  - `.fc-card` (Featured Climber Card) in `LandingPage.tsx`
+  - `.home-image-wrapper` (Home page swipe card image area) in `home/page.tsx`
+
+- **Implementation Notes**:
+  - Border-radius must be on child elements, not the parent with animated border
+  - Parent element must not have border-radius or overflow:hidden
+  - This prevents clipping of the border at corners
+
+- **Future Use**: Can be applied to any card, button, or container for premium visual effect
+
+### Verification
+- **Build status**: ✅ Passed (`npm run build`)
+- **TypeScript**: ✅ No errors
+- **Lint**: ✅ Clean
+- **Definition of Done**: All criteria met
+  - ✅ Report actions added to group chat message UI
+  - ✅ ReportModal extended to support message_id and optional user_id
+  - ✅ Block user action added in group threads
+  - ✅ Blocked users' messages hidden in UI
+  - ✅ Direct threads with blocked users hidden from chat list
+  - ✅ Report entries written to reports with type + reason
+  - ✅ Block confirmation uses styled modal (not browser dialog)
+  - ✅ Featured climber card has animated gradient border
+
 ### Process: Implementation Engineer logging requirement (2025-12-23)
 - Updated `role-implementation-engineer.md` to require logging code changes in `SESSION_NOTES.md` for every implementation handoff.
 

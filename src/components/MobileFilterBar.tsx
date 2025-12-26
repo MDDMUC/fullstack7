@@ -26,7 +26,7 @@ export default function MobileFilterBar({
     <div className={`mobile-filterbar ${className}`} data-name="filterbar" data-node-id="765:1755">
       <div className="mobile-filterbar-content" data-name="filterbar-content" data-node-id="765:1756">
         {filterKeys.map(key => (
-          <div key={key} className="mobile-filterbar-item" style={{ flex: '1 1 0', minWidth: 0 }}>
+          <div key={key} className="mobile-filterbar-item">
             <DropdownMenu
               label={key}
               value={filters[key] || 'All'}

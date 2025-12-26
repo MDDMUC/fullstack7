@@ -1,4 +1,14 @@
-﻿# DECISIONS.md
+﻿### 2025-12-26: Blocked User Visibility Policy
+
+**Decision:**
+- Messages from blocked users are filtered out in the UI for all chat types.
+- Direct threads with blocked users are hidden from the main chat list.
+- Blocking a user in a direct chat automatically redirects the user away from the chat.
+
+**Rationale:**
+- Improves safety and reduces harassment by ensuring users don't have to see content from people they've blocked.
+- Filtering at the UI level is a fast and effective way to achieve this without complex backend changes in v1.
+- Hiding direct threads completely prevents accidental interaction with blocked users.
 
 Lightweight ADR log for DAB. Add a new entry when a decision changes architecture, product direction, or constraints.
 

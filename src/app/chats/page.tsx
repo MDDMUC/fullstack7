@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym } from '@/lib/profiles'
 import { isThreadUnread, UnreadCheckMessage } from '@/lib/messages'
 import { useAuthSession } from '@/hooks/useAuthSession'
+import { getBlockedUsers } from '@/lib/blocks'
 
 type ThreadRow = {
   id: string
@@ -290,6 +291,14 @@ export default function ChatsScreen() {
       return Boolean(gymsMap[t.gym_id])
     })
 
+    // Fetch blocked users
+    let blockedIds: string[] = []
+    try {
+      blockedIds = await getBlockedUsers()
+    } catch (err) {
+      console.error('Failed to fetch blocked users', err)
+    }
+
     const normalized = finalThreads.map<ChatListItem>(t => {
       const isDirect = (t.type ?? 'direct') === 'direct'
       const otherUserId = isDirect ? (t.user_a === userId ? t.user_b : t.user_a) : null
@@ -350,6 +359,12 @@ export default function ChatsScreen() {
         gymId: t.gym_id || null,
         city: city,
       }
+    }).filter(item => {
+      // Filter out direct threads with blocked users
+      if (item.type === 'direct' && item.otherUserId && blockedIds.includes(item.otherUserId)) {
+        return false
+      }
+      return true
     })
 
     // Sort: unread messages first, then by lastMessageAt desc (nulls last)

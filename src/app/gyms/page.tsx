@@ -356,8 +356,8 @@ export default function GymsScreen() {
   return (
     <RequireAuth>
       <div className="gyms-screen" data-name="/ gyms">
+        <MobileTopbar breadcrumb="Gyms" />
         <div className="gyms-content">
-          <MobileTopbar breadcrumb="Gyms" />
           <div className="gyms-card custom-scrollbar">
             <div className="gyms-add-wrapper" ref={addGymRef}>
               <CreateButton
@@ -413,8 +413,8 @@ export default function GymsScreen() {
                 />
               ))}
           </div>
-          <MobileNavbar />
         </div>
+        <MobileNavbar />
       </div>
 
       {/* Unfollow Confirmation Modal */}

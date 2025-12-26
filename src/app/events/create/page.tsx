@@ -232,9 +232,9 @@ export default function EventCreatePage() {
               </div>
             </form>
           </div>
-
-          <MobileNavbar active="events" />
         </div>
+
+        <MobileNavbar active="events" />
       </div>
     </RequireAuth>
   )

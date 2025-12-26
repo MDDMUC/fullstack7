@@ -34,6 +34,7 @@
   /* Borders */
   --color-stroke: #1f2633;
   --color-silver-border: #e6e6e6;
+  --border-width-animated: 4px;
 
   /* --------------------------------------------------------------------------
      SPACING

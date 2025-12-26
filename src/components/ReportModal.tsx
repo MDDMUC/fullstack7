@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react'
 import Modal from './Modal'
-import { reportUser, ReportType } from '@/lib/reports'
+import { reportUser, reportMessage, ReportType } from '@/lib/reports'
 
 export type ReportModalProps = {
   open: boolean
   onClose: () => void
-  reportedUserId: string
+  reportedUserId?: string
   reportedUserName?: string
+  reportedMessageId?: string
+  reportedMessageBody?: string
   onSuccess?: () => void
 }
 
@@ -25,6 +27,8 @@ export default function ReportModal({
   onClose,
   reportedUserId,
   reportedUserName,
+  reportedMessageId,
+  reportedMessageBody,
   onSuccess,
 }: ReportModalProps) {
   const [reportType, setReportType] = useState<ReportType>('harassment')
@@ -43,7 +47,14 @@ export default function ReportModal({
     setError(null)
 
     try {
-      await reportUser(reportedUserId, reportType, reason.trim())
+      if (reportedMessageId) {
+        await reportMessage(reportedMessageId, reportType, reason.trim())
+      } else if (reportedUserId) {
+        await reportUser(reportedUserId, reportType, reason.trim())
+      } else {
+        throw new Error('No user or message specified for report')
+      }
+      
       setSuccess(true)
       setTimeout(() => {
         onSuccess?.()
@@ -64,11 +75,15 @@ export default function ReportModal({
     onClose()
   }
 
+  const title = reportedMessageId 
+    ? 'Report Message' 
+    : `Report ${reportedUserName || 'User'}`
+
   return (
     <Modal
       open={open}
       onClose={handleClose}
-      title={`Report ${reportedUserName || 'User'}`}
+      title={title}
       size="md"
       footer={
         !success && (
@@ -99,6 +114,15 @@ export default function ReportModal({
         </div>
       ) : (
         <div className="report-modal-form">
+          {reportedMessageBody && (
+            <div className="report-modal-field">
+              <label className="report-modal-label">Reported Message</label>
+              <div className="report-modal-message-preview">
+                &quot;{reportedMessageBody}&quot;
+              </div>
+            </div>
+          )}
+
           <div className="report-modal-field">
             <label className="report-modal-label">Reason for report</label>
             <div className="report-modal-options">

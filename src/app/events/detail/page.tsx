@@ -334,9 +334,8 @@ function EventDetailContent() {
             </>
           )}
         </div>
-
-        <MobileNavbar active="events" />
       </div>
+      <MobileNavbar active="events" />
     </div>
   )
 }

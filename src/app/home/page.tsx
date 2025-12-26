@@ -452,7 +452,7 @@ export default function HomeScreen() {
                 )}
 
                 <div className="home-card-main">
-                  <div className="home-image-wrapper">
+                  <div className="home-image-wrapper animated-gradient-border">
                     {specialTopChips.length > 0 && (
                       <div className="home-special-chips">
                         {specialTopChips.map(chip => {

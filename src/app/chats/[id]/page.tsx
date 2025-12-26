@@ -7,10 +7,11 @@ import BackBar from '@/components/BackBar'
 import { ChatMessage } from '@/components/ChatMessage'
 import ActionMenu from '@/components/ActionMenu'
 import ReportModal from '@/components/ReportModal'
+import BlockConfirmModal from '@/components/BlockConfirmModal'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile } from '@/lib/profiles'
-import { blockUser } from '@/lib/blocks'
+import { blockUser, getBlockedUsers } from '@/lib/blocks'
 
 const ICON_BACK = '/icons/chevron-left.svg'
 const ICON_MENU = '/icons/dots.svg'
@@ -95,6 +96,15 @@ export default function ChatDetailPage() {
   const [leaving, setLeaving] = useState(false)
   const [blocking, setBlocking] = useState(false)
   const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [reportTarget, setReportTarget] = useState<{
+    userId?: string,
+    username?: string,
+    messageId?: string,
+    messageBody?: string
+  } | null>(null)
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>([])
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false)
+  const [blockTarget, setBlockTarget] = useState<{ userId: string, username?: string } | null>(null)
   const [deletingEvent, setDeletingEvent] = useState(false)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<{ body: string; error: string } | null>(null)
@@ -305,6 +315,14 @@ export default function ChatDetailPage() {
       
       setProfiles(profilesMap)
       
+      // Fetch blocked users
+      try {
+        const blocked = await getBlockedUsers()
+        setBlockedUserIds(blocked)
+      } catch (err) {
+        console.error('Error fetching blocked users:', err)
+      }
+
       setLoading(false)
       if (messagesError) {
         console.error('Error loading messages', messagesError)
@@ -388,7 +406,7 @@ export default function ChatDetailPage() {
     return () => {
       client.removeChannel(channel)
     }
-  }, [chatId])
+  }, [chatId, userId])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -522,6 +540,50 @@ export default function ChatDetailPage() {
     })()
   }, [messages, chatId, userId, isGroupThread])
 
+  const handleReportMessage = (message: MessageRow) => {
+    const sender = profiles[message.sender_id] || (message.sender_id === otherUserId ? otherProfile : null)
+    setReportTarget({
+      messageId: message.id,
+      messageBody: message.body,
+      userId: message.sender_id,
+      username: sender?.username || 'User'
+    })
+    setReportModalOpen(true)
+  }
+
+  const handleReportUser = (targetUserId: string, username?: string) => {
+    setReportTarget({
+      userId: targetUserId,
+      username
+    })
+    setReportModalOpen(true)
+  }
+
+  const handleBlockUserAction = (targetUserId: string, username?: string) => {
+    setBlockTarget({ userId: targetUserId, username })
+    setBlockConfirmOpen(true)
+  }
+
+  const confirmBlockUser = async () => {
+    if (!blockTarget) return
+
+    setBlocking(true)
+    try {
+      await blockUser(blockTarget.userId)
+      setBlockedUserIds(prev => [...prev, blockTarget.userId])
+      setBlockConfirmOpen(false)
+      setBlockTarget(null)
+      // If it's a direct chat, leave it
+      if (isDirect && blockTarget.userId === otherUserId) {
+        router.push('/chats')
+      }
+    } catch (err) {
+      console.error('Error blocking user:', err)
+    } finally {
+      setBlocking(false)
+    }
+  }
+
   const handleLeaveChat = async () => {
     const client = supabase
     if (!client || !userId || !chatId) {
@@ -571,18 +633,11 @@ export default function ChatDetailPage() {
     router.push('/chats')
   }
 
-  const handleBlockUser = async () => {
+  const handleBlockUser = () => {
     if (!otherUserId) return
-    setBlocking(true)
-    try {
-      await blockUser(otherUserId)
-      setMenuOpen(false)
-      // After blocking, leave the chat and redirect
-      router.push('/chats')
-    } catch (err) {
-      console.error('block failed', err)
-    }
-    setBlocking(false)
+    setBlockTarget({ userId: otherUserId, username: otherFullName })
+    setMenuOpen(false)
+    setBlockConfirmOpen(true)
   }
 
   const handleOpenReport = () => {
@@ -710,35 +765,41 @@ export default function ChatDetailPage() {
               <div className="chat-gym-system">You joined this chat on 11/07/2023.</div>
 
               {!loading &&
-                messages.map(msg => {
-                  const isOutgoing = msg.sender_id === userId
-                  // Look up profile: try profiles map first, then otherProfile for direct chats
-                  let senderProfile = profiles[msg.sender_id]
-                  if (!senderProfile && isDirect && msg.sender_id === otherUserId && otherProfile) {
-                    senderProfile = otherProfile as Profile
-                  }
-                  
-                  // Debug logging
-                  if (!isOutgoing && !senderProfile) {
-                    console.warn('Missing profile for sender:', msg.sender_id, {
-                      profilesKeys: Object.keys(profiles),
-                      otherUserId,
-                      otherProfile: otherProfile ? 'exists' : 'null',
-                      isDirect
-                    })
-                  }
-                  
-                  return (
-                    <ChatMessage
-                      key={msg.id}
-                      message={msg}
-                      senderProfile={senderProfile || undefined}
-                      isOutgoing={isOutgoing}
-                      statusIcon={statusIcon}
-                      avatarPlaceholder={AVATAR_PLACEHOLDER}
-                    />
-                  )
-                })}
+                messages
+                  .filter(msg => !blockedUserIds.includes(msg.sender_id))
+                  .map(msg => {
+                    const isOutgoing = msg.sender_id === userId
+                    // Look up profile: try profiles map first, then otherProfile for direct chats
+                    let senderProfile = profiles[msg.sender_id]
+                    if (!senderProfile && isDirect && msg.sender_id === otherUserId && otherProfile) {
+                      senderProfile = otherProfile as Profile
+                    }
+                    
+                    // Debug logging
+                    if (!isOutgoing && !senderProfile) {
+                      console.warn('Missing profile for sender:', msg.sender_id, {
+                        profilesKeys: Object.keys(profiles),
+                        otherUserId,
+                        otherProfile: otherProfile ? 'exists' : 'null',
+                        isDirect
+                      })
+                    }
+                    
+                    return (
+                      <ChatMessage
+                        key={msg.id}
+                        message={msg}
+                        senderProfile={senderProfile || undefined}
+                        isOutgoing={isOutgoing}
+                        statusIcon={statusIcon}
+                        avatarPlaceholder={AVATAR_PLACEHOLDER}
+                        // Only show message actions in group chats, not in direct chats
+                        onReportMessage={!isDirect ? handleReportMessage : undefined}
+                        onReportUser={!isDirect ? handleReportUser : undefined}
+                        onBlockUser={!isDirect ? handleBlockUserAction : undefined}
+                      />
+                    )
+                  })}
               <div ref={messagesEndRef} />
             </div>
 
@@ -836,21 +897,27 @@ export default function ChatDetailPage() {
               </div>
 
               {!loading &&
-                messages.map(msg => {
-                  const isOutgoing = msg.sender_id === userId
-                  const senderProfile = msg.sender_id === otherUserId ? otherProfile : (profiles[msg.sender_id] || null)
-                  
-                  return (
-                    <ChatMessage
-                      key={msg.id}
-                      message={msg}
-                      senderProfile={senderProfile}
-                      isOutgoing={isOutgoing}
-                      statusIcon={(status) => status === 'read' ? ICON_READ : ICON_DELIVERED}
-                      avatarPlaceholder={AVATAR_PLACEHOLDER}
-                    />
-                  )
-                })}
+                messages
+                  .filter(msg => !blockedUserIds.includes(msg.sender_id))
+                  .map(msg => {
+                    const isOutgoing = msg.sender_id === userId
+                    const senderProfile = msg.sender_id === otherUserId ? otherProfile : (profiles[msg.sender_id] || null)
+                    
+                    return (
+                      <ChatMessage
+                        key={msg.id}
+                        message={msg}
+                        senderProfile={senderProfile}
+                        isOutgoing={isOutgoing}
+                        statusIcon={(status) => status === 'read' ? ICON_READ : ICON_DELIVERED}
+                        avatarPlaceholder={AVATAR_PLACEHOLDER}
+                        // Only show message actions in group chats, not in direct chats
+                        onReportMessage={!isDirect ? handleReportMessage : undefined}
+                        onReportUser={!isDirect ? handleReportUser : undefined}
+                        onBlockUser={!isDirect ? handleBlockUserAction : undefined}
+                      />
+                    )
+                  })}
               <div ref={messagesEndRef} />
             </div>
 
@@ -889,17 +956,32 @@ export default function ChatDetailPage() {
             </div>
           </>
         )}
-        <MobileNavbar active="chats" />
 
-        {isDirect && otherUserId && (
-          <ReportModal
-            open={reportModalOpen}
-            onClose={() => setReportModalOpen(false)}
-            reportedUserId={otherUserId}
-            reportedUserName={otherFirstName}
-          />
-        )}
+        <ReportModal
+          open={reportModalOpen}
+          onClose={() => {
+            setReportModalOpen(false)
+            setReportTarget(null)
+          }}
+          reportedUserId={reportTarget?.userId}
+          reportedUserName={reportTarget?.username}
+          reportedMessageId={reportTarget?.messageId}
+          reportedMessageBody={reportTarget?.messageBody}
+        />
+
+        <BlockConfirmModal
+          open={blockConfirmOpen}
+          onClose={() => {
+            setBlockConfirmOpen(false)
+            setBlockTarget(null)
+          }}
+          onConfirm={confirmBlockUser}
+          userName={blockTarget?.username}
+          blocking={blocking}
+        />
       </div>
+
+      <MobileNavbar active="chats" />
     </div>
   )
 }

@@ -510,9 +510,8 @@ export default function NotificationsPage() {
   return (
     <RequireAuth>
       <div className="notifications-screen" data-name="/notifications">
+        <MobileTopbar breadcrumb="Notifications" />
         <div className="notifications-content">
-          <MobileTopbar breadcrumb="Notifications" />
-          
           <div className="notifications-card" data-node-id="786:2988">
             {loading ? (
               <LoadingState message="Loading notifications…" />
@@ -589,9 +588,8 @@ export default function NotificationsPage() {
               </div>
             )}
           </div>
-
-          <MobileNavbar active="Default" />
         </div>
+        <MobileNavbar active="Default" />
       </div>
     </RequireAuth>
   )

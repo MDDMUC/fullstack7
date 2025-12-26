@@ -132,7 +132,7 @@ export function FeaturedClimberCard({ profile, onPass, onDab }: { profile: Profi
   const effectiveChips = standardChips
 
   return (
-    <div className="fc-card">
+    <div className="fc-card animated-gradient-border">
       <div className="fc-inner">
         {/* Pills Row */}
         <div className="fc-pills-row">

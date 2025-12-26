@@ -430,6 +430,20 @@ body {
   overflow: hidden;
 }
 
+/* Desktop: Full-width background */
+@media (min-width: 768px) {
+  .events-screen {
+    background: var(--color-bg); /* Dark background extends full width */
+    overflow-y: auto; /* Scrollbar at screen edge */
+    overflow-x: hidden;
+  }
+
+  .events-content {
+    background: transparent; /* Remove content background on desktop */
+    overflow: visible; /* Remove scroll from content, let screen handle it */
+  }
+}
+
 /* Topbar, filterbar, and navbar should span full width */
 .events-screen > .mobile-topbar,
 .events-screen > .mobile-filterbar,
@@ -613,6 +627,15 @@ body {
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   transform: translateZ(0); /* Force GPU layer for crisp rendering */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Smooth hover animation */
+}
+
+/* Desktop hover effect */
+@media (min-width: 768px) {
+  .events-tile:hover {
+    transform: translateY(-1px) translateZ(0); /* Move up 1px without affecting layout */
+    box-shadow: var(--shadow-hover); /* Enhanced shadow on hover */
+  }
 }
 
 .events-tile-img,
@@ -857,7 +880,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
-  background: linear-gradient(180deg, var(--color-text) 0%, var(--color-accent-warm-cream) 100%);
+  background: var(--color-bg); /* BG token background */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -865,6 +888,25 @@ body {
   box-sizing: border-box;
   overflow: hidden;
   padding: 0;
+}
+
+/* Desktop: Full-width background */
+@media (min-width: 768px) {
+  .events-detail-screen {
+    overflow-y: auto; /* Scrollbar at screen edge */
+    overflow-x: hidden;
+  }
+
+  .events-detail-content {
+    background: transparent; /* Remove content background on desktop */
+    overflow: visible; /* Remove scroll from content, let screen handle it */
+  }
+}
+
+/* Navbar should span full width and be sticky at bottom */
+.events-detail-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none;
 }
 
 .events-detail-content {
@@ -878,17 +920,20 @@ body {
   justify-content: flex-end;
   padding: var(--space-lg);
   padding-bottom: 0;
+  background: var(--color-bg); /* Dark background for content */
   box-sizing: border-box;
   flex: 1 1 0;
   min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .events-detail-card {
   width: 100%;
-  background: linear-gradient(149.514deg, rgba(0, 0, 0, 0) 0%, color-mix(in srgb, var(--color-special) 50%, transparent) 100%), var(--color-white);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-base);
-  padding: var(--space-xl);
+  background: transparent; /* Remove card background */
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
@@ -1020,13 +1065,29 @@ body {
 }
 
 .events-detail-block {
-  background: var(--color-white);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-small); /* shadow/small */
-  padding: var(--space-md); /* 12px */
+  position: relative;
   display: flex;
-  gap: var(--space-md);
+  flex-direction: column;
+  gap: 0;
+  align-items: center;
+  padding: var(--space-md) var(--space-lg); /* py: 12px, px: 16px */
+  background: var(--color-stroke);
+  border-radius: var(--radius-lg);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  overflow: hidden;
   width: 100%;
+}
+
+/* Inner shadow to match home-bio */
+.events-detail-block::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-inner);
+  overflow: hidden;
 }
 
 .events-detail-block-text {
@@ -1034,6 +1095,9 @@ body {
   flex-direction: column;
   gap: var(--space-xs); /* 6px */
   color: var(--color-text-darker); /* color/text/darker */
+  position: relative;
+  z-index: 1;
+  width: 100%;
 }
 
 .events-detail-block-title {
@@ -1085,7 +1149,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
-  background: var(--color-text); /* Solid background like other pages */
+  background: var(--color-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1093,6 +1157,12 @@ body {
   box-sizing: border-box;
   overflow: hidden;
   padding: 0;
+}
+
+/* Navbar should span full width */
+.events-create-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none;
 }
 
 .events-create-content {
@@ -1105,7 +1175,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   padding: var(--space-lg);
-  padding-bottom: 0;
+  padding-bottom: var(--space-lg); /* 16px spacing from navbar */
   box-sizing: border-box;
   flex: 1 1 0;
   min-height: 0;
@@ -1229,6 +1299,12 @@ body {
 
 .events-create-input::placeholder {
   color: var(--color-muted);
+}
+
+/* Style the native calendar picker icon */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
 }
 
 .events-create-actions {
@@ -1803,10 +1879,10 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   position: relative;
   margin-bottom: 0; /* Remove bottom margin to touch filterbar */
   padding-bottom: 0; /* Remove bottom padding to touch filterbar */
+  background: var(--color-card); /* Background extends full width */
 }
 
 .mobile-topbar-content {
-  background: var(--color-card);
   display: flex;
   flex: 1 0 0;
   align-items: center;
@@ -1816,6 +1892,8 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   position: relative;
   flex-shrink: 0;
   width: 100%;
+  max-width: 800px; /* Content constrained to 800px */
+  margin: 0 auto; /* Center the content */
   box-sizing: border-box;
 }
 
@@ -1824,8 +1902,7 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
 .home-content .mobile-topbar,
 .events-detail-content .mobile-topbar,
 .events-create-content .mobile-topbar,
-.profile-content .mobile-topbar,
-.gyms-content .mobile-topbar {
+.profile-content .mobile-topbar {
   width: 100%; /* Full width, no calc needed since horizontal padding removed from parent */
   margin-left: 0;
   margin-right: 0;
@@ -1837,8 +1914,7 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
 .home-content .mobile-topbar-content,
 .events-detail-content .mobile-topbar-content,
 .events-create-content .mobile-topbar-content,
-.profile-content .mobile-topbar-content,
-.gyms-content .mobile-topbar-content {
+.profile-content .mobile-topbar-content {
   width: 100%;
 }
 
@@ -2273,7 +2349,7 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
    ---------------------------------------- */
 .mobile-navbar {
   width: 100%;
-  background: var(--color-text);
+  background: var(--color-card); /* Background extends full width */
   box-shadow: 0px -4px 4px rgba(0, 0, 0, 0.25);
   position: sticky;
   bottom: 0;
@@ -2286,9 +2362,10 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
 
 .mobile-navbar-inner {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; /* Center the navigation items */
   width: 100%;
-  background: var(--color-card);
+  max-width: 800px; /* Content constrained to 800px */
+  margin: 0 auto; /* Center the container */
   padding-top: var(--space-md);
   padding-bottom: var(--space-md);
   padding-left: var(--space-lg); /* 16px horizontal padding to push icons inward */
@@ -2296,20 +2373,17 @@ main { max-width: 1200px; margin: 0 auto; padding: var(--space-xxl) 24px 80px; }
   height: 100px;
   border-radius: 0;
   box-sizing: border-box;
-  gap: var(--space-xl);
-  margin: 0;
+  gap: var(--space-xl); /* Space between navigation items */
 }
 
 /* Ensure full-width navbar inside mobile content wrappers */
 .chats-content .mobile-navbar,
 .home-content .mobile-navbar,
-.events-detail-content .mobile-navbar,
 .events-create-content .mobile-navbar,
 .profile-content .mobile-navbar,
 .chats-event-content .mobile-navbar,
 .chat-detail-content .mobile-navbar,
-.chat-gym-content .mobile-navbar,
-.gyms-content .mobile-navbar {
+.chat-gym-content .mobile-navbar {
   width: 100%; /* Full width, no calc needed since horizontal padding removed from parent */
   margin-left: 0;
   margin-right: 0;
@@ -3034,12 +3108,65 @@ input[type=number] {
    Figma: bg-[var(--color-card)] border border-[var(--color-stroke)] rounded-[14px] w-[420px] */
 .fc-card {
   background: var(--color-card);
-  border: 1px solid var(--color-stroke);
   border-radius: var(--radius-lg);
   width: 420px;
   max-width: 100%;
   position: relative;
+  box-shadow: var(--shadow-base);
+  /* Remove static border, will be replaced by animated gradient */
 }
+
+/* ==========================================================================
+   ANIMATED GRADIENT BORDER COMPONENT
+   Reusable animated border with flowing gradient colors
+   Usage: Add class "animated-gradient-border" to any element
+   ========================================================================== */
+
+/* Define animatable custom property for gradient angle */
+@property --gradient-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+/* Base animated gradient border component */
+.animated-gradient-border {
+  position: relative;
+}
+
+.animated-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--border-width-animated));
+  border-radius: var(--radius-lg);
+  padding: var(--border-width-animated);
+  background: conic-gradient(
+    from var(--gradient-angle),
+    var(--color-primary),
+    var(--color-secondary),
+    var(--color-primary),
+    var(--color-secondary),
+    var(--color-primary)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: animated-gradient-border-flow 8s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes animated-gradient-border-flow {
+  to {
+    --gradient-angle: 360deg;
+  }
+}
+
 
 /* Inner Container
    Figma: flex flex-col gap-[12px] p-[20px] overflow-clip rounded-[inherit] w-[420px] */
@@ -3415,19 +3542,29 @@ input[type=number] {
   width: 100%;
   background: var(--color-bg); /* BG token background */
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 0; /* No padding - navbar should be flush with screen edges */
   box-sizing: border-box;
+}
+
+/* Navbar should span full width */
+.chat-detail-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none;
 }
 
 .chat-detail-content {
   width: 100%;
   max-width: 420px;
-  flex: 1 1 auto;
+  height: 100%;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-  min-height: calc(100vh - 2 * var(--space-lg));
+  min-height: 0;
+  padding-bottom: var(--space-lg); /* 16px spacing from navbar */
+  box-sizing: border-box;
 }
 
 .chat-detail-card {
@@ -3440,8 +3577,16 @@ input[type=number] {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
   box-sizing: border-box;
+}
+
+/* Only messages container should grow/shrink, everything else stays fixed */
+.chat-detail-card > *:not(.chat-detail-messages) {
+  flex-shrink: 0;
 }
 
 .chat-detail-header {
@@ -3754,19 +3899,29 @@ input[type=number] {
   min-height: 100dvh;
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 0; /* No padding - navbar should be flush with screen edges */
   box-sizing: border-box;
+}
+
+/* Navbar should span full width */
+.chat-gym-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none;
 }
 
 .chat-gym-content {
   width: 100%;
   max-width: 420px;
-  flex: 1 1 auto;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
-  min-height: calc(100vh - 2 * var(--space-lg));
+  flex: 1 1 0;
+  min-height: 0;
+  padding-bottom: var(--space-lg); /* 16px spacing from navbar */
+  box-sizing: border-box;
 }
 
 .chat-gym-card {
@@ -3779,8 +3934,16 @@ input[type=number] {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
   box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Only messages container should grow/shrink, everything else stays fixed */
+.chat-gym-card > *:not(.chat-gym-messages) {
+  flex-shrink: 0;
 }
 
 .chat-gym-backbar {
@@ -3888,7 +4051,10 @@ input[type=number] {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .chat-gym-system {
@@ -4743,12 +4909,13 @@ input[type=number] {
 }
 
 .profile-card.featured-climber-card {
+  background: var(--color-card);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   gap: var(--space-md);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-elevated), var(--shadow-glow);
+  box-shadow: var(--shadow-base);
 }
 .profile-card .profile-name {
   font-size: var(--font-size-xl);
@@ -10849,7 +11016,8 @@ div.mh-silver-card[data-name="card2"] {
   justify-content: flex-start;
   padding: 0;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto; /* Changed from hidden to allow scrolling */
+  overflow-x: hidden;
 }
 
 /* Ensure topbar, filterbar, and navbar are full width as siblings of content */
@@ -10872,10 +11040,22 @@ div.mh-silver-card[data-name="card2"] {
   flex: 1 1 0;
   min-height: 0;
   overflow-y: auto; /* Enable vertical scrolling */
-  overflow-x: hidden;
+  overflow-x: visible; /* Changed from hidden to allow animated border to show */
   padding: var(--space-lg); /* 16px padding on all sides */
   background: var(--color-bg); /* BG token background */
   box-sizing: border-box;
+}
+
+/* Desktop: Full-width background */
+@media (min-width: 768px) {
+  .home-screen {
+    background: var(--color-bg); /* Dark background extends full width */
+  }
+
+  .home-content {
+    background: transparent; /* Remove content background on desktop */
+    overflow: visible; /* Remove scroll from content, let screen handle it */
+  }
 }
 
 /* Remove gap between topbar and filterbar - they should touch */
@@ -11161,15 +11341,13 @@ div.mh-silver-card[data-name="card2"] {
   padding: var(--space-xl); /* 24px internal padding */
   margin: 0; /* No margin - extends full width of container */
   width: 100%; /* Full width */
-  background:
-    linear-gradient(var(--color-card), var(--color-card)) padding-box,
-    linear-gradient(120deg, var(--color-primary), var(--color-secondary)) border-box;
-  border: 4px solid transparent; /* gradient stroke via border-box */
+  background: var(--color-card);
+  border: 1px solid var(--color-stroke); /* Same as grid profile cards */
   border-radius: var(--radius-lg); /* radius/lg */
   box-shadow: var(--shadow-base); /* shadow/base */
   box-sizing: border-box;
   min-height: 0;
-  overflow: hidden;
+  /* Removed overflow: hidden to allow animated border on child elements to show */
   flex-shrink: 1;
 }
 
@@ -11227,6 +11405,8 @@ div.mh-silver-card[data-name="card2"] {
   flex-direction: column;
   min-height: 0;
   gap: var(--space-md); /* 12px - space/md token */
+  /* Add padding to give space for animated border on children */
+  padding: var(--border-width-animated);
 }
 
 
@@ -11240,12 +11420,18 @@ div.mh-silver-card[data-name="card2"] {
   flex: 1 0 0;
   min-height: 0;
   align-self: stretch;
-  border: 4px solid transparent;
-  background:
-    linear-gradient(var(--color-bg), var(--color-bg)) padding-box,
-    linear-gradient(120deg, var(--color-primary), var(--color-secondary)) border-box;
-  border-radius: var(--radius-lg); /* radius/lg */
+  background: transparent; /* Transparent - bg color goes on children */
+  padding: var(--border-width-animated); /* Create space for the animated border */
+  overflow: visible; /* Explicitly visible */
+}
+
+/* Ensure image wrapper content is above the animated border */
+.home-image-wrapper > * {
+  position: relative;
+  z-index: 1;
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  background: var(--color-bg); /* Move bg color to children */
 }
 
 .home-image {
@@ -11565,6 +11751,20 @@ div.mh-silver-card[data-name="card2"] {
   overflow: hidden;
 }
 
+/* Desktop: Full-width background */
+@media (min-width: 768px) {
+  .chats-screen {
+    background: var(--color-bg); /* Dark background extends full width */
+    overflow-y: auto; /* Scrollbar at screen edge */
+    overflow-x: hidden;
+  }
+
+  .chats-content {
+    background: transparent; /* Remove content background on desktop */
+    overflow: visible; /* Remove scroll from content, let screen handle it */
+  }
+}
+
 /* Ensure topbar, filterbar, and navbar are full width as siblings of content */
 .chats-screen > .mobile-topbar,
 .chats-screen > .mobile-filterbar,
@@ -11601,30 +11801,28 @@ div.mh-silver-card[data-name="card2"] {
   justify-content: center;
   position: relative;
   width: 100%;
-  /* Extend beyond parent padding to span full width */
-  width: calc(100% + (var(--space-lg) * 2));
-  margin-left: calc(-1 * var(--space-lg));
-  margin-right: calc(-1 * var(--space-lg));
   margin-top: 0; /* Remove any top margin to touch topbar */
   flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 10;
+  background: var(--color-card); /* Background extends full width */
 }
 
 .mobile-filterbar-content {
-  background: var(--color-card); /* var(--color-card) */
   display: flex;
   flex: 1 0 0;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; /* Distribute filter items evenly */
   min-height: 0;
   padding: var(--space-xs) var(--space-md); /* 6px vertical, 12px horizontal */
   position: relative;
   flex-shrink: 0;
   width: 100%;
+  max-width: 800px; /* Content constrained to 800px */
+  margin: 0 auto; /* Center the content */
   box-sizing: border-box;
-  gap: var(--space-xs); /* 6px gap between filter items */
+  gap: var(--space-xs); /* Gap between filter items */
   overflow: visible; /* Allow dropdowns to overflow */
 }
 
@@ -11656,7 +11854,7 @@ div.mh-silver-card[data-name="card2"] {
 }
 
 .mobile-filterbar-item {
-  flex: 1 1 0;
+  flex: 1 1 0; /* Grow to fill available space within 800px container */
   min-width: 0;
 }
 
@@ -12155,6 +12353,7 @@ div.mh-silver-card[data-name="card2"] {
   align-items: center;
   justify-content: flex-end;
   padding: 0; /* No padding - navbar should be flush with screen edges */
+  padding-bottom: var(--space-lg); /* 16px spacing from navbar */
   box-sizing: border-box;
   flex: 1 1 0;
   min-height: 0;
@@ -12170,7 +12369,7 @@ div.mh-silver-card[data-name="card2"] {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm); /* 8px */
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
   position: relative;
   overflow: hidden;
@@ -12480,6 +12679,47 @@ div.mh-silver-card[data-name="card2"] {
   color: var(--color-panel); /* dark text */
   border-radius: 16px 4px 16px 16px;
   box-shadow: var(--shadow-small);
+}
+
+.chat-message-bubble-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
+.chat-message-actions-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-message-more-btn {
+  background: transparent;
+  border: none;
+  padding: var(--space-xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-darker);
+  border-radius: var(--radius-full);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.chat-message-more-btn:hover, .chat-message-more-btn:active {
+  background: var(--color-card);
+  color: var(--color-text);
+}
+
+.chat-message-action-menu {
+  top: auto !important;
+  bottom: 0;
+  left: 0;
+  right: auto !important;
+  transform: translateY(100%);
 }
 
 .chat-message-status-row {
@@ -12860,13 +13100,27 @@ div.mh-silver-card[data-name="card2"] {
   overflow-x: hidden;
 }
 
+/* Desktop: Full-width background */
+@media (min-width: 768px) {
+  .crew-screen {
+    background: var(--color-bg); /* Dark background extends full width */
+    overflow-y: auto; /* Scrollbar at screen edge */
+    overflow-x: hidden;
+  }
+
+  .crew-content {
+    background: transparent; /* Remove content background on desktop */
+    overflow: visible; /* Remove scroll from content, let screen handle it */
+  }
+}
+
 /* ========================================
    GYMS PAGE - Exact from Figma node 768:2698
    ======================================== */
 .gyms-screen {
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-bg); /* BG token background */
+  background: var(--color-text); /* Light background on mobile */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -12874,7 +13128,28 @@ div.mh-silver-card[data-name="card2"] {
   position: relative;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden;
+}
+
+/* Desktop: Full-width background (mirror events page pattern) */
+@media (min-width: 768px) {
+  .gyms-screen {
+    background: var(--color-bg); /* Dark background extends full width */
+    overflow-y: auto; /* Scrollbar at screen edge */
+    overflow-x: hidden;
+  }
+
+  .gyms-content {
+    background: transparent; /* Remove content background on desktop */
+    overflow: visible; /* Remove scroll from content, let screen handle it */
+  }
+}
+
+/* Topbar and navbar should span full width */
+.gyms-screen > .mobile-topbar,
+.gyms-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none; /* Override any max-width constraints */
 }
 
 .gyms-content {
@@ -12888,25 +13163,13 @@ div.mh-silver-card[data-name="card2"] {
   justify-content: flex-start;
   min-width: 0;
   min-height: 0;
-  padding: 0; /* No padding - topbar should be flush with screen edges */
+  padding: var(--space-lg); /* 16px padding on all sides */
+  background: var(--color-bg); /* Dark background for content */
   position: relative;
   flex: 1 1 0;
   box-sizing: border-box;
-}
-
-.gyms-content .mobile-topbar,
-.gyms-content .mobile-navbar {
-  width: 100%; /* Full width, no need for calc since there's no padding to compensate for */
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.gyms-content .mobile-navbar {
-  margin-top: calc(-1 * var(--space-lg)); /* Remove 16px gap before navbar */
-}
-
-.gyms-content .mobile-topbar-content {
-  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .gyms-card {
@@ -14703,7 +14966,7 @@ img.friend-tile-img {
 .notifications-screen {
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-bg); /* BG token background */
+  background: var(--color-text); /* Light background on mobile */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -14711,7 +14974,28 @@ img.friend-tile-img {
   position: relative;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden;
+}
+
+/* Desktop: Full-width background (mirror events page pattern) */
+@media (min-width: 768px) {
+  .notifications-screen {
+    background: var(--color-bg); /* Dark background extends full width */
+    overflow-y: auto; /* Scrollbar at screen edge */
+    overflow-x: hidden;
+  }
+
+  .notifications-content {
+    background: transparent; /* Remove content background on desktop */
+    overflow: visible; /* Remove scroll from content, let screen handle it */
+  }
+}
+
+/* Topbar and navbar should span full width */
+.notifications-screen > .mobile-topbar,
+.notifications-screen > .mobile-navbar {
+  width: 100%;
+  max-width: none; /* Override any max-width constraints */
 }
 
 .notifications-content {
@@ -14725,22 +15009,13 @@ img.friend-tile-img {
   justify-content: flex-start;
   min-width: 0;
   min-height: 0;
-  padding: 0; /* No padding - topbar should be flush with screen edges */
+  padding: var(--space-lg); /* 16px padding on all sides */
+  background: var(--color-bg); /* Dark background for content */
   position: relative;
   flex: 1 1 0;
   box-sizing: border-box;
-}
-
-/* Full-width topbar/navbar inside content */
-.notifications-content .mobile-topbar,
-.notifications-content .mobile-navbar {
-  width: 100%; /* Full width, no calc needed since horizontal padding removed from parent */
-  margin-left: 0;
-  margin-right: 0;
-}
-
-.notifications-content .mobile-topbar-content {
-  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Notification card container - matches Figma node 786:2988 */

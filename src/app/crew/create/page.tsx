@@ -253,9 +253,9 @@ export default function CrewCreatePage() {
               </div>
             </form>
           </div>
-
-          <MobileNavbar active="crew" />
         </div>
+
+        <MobileNavbar active="crew" />
       </div>
     </RequireAuth>
   )

@@ -15,9 +15,12 @@ import { ChatMessage } from '@/components/ChatMessage'
 import Avatar from '@/components/Avatar'
 import ActionMenu from '@/components/ActionMenu'
 import Modal from '@/components/Modal'
+import ReportModal from '@/components/ReportModal'
+import BlockConfirmModal from '@/components/BlockConfirmModal'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym, Profile } from '@/lib/profiles'
+import { blockUser, getBlockedUsers } from '@/lib/blocks'
 
 const BACK_ICON = '/icons/chevron-left.svg'
 const MENU_ICON = '/icons/dots.svg'
@@ -95,6 +98,17 @@ function CrewDetailContent() {
   const [removeModalOpen, setRemoveModalOpen] = useState(false)
   const [participantToRemove, setParticipantToRemove] = useState<{ id: string; name: string } | null>(null)
   const [removingParticipant, setRemovingParticipant] = useState(false)
+  const [reportModalOpen, setReportModalOpen] = useState(false)
+  const [reportTarget, setReportTarget] = useState<{
+    userId?: string,
+    username?: string,
+    messageId?: string,
+    messageBody?: string
+  } | null>(null)
+  const [blockedUserIds, setBlockedUserIds] = useState<string[]>([])
+  const [blockConfirmOpen, setBlockConfirmOpen] = useState(false)
+  const [blockTarget, setBlockTarget] = useState<{ userId: string, username?: string } | null>(null)
+  const [blockingUser, setBlockingUser] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const inviteModalRef = useRef<HTMLDivElement | null>(null)
@@ -324,6 +338,14 @@ function CrewDetailContent() {
         } else {
           setCurrentParticipantIds(new Set())
         }
+      }
+
+      // Fetch blocked users
+      try {
+        const blocked = await getBlockedUsers()
+        setBlockedUserIds(blocked)
+      } catch (err) {
+        console.error('Error fetching blocked users:', err)
       }
 
       setLoading(false)
@@ -938,6 +960,46 @@ function CrewDetailContent() {
     setRemovingParticipant(false)
   }
 
+  const handleReportMessage = (message: MessageRow) => {
+    const sender = profiles[message.sender_id]
+    setReportTarget({
+      messageId: message.id,
+      messageBody: message.body,
+      userId: message.sender_id,
+      username: sender?.username || 'User'
+    })
+    setReportModalOpen(true)
+  }
+
+  const handleReportUser = (targetUserId: string, username?: string) => {
+    setReportTarget({
+      userId: targetUserId,
+      username
+    })
+    setReportModalOpen(true)
+  }
+
+  const handleBlockUserAction = (targetUserId: string, username?: string) => {
+    setBlockTarget({ userId: targetUserId, username })
+    setBlockConfirmOpen(true)
+  }
+
+  const confirmBlockUser = async () => {
+    if (!blockTarget) return
+
+    setBlockingUser(true)
+    try {
+      await blockUser(blockTarget.userId)
+      setBlockedUserIds(prev => [...prev, blockTarget.userId])
+      setBlockConfirmOpen(false)
+      setBlockTarget(null)
+    } catch (err) {
+      console.error('Error blocking user:', err)
+    } finally {
+      setBlockingUser(false)
+    }
+  }
+
   const statusIcon = (status?: string) => {
     if (status === 'read') return STATUS_ICON_SECONDARY
     if (status === 'delivered') return STATUS_ICON_PRIMARY
@@ -953,8 +1015,8 @@ function CrewDetailContent() {
           <div className="chats-event-card">
             <p style={{ padding: 'var(--button-padding-xxxxl)', textAlign: 'center' }}>Loading crew chat…</p>
           </div>
-          <MobileNavbar active="crew" />
         </div>
+        <MobileNavbar active="crew" />
       </div>
     )
   }
@@ -979,11 +1041,11 @@ function CrewDetailContent() {
                   <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              
+
               <div className="crew-not-member-content">
                 <h2 className="crew-not-member-title">You are not part of this crew.</h2>
                 <p className="crew-not-member-subtitle">In order to join the chat, ask the owner to be invited</p>
-                
+
                 {ownerProfile && (
                   <div className="crew-not-member-owner">
                     <div className="crew-not-member-owner-avatar">
@@ -999,7 +1061,7 @@ function CrewDetailContent() {
                     </div>
                   </div>
                 )}
-                
+
                 <button
                   className="crew-not-member-ask-button"
                   onClick={handleAskForInvite}
@@ -1011,6 +1073,7 @@ function CrewDetailContent() {
             </div>
           </div>
         </div>
+        <MobileNavbar active="crew" />
       </div>
     )
   }
@@ -1022,8 +1085,8 @@ function CrewDetailContent() {
           <div className="chats-event-card">
             <p style={{ padding: 'var(--button-padding-xxxxl)', textAlign: 'center', color: 'red' }}>{error || 'Crew not found'}</p>
           </div>
-          <MobileNavbar active="crew" />
         </div>
+        <MobileNavbar active="crew" />
       </div>
     )
   }
@@ -1118,37 +1181,42 @@ function CrewDetailContent() {
           )}
 
           <div className="chats-event-messages-container custom-scrollbar">
-            {messages.map((msg) => {
-            const isOutgoing = msg.sender_id === userId
-            const senderProfile = profiles[msg.sender_id]
-            
-            // Check if this is the last message from this sender (for left status)
-            const isLastMessageFromSender = (() => {
-              const hasLeft = msg.sender_id !== userId && currentParticipantIds && !currentParticipantIds.has(msg.sender_id)
-              if (!hasLeft) return false
-              // Find the last message from this sender
-              for (let i = messages.length - 1; i >= 0; i--) {
-                if (messages[i].sender_id === msg.sender_id) {
-                  return messages[i].id === msg.id
+            {messages
+              .filter(msg => !blockedUserIds.includes(msg.sender_id))
+              .map((msg) => {
+              const isOutgoing = msg.sender_id === userId
+              const senderProfile = profiles[msg.sender_id]
+              
+              // Check if this is the last message from this sender (for left status)
+              const isLastMessageFromSender = (() => {
+                const hasLeft = msg.sender_id !== userId && currentParticipantIds && !currentParticipantIds.has(msg.sender_id)
+                if (!hasLeft) return false
+                // Find the last message from this sender
+                for (let i = messages.length - 1; i >= 0; i--) {
+                  if (messages[i].sender_id === msg.sender_id) {
+                    return messages[i].id === msg.id
+                  }
                 }
-              }
-              return false
-            })()
+                return false
+              })()
 
-            return (
-              <ChatMessage
-                key={msg.id}
-                message={msg}
-                senderProfile={senderProfile}
-                isOutgoing={isOutgoing}
-                statusIcon={statusIcon}
-                currentUserId={userId}
-                currentParticipantIds={currentParticipantIds}
-                formatLeaveTimestamp={isLastMessageFromSender ? formatLeaveTimestamp : undefined}
-                avatarPlaceholder={AVATAR_PLACEHOLDER}
-              />
-            )
-          })}
+              return (
+                <ChatMessage
+                  key={msg.id}
+                  message={msg}
+                  senderProfile={senderProfile}
+                  isOutgoing={isOutgoing}
+                  statusIcon={statusIcon}
+                  currentUserId={userId}
+                  currentParticipantIds={currentParticipantIds}
+                  formatLeaveTimestamp={isLastMessageFromSender ? formatLeaveTimestamp : undefined}
+                  avatarPlaceholder={AVATAR_PLACEHOLDER}
+                  onReportMessage={handleReportMessage}
+                  onReportUser={handleReportUser}
+                  onBlockUser={handleBlockUserAction}
+                />
+              )
+            })}
             <div ref={messagesEndRef} />
           </div>
 
@@ -1184,9 +1252,9 @@ function CrewDetailContent() {
             </div>
           </div>
         </div>
-
-        <MobileNavbar active="crew" />
       </div>
+
+      <MobileNavbar active="crew" />
 
       {/* Toast Notification */}
       {toastMessage && (
@@ -1328,6 +1396,29 @@ function CrewDetailContent() {
           </p>
         </div>
       </Modal>
+
+      <ReportModal
+        open={reportModalOpen}
+        onClose={() => {
+          setReportModalOpen(false)
+          setReportTarget(null)
+        }}
+        reportedUserId={reportTarget?.userId}
+        reportedUserName={reportTarget?.username}
+        reportedMessageId={reportTarget?.messageId}
+        reportedMessageBody={reportTarget?.messageBody}
+      />
+
+      <BlockConfirmModal
+        open={blockConfirmOpen}
+        onClose={() => {
+          setBlockConfirmOpen(false)
+          setBlockTarget(null)
+        }}
+        onConfirm={confirmBlockUser}
+        userName={blockTarget?.username}
+        blocking={blockingUser}
+      />
     </div>
   )
 }
