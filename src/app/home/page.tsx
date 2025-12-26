@@ -380,16 +380,13 @@ export default function HomeScreen() {
   const showStatusRow = showOnlinePill
 
   const handleNext = () => {
-    if (transitioning) return // Prevent rapid clicks
+    if (transitioning || !current) return // Prevent rapid clicks
 
     setTransitioning(true)
-    setDeck(prev => {
-      // Allow rotation even with 1 user (for QA testing)
-      if (prev.length === 0) return prev
-      if (prev.length === 1) return prev // Stay on same user
-      const [first, ...rest] = prev
-      return [...rest, first]
-    })
+
+    // Remove the current profile from deck (don't rotate - just remove)
+    // Profiles will come back on the 30-second auto-refresh
+    setDeck(prev => prev.filter(p => p.id !== current.id))
 
     // Reset transitioning state after a brief delay
     setTimeout(() => setTransitioning(false), 100)
