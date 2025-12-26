@@ -183,7 +183,14 @@ export default function HomeScreen() {
       }
       setLoadingProfiles(false)
     }
+
+    // Load profiles immediately
     load()
+
+    // Reload profiles every 30 seconds (for QA testing - to pick up new users)
+    const interval = setInterval(load, 30000)
+
+    return () => clearInterval(interval)
   }, [])
 
   // Create a map of gym ID to gym name for filtering
@@ -369,7 +376,9 @@ export default function HomeScreen() {
 
     setTransitioning(true)
     setDeck(prev => {
-      if (prev.length <= 1) return prev
+      // Allow rotation even with 1 user (for QA testing)
+      if (prev.length === 0) return prev
+      if (prev.length === 1) return prev // Stay on same user
       const [first, ...rest] = prev
       return [...rest, first]
     })
