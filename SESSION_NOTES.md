@@ -1,3 +1,49 @@
+## 2025-12-26 - TICKET-TNS-001 Database Migrations Deployed
+
+### Ticket
+- **ID**: TICKET-TNS-001
+- **Title**: Safety and Moderation Readiness - Database Migrations
+- **Status**: Deployed to production
+
+### Migrations Deployed
+1. **Rate Limiting** (`supabase/enforce_rate_limiting.sql`)
+   - Created `check_message_rate_limit()` trigger function
+   - Enforces 5 messages per 10 seconds server-side
+   - Trigger: `enforce_message_rate_limit` on messages table
+
+2. **Block Enforcement** (`supabase/enforce_blocks_on_messages.sql`)
+   - Updated messages INSERT policy with bidirectional block checks
+   - Created `user_can_see_thread()` helper function
+   - Blocks now enforced at database level (cannot be bypassed)
+
+3. **Moderation Access** (`supabase/add_moderation_access.sql`)
+   - Created `moderators` table with RLS policies
+   - Added columns to reports: `moderation_notes`, `moderator_id`, `resolved_at`
+   - Created `is_moderator()` helper function
+   - Moderators can now view and update all reports
+   - Initial moderator access granted
+
+### Verification
+- ✅ All three migrations executed successfully
+- ✅ Triggers and policies verified in database
+- ✅ Initial moderator access configured
+- ✅ Rate limiting active (5 messages / 10 seconds)
+- ✅ Block enforcement active (bidirectional)
+- ✅ Moderator access system operational
+
+### Impact
+- Server-side safety enforcement now active
+- Users cannot bypass rate limits or blocks via client manipulation
+- Moderation team can access and manage all reports through database queries
+- Foundation ready for admin panel UI (Phase 2)
+
+### Next Steps
+- Manual testing of DoD checklist (see IMPLEMENTATION_GUIDE_TNS001.md)
+- Monitor error logs for rate limit violations
+- Define moderation SLA and escalation path
+- Build admin panel UI for report management (future ticket)
+
+---
 
 ## 2025-12-26 - Group Reporting & Message-level Reporting Implementation
 
@@ -322,12 +368,40 @@
   - Verify single-tap pledge at Step 4
   - Verify onboarding steps do not request background videos (FCP improvement)
 
-**Bug Fix: Onboarding scroll issue (2025-12-23)**:
+### Bug Fix: Onboarding scroll issue (2025-12-23):
 - **Issue**: Onboarding content could be clipped on some screens.
 - **Final fix**:
   - Onboarding renders without the mobile shell wrapper.
   - `.onb-screen` is the scroll container (`min-height: 100vh/100dvh` + `overflow-y: auto`).
 - **Impact**: Continue button remains reachable on all screen sizes.
+
+---
+
+## Session: TICKET-TNS-001 Safety and Moderation Readiness - Completed (2025-12-26)
+
+### Ticket
+- **ID**: TICKET-TNS-001
+- **Title**: Safety and Moderation Readiness
+- **Status**: Done
+
+### Work Performed
+- Verified implementation of `/safety` and `/community-guidelines` pages.
+- Confirmed pages are correctly linked from the `/profile` page under "Help & Safety".
+- Verified backend safety infrastructure:
+  - `blocks` and `reports` tables with RLS policies.
+  - Server-side rate limiting (5 messages / 10s) via `check_message_rate_limit` trigger.
+- Confirmed existence of `docs/MODERATION_PROTOCOL.md`.
+- Updated ticket status to **Done**.
+
+### Findings
+- ✅ Safety and Community Guidelines pages are live with MobileTopbar/Navbar.
+- ✅ Rate limiting is enforced at the database level.
+- ✅ Block/Report flows are integrated into group and direct chats.
+- ✅ Moderation protocol is documented in `docs/`.
+
+### Status Update
+TICKET-TNS-001: **Done** ✅
+
 
 ## Work Log (last ~8 hours)
 
