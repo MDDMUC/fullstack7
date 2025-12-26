@@ -42,24 +42,29 @@ export function MessageToastListener() {
     const client = supabase
 
     // Cache for sender profiles to avoid repeated fetches
-    const senderCache = new Map<string, { username: string; avatar_url?: string | null }>()
+    const senderCache = new Map<string, { username: string; avatar_url?: string | null; photo?: string | null }>()
 
-    const getSenderName = async (senderId: string): Promise<string> => {
+    const getSenderInfo = async (senderId: string): Promise<{ name: string; avatarUrl: string | null }> => {
       if (senderCache.has(senderId)) {
         const cached = senderCache.get(senderId)
-        return cached?.username?.split(' ')[0] || 'Someone'
+        const name = cached?.username?.split(' ')[0] || 'Someone'
+        const avatarUrl = cached?.avatar_url || cached?.photo || null
+        return { name, avatarUrl }
       }
 
       try {
         const profiles = await fetchProfiles(client, [senderId])
         if (profiles.length > 0) {
-          senderCache.set(senderId, profiles[0])
-          return profiles[0].username?.split(' ')[0] || 'Someone'
+          const profile = profiles[0]
+          senderCache.set(senderId, profile)
+          const name = profile.username?.split(' ')[0] || 'Someone'
+          const avatarUrl = profile.avatar_url || profile.photo || null
+          return { name, avatarUrl }
         }
       } catch (err) {
         console.error('Failed to fetch sender profile for toast', err)
       }
-      return 'Someone'
+      return { name: 'Someone', avatarUrl: null }
     }
 
     const getThreadInfo = async (threadId: string): Promise<{ type: string; title?: string }> => {
@@ -123,9 +128,9 @@ export function MessageToastListener() {
         if (!isParticipant) return // User is not part of this thread
       }
 
-      // Get sender name and thread info
-      const [senderName, threadInfo] = await Promise.all([
-        getSenderName(message.sender_id),
+      // Get sender info and thread info
+      const [senderInfo, threadInfo] = await Promise.all([
+        getSenderInfo(message.sender_id),
         getThreadInfo(message.thread_id),
       ])
 
@@ -136,17 +141,18 @@ export function MessageToastListener() {
         : message.body
 
       // Build title based on thread type
-      let title = `New message from ${senderName}`
+      let title = `New message from ${senderInfo.name}`
       if (threadInfo.type === 'crew') {
-        title = `${senderName} in ${threadInfo.title || 'Crew'}`
+        title = `${senderInfo.name} in ${threadInfo.title || 'Crew'}`
       } else if (threadInfo.type === 'gym') {
-        title = `${senderName} in ${threadInfo.title || 'Gym Chat'}`
+        title = `${senderInfo.name} in ${threadInfo.title || 'Gym Chat'}`
       }
 
       addToast({
         type: 'message',
         title,
         message: truncatedBody,
+        avatarUrl: senderInfo.avatarUrl,
         duration: 5000,
         onClick: () => {
           router.push(`/chats/${message.thread_id}`)

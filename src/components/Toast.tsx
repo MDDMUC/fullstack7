@@ -11,6 +11,7 @@ export type Toast = {
   message: string
   duration?: number
   onClick?: () => void
+  avatarUrl?: string | null
 }
 
 type ToastContextType = {
@@ -141,7 +142,13 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
       onClick={handleClick}
       role="alert"
     >
-      <div className="toast-icon">{getIcon()}</div>
+      {toast.avatarUrl ? (
+        <div className="toast-avatar">
+          <img src={toast.avatarUrl} alt="" className="toast-avatar-img" />
+        </div>
+      ) : (
+        <div className="toast-icon">{getIcon()}</div>
+      )}
       <div className="toast-content">
         <p className="toast-title">{toast.title}</p>
         <p className="toast-message">{toast.message}</p>
