@@ -166,12 +166,18 @@ export default function HomeScreen() {
         }
 
         const normalized = await fetchProfiles(client)
+        console.log('[HOME DEBUG] Fetched profiles:', normalized.length, normalized.map(p => ({ id: p.id, username: p.username })))
+        console.log('[HOME DEBUG] Blocked users:', blocked)
+        console.log('[HOME DEBUG] Current user:', currentUserId)
+
         const profiles: Profile[] = normalized
           .filter(p => !blocked.includes(p.id)) // Filter out blocked users (both directions)
           .map(p => ({
             ...p,
             distance: p.distance ?? '10 km',
           }))
+
+        console.log('[HOME DEBUG] Final deck after filtering:', profiles.length, profiles.map(p => ({ id: p.id, username: p.username })))
         setDeck(profiles)
 
         // Fetch gyms from the gyms table
