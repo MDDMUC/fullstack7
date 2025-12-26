@@ -2840,3 +2840,55 @@ The notification privacy bug (Issue #3) was a **critical security vulnerability*
 
 ### Status Update
 All critical bugs fixed. Core messaging functionality is now working correctly with proper privacy controls. Ready to continue QA testing of safety and moderation features.
+
+### Next Steps - PENDING TESTING
+
+**TICKET-TNS-001: Safety and Moderation Readiness**
+
+The safety and moderation features are implemented but **extensive QA testing is still required**. This session focused on fixing critical bugs discovered during initial testing setup.
+
+**Testing Blocked By:**
+- ✅ Profile deck not showing users (FIXED)
+- ✅ Messages failing to send due to RLS (FIXED)  
+- ✅ Wrong users getting notifications (FIXED)
+
+**Ready for Testing:**
+All blocking bugs are now resolved. The following comprehensive QA test plan is ready to execute:
+
+**Test Plan Location:** `QA_SAFETY_TESTING.md` (26 test cases)
+**Test Instructions:** `QA_AGENT_INSTRUCTIONS.md`
+
+**Key Areas to Test:**
+1. **Blocking System** (6 tests)
+   - Block user, verify they disappear from all surfaces
+   - Verify bidirectional blocking
+   - Test message blocking enforcement
+   - Test profile visibility after block
+
+2. **Reporting System** (8 tests)
+   - Report user profiles, messages, and content
+   - Verify moderator can see reports
+   - Test report queue and filtering
+   - Test moderator actions (warn, suspend, ban)
+
+3. **Rate Limiting** (4 tests)
+   - Verify 5 messages per 10 seconds limit
+   - Test database-level enforcement
+   - Verify error messages shown to users
+
+4. **Moderation Features** (8 tests)
+   - Moderator access controls
+   - Report dashboard functionality
+   - User profile moderation actions
+   - Audit trail verification
+
+**Test Accounts:**
+- User A: `6cf77ad4-3d9f-47ad-96bd-1b3485bc7b2e` (heymatvond@gmail.com) - **MODERATOR**
+- User B: `27f2b2e5-1189-4249-8e58-cd2a1445b7d6`
+- User C: `d3d9c441-e6f5-44c0-9d7a-070e6c626608`
+
+**Status:** 
+🔴 **TESTING NOT STARTED** - Blocked issues resolved, ready to begin comprehensive QA.
+
+**Recommendation:**
+Execute all 26 test cases in QA_SAFETY_TESTING.md before marking TICKET-TNS-001 as complete. Consider using the Task tool with a QA agent to systematically work through the test plan.
