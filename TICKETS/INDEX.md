@@ -3,7 +3,8 @@
 | ID | Title | Status | Owner | Priority | File |
 |----|-------|--------|-------|----------|------|
 | TICKET-ONB-001 | Onboarding Flow Optimization (22-35) | Done | Complete | P0 | `TICKETS/onboarding-flow-optimization.md` |
-| TICKET-TNS-001 | Safety and Moderation Readiness | Done | P0 | Product/Ops |
+| TICKET-TNS-001 | Safety and Moderation Readiness | Done | P0 | Product/Ops | `TICKETS/safety-moderation-readiness.md` |
+| TICKET-ADM-001 | Admin Panel for Report Moderation | Proposed | Eng/Product | P1 | `TICKETS/admin-panel-moderation.md` |
 | TICKET-NOT-001 | Push Notification Infrastructure (Ready State) | Proposed | Eng | P0 | `TICKETS/push-notification-infra.md` |
 | TICKET-QA-001 | Pre-launch Product Readiness QA | Proposed | QA/Eng | P0 | `TICKETS/prelaunch-product-readiness-qa.md` |
 | TICKET-OPS-001 | Content Seeding (Pre-launch) | Proposed | Product/Ops | P0 | `TICKETS/content-seeding-prelaunch.md` |
