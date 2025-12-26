@@ -97,6 +97,32 @@ export function MessageToastListener() {
       // Don't show toast if user is currently viewing this thread
       if (currentThreadIdRef.current === message.thread_id) return
 
+      // CRITICAL: Check if current user is actually a participant in this thread
+      // First check thread_participants table
+      const { data: participantEntry } = await client
+        .from('thread_participants')
+        .select('id')
+        .eq('thread_id', message.thread_id)
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      // If not in thread_participants, check if it's a direct thread where user is user_a or user_b
+      if (!participantEntry) {
+        const { data: thread } = await client
+          .from('threads')
+          .select('user_a, user_b, type')
+          .eq('id', message.thread_id)
+          .maybeSingle()
+
+        // If thread doesn't exist or user is not part of it, don't show toast
+        if (!thread) return
+
+        const isDirect = (thread.type ?? 'direct') === 'direct'
+        const isParticipant = thread.user_a === userId || thread.user_b === userId
+
+        if (!isParticipant) return // User is not part of this thread
+      }
+
       // Get sender name and thread info
       const [senderName, threadInfo] = await Promise.all([
         getSenderName(message.sender_id),
