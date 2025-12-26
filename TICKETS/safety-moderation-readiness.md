@@ -2,7 +2,7 @@
 
 ID: TICKET-TNS-001
 Owner: Product/Ops
-Status: In Design
+Status: Done
 Priority: P0
 Workflow Path: Full Pipeline
 Created: 2025-12-22

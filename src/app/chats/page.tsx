@@ -115,6 +115,26 @@ export default function ChatsScreen() {
     if (!supabase || !userId) return
     setIsLoading(true)
 
+    // Fetch blocks (users blocked by current user OR users who blocked current user)
+    const { data: blocksData } = await supabase
+      .from('blocks')
+      .select('blocker_id, blocked_id')
+      .or(`blocker_id.eq.${userId},blocked_id.eq.${userId}`)
+
+    const blockedUserIds = new Set<string>()
+    if (blocksData) {
+      blocksData.forEach(block => {
+        // Add users I blocked
+        if (block.blocker_id === userId) {
+          blockedUserIds.add(block.blocked_id)
+        }
+        // Add users who blocked me
+        if (block.blocked_id === userId) {
+          blockedUserIds.add(block.blocker_id)
+        }
+      })
+    }
+
     // Direct 1:1 threads where current user is user_a or user_b
     const { data: directThreads, error: threadsError } = await supabase
       .from('threads')
@@ -162,8 +182,15 @@ export default function ChatsScreen() {
     })
     const uniqueThreads = Array.from(uniqueThreadsMap.values())
 
+    // Filter out threads with blocked users (direct chats only - group threads handled by server)
+    const withoutBlocked = uniqueThreads.filter(t => {
+      if ((t.type ?? 'direct') !== 'direct') return true
+      const otherUserId = t.user_a === userId ? t.user_b : t.user_a
+      return otherUserId ? !blockedUserIds.has(otherUserId) : true
+    })
+
     // Exclude crew threads - they only appear on /crew page
-    const withoutCrews = uniqueThreads.filter(t => (t.type ?? 'direct') !== 'crew')
+    const withoutCrews = withoutBlocked.filter(t => (t.type ?? 'direct') !== 'crew')
 
     // Keep only the three canonical gym thread titles; drop anything else.
     const allowedGymTitles = new Set(['general', 'beta center', 'routesetting'])

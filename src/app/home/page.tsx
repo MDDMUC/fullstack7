@@ -132,10 +132,34 @@ export default function HomeScreen() {
       try {
         const client = supabase ?? requireSupabase()
 
-        // Fetch blocked users first
+        // Fetch blocked users (both directions: users I blocked AND users who blocked me)
         let blocked: string[] = []
         try {
-          blocked = await getBlockedUsers()
+          const { data: userData } = await client.auth.getUser()
+          const currentUserId = userData.user?.id
+
+          if (currentUserId) {
+            const { data: blocksData } = await client
+              .from('blocks')
+              .select('blocker_id, blocked_id')
+              .or(`blocker_id.eq.${currentUserId},blocked_id.eq.${currentUserId}`)
+
+            if (blocksData) {
+              const blockedSet = new Set<string>()
+              blocksData.forEach(block => {
+                // Add users I blocked
+                if (block.blocker_id === currentUserId) {
+                  blockedSet.add(block.blocked_id)
+                }
+                // Add users who blocked me
+                if (block.blocked_id === currentUserId) {
+                  blockedSet.add(block.blocker_id)
+                }
+              })
+              blocked = Array.from(blockedSet)
+            }
+          }
+
           setBlockedUserIds(blocked)
         } catch {
           // Ignore if blocks table doesn't exist yet
@@ -143,7 +167,7 @@ export default function HomeScreen() {
 
         const normalized = await fetchProfiles(client)
         const profiles: Profile[] = normalized
-          .filter(p => !blocked.includes(p.id)) // Filter out blocked users
+          .filter(p => !blocked.includes(p.id)) // Filter out blocked users (both directions)
           .map(p => ({
             ...p,
             distance: p.distance ?? '10 km',
