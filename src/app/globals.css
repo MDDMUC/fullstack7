@@ -7575,7 +7575,7 @@ input[type=number] {
   display: flex;
   gap: var(--space-xxl);
   align-items: center;
-  padding: 0 24px;
+  padding: 0 var(--space-xl);
 }
 
 /* Logo - font-['Metal_Mania'] text-[52px] text-white */
@@ -7637,7 +7637,7 @@ input[type=number] {
   font-family: 'Inter', sans-serif;
   color: var(--color-muted);
   text-decoration: none;
-  padding: 10px 16px;
+  padding: var(--btn-pad-md) var(--btn-pad-xxl);
   border-radius: var(--radius-md);
   transition: color 120ms ease;
   line-height: normal;
