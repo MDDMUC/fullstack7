@@ -434,8 +434,19 @@ export default function ChatDetailPage() {
     setSendError(null)
     if (!retryBody) setDraft('')
 
-    // Ensure membership for gym threads before sending
-    if (!isDirect) {
+    // Ensure membership in thread_participants (required by RLS policy)
+    // For direct threads: ensure both users are participants
+    // For group threads: ensure current user is a participant
+    if (isDirect && otherUserId) {
+      // For direct messages, ensure both participants exist
+      await client
+        .from('thread_participants')
+        .upsert([
+          { thread_id: chatId, user_id: userId, role: 'member' },
+          { thread_id: chatId, user_id: otherUserId, role: 'member' }
+        ])
+    } else {
+      // For group threads, ensure current user is a participant
       await client
         .from('thread_participants')
         .upsert({ thread_id: chatId, user_id: userId, role: 'member' })
