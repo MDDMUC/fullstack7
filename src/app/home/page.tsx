@@ -134,9 +134,11 @@ export default function HomeScreen() {
 
         // Fetch blocked users (both directions: users I blocked AND users who blocked me)
         let blocked: string[] = []
+        let currentUserId: string | undefined
+
         try {
           const { data: userData } = await client.auth.getUser()
-          const currentUserId = userData.user?.id
+          currentUserId = userData.user?.id
 
           if (currentUserId) {
             const { data: blocksData } = await client
