@@ -9,7 +9,7 @@ import MobileTopbar from '@/components/MobileTopbar'
 import Avatar from '@/components/Avatar'
 import ActionMenu from '@/components/ActionMenu'
 import ReportModal from '@/components/ReportModal'
-import { RequireAuth } from '@/components/RequireAuth'
+import { RequireOnboarding } from '@/components/RequireOnboarding'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile, fetchGymsFromTable, Gym } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
@@ -411,7 +411,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <RequireAuth>
+    <RequireOnboarding>
       <div className="home-screen" data-name="/home-mobile">
         {!loadingProfiles && current && (
           <>
@@ -604,7 +604,7 @@ export default function HomeScreen() {
         {/* Mobile Navbar - Exact from Figma node 628:4634 */}
         <MobileNavbar active="dab" />
       </div>
-    </RequireAuth>
+    </RequireOnboarding>
   )
 }
 
