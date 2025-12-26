@@ -52,22 +52,35 @@ function AuthCallbackInner() {
         return
       }
 
-      if (!code) {
-        setError('Missing confirmation code.')
-        setStatus('error')
+      // If we have a code, exchange it for a session (PKCE flow)
+      if (code) {
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+        if (exchangeError) {
+          setError(exchangeError.message)
+          setStatus('error')
+          return
+        }
+
+        const next = searchParams.get('next') || '/dab'
+        setStatus('done')
+        router.replace(next)
         return
       }
 
-      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
-      if (exchangeError) {
-        setError(exchangeError.message)
-        setStatus('error')
+      // No code parameter - check if session already exists (implicit flow)
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (session) {
+        // Session exists, redirect to next page
+        const next = searchParams.get('next') || '/dab'
+        setStatus('done')
+        router.replace(next)
         return
       }
 
-      const next = searchParams.get('next') || '/dab'
-      setStatus('done')
-      router.replace(next)
+      // No code and no session - this is an error
+      setError('Missing confirmation code.')
+      setStatus('error')
     }
 
     exchange()
