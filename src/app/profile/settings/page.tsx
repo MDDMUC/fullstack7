@@ -58,6 +58,12 @@ export default function SettingsPage() {
     setError(null)
     setSuccessMsg(null)
 
+    // Add timeout to prevent UI from getting stuck
+    const timeoutId = setTimeout(() => {
+      setToggling(false)
+      setError('Request timed out. Please try again.')
+    }, 30000) // 30 second timeout
+
     try {
       if (!firebaseConfigured) {
         throw new Error('Push notifications not configured. Please contact support.')
@@ -73,27 +79,36 @@ export default function SettingsPage() {
 
       if (!pushEnabled) {
         // Enable notifications
+        console.log('Starting push subscription...')
         await subscribeToPush(userId)
+        console.log('Push subscription successful')
         setPushEnabled(true)
         setError(null)
         setSuccessMsg('✅ Notifications enabled successfully!')
       } else {
         // Disable notifications
+        console.log('Starting push unsubscription...')
         await unsubscribeFromPush(userId)
+        console.log('Push unsubscription successful')
         setPushEnabled(false)
         setError(null)
         setSuccessMsg('Notifications disabled')
       }
-      
+
+      // Clear timeout since operation completed
+      clearTimeout(timeoutId)
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMsg(null), 3000)
-      
+
     } catch (err: any) {
       console.error('Failed to toggle push notifications:', err)
+      clearTimeout(timeoutId)
       setError(err.message || 'Failed to update notification settings')
       // Revert toggle state on error
       setPushEnabled(!pushEnabled)
     } finally {
+      clearTimeout(timeoutId)
       setToggling(false)
     }
   }
