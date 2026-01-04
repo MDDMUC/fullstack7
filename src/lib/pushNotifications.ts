@@ -136,118 +136,151 @@ export const requestNotificationPermission = async (): Promise<NotificationPermi
  * Subscribe to push notifications and save token to database
  */
 export const subscribeToPush = async (userId: string): Promise<PushToken | null> => {
+  // Validate Firebase configuration
+  if (!isFirebaseConfigured()) {
+    console.error('Firebase not configured. Add Firebase env variables to .env.local');
+    throw new Error('Firebase not configured');
+  }
+
+  // Check browser support
+  if (!isPushSupported()) {
+    throw new Error('Push notifications not supported in this browser');
+  }
+
+  // Check iOS PWA requirement
+  if (isIOSSafariNonPWA()) {
+    throw new Error('Please add DAB to your home screen to enable notifications on iOS');
+  }
+
+  // Request permission
+  const permission = await requestNotificationPermission();
+  if (permission !== 'granted') {
+    throw new Error('Notification permission denied');
+  }
+
+  // Register service worker with timeout
+  console.log('Registering service worker...');
+  const registration = await Promise.race([
+    registerServiceWorker(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Service worker registration timeout')), 10000)
+    )
+  ]);
+  console.log('Service worker registered');
+
+  // Get Firebase Messaging instance with timeout
+  console.log('Getting Firebase Messaging instance...');
+  const messaging = await Promise.race([
+    getFirebaseMessaging(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Firebase Messaging timeout')), 10000)
+    )
+  ]);
+  if (!messaging) {
+    throw new Error('Firebase Messaging not available');
+  }
+  console.log('Firebase Messaging ready');
+
+  // Get FCM token with timeout
+  console.log('Requesting FCM token...');
+  const fcmToken = await Promise.race([
+    getToken(messaging, { vapidKey: VAPID_KEY }),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('FCM token request timeout')), 15000)
+    )
+  ]);
+  if (!fcmToken) {
+    throw new Error('Failed to get FCM token');
+  }
+  console.log('FCM Token received');
+
+  // Get push subscription with timeout (optional - FCM is the primary mechanism)
+  let endpoint = `https://fcm.googleapis.com/fcm/send/${fcmToken}`;
+  let p256dhBase64 = 'FCM_MANAGED';
+  let authBase64 = 'FCM_MANAGED';
+
   try {
-    // Validate Firebase configuration
-    if (!isFirebaseConfigured()) {
-      console.error('Firebase not configured. Add Firebase env variables to .env.local');
-      return null;
-    }
+    console.log('Getting push subscription...');
+    const swRegistration = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Service worker ready timeout')), 5000)
+      )
+    ]);
 
-    // Check browser support
-    if (!isPushSupported()) {
-      throw new Error('Push notifications not supported in this browser');
-    }
-
-    // Check iOS PWA requirement
-    if (isIOSSafariNonPWA()) {
-      throw new Error('Please add DAB to your home screen to enable notifications on iOS');
-    }
-
-    // Request permission
-    const permission = await requestNotificationPermission();
-    if (permission !== 'granted') {
-      throw new Error('Notification permission denied');
-    }
-
-    // Register service worker
-    await registerServiceWorker();
-
-    // Get Firebase Messaging instance
-    const messaging = await getFirebaseMessaging();
-    if (!messaging) {
-      throw new Error('Firebase Messaging not available');
-    }
-
-    // Get FCM token
-    const fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY });
-    if (!fcmToken) {
-      throw new Error('Failed to get FCM token');
-    }
-
-    console.log('FCM Token received:', fcmToken);
-
-    // Try to get push subscription for Web Push keys (optional with FCM)
-    const registration = await navigator.serviceWorker.ready;
     let subscription = await registration.pushManager.getSubscription();
 
     // If no subscription exists, create one
     if (!subscription) {
-      console.log('No existing subscription, creating one...');
-      subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: VAPID_KEY,
-      });
+      console.log('Creating new push subscription...');
+      subscription = await Promise.race([
+        swRegistration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: VAPID_KEY,
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Push subscription timeout')), 5000)
+        )
+      ]);
     }
 
     // Extract Web Push keys
     const p256dhKey = subscription.getKey('p256dh');
     const authKey = subscription.getKey('auth');
-
-    // Use FCM endpoint as fallback
-    const endpoint = subscription.endpoint || `https://fcm.googleapis.com/fcm/send/${fcmToken}`;
-
-    // Convert keys to base64 (use placeholders if not available)
-    const p256dhBase64 = p256dhKey
+    endpoint = subscription.endpoint || endpoint;
+    p256dhBase64 = p256dhKey
       ? btoa(String.fromCharCode(...new Uint8Array(p256dhKey)))
       : 'FCM_MANAGED';
-    const authBase64 = authKey
+    authBase64 = authKey
       ? btoa(String.fromCharCode(...new Uint8Array(authKey)))
       : 'FCM_MANAGED';
 
-    // Prepare token data
-    const tokenData: Omit<PushToken, 'id'> = {
-      user_id: userId,
-      token: fcmToken,
-      endpoint: endpoint,
-      p256dh_key: p256dhBase64,
-      auth_key: authBase64,
-      device_type: getDeviceType(),
-      device_name: getDeviceName(),
-      user_agent: navigator.userAgent,
-      is_active: true,
-    };
-
-    // Save to database
-    const supabase = requireSupabase();
-    const { data, error } = await supabase
-      .from('push_tokens')
-      .upsert(tokenData, {
-        onConflict: 'user_id,endpoint',
-        ignoreDuplicates: false,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Failed to save push token:', error);
-      throw error;
-    }
-
-    // Update preferences
-    await supabase
-      .from('push_preferences')
-      .upsert({
-        user_id: userId,
-        enabled: true,
-      });
-
-    console.log('Push token saved successfully:', data);
-    return data as PushToken;
-
+    console.log('Push subscription obtained');
   } catch (error) {
-    console.error('Failed to subscribe to push:', error);
+    console.warn('Failed to get push subscription (non-critical):', error);
+    // Continue with FCM-only registration
+  }
+
+  // Prepare token data
+  const tokenData: Omit<PushToken, 'id'> = {
+    user_id: userId,
+    token: fcmToken,
+    endpoint: endpoint,
+    p256dh_key: p256dhBase64,
+    auth_key: authBase64,
+    device_type: getDeviceType(),
+    device_name: getDeviceName(),
+    user_agent: navigator.userAgent,
+    is_active: true,
+  };
+
+  // Save to database
+  console.log('Saving token to database...');
+  const supabase = requireSupabase();
+  const { data, error } = await supabase
+    .from('push_tokens')
+    .upsert(tokenData, {
+      onConflict: 'user_id,endpoint',
+      ignoreDuplicates: false,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Failed to save push token:', error);
     throw error;
   }
+
+  // Update preferences
+  await supabase
+    .from('push_preferences')
+    .upsert({
+      user_id: userId,
+      enabled: true,
+    });
+
+  console.log('Push token saved successfully');
+  return data as PushToken;
 };
 
 /**
