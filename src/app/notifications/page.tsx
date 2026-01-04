@@ -153,8 +153,7 @@ export default function NotificationsPage() {
             crew_id,
             inviter_id,
             created_at,
-            crews!inner(id, title, created_by),
-            inviter:profiles!crew_invites_inviter_id_fkey(id, username)
+            crews!inner(id, title, created_by)
           `)
           .eq('invitee_id', userId)
           .eq('status', 'pending')
@@ -163,22 +162,22 @@ export default function NotificationsPage() {
 
         if (crewInvitesToUser && crewInvitesToUser.length > 0) {
           const inviterIds = crewInvitesToUser.map(inv => inv.inviter_id).filter(Boolean)
-          let inviterAvatars: Record<string, string | undefined> = {}
+          let inviterProfiles: Record<string, { username: string; avatar_url?: string }> = {}
           if (inviterIds.length > 0) {
             const profiles = await fetchProfiles(client, inviterIds)
-            inviterAvatars = profiles.reduce<Record<string, string | undefined>>((acc, p) => {
-              acc[p.id] = p.avatar_url ?? undefined
+            inviterProfiles = profiles.reduce<Record<string, { username: string; avatar_url?: string }>>((acc, p) => {
+              acc[p.id] = { username: p.username || 'User', avatar_url: p.avatar_url ?? undefined }
               return acc
             }, {})
           }
 
           for (const invite of crewInvitesToUser) {
             const crew = invite.crews as any
-            const inviter = invite.inviter as any
-            const inviterName = inviter?.username?.trim().split(/\s+/)[0] || 'Someone'
+            const inviterProfile = inviterProfiles[invite.inviter_id]
+            const inviterName = inviterProfile?.username?.trim().split(/\s+/)[0] || 'Someone'
             const crewName = crew?.title || 'a crew'
             const timeAgo = formatTimeAgo(invite.created_at)
-            
+
             allNotifications.push({
               id: `crew-invite-${invite.id}`,
               type: 'crew_invite',
@@ -189,7 +188,7 @@ export default function NotificationsPage() {
               crewId: crew.id,
               crewName: crewName,
               inviterName: inviterName,
-              avatarUrl: inviterAvatars[invite.inviter_id],
+              avatarUrl: inviterProfile?.avatar_url,
             })
           }
         }

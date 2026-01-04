@@ -3286,3 +3286,101 @@ TICKET-TNS-001 closed after QA verification.
 
 **Status:**
 TICKET-NOT-001 closed after QA verification.
+
+---
+
+### 2026-01-04: Bug Fix - Crew Invite Notifications Not Sent
+
+**Issue:**
+When a crew owner invites a user to join a crew from the crew detail page, the invite is created in the database but the invitee does not receive a push notification. The reverse flow (user requesting to join) works correctly.
+
+**Root Cause:**
+The crew invite creation logic in `src/app/crew/detail/page.tsx` (handleInvite function) only creates the database record but does not trigger any notification mechanism. There was no integration between the invite creation and the push notification system.
+
+**Solution Implemented:**
+
+1. **Created dedicated API endpoint** (`src/app/api/push/crew-invite/route.ts`):
+   - Validates crew ownership before sending notifications
+   - Checks that the authenticated user is the crew owner
+   - Sends push notifications via Firebase Cloud Messaging
+   - Handles cases where Firebase is not configured or user has no active push tokens
+   - Gracefully marks failed tokens as inactive
+
+2. **Added helper function** in `src/lib/pushNotifications.ts`:
+   - `sendCrewInviteNotification(inviteeId, inviterName, crewName, crewId)`
+   - Calls the new `/api/push/crew-invite` endpoint
+   - Non-blocking - doesn't fail the invite creation if notification fails
+
+3. **Integrated into crew invite flow** in `src/app/crew/detail/page.tsx`:
+   - After successfully creating crew invites, fetches the inviter's name
+   - Sends push notification to each invited user
+   - Continues with remaining invites even if one notification fails
+
+**Files Modified:**
+- `src/app/api/push/crew-invite/route.ts` (new file)
+- `src/lib/pushNotifications.ts` (added sendCrewInviteNotification function)
+- `src/app/crew/detail/page.tsx` (integrated push notifications in handleInvite)
+
+**Security:**
+The new API endpoint validates that:
+- User is authenticated
+- User is the owner of the crew they're sending invites for
+- Prevents abuse by restricting notifications to valid crew invite scenarios
+
+**Testing Required:**
+1. User A creates a crew
+2. User A invites User B from crew detail page
+3. User B should receive push notification (if they have push enabled)
+4. User B can see invite in /notifications page
+5. User B can accept/decline the invite
+
+**Status:**
+Implementation complete. Build passing. Ready for manual testing.
+
+---
+
+### 2026-01-04: Bug Fix - Added Real-time Toast for Crew Invites
+
+**Issue:**
+After implementing push notifications for crew invites, users still weren't seeing any indication when they received an invite (no toast notification appearing in the app).
+
+**Root Cause:**
+The app has a `MessageToastListener` that shows toast notifications for new chat messages, but there was no equivalent listener for crew invites. Users would only see invites if they manually navigated to the /notifications page.
+
+**Solution Implemented:**
+
+1. **Created `CrewInviteToastListener` component** (`src/components/CrewInviteToastListener.tsx`):
+   - Subscribes to real-time inserts on the `crew_invites` table
+   - Filters for invites where the current user is the invitee
+   - Fetches inviter and crew information
+   - Shows a toast notification when a new invite is received
+   - Toast duration: 8 seconds (longer than message toasts to give time to read)
+   - Clicking toast navigates to /notifications page
+
+2. **Added listener to global Providers** (`src/components/Providers.tsx`):
+   - Included `CrewInviteToastListener` alongside `MessageToastListener`
+   - Ensures it runs on all pages where user is authenticated
+
+3. **Added detailed debug logging**:
+   - Added console logs in crew detail page handleInvite function
+   - Added console logs in sendCrewInviteNotification helper
+   - Added console logs in API route responses
+   - Makes it easy to trace the flow and diagnose issues
+
+**Files Modified:**
+- `src/components/CrewInviteToastListener.tsx` (new file)
+- `src/components/Providers.tsx` (added CrewInviteToastListener)
+- `src/app/crew/detail/page.tsx` (added debug logging)
+- `src/lib/pushNotifications.ts` (added debug logging)
+
+**Expected Behavior:**
+1. Owner invites user to crew
+2. Console logs show: "✅ Crew invites created successfully"
+3. Console logs show: "📤 Sending push notifications..."
+4. Console logs show: "✅ Crew invite notification API response"
+5. Invitee receives push notification (if push enabled)
+6. Invitee sees toast notification in app (if app is open)
+7. Invitee can click toast or go to /notifications to accept/decline
+
+**Status:**
+Implementation complete. Build passing. Ready for testing with detailed logging.

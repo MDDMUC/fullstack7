@@ -405,3 +405,71 @@ export const setupForegroundMessageListener = async (
     return null;
   }
 };
+
+/**
+ * Send a crew invite notification to a user
+ */
+export const sendCrewInviteNotification = async (
+  inviteeId: string,
+  inviterName: string,
+  crewName: string,
+  crewId: string
+): Promise<void> => {
+  try {
+    const supabase = requireSupabase();
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      console.warn('⚠️ No session available to send push notification');
+      return;
+    }
+
+    console.log('📤 Calling /api/push/crew-invite with:', {
+      inviteeId,
+      inviterName,
+      crewName,
+      crewId,
+    });
+
+    const response = await fetch('/api/push/crew-invite', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        inviteeId,
+        crewId,
+        inviterName,
+        crewName,
+      }),
+    });
+
+    console.log('📥 API Response status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      let error: any = { status: response.status, statusText: response.statusText };
+      try {
+        const contentType = response.headers.get('content-type');
+        console.log('Response content-type:', contentType);
+
+        if (contentType?.includes('application/json')) {
+          error = await response.json();
+        } else {
+          const text = await response.text();
+          error.body = text.substring(0, 500); // First 500 chars
+        }
+      } catch (parseError) {
+        console.error('Failed to parse error response:', parseError);
+      }
+      console.error('❌ Failed to send crew invite notification:', error);
+      // Don't throw - push notifications are non-critical
+    } else {
+      const result = await response.json();
+      console.log('✅ Crew invite notification API response:', result);
+    }
+  } catch (error) {
+    console.error('❌ Exception sending crew invite notification:', error);
+    // Don't throw - push notifications are non-critical
+  }
+};

@@ -21,6 +21,7 @@ import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym, Profile } from '@/lib/profiles'
 import { blockUser, getBlockedUsers } from '@/lib/blocks'
+import { sendCrewInviteNotification } from '@/lib/pushNotifications'
 
 const BACK_ICON = '/icons/chevron-left.svg'
 const MENU_ICON = '/icons/dots.svg'
@@ -832,6 +833,40 @@ function CrewDetailContent() {
         setError(inviteError.message || 'Failed to send invitations')
         setInviting(false)
         return
+      }
+
+      console.log('✅ Crew invites created successfully:', inviteData)
+
+      // Send push notification to each invited user
+      // Fetch current user's profile if not already in profiles map
+      let inviterName = 'Someone'
+      if (userId) {
+        if (profiles[userId]) {
+          inviterName = profiles[userId].username?.trim().split(/\s+/)[0] || 'Someone'
+        } else {
+          const inviterProfiles = await fetchProfiles(client, [userId])
+          if (inviterProfiles.length > 0) {
+            inviterName = inviterProfiles[0].username?.trim().split(/\s+/)[0] || 'Someone'
+          }
+        }
+      }
+
+      console.log('📤 Sending push notifications to', userIdsArray.length, 'users as', inviterName)
+
+      for (const inviteeId of userIdsArray) {
+        try {
+          console.log(`📤 Sending notification to user ${inviteeId}...`)
+          await sendCrewInviteNotification(
+            inviteeId,
+            inviterName,
+            crew.title,
+            crew.id
+          )
+          console.log(`✅ Notification sent successfully to user ${inviteeId}`)
+        } catch (notifError) {
+          console.error(`❌ Failed to send notification to ${inviteeId}:`, notifError)
+          // Continue with other invites even if notification fails
+        }
       }
 
       // Show toast for each invited user
