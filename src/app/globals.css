@@ -15892,23 +15892,23 @@ img.friend-tile-img {
 }
 
 /* Toast type-specific border accents */
-.toast-message {
+.toast-item.toast-message {
   border-left: 3px solid var(--color-primary);
 }
 
-.toast-invite {
+.toast-item.toast-invite {
   border-left: 3px solid var(--color-secondary);
 }
 
-.toast-success {
+.toast-item.toast-success {
   border-left: 3px solid #4ade80;
 }
 
-.toast-error {
+.toast-item.toast-error {
   border-left: 3px solid #f87171;
 }
 
-.toast-info {
+.toast-item.toast-info {
   border-left: 3px solid var(--color-muted);
 }
 
@@ -16317,5 +16317,177 @@ img.friend-tile-img {
   .onb-screen {
     padding: var(--space-xxl);
   }
+}
+
+
+/* ----------------------------------------
+   SETTINGS SCREEN
+   ---------------------------------------- */
+
+.settings-screen {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: var(--color-surface-bg);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.settings-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-bg);
+  padding-bottom: var(--navbar-height); /* Space for bottom navbar */
+  overflow: hidden;
+  position: relative;
+}
+
+.settings-card {
+  flex: 1;
+  background-color: var(--color-surface-bg);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.settings-section {
+  background-color: var(--color-surface-panel);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  border: 1px solid var(--color-border-default);
+}
+
+.settings-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.settings-section-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-default);
+  margin: 0;
+}
+
+.settings-section-icon {
+  font-size: var(--icon-size-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Warnings / Alerts */
+.settings-alert {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+  border: 1px solid transparent;
+}
+
+.settings-alert-error {
+  background-color: rgba(255, 68, 68, 0.1);
+  border-color: var(--color-state-red);
+}
+
+.settings-alert-warning {
+  background-color: rgba(252, 211, 77, 0.1);
+  border-color: rgba(252, 211, 77, 0.3);
+}
+
+.settings-alert-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-default);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.settings-alert-text strong {
+  font-weight: var(--font-weight-bold);
+}
+
+.settings-alert-text-error {
+  color: var(--color-state-red);
+}
+
+/* Toggle Row */
+.settings-toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-md);
+  gap: var(--space-md);
+}
+
+.settings-toggle-label {
+  flex: 1;
+}
+
+.settings-toggle-title {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-default);
+  margin: 0;
+  margin-bottom: var(--space-xs);
+}
+
+.settings-toggle-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Toggle Switch Component */
+.settings-toggle-switch {
+  position: relative;
+  width: 52px;
+  height: 32px;
+  background-color: var(--color-surface-card);
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.settings-toggle-switch[aria-checked="true"] {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.settings-toggle-switch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.settings-toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-text-default);
+  border-radius: 50%;
+  transition: left 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.settings-toggle-switch[aria-checked="true"] .settings-toggle-thumb {
+  left: 22px;
 }
 

@@ -504,6 +504,50 @@ export default function NotificationsPage() {
     setNotifications(prev => prev.filter(n => n.id !== notifId))
   }
 
+  // Handle entering chat with a user (for dab notifications)
+  const handleEnterChat = async (e: React.MouseEvent, otherUserId: string) => {
+    e.stopPropagation()
+    if (!userId || !supabase) return
+
+    try {
+      const client = supabase
+
+      // Check if a direct thread already exists with this user
+      const { data: existingThreads } = await client
+        .from('threads')
+        .select('id')
+        .eq('type', 'direct')
+        .or(`and(user_a.eq.${userId},user_b.eq.${otherUserId}),and(user_a.eq.${otherUserId},user_b.eq.${userId})`)
+        .limit(1)
+
+      if (existingThreads && existingThreads.length > 0) {
+        // Thread exists, navigate to it
+        router.push(`/chats/${existingThreads[0].id}`)
+      } else {
+        // Create new thread
+        const { data: newThread, error: createError } = await client
+          .from('threads')
+          .insert({
+            type: 'direct',
+            user_a: userId,
+            user_b: otherUserId,
+          })
+          .select('id')
+          .single()
+
+        if (createError || !newThread) {
+          console.error('Error creating thread:', createError)
+          return
+        }
+
+        // Navigate to the new thread
+        router.push(`/chats/${newThread.id}`)
+      }
+    } catch (err) {
+      console.error('Error entering chat:', err)
+    }
+  }
+
   // Filter out dismissed notifications for display
   const visibleNotifications = notifications.filter(n => !dismissedIds.has(n.id))
 
@@ -568,6 +612,25 @@ export default function NotificationsPage() {
                             disabled={processingIds.has(notif.inviteId)}
                           >
                             {processingIds.has(notif.inviteId) ? '...' : 'Decline'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : notif.type === 'dab' && notif.userId ? (
+                      <div className="notification-tile-actions-wrapper">
+                        <div className="notification-tile-actions">
+                          <button
+                            type="button"
+                            className="notification-action-decline"
+                            onClick={(e) => handleDismissNotification(e, notif.id)}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="notification-action-accept"
+                            onClick={(e) => handleEnterChat(e, notif.userId!)}
+                          >
+                            Enter chat
                           </button>
                         </div>
                       </div>

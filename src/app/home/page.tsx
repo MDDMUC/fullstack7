@@ -45,8 +45,42 @@ const FALLBACK_PROFILE: Profile = {
   tags: ['Boulder', 'Sport', 'grade:Advanced', 'Belay Certified', 'Edelrid Ohm', 'Host'],
 }
 
-const chipsFromTags = (tags?: string[]) =>
-  (tags ?? []).filter(t => !t.toLowerCase().startsWith('grade:') && !['boulder', 'sport', 'lead', 'trad'].includes(t.toLowerCase()))
+const canonicalStyle = (value: string): string | null => {
+  const lower = value.trim().toLowerCase()
+  if (!lower) return null
+  if (lower.includes('boulder')) return 'bouldering'
+  if (lower.includes('sport')) return 'sport'
+  if (lower.includes('lead')) return 'lead'
+  if (lower.includes('trad')) return 'trad'
+  return null
+}
+
+const uniqueChips = (chips: string[]) => {
+  const seen = new Set<string>()
+  return chips.filter(chip => {
+    const key = chip.trim().toLowerCase()
+    if (!key || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+const chipsFromTags = (tags?: string[], styles?: string[]) => {
+  const styleKeys = new Set(
+    (styles ?? [])
+      .map(style => canonicalStyle(style))
+      .filter((style): style is string => Boolean(style))
+  )
+  const filtered = (tags ?? []).filter(tag => {
+    const lower = tag.toLowerCase()
+    if (lower.startsWith('grade:')) return false
+    if (['boulder', 'bouldering', 'sport', 'lead', 'trad'].includes(lower)) return false
+    const canonical = canonicalStyle(tag)
+    if (canonical && styleKeys.has(canonical)) return false
+    return true
+  })
+  return uniqueChips(filtered)
+}
 
 // Extract styles from profile.style field (comma-separated string or array)
 // Also checks the raw styles array from onboardingprofiles if available
@@ -324,12 +358,23 @@ export default function HomeScreen() {
 
   const tags = useMemo(() => {
     // Get styles and grade from database fields, not from tags
-    const styles = getStylesFromProfile(current)
+    const rawStyles = getStylesFromProfile(current)
+    // Deduplicate and normalize styles (case-insensitive deduplication)
+    const seenLower = new Set<string>()
+    const styles = rawStyles
+      .map(style => style.trim())
+      .filter(Boolean)
+      .filter(style => {
+        const lower = style.toLowerCase()
+        if (seenLower.has(lower)) return false
+        seenLower.add(lower)
+        return true
+      })
     const grade = getGradeFromProfile(current)
     return { styles, grade }
   }, [current])
 
-  const chips = useMemo(() => chipsFromTags(current?.tags ?? []), [current])
+  const chips = useMemo(() => chipsFromTags(current?.tags ?? [], tags.styles), [current, tags.styles])
   const specialTopChips = useMemo(() => {
     return chips.filter(chip => {
       const lower = chip.toLowerCase()
@@ -339,8 +384,26 @@ export default function HomeScreen() {
 
   const remainingChips = useMemo(() => {
     const specials = new Set(specialTopChips)
-    return chips.filter(chip => !specials.has(chip))
-  }, [chips, specialTopChips])
+    // Also create a set of normalized styles to ensure no duplicates with tags.styles
+    const normalizedStyles = new Set(
+      tags.styles.map(s => s.trim().toLowerCase())
+    )
+    return chips.filter(chip => {
+      if (specials.has(chip)) return false
+      // Filter out any chip that matches a style (case-insensitive)
+      const chipNormalized = chip.trim().toLowerCase()
+      if (normalizedStyles.has(chipNormalized)) return false
+      // Also filter out if the chip's canonical form matches any style's canonical form
+      const chipCanonical = canonicalStyle(chip)
+      if (chipCanonical) {
+        for (const style of tags.styles) {
+          const styleCanonical = canonicalStyle(style)
+          if (styleCanonical && chipCanonical === styleCanonical) return false
+        }
+      }
+      return true
+    })
+  }, [chips, specialTopChips, tags.styles])
 
   const currentAvatar = current?.avatar_url ?? (current as any)?.photo ?? null
 
@@ -402,7 +465,7 @@ export default function HomeScreen() {
     } catch (err) {
       console.error('dab action failed', err)
     }
-    setTimeout(() => setCelebrate(false), 2200)
+    setTimeout(() => setCelebrate(false), 3600)
   }
 
   const handleBlock = async () => {
@@ -622,4 +685,3 @@ export default function HomeScreen() {
     </RequireOnboarding>
   )
 }
-

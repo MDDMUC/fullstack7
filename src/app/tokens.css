@@ -36,6 +36,14 @@
   --color-silver-border: #e6e6e6;
   --border-width-animated: 4px;
 
+  /* Aliases for consistency with PROJECT_CONTEXT.md */
+  --color-surface-bg: var(--color-bg);
+  --color-surface-panel: var(--color-panel);
+  --color-surface-card: var(--color-card);
+  --color-border-default: var(--color-stroke);
+  --color-text-default: var(--color-text);
+  --color-state-red: var(--color-red);
+
   /* --------------------------------------------------------------------------
      SPACING
      -------------------------------------------------------------------------- */

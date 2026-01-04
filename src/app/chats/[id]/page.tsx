@@ -8,6 +8,7 @@ import { ChatMessage } from '@/components/ChatMessage'
 import ActionMenu from '@/components/ActionMenu'
 import ReportModal from '@/components/ReportModal'
 import BlockConfirmModal from '@/components/BlockConfirmModal'
+import LeaveConfirmModal from '@/components/LeaveConfirmModal'
 import { supabase } from '@/lib/supabaseClient'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile } from '@/lib/profiles'
@@ -15,8 +16,8 @@ import { blockUser, getBlockedUsers } from '@/lib/blocks'
 
 const ICON_BACK = '/icons/chevron-left.svg'
 const ICON_MENU = '/icons/dots.svg'
-const ICON_DELIVERED = 'https://www.figma.com/api/mcp/asset/8d007e14-674b-4781-b75a-1433ad6a9bd0'
-const ICON_READ = 'https://www.figma.com/api/mcp/asset/b87f2116-034c-420b-860c-b640b7e7f3d2'
+const ICON_DELIVERED = '/icons/sent.svg' // One check mark for sent/delivered
+const ICON_READ = '/icons/read.svg' // Two check marks for read
 const ICON_SEND = '/icons/send.svg'
 const STATUS_BIG = 'https://www.figma.com/api/mcp/asset/73d0a820-9b34-4bea-b239-5d0244d7c4a5'
 const STATUS_SMALL = 'https://www.figma.com/api/mcp/asset/8a1f46ba-167c-42fb-911b-b54ae9cb70dc'
@@ -105,10 +106,13 @@ export default function ChatDetailPage() {
   const [blockedUserIds, setBlockedUserIds] = useState<string[]>([])
   const [blockConfirmOpen, setBlockConfirmOpen] = useState(false)
   const [blockTarget, setBlockTarget] = useState<{ userId: string, username?: string } | null>(null)
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false)
+  const [leaveChatName, setLeaveChatName] = useState<string>('')
   const [deletingEvent, setDeletingEvent] = useState(false)
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState<{ body: string; error: string } | null>(null)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const groupMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -408,8 +412,40 @@ export default function ChatDetailPage() {
     }
   }, [chatId, userId])
 
+  // Auto-scroll to bottom when messages load or update
+  const hasScrolledRef = useRef(false)
+
+  // Reset scroll flag when navigating to a different chat
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    hasScrolledRef.current = false
+  }, [chatId])
+
+  useEffect(() => {
+    if (!messagesContainerRef.current || messages.length === 0) return
+
+    const container = messagesContainerRef.current
+
+    const scrollToBottom = () => {
+      if (!hasScrolledRef.current) {
+        // Initial load: instant scroll to bottom
+        container.scrollTop = container.scrollHeight
+        hasScrolledRef.current = true
+      } else {
+        // Subsequent updates: smooth scroll
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' })
+      }
+    }
+
+    // Wait for messages to fully render before scrolling
+    // Progressive delays to handle slow rendering
+    const timeouts = [50, 150, 300, 500]
+    const timers = timeouts.map(delay =>
+      setTimeout(scrollToBottom, delay)
+    )
+
+    return () => {
+      timers.forEach(timer => clearTimeout(timer))
+    }
   }, [messages])
 
   const handleSend = async (retryBody?: string) => {
@@ -595,34 +631,34 @@ export default function ChatDetailPage() {
     }
   }
 
-  const handleLeaveChat = async () => {
+  const handleLeaveChat = () => {
+    const chatName = isDirect ? otherFullName : isEventThread ? event?.title || 'this event chat' : isGymThread ? gym?.name || 'this gym chat' : 'this chat'
+    setLeaveChatName(chatName)
+    setLeaveConfirmOpen(true)
+    setMenuOpen(false)
+    setGroupMenuOpen(false)
+  }
+
+  const confirmLeaveChat = async () => {
     const client = supabase
     if (!client || !userId || !chatId) {
       return
     }
 
-    const chatName = isDirect ? otherFullName : isEventThread ? event?.title || 'this event chat' : isGymThread ? gym?.name || 'this gym chat' : 'this chat'
-
-    // Confirm leaving
-    if (!confirm(`Are you sure you want to leave ${chatName}?`)) {
-      return
-    }
-
     setLeaving(true)
-    setMenuOpen(false)
-    setGroupMenuOpen(false)
 
     if (isDirect) {
       // Delete the thread (for direct messages, leaving means ending the conversation)
+      // RLS policy ensures user can only delete threads they're part of
       const { error: deleteError } = await client
         .from('threads')
         .delete()
         .eq('id', chatId)
-        .or(`user_a.eq.${userId},user_b.eq.${userId}`)
 
       if (deleteError) {
         console.error('Error leaving chat:', deleteError)
         setLeaving(false)
+        setLeaveConfirmOpen(false)
         return
       }
     } else {
@@ -636,11 +672,13 @@ export default function ChatDetailPage() {
       if (leaveError) {
         console.error('Error leaving chat:', leaveError)
         setLeaving(false)
+        setLeaveConfirmOpen(false)
         return
       }
     }
 
-    // Redirect to chats list
+    // Close modal and redirect to chats list
+    setLeaveConfirmOpen(false)
     router.push('/chats')
   }
 
@@ -772,7 +810,7 @@ export default function ChatDetailPage() {
 
             <div className="chat-gym-divider" />
 
-            <div className="chat-gym-messages">
+            <div className="chat-gym-messages" ref={messagesContainerRef}>
               <div className="chat-gym-system">You joined this chat on 11/07/2023.</div>
 
               {!loading &&
@@ -902,7 +940,7 @@ export default function ChatDetailPage() {
             <div className="chat-detail-divider" />
 
             <div className="chat-detail-card">
-              <div className="chat-detail-messages">
+              <div className="chat-detail-messages" ref={messagesContainerRef}>
               <div className="chat-detail-system">
                 You connected with {otherFirstName} on 11/07/2023.
               </div>
@@ -989,6 +1027,17 @@ export default function ChatDetailPage() {
           onConfirm={confirmBlockUser}
           userName={blockTarget?.username}
           blocking={blocking}
+        />
+
+        <LeaveConfirmModal
+          open={leaveConfirmOpen}
+          onClose={() => {
+            setLeaveConfirmOpen(false)
+            setLeaveChatName('')
+          }}
+          onConfirm={confirmLeaveChat}
+          chatName={leaveChatName}
+          leaving={leaving}
         />
       </div>
 

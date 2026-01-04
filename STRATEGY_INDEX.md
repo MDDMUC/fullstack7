@@ -1,7 +1,7 @@
 # DAB Strategy Index
 
-**Last updated:** 2025-12-22
-**Current Phase:** Pre-Launch (MVP Complete, Activation & Safety Readiness Next)
+**Last updated:** 2026-01-04
+**Current Phase:** Pre-Launch (MVP Complete, Activation Readiness Next)
 
 ---
 
@@ -32,16 +32,13 @@
 - Engagement: Toast notifications, unread indicators, Friends in Gym Phase 1
 
 ### 🎯 Current Focus
-- **Pre-launch activation & safety readiness** (see TICKETS/INDEX.md)
-- Onboarding flow optimization, safety readiness, push infra
-- Pre-launch QA, content seeding, and legal readiness
+- **Pre-launch activation & launch readiness** (see TICKETS/INDEX.md)
+- Pre-launch QA, content seeding, legal readiness
 
-### 📅 Next Up
-1. Onboarding flow optimization (22-35)
-2. Safety and moderation readiness
-3. Push notification infrastructure ready
-4. Pre-launch product readiness QA
-5. Content seeding + legal readiness
+### dY". Next Up
+1. Content seeding + legal readiness
+2. Pre-launch product readiness QA
+3. Week 1 launch monitoring plan
 
 ---
 
@@ -190,9 +187,9 @@
 **See TICKETS/INDEX.md for full checklist**
 
 ### P0 (Blocker)
-- [ ] Onboarding flow optimized (22-35)
-- [ ] Safety and moderation readiness completed
-- [ ] Push infrastructure tested end-to-end
+- [x] Onboarding flow optimized (22-35)
+- [x] Safety and moderation readiness completed
+- [x] Push infrastructure tested end-to-end
 - [ ] Pre-launch QA pass on mobile
 - [ ] Seed content created (profiles, gyms, events, crews)
 - [ ] Legal docs live and linked

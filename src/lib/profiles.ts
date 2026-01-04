@@ -102,8 +102,8 @@ export const normalizeProfile = (profile: any): Profile => {
     email: profile.email ?? undefined,
     age: ob.age ?? profile.age ?? profile.age_range ?? undefined,
     gender: ob.gender ?? profile.gender ?? '',
-    homebase: ob.homebase ?? (profile as any).homebase ?? profile.home ?? profile.location ?? '',
-    city: ob.homebase ?? ob.city ?? ob.home ?? (profile as any).homebase ?? profile.city ?? profile.home ?? profile.location ?? '',
+    homebase: ob.city ?? (profile as any).homebase ?? profile.home ?? profile.location ?? '', // Read from 'city' column (formerly 'homebase')
+    city: ob.city ?? ob.home ?? (profile as any).homebase ?? profile.city ?? profile.home ?? profile.location ?? '',
     style: styles ?? '',
     availability,
     grade: ob.grade ?? profile.grade ?? profile.grade_focus ?? profile.level ?? '',

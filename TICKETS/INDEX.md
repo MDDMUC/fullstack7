@@ -5,11 +5,12 @@
 | TICKET-ONB-001 | Onboarding Flow Optimization (22-35) | Done | Complete | P0 | `TICKETS/onboarding-flow-optimization.md` |
 | TICKET-TNS-001 | Safety and Moderation Readiness | Done | P0 | Product/Ops | `TICKETS/safety-moderation-readiness.md` |
 | TICKET-ADM-001 | Admin Panel for Report Moderation | Proposed | Eng/Product | P1 | `TICKETS/admin-panel-moderation.md` |
-| TICKET-NOT-001 | Push Notification Infrastructure (Ready State) | Proposed | Eng | P0 | `TICKETS/push-notification-infra.md` |
+| TICKET-NOT-001 | Push Notification Infrastructure (Ready State) | Done | Eng | P0 | `TICKETS/push-notification-infra.md` |
 | TICKET-QA-001 | Pre-launch Product Readiness QA | Proposed | QA/Eng | P0 | `TICKETS/prelaunch-product-readiness-qa.md` |
 | TICKET-OPS-001 | Content Seeding (Pre-launch) | Proposed | Product/Ops | P0 | `TICKETS/content-seeding-prelaunch.md` |
 | TICKET-LEG-001 | Legal and Compliance (Pre-launch) | Proposed | Product/Legal | P0 | `TICKETS/legal-compliance-prelaunch.md` |
-| TICKET-UX-002 | UI/UX Polish + Responsiveness | Proposed | Product/Design/Eng | P0 | `TICKETS/ui-ux-polish.md` |
+| TICKET-UX-002 | UI/UX Polish + Responsiveness | Done | Product/Design/Eng | P0 | `TICKETS/ui-ux-polish.md` |
+| TICKET-UX-004 | Launch Critical Fixes (Pre-launch) | Proposed | Product/Eng | P0 | `TICKETS/launch-critical-fixes.md` |
 | TICKET-CHAT-001 | Messaging Schema Alignment + Unread Reliability | Done | Eng | P1 | `TICKETS/messaging-schema-alignment.md` |
 | TICKET-EVT-001 | Event RSVP Flow + "I'm Going" | Done | Eng | P1 | `TICKETS/event-rsvp-flow.md` |
 | TICKET-TNS-002 | Group Reporting + Message-level Reporting | Proposed | Product/Eng | P1 | `TICKETS/group-reporting-and-blocking.md` |

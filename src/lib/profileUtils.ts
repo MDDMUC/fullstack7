@@ -79,7 +79,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
     gender: data.gender || null,
     searchradius: typeof data.radiusKm === 'number' ? data.radiusKm : null,
     bio: data.bio || null,
-    homebase: data.homebase || null, // Required field
+    city: data.homebase || null, // Required field (database column is 'city', context field is 'homebase')
     styles: Array.isArray(data.styles) ? data.styles : (data.styles ? [data.styles] : []), // Ensure it's an array
     grade: data.grade || null,
     availability: availabilityArray.length ? availabilityArray : (availabilityJoined ? [availabilityJoined] : []), // Ensure it's an array
@@ -96,7 +96,7 @@ export function onboardingDataToProfilePayload(data: Partial<OnboardingData>) {
   }
 
   // Safety: ensure we never send legacy columns that may not exist remotely
-  delete payload.city
+  delete payload.homebase // Legacy column, now called 'city'
   delete payload.distance
   delete payload.style
 

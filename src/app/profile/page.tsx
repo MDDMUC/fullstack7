@@ -213,6 +213,37 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* Settings Link */}
+          <div style={{
+            padding: 'var(--space-lg)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'var(--space-md)',
+            marginBottom: 'var(--space-md)'
+          }}>
+            <h3 style={{
+              fontSize: 'var(--font-size-md)',
+              fontWeight: 'bold',
+              color: 'var(--color-text)',
+              marginBottom: 'var(--space-xs)'
+            }}>
+              Settings
+            </h3>
+            <Link
+              href="/profile/settings"
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-primary)',
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 'var(--space-xs)'
+              }}
+            >
+              🔔 Notifications & Preferences →
+            </Link>
+          </div>
+
           {/* Help & Safety Links */}
           <div style={{
             padding: 'var(--space-lg)',
