@@ -254,53 +254,74 @@ export const subscribeToPush = async (userId: string): Promise<PushToken | null>
  * Unsubscribe from push notifications and mark tokens inactive
  */
 export const unsubscribeFromPush = async (userId: string): Promise<void> => {
+  const supabase = requireSupabase();
+
+  // Try to cleanup Firebase/service worker tokens, but don't block on it
+  // If these fail, we can still mark tokens as inactive in the database
   try {
-    const supabase = requireSupabase();
+    // Get Firebase Messaging instance with timeout
+    const messagingPromise = getFirebaseMessaging();
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Firebase messaging timeout')), 5000)
+    );
 
-    // Get Firebase Messaging instance
-    const messaging = await getFirebaseMessaging();
+    const messaging = await Promise.race([messagingPromise, timeoutPromise]) as any;
     if (messaging) {
-      // Delete FCM token
-      await deleteToken(messaging);
+      // Delete FCM token with timeout
+      const deletePromise = deleteToken(messaging);
+      const deleteTimeout = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Delete token timeout')), 5000)
+      );
+      await Promise.race([deletePromise, deleteTimeout]);
     }
+  } catch (error) {
+    console.warn('Failed to delete FCM token (non-critical):', error);
+    // Continue anyway - we'll mark the token inactive in database
+  }
 
-    // Unsubscribe from Web Push
+  try {
+    // Unsubscribe from Web Push with timeout
     if ('serviceWorker' in navigator) {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Service worker timeout')), 5000))
+      ]) as ServiceWorkerRegistration;
+
       const subscription = await registration.pushManager.getSubscription();
       if (subscription) {
         await subscription.unsubscribe();
       }
     }
-
-    // Mark all tokens as inactive in database
-    const { error: tokensError } = await supabase
-      .from('push_tokens')
-      .update({ is_active: false })
-      .eq('user_id', userId);
-
-    if (tokensError) {
-      console.error('Failed to deactivate push tokens:', tokensError);
-    }
-
-    // Update preferences
-    const { error: prefsError } = await supabase
-      .from('push_preferences')
-      .upsert({
-        user_id: userId,
-        enabled: false,
-      });
-
-    if (prefsError) {
-      console.error('Failed to update push preferences:', prefsError);
-    }
-
-    console.log('Unsubscribed from push successfully');
-
   } catch (error) {
-    console.error('Failed to unsubscribe from push:', error);
-    throw error;
+    console.warn('Failed to unsubscribe from Web Push (non-critical):', error);
+    // Continue anyway - we'll mark the token inactive in database
   }
+
+  // Mark all tokens as inactive in database (critical step)
+  const { error: tokensError } = await supabase
+    .from('push_tokens')
+    .update({ is_active: false })
+    .eq('user_id', userId);
+
+  if (tokensError) {
+    console.error('Failed to deactivate push tokens:', tokensError);
+    throw tokensError;
+  }
+
+  // Update preferences (critical step)
+  const { error: prefsError } = await supabase
+    .from('push_preferences')
+    .upsert({
+      user_id: userId,
+      enabled: false,
+    });
+
+  if (prefsError) {
+    console.error('Failed to update push preferences:', prefsError);
+    throw prefsError;
+  }
+
+  console.log('Unsubscribed from push successfully');
 };
 
 /**
