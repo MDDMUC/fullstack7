@@ -80,6 +80,7 @@ export default function SettingsPage() {
       if (!pushEnabled) {
         // Enable notifications
         console.log('Starting push subscription...')
+        setSuccessMsg('Requesting browser permission...')
         await subscribeToPush(userId)
         console.log('Push subscription successful')
         setPushEnabled(true)
@@ -88,6 +89,7 @@ export default function SettingsPage() {
       } else {
         // Disable notifications
         console.log('Starting push unsubscription...')
+        setSuccessMsg('Disabling notifications...')
         await unsubscribeFromPush(userId)
         console.log('Push unsubscription successful')
         setPushEnabled(false)
