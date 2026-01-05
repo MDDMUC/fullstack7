@@ -31,6 +31,16 @@ const splitCommaList = (value?: string | null) =>
     .map(v => v.trim())
     .filter(Boolean)
 
+const canonicalStyle = (value: string): string | null => {
+  const lower = value.trim().toLowerCase()
+  if (!lower) return null
+  if (lower.includes('boulder')) return 'bouldering'
+  if (lower.includes('sport')) return 'sport'
+  if (lower.includes('lead')) return 'lead'
+  if (lower.includes('trad')) return 'trad'
+  return null
+}
+
 export default function ProfilePage() {
   const { session } = useAuthSession()
   const router = useRouter()
@@ -189,8 +199,16 @@ export default function ProfilePage() {
   )
   const remainingChips = useMemo(() => {
     const specials = new Set(specialTopChips)
-    return chips.filter(chip => !specials.has(chip))
-  }, [chips, specialTopChips])
+    const styleKeys = new Set(
+      styles.map(style => canonicalStyle(style)).filter((s): s is string => Boolean(s))
+    )
+    return chips.filter(chip => {
+      if (specials.has(chip)) return false
+      const canonical = canonicalStyle(chip)
+      if (canonical && styleKeys.has(canonical)) return false
+      return true
+    })
+  }, [chips, specialTopChips, styles])
 
   const statusText = (profile?.status || '').toLowerCase()
   const showProChip = statusText.includes('pro') || specialTopChips.some(chip => chip.toLowerCase().includes('pro'))
