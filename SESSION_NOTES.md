@@ -1,3 +1,127 @@
+## 2026-01-05 - Fix: Profile Page Content Area Styling
+
+### Issue
+- `/profile` page content area styling didn't match other pages
+- Wrong padding, background color, and overflow behavior
+- Content wasn't centered properly with consistent width
+- Missing desktop responsive styles
+
+### Root Cause - CSS Differences
+
+**Profile-content (WRONG):**
+```css
+.profile-content {
+  padding: 0; /* ❌ No padding */
+  /* ❌ No background specified */
+  overflow: hidden; /* ❌ Prevents scrolling */
+}
+```
+
+**Standard pattern (events, chats, crew, home, notifications):**
+```css
+.[page]-content {
+  padding: var(--space-lg); /* ✓ 16px padding */
+  background: var(--color-bg); /* ✓ Dark background */
+  overflow-y: auto; /* ✓ Allow scrolling */
+  overflow-x: hidden;
+}
+```
+
+Also missing desktop media query for responsive background handling.
+
+### Fix Applied
+
+**CSS Changes** (`src/app/globals.css`):
+
+1. **Updated `.profile-content`:**
+   - Changed `padding: 0` → `padding: var(--space-lg)` (16px on all sides)
+   - Added `background: var(--color-bg)` (dark background matching other pages)
+   - Changed `overflow: hidden` → `overflow-y: auto; overflow-x: hidden` (enable scrolling)
+
+2. **Added desktop media query:**
+   ```css
+   @media (min-width: 768px) {
+     .profile-screen {
+       background: var(--color-bg); /* Dark background full width */
+       overflow-y: auto;
+       overflow-x: hidden;
+     }
+
+     .profile-content {
+       background: transparent; /* Remove on desktop */
+       overflow: visible;
+     }
+   }
+   ```
+
+### Result
+- ✓ Profile content area now has consistent 16px padding matching all other pages
+- ✓ Dark background (`--color-bg`) on mobile, transparent on desktop
+- ✓ Scrolling enabled for content overflow
+- ✓ Maximum width of 420px centered on screen
+- ✓ Desktop responsive styles match other pages
+- ✓ Build successful with no errors
+
+---
+
+## 2026-01-05 - Fix: Profile Page Layout Structure
+
+### Issue
+- `/profile` page had incorrect layout structure causing visual issues
+- MobileTopbar and MobileNavbar were placed **inside** `.profile-content` instead of as siblings
+- This caused inconsistent behavior and appearance compared to all other pages
+
+### Root Cause
+Incorrect DOM structure:
+```tsx
+// ❌ BEFORE - Wrong structure:
+<div className="profile-screen">
+  <div className="profile-content">
+    <MobileTopbar breadcrumb="Profile" />
+    {/* Page content */}
+    <MobileNavbar active="Default" />
+  </div>
+</div>
+```
+
+This differed from the standard pattern used across all other pages:
+```tsx
+// ✓ Correct structure (events, chats, crew, home, notifications):
+<div className="[page]-screen">
+  <MobileTopbar breadcrumb="..." />
+  <div className="[page]-content">
+    {/* Page content */}
+  </div>
+  <MobileNavbar active="..." />
+</div>
+```
+
+### Fix Applied
+
+**Profile Page** (`src/app/profile/page.tsx`):
+- Moved `<MobileTopbar breadcrumb="Profile" />` outside `.profile-content` to be a direct child of `.profile-screen`
+- Moved `<MobileNavbar active="Default" />` outside `.profile-content` to be a direct child of `.profile-screen`
+- MobileTopbar, profile-content, and MobileNavbar are now siblings within profile-screen
+
+```tsx
+// ✓ AFTER - Correct structure:
+<div className="profile-screen">
+  <MobileTopbar breadcrumb="Profile" />
+  <div className="profile-content">
+    {/* Page content */}
+  </div>
+  <MobileNavbar active="Default" />
+</div>
+```
+
+### Result
+- ✓ Profile page now matches the layout structure of all other pages
+- ✓ MobileTopbar and MobileNavbar positioning consistent across the app
+- ✓ CSS styling from globals.css now applies correctly
+- ✓ Build successful with no errors
+
+---
+
 ## 2026-01-05 - Fix: Notifications Page Loading State Logic
 
 ### Issue
