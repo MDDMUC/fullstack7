@@ -14,15 +14,24 @@ export default function LoadingState({
   className = ''
 }: LoadingStateProps) {
   return (
-    <div 
-      className={`flex flex-col items-center justify-center gap-4 py-8 ${className}`}
+    <div
+      className={`flex flex-col items-center justify-center ${className}`}
+      style={{
+        gap: 'var(--space-lg)',
+        padding: 'var(--space-xxl) 0'
+      }}
       role="status"
       aria-live="polite"
     >
-      <svg 
-        className="animate-spin h-8 w-8 text-[var(--color-primary)]" 
-        xmlns="http://www.w3.org/2000/svg" 
-        fill="none" 
+      <svg
+        className="animate-spin"
+        style={{
+          width: 'var(--space-xxl)',
+          height: 'var(--space-xxl)',
+          color: 'var(--color-primary)'
+        }}
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
         viewBox="0 0 24 24"
       >
         <circle 
