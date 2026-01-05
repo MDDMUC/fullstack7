@@ -231,10 +231,11 @@ export default function HomeScreen() {
     // Load profiles immediately
     load()
 
+    // DISABLED: Auto-refresh was resetting the deck and disrupting user swiping
     // Reload profiles every 30 seconds (for QA testing - to pick up new users)
-    const interval = setInterval(load, 30000)
+    // const interval = setInterval(load, 30000)
 
-    return () => clearInterval(interval)
+    // return () => clearInterval(interval)
   }, [])
 
   // Create a map of gym ID to gym name for filtering

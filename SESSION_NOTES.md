@@ -1,3 +1,75 @@
+## 2026-01-05 - Disable Auto-Refresh on /home Page
+
+### Issue
+- /home page had a 30-second auto-refresh that was resetting the user deck
+- This caused the swipe/scroll mechanism to jump back to the beginning
+- Users would lose their progress through the deck of profiles
+
+### Fix
+- Disabled the `setInterval(load, 30000)` on line 235 in `src/app/home/page.tsx`
+- Added comment explaining why it was disabled
+- Profiles now only load once when the page mounts (no periodic refresh)
+
+### Impact
+- ✓ Users can now swipe through the entire deck without interruption
+- ✓ Deck position is preserved during the session
+- ✓ Better user experience for browsing profiles
+- Note: New profiles won't appear until the page is manually refreshed
+
+### Files Modified
+- `src/app/home/page.tsx` - Disabled 30-second auto-refresh interval (lines 234-238)
+
+---
+
+## 2026-01-05 - Add 8 Munich-Based Demo Users & Update Names to German
+
+### Changes
+- Added 8 new demo users to `scripts/seedDemoUsers.ts` based in Munich and surrounding areas
+- Updated first 8 demo users to use German names instead of English names
+- Total demo users now: 16 (all with German names)
+
+### Name Changes (First 8 Users)
+- Alex Sender → **Jakob**
+- Sarah Summit → **Laura**
+- Mike Crimp → **Michael**
+- Emma Edge → **Emma**
+- Chris Crag → **Christian**
+- Lisa Limestone → **Lisa**
+- Tyler Traverse → **Till**
+- Rachel Rock → **Rebecca**
+
+### Munich Users Created (New 8 Users)
+- **Lukas** (Munich) - Intermediate, Bouldering
+- **Sophia** (Munich) - Beginner, Sport/Bouldering
+- **Max** (Freising) - Advanced, Sport/Lead/Trad
+- **Anna** (Garching) - Intermediate, Bouldering
+- **Jonas** (Munich) - Beginner, Sport/Bouldering
+- **Lena** (Starnberg) - Advanced, Sport/Lead/Alpine
+- **Felix** (Gräfelfing) - Intermediate, Bouldering/Sport
+- **Marie** (Munich) - Beginner, Bouldering
+
+### Grading System
+- Munich users use simplified grades: **Beginner**, **Intermediate**, **Advanced**
+- No American grades (V-scale or YDS) for Munich users
+- Mix of skill levels: 3 beginners, 3 intermediate, 2 advanced
+
+### Documentation Updates
+- Updated `scripts/SEEDING_README.md` to reflect 16 total users
+- Added Munich users table to documentation
+- Updated SQL script description
+
+### Script Improvements
+- Fixed error handling for existing users (case-insensitive check)
+- Added better logging when updating existing profiles
+- Successfully updated all 16 users in Supabase database
+
+### Files Modified
+- `scripts/seedDemoUsers.ts` - Added 8 Munich users + updated names + fixed error handling
+- `scripts/SEEDING_README.md` - Updated user count and tables
+- Database: All 16 demo users created/updated in onboardingprofiles table
+
+---
+
 ## 2026-01-05 - Fix: Profile Page Content Area Styling
 
 ### Issue
@@ -3665,3 +3737,22 @@ The app has a `MessageToastListener` that shows toast notifications for new chat
 
 **Status:**
 Implementation complete. Build passing. Ready for testing with detailed logging.
+
+
+---
+
+### 2026-01-05: Analytics Tracking Spec Update (Onboarding Step Events)
+
+**Decision Summary:**
+- Add onboarding_step_started and onboarding_step_completed in v1 with minimal properties (step_id, step_index, duration_ms on completed, onboarding_version).
+- Defer onboarding_step_error to v1.1; if added later, use error_type enum only.
+- RLS stays insert for authenticated; select restricted to service_role only.
+- Migration plan: baseline migration for existing analytics schema, then CHECK constraint update.
+
+**Notes:**
+- analytics table/views exist in live DB but are not tracked in supabase/migrations.
+- Taxonomy expects signup in SuccessStep; code logs in PledgeStep (needs reconcile).
+
+**Next:**
+- Update TICKET-ANA-001 scope and docs/EVENT_TAXONOMY.md.
+- Tech Lead review for schema and migration plan.
