@@ -555,7 +555,11 @@ export default function NotificationsPage() {
       <div className="notifications-screen" data-name="/notifications">
         <MobileTopbar breadcrumb="Notifications" />
         <div className="notifications-content">
-          <div className="notifications-card" data-node-id="786:2988">
+          <div
+            className="notifications-card"
+            data-node-id="786:2988"
+            style={loading || visibleNotifications.length === 0 ? { justifyContent: 'center' } : undefined}
+          >
             {loading ? (
               <LoadingState message="Loading notifications…" />
             ) : visibleNotifications.length === 0 ? (

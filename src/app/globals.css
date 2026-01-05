@@ -15528,11 +15528,12 @@ img.friend-tile-img {
 .notifications-card {
   background: transparent; /* No card background */
   display: flex;
-  flex: 1 0 0;
+  flex: 1 1 auto;
   flex-direction: column;
   gap: var(--space-sm); /* 8px */
   align-items: center;
-  min-height: 0;
+  justify-content: flex-start;
+  min-height: 200px; /* Ensure minimum height for loading state */
   min-width: 0;
   overflow-y: auto;
   overflow-x: clip;
@@ -15542,7 +15543,6 @@ img.friend-tile-img {
   position: relative;
   border-radius: 0; /* No rounded corners */
   box-shadow: none; /* No shadow */
-  flex-shrink: 0;
   box-sizing: border-box;
 }
 

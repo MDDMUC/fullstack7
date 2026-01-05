@@ -19,9 +19,10 @@ export default function EmptyState({
       role="status"
       aria-live="polite"
       style={{
-        fontFamily: 'var(--fontfamily-inter)',
+        fontFamily: 'var(--font-inter)',
         fontSize: 'var(--font-size-md)',
         color: 'var(--color-muted)',
+        fontWeight: 'var(--font-weight-medium)',
         textAlign: 'center',
         padding: 'var(--space-xl)',
         margin: 0,

@@ -1,3 +1,49 @@
+## 2026-01-05 - Fix: Notifications Page Loading Spinner Display Issue
+
+### Issue
+- Loading spinner on `/notifications` page was not visible to users during data fetch
+- QA testing agent had implemented the LoadingState component but it wasn't displaying
+
+### Root Cause
+1. `.notifications-card` container had `min-height: 0` causing it to collapse
+2. Conflicting flex properties (`flex: 1 0 0` with redundant `flex-shrink: 0`)
+3. Container wasn't centering the loading/empty states vertically
+
+### Files Modified
+
+**CSS Fixes** (`src/app/globals.css`):
+- Fixed `.notifications-card` flex properties: changed from `flex: 1 0 0` to `flex: 1 1 auto`
+- Added `min-height: 200px` to ensure container is visible during loading
+- Added `justify-content: flex-start` for proper content alignment
+- Removed redundant `flex-shrink: 0` declaration
+
+**Component Improvements**:
+- `src/components/LoadingState.tsx`:
+  - Added `fontWeight: 'var(--font-weight-medium)'` for consistent typography
+  - Component already used correct design tokens (`--color-primary`, `--font-inter`, `--color-muted`)
+
+- `src/components/EmptyState.tsx`:
+  - Fixed font token: `--fontfamily-inter` → `--font-inter` (to match tokens.css)
+  - Added `fontWeight: 'var(--font-weight-medium)'` for consistency
+
+**Page Logic** (`src/app/notifications/page.tsx`):
+- Added dynamic `justifyContent: 'center'` style when loading or empty
+- Ensures loading spinner and empty state are vertically centered
+
+### Design Tokens Compliance
+All changes use design tokens from `src/app/tokens.css`:
+- Colors: `--color-primary`, `--color-muted`, `--color-card`
+- Typography: `--font-inter`, `--font-size-md`, `--font-weight-medium`
+- Spacing: `--space-sm`, `--space-lg`, `--space-xl`
+- Border radius: `--radius-lg`
+
+### Testing
+- Build successful: `npm run build` passed with no errors
+- No TypeScript errors
+- Loading spinner now displays correctly with spinning animation and "Loading notifications…" message
+
+---
+
 ## 2026-01-04 - TICKET-NOT-001: Push Notification Infrastructure Implementation
 
 ### Ticket
