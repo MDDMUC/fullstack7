@@ -88,6 +88,7 @@ export default function GymsScreen() {
   const [addGymOpen, setAddGymOpen] = React.useState(false)
   const [dropdownPosition, setDropdownPosition] = React.useState<{ top: number; left: number } | null>(null)
   const addGymRef = React.useRef<HTMLDivElement | null>(null)
+  const [userGymIds, setUserGymIds] = React.useState<string[]>([]) // User's followed gym IDs from profile
 
   // Friends (matches) per gym - keyed by gym ID
   const [friendsByGym, setFriendsByGym] = React.useState<Record<string, GymFriendProfile[]>>({})
@@ -99,10 +100,20 @@ export default function GymsScreen() {
 
   React.useEffect(() => {
     const loadGyms = async () => {
-      if (!supabase) return
+      if (!supabase || !userId) return
       setLoading(true)
       try {
-        // Load user's gyms (for now, same as all gyms)
+        // Load user's profile to get their followed gym IDs
+        const profiles = await fetchProfiles(supabase, [userId])
+        const userProfile = profiles[0]
+
+        // Get user's gym IDs from profile (filter out 'outside' marker)
+        const profileGymIds = Array.isArray(userProfile?.gym)
+          ? userProfile.gym.filter(id => id !== 'outside')
+          : []
+        setUserGymIds(profileGymIds)
+
+        // Load all gyms from database
         const { data, error } = await supabase
           .from('gyms')
           .select('id,name,avatar_url,area')
@@ -113,16 +124,12 @@ export default function GymsScreen() {
           setGyms([])
           setAllGyms([])
         } else {
-          // Get unfollowed gym IDs from localStorage
-          const unfollowedGymIds = getUnfollowedGyms()
-          
-          // Filter out unfollowed gyms from user's gyms list
-          const userGyms = (data || []).filter(g => !unfollowedGymIds.includes(g.id))
-          setGyms(userGyms)
-          
+          // Filter to show only user's followed gyms
+          const userFollowedGyms = (data || []).filter(g => profileGymIds.includes(g.id))
+          setGyms(userFollowedGyms)
+
           // Load all available gyms for the dropdown
           // Filter to Munich if area is available, otherwise show all gyms
-          // NOTE: Don't filter unfollowed gyms from dropdown - users should be able to re-add them
           if (data && data.length > 0) {
             const munichGyms = data.filter(g => {
               if (!g.area) return true // Include if no area set
@@ -147,7 +154,7 @@ export default function GymsScreen() {
       }
     }
     loadGyms()
-  }, [])
+  }, [userId])
 
   // Fetch matches and group by gym
   React.useEffect(() => {
@@ -336,17 +343,34 @@ export default function GymsScreen() {
     setAddGymOpen(!addGymOpen)
   }
 
-  const handleAddGym = (gymId: string) => {
+  const handleAddGym = async (gymId: string) => {
+    if (!supabase || !userId) return
+
     // Find the gym in allGyms list
     const gymToAdd = allGyms.find(g => g.id === gymId)
     if (gymToAdd) {
       // Check if gym is already in the list
       const isAlreadyAdded = gyms.some(g => g.id === gymId)
       if (!isAlreadyAdded) {
-        // Remove from unfollowed list when re-adding
-        removeUnfollowedGym(gymId)
-        // Add gym to user's gyms list
-        setGyms(prev => [...prev, gymToAdd].sort((a, b) => a.name.localeCompare(b.name)))
+        try {
+          // Add gym ID to user's profile in database
+          const newGymIds = [...userGymIds, gymId]
+          const { error } = await supabase
+            .from('onboardingprofiles')
+            .update({ gym: newGymIds })
+            .eq('id', userId)
+
+          if (error) {
+            console.error('Failed to add gym:', error)
+            return
+          }
+
+          // Update local state
+          setUserGymIds(newGymIds)
+          setGyms(prev => [...prev, gymToAdd].sort((a, b) => a.name.localeCompare(b.name)))
+        } catch (err) {
+          console.error('Failed to add gym:', err)
+        }
       }
     }
     setAddGymOpen(false)
@@ -442,12 +466,26 @@ export default function GymsScreen() {
             <button
               type="button"
               className="button-cta"
-              onClick={() => {
-                if (gymToUnfollow) {
-                  // Remove from UI
-                  setGyms(prev => prev.filter(g => g.id !== gymToUnfollow.id))
-                  // Save to localStorage for persistence
-                  addUnfollowedGym(gymToUnfollow.id)
+              onClick={async () => {
+                if (gymToUnfollow && supabase && userId) {
+                  try {
+                    // Remove gym ID from user's profile in database
+                    const newGymIds = userGymIds.filter(id => id !== gymToUnfollow.id)
+                    const { error } = await supabase
+                      .from('onboardingprofiles')
+                      .update({ gym: newGymIds })
+                      .eq('id', userId)
+
+                    if (error) {
+                      console.error('Failed to unfollow gym:', error)
+                    } else {
+                      // Update local state
+                      setUserGymIds(newGymIds)
+                      setGyms(prev => prev.filter(g => g.id !== gymToUnfollow.id))
+                    }
+                  } catch (err) {
+                    console.error('Failed to unfollow gym:', err)
+                  }
                 }
                 setUnfollowModalOpen(false)
                 setGymToUnfollow(null)

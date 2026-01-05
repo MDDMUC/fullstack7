@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { RequireAuth } from '@/components/RequireAuth'
@@ -11,6 +11,8 @@ import { fetchProfiles, Profile as DbProfile } from '@/lib/profiles'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
 import ActionMenu from '@/components/ActionMenu'
 import Modal from '@/components/Modal'
+import LoadingState from '@/components/LoadingState'
+import EmptyState from '@/components/EmptyState'
 import {
   isPushSupported,
   isIOSSafariNonPWA,
@@ -24,6 +26,35 @@ type Profile = DbProfile
 
 const PRO_ICON = '/icons/pro.svg'
 const ROCK_ICON = '/icons/rocknrollhand.svg'
+
+// Climbing styles from Figma - exact order
+const CLIMBING_STYLES = [
+  'Bouldering',
+  'Sport',
+  'Comps',
+  'Board',
+  'Multipitch',
+  'Alpine',
+  'Ice',
+  'Trad',
+  'Training',
+  'Mountaineering',
+]
+
+// Grade options from onboarding
+const GRADES = ['Beginner', 'Intermediate', 'Advanced'] as const
+type Grade = typeof GRADES[number]
+
+// Looking for options
+const LOOKING_FOR_OPTIONS = ['Climbing Partner', 'Crew', 'Meet Climbers'] as const
+
+type Gym = {
+  id: string
+  name: string
+  area: string
+  avatar_url?: string | null
+  image_url?: string | null
+}
 
 const splitCommaList = (value?: string | null) =>
   (value || '')
@@ -63,6 +94,26 @@ export default function ProfilePage() {
   const [editBio, setEditBio] = useState('')
   const [editCity, setEditCity] = useState('')
   const [editTags, setEditTags] = useState('')
+  const [editStyles, setEditStyles] = useState<string[]>([])
+  const [styleLimitHit, setStyleLimitHit] = useState(false)
+  const styleLimitTimerRef = useRef<number | null>(null)
+  const [editGrade, setEditGrade] = useState<Grade | null>(null)
+  const [editPurposes, setEditPurposes] = useState<string[]>([])
+
+  // Gym selector state
+  const [gyms, setGyms] = useState<Gym[]>([])
+  const [selectedGyms, setSelectedGyms] = useState<string[]>([])
+  const [climbsOutside, setClimbsOutside] = useState(false)
+  const [gymsLoading, setGymsLoading] = useState(false)
+  const [showMoreGyms, setShowMoreGyms] = useState(false)
+
+  useEffect(() => {
+    return () => {
+      if (styleLimitTimerRef.current !== null) {
+        window.clearTimeout(styleLimitTimerRef.current)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -82,6 +133,28 @@ export default function ProfilePage() {
           setEditBio(p.bio || '')
           setEditCity(p.city || p.homebase || '')
           setEditTags(p.tags?.join(', ') || '')
+          setEditStyles(splitCommaList(p.style))
+
+          // Initialize grade
+          const gradeValue = p.grade?.trim()
+          if (gradeValue && GRADES.includes(gradeValue as Grade)) {
+            setEditGrade(gradeValue as Grade)
+          } else {
+            setEditGrade(null)
+          }
+
+          // Initialize purposes/looking for
+          const lookingForValue = p.lookingFor || ''
+          const purposes = typeof lookingForValue === 'string'
+            ? lookingForValue.split(',').map(s => s.trim()).filter(Boolean)
+            : []
+          setEditPurposes(purposes)
+
+          // Initialize gym selection
+          const profileGyms = Array.isArray(p.gym) ? p.gym : []
+          const gymIds = profileGyms.filter(id => id !== 'outside')
+          setSelectedGyms(gymIds)
+          setClimbsOutside(profileGyms.includes('outside'))
         }
       } catch (err) {
         console.error('Failed to load profile', err)
@@ -92,6 +165,61 @@ export default function ProfilePage() {
     }
     loadProfile()
   }, [session])
+
+  // Fetch gyms from Supabase
+  useEffect(() => {
+    async function fetchGyms() {
+      if (!supabase) {
+        console.warn('Supabase not configured')
+        return
+      }
+
+      setGymsLoading(true)
+      try {
+        // First try to fetch with both avatar_url and image_url
+        let gymData: any[] | null = null
+        let fetchError: any = null
+
+        const { data, error } = await supabase
+          .from('gyms')
+          .select('id, name, area, avatar_url, image_url')
+          .order('name', { ascending: true })
+
+        gymData = data
+        fetchError = error
+
+        // If image_url column doesn't exist, fetch without it
+        if (fetchError?.message?.includes('image_url does not exist')) {
+          const result = await supabase
+            .from('gyms')
+            .select('id, name, area, avatar_url')
+            .order('name', { ascending: true })
+
+          gymData = result.data
+          fetchError = result.error
+        }
+
+        if (fetchError) {
+          console.error('Error fetching gyms:', fetchError.message)
+        } else if (gymData) {
+          const gymsWithImages = gymData.map(gym => ({
+            id: gym.id,
+            name: gym.name,
+            area: gym.area,
+            avatar_url: gym.avatar_url || null,
+            image_url: gym.avatar_url || gym.image_url || null
+          }))
+          setGyms(gymsWithImages)
+        }
+      } catch (err) {
+        console.error('Failed to fetch gyms:', err)
+      } finally {
+        setGymsLoading(false)
+      }
+    }
+
+    fetchGyms()
+  }, [])
 
   // Load push preferences
   useEffect(() => {
@@ -183,6 +311,58 @@ export default function ProfilePage() {
     }
   }
 
+  const handleStyleToggle = (style: string) => {
+    if (editStyles.includes(style)) {
+      // Always allow deselection
+      setEditStyles(editStyles.filter(s => s !== style))
+    } else {
+      // Only allow selection if less than 3 styles are selected
+      if (editStyles.length < 3) {
+        setEditStyles([...editStyles, style])
+        setStyleLimitHit(false)
+        if (styleLimitTimerRef.current !== null) {
+          window.clearTimeout(styleLimitTimerRef.current)
+          styleLimitTimerRef.current = null
+        }
+      }
+      // Show feedback if already at max (3 styles)
+      if (editStyles.length >= 3) {
+        setStyleLimitHit(true)
+        if (styleLimitTimerRef.current !== null) {
+          window.clearTimeout(styleLimitTimerRef.current)
+        }
+        styleLimitTimerRef.current = window.setTimeout(() => {
+          setStyleLimitHit(false)
+          styleLimitTimerRef.current = null
+        }, 1500)
+      }
+    }
+  }
+
+  const handleGymToggle = (gymId: string) => {
+    setSelectedGyms(prev =>
+      prev.includes(gymId)
+        ? prev.filter(id => id !== gymId)
+        : [...prev, gymId]
+    )
+  }
+
+  const handleOutsideToggle = () => {
+    setClimbsOutside(prev => !prev)
+  }
+
+  const handleGradeSelect = (grade: Grade) => {
+    setEditGrade(grade)
+  }
+
+  const handlePurposeToggle = (purpose: string) => {
+    setEditPurposes(prev =>
+      prev.includes(purpose)
+        ? prev.filter(p => p !== purpose)
+        : [...prev, purpose]
+    )
+  }
+
   const avatar = profile?.avatar_url ?? profile?.photo ?? null
   const rawName = (profile?.username || profile?.email || '').trim()
   const name =
@@ -225,8 +405,62 @@ export default function ProfilePage() {
   }
 
   const handleSaveProfile = async () => {
-    // TODO: Implement actual save logic
-    setEditOpen(false)
+    if (!userId) return
+
+    try {
+      const client = supabase ?? requireSupabase()
+
+      // Combine gym IDs with 'outside' marker if selected
+      const gymIds = climbsOutside
+        ? [...selectedGyms, 'outside']
+        : selectedGyms
+
+      const updateData = {
+        bio: editBio,
+        city: editCity,
+        tags: editTags.split(',').map(t => t.trim()).filter(Boolean),
+        styles: editStyles, // Save as array, normalizedProfile will join it if needed
+        gym: gymIds, // Save selected gym IDs
+        grade: editGrade || null, // Save selected grade
+        lookingFor: editPurposes.join(', '), // Save looking for as comma-separated string
+        // Update derived/legacy fields if needed, but onboardingprofiles is source of truth
+      }
+
+      console.log('Attempting to save profile data:', updateData)
+
+      const { error } = await client
+        .from('onboardingprofiles')
+        .update(updateData)
+        .eq('id', userId)
+
+      if (error) {
+        console.error('Supabase error details:', {
+          error,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+          stringified: JSON.stringify(error)
+        })
+        throw error
+      }
+
+      // Update local state optimistic-ish (or reload)
+      // Since fetchProfiles normalizes, let's just reload mostly
+      const profiles = await fetchProfiles(client, [userId])
+      setProfile(profiles[0] ?? null)
+      setEditOpen(false)
+    } catch (err: any) {
+      console.error('Failed to save profile:', {
+        err,
+        message: err?.message,
+        details: err?.details,
+        hint: err?.hint,
+        code: err?.code,
+        stringified: JSON.stringify(err)
+      })
+      // Ideally show a toast here
+    }
   }
 
   return (
@@ -245,37 +479,12 @@ export default function ProfilePage() {
                   </div>
                   <div className="home-location">{location}</div>
                   <div className="home-chips-row">
-                    {(styles.length ? styles : ['Style']).slice(0, 2).map(tag => (
+                    {(styles.length ? styles : ['Style']).map(tag => (
                       <span key={tag} className="button-tag">
                         {tag}
                       </span>
                     ))}
                     <span className="button-tag button-tag-grade">{grade || 'Grade'}</span>
-                    {remainingChips.map((chip, idx) => {
-                      const chipLower = chip.toLowerCase()
-                      const isPro = chipLower.includes('pro') && !chipLower.includes('founder') && !chipLower.includes('crew')
-                      const isFounder = chipLower.includes('founder')
-                      const isCrew = chipLower.includes('crew')
-                      const isBelay = chipLower.includes('belay')
-
-                      let chipClass = 'fc-chip'
-                      if (isPro) chipClass += ' fc-chip-pro'
-                      else if (isFounder) chipClass += ' fc-chip-founder'
-                      else if (isCrew) chipClass += ' fc-chip-crew'
-                      else if (isBelay) chipClass += ' fc-chip-belay'
-                      else chipClass += ' fc-chip-standard'
-
-                      const needsGradient = isFounder || isCrew
-                      const showIcon = isPro || isFounder || isCrew
-                      const iconSrc = isPro ? PRO_ICON : ROCK_ICON
-
-                      return (
-                        <span key={`chip-${chip}-${idx}`} className={chipClass}>
-                          {showIcon && <img src={iconSrc} alt="" className="fc-chip-icon" />}
-                          {needsGradient ? <span className="fc-chip-text">{chip}</span> : chip}
-                        </span>
-                      )
-                    })}
                   </div>
                 </div>
               </div>
@@ -482,6 +691,32 @@ export default function ProfilePage() {
           }
         >
           <div className="profile-form" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
+            
+            {/* Climbing Style Section */}
+            <div className="events-create-field">
+              <label className="events-create-label">Climbing Style (Max 3)</label>
+              <div className="onb-style-grid">
+                {CLIMBING_STYLES.map(style => {
+                  const isSelected = editStyles.includes(style)
+                  return (
+                    <button
+                      key={style}
+                      type="button"
+                      className={`onb-style-btn ${isSelected ? 'onb-style-btn-active' : ''}`}
+                      onClick={() => handleStyleToggle(style)}
+                    >
+                      {style}
+                    </button>
+                  )
+                })}
+              </div>
+              {styleLimitHit && (
+                <p className="onb-header-subtitle" style={{ color: 'var(--color-red)', marginTop: 'var(--space-xxs)', fontSize: 'var(--font-size-sm)' }}>
+                  Max 3 styles.
+                </p>
+              )}
+            </div>
+
             <div className="events-create-field">
               <label className="events-create-label">Bio</label>
               <textarea
@@ -494,7 +729,7 @@ export default function ProfilePage() {
             </div>
 
             <div className="events-create-field">
-              <label className="events-create-label">City / Homebase</label>
+              <label className="events-create-label">City</label>
               <input
                 type="text"
                 className="events-create-input"
@@ -504,15 +739,155 @@ export default function ProfilePage() {
               />
             </div>
 
+            {/* Grade selector */}
             <div className="events-create-field">
-              <label className="events-create-label">Tags</label>
-              <input
-                type="text"
-                className="events-create-input"
-                value={editTags}
-                onChange={(e) => setEditTags(e.target.value)}
-                placeholder="Comma separated tags (e.g. bouldering, coffee)"
-              />
+              <label className="events-create-label">Grade</label>
+              <div className="onb-gender-select">
+                {GRADES.map((grade) => (
+                  <button
+                    key={grade}
+                    type="button"
+                    className={`onb-gender-btn ${editGrade === grade ? 'onb-gender-btn-active' : ''}`}
+                    onClick={() => handleGradeSelect(grade)}
+                  >
+                    {grade}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Looking for selector */}
+            <div className="events-create-field">
+              <label className="events-create-label">Looking for</label>
+              <p className="onb-field-description" style={{ marginBottom: 'var(--space-sm)', color: 'var(--color-muted)', fontSize: 'var(--font-size-sm)' }}>
+                What brings you here? Select all that apply.
+              </p>
+              <div className="onb-style-grid">
+                {LOOKING_FOR_OPTIONS.map((purpose) => {
+                  const isSelected = editPurposes.includes(purpose)
+                  return (
+                    <button
+                      key={purpose}
+                      type="button"
+                      className={`onb-style-btn ${isSelected ? 'onb-style-btn-active' : ''}`}
+                      onClick={() => handlePurposeToggle(purpose)}
+                    >
+                      {purpose}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Gym selector */}
+            <div className="events-create-field">
+              <label className="events-create-label">Gyms</label>
+              <p className="onb-field-description" style={{ marginBottom: 'var(--space-sm)', color: 'var(--color-muted)', fontSize: 'var(--font-size-sm)' }}>
+                Select all you want to follow or frequently climb at.
+              </p>
+
+              <div className="onb-gym-grid">
+                {gymsLoading ? (
+                  <LoadingState message="Loading gyms..." />
+                ) : gyms.length === 0 ? (
+                  <EmptyState message="No gyms found" />
+                ) : (
+                  <>
+                    {/* "I climb outside" option */}
+                    <button
+                      type="button"
+                      className={`onb-gym-card ${climbsOutside ? 'onb-gym-card-active' : ''}`}
+                      onClick={handleOutsideToggle}
+                    >
+                      <div className="onb-gym-img-wrap">
+                        <div className="onb-gym-outside-icon">🏔️</div>
+                      </div>
+                      <div className="onb-gym-info">
+                        <span className="onb-gym-name">I climb outside</span>
+                        <span className="onb-gym-city">Outdoor climbing</span>
+                      </div>
+                    </button>
+
+                    {/* First 3 gyms - always visible */}
+                    {gyms.slice(0, 3).map((gym) => {
+                      const isSelected = selectedGyms.includes(gym.id)
+                      return (
+                        <button
+                          key={gym.id}
+                          type="button"
+                          className={`onb-gym-card ${isSelected ? 'onb-gym-card-active' : ''}`}
+                          onClick={() => handleGymToggle(gym.id)}
+                        >
+                          <div className="onb-gym-img-wrap">
+                            <img
+                              src={gym.image_url || '/placeholder-gym.svg'}
+                              alt={gym.name}
+                              className="onb-gym-img"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = '/placeholder-gym.svg'
+                              }}
+                            />
+                          </div>
+                          <div className="onb-gym-info">
+                            <span className="onb-gym-name">{gym.name}</span>
+                            <span className="onb-gym-city">{gym.area}</span>
+                          </div>
+                        </button>
+                      )
+                    })}
+
+                    {/* Dropdown for remaining gyms */}
+                    {gyms.length > 3 && (
+                      <div className="onb-gym-dropdown-wrapper">
+                        <button
+                          type="button"
+                          className="onb-gym-dropdown-toggle"
+                          onClick={() => setShowMoreGyms(!showMoreGyms)}
+                          aria-expanded={showMoreGyms}
+                        >
+                          <span className="onb-gym-dropdown-text">
+                            {showMoreGyms ? 'Show less' : `Show ${gyms.length - 3} more gyms`}
+                          </span>
+                          <span className={`onb-gym-dropdown-arrow ${showMoreGyms ? 'onb-gym-dropdown-arrow-open' : ''}`}>
+                            ▼
+                          </span>
+                        </button>
+
+                        {showMoreGyms && (
+                          <div className="onb-gym-dropdown-content">
+                            {gyms.slice(3).map((gym) => {
+                              const isSelected = selectedGyms.includes(gym.id)
+                              return (
+                                <button
+                                  key={gym.id}
+                                  type="button"
+                                  className={`onb-gym-card ${isSelected ? 'onb-gym-card-active' : ''}`}
+                                  onClick={() => handleGymToggle(gym.id)}
+                                >
+                                  <div className="onb-gym-img-wrap">
+                                    <img
+                                      src={gym.image_url || '/placeholder-gym.svg'}
+                                      alt={gym.name}
+                                      className="onb-gym-img"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/placeholder-gym.svg'
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="onb-gym-info">
+                                    <span className="onb-gym-name">{gym.name}</span>
+                                    <span className="onb-gym-city">{gym.area}</span>
+                                  </div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
             <div className="events-create-field" style={{ opacity: 0.6 }}>

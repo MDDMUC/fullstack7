@@ -558,28 +558,6 @@ export default function HomeScreen() {
 
                 <div className="home-card-main">
                   <div className="home-image-wrapper animated-gradient-border">
-                    {specialTopChips.length > 0 && (
-                      <div className="home-special-chips">
-                        {specialTopChips.map(chip => {
-                          const lower = chip.toLowerCase()
-                          const isPro = lower.includes('pro')
-                          const isFounder = lower.includes('founder')
-                          const isCrew = lower.includes('crew')
-                          let chipClass = 'fc-chip'
-                          if (isPro) chipClass += ' fc-chip-pro'
-                          else if (isFounder) chipClass += ' fc-chip-founder'
-                          else if (isCrew) chipClass += ' fc-chip-crew'
-                          const iconSrc = ROCK_ICON // All special chips use rock and roll hand
-                          const needsGradient = isPro || isFounder || isCrew
-                          return (
-                            <span key={`special-top-${chip}`} className={chipClass}>
-                              <img src={iconSrc} alt="" className="fc-chip-icon" />
-                              {needsGradient ? <span className="fc-chip-text">{chip}</span> : chip}
-                            </span>
-                          )
-                        })}
-                      </div>
-                    )}
                     <Avatar
                       src={currentAvatar}
                       alt={current?.username || 'Profile'}
@@ -602,31 +580,6 @@ export default function HomeScreen() {
                             </span>
                           ))}
                         {tags.grade && <span className="button-tag button-tag-grade">{tags.grade}</span>}
-                        {remainingChips.map((chip, idx) => {
-                          const chipLower = chip.toLowerCase()
-                          const isPro = chipLower.includes('pro') && !chipLower.includes('founder') && !chipLower.includes('crew')
-                          const isFounder = chipLower.includes('founder')
-                          const isCrew = chipLower.includes('crew')
-                          const isBelayCertified = chipLower.includes('belay')
-
-                          let chipClass = 'fc-chip'
-                          if (isPro) chipClass += ' fc-chip-pro'
-                          else if (isFounder) chipClass += ' fc-chip-founder'
-                          else if (isCrew) chipClass += ' fc-chip-crew'
-                          else if (isBelayCertified) chipClass += ' fc-chip-belay'
-                          else chipClass += ' fc-chip-standard'
-
-                          const needsGradient = isPro || isFounder || isCrew
-                          const showIcon = isPro || isFounder || isCrew
-                          const iconSrc = ROCK_ICON // All special chips use rock and roll hand
-
-                          return (
-                            <span key={`chip-${chip}-${idx}`} className={chipClass}>
-                              {showIcon && <img src={iconSrc} alt="" className="fc-chip-icon" />}
-                              {needsGradient ? <span className="fc-chip-text">{chip}</span> : chip}
-                            </span>
-                          )
-                        })}
                       </div>
                     </div>
                   </div>

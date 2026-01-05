@@ -1,3 +1,124 @@
+## 2026-01-05 - Sync Gym Selection Between Profile Modal and /gyms Page
+
+### Changes
+- Updated /gyms page to use **database as source of truth** instead of localStorage
+- Gym selections in edit profile modal now sync with /gyms page display
+- Follow/unfollow actions on /gyms page now save to database
+
+### Implementation Details
+- **Load gyms**: Read user's followed gym IDs from `onboardingprofiles.gym` field
+- **Display gyms**: Show only gyms that user has selected in their profile
+- **Add gym**: Updates database and local state
+- **Unfollow gym**: Updates database and local state
+- Both pages now read from and write to the same database field
+
+### Files Modified
+- `src/app/gyms/page.tsx`:
+  - Added `userGymIds` state to track user's followed gyms (line 91)
+  - Updated `loadGyms` to fetch user profile and filter gyms (lines 101-157)
+  - Updated `handleAddGym` to save to database (lines 346-378)
+  - Updated unfollow handler to save to database (lines 469-492)
+
+### Benefits
+- ✓ Consistent gym list across all pages
+- ✓ Gym selections persist across devices
+- ✓ Edit profile modal and /gyms page stay in sync
+- ✓ Database is single source of truth
+
+---
+
+## 2026-01-05 - Add Grade and Looking For Selectors to Edit Profile Modal
+
+### Changes
+- Added **Grade selection** to edit profile modal (Beginner, Intermediate, Advanced)
+- Added **Looking for selection** to edit profile modal (Climbing Partner, Crew, Meet Climbers)
+- Both features match the UI from onboarding flow (InterestsStep)
+- Fixed save error by using correct database field name `lookingFor` (not `purposes`)
+
+### Implementation Details
+- **Grade selector**: Single selection using `onb-gender-select` and `onb-gender-btn` classes
+- **Looking for selector**: Multi-selection using `onb-style-grid` and `onb-style-btn` classes
+- Added constants: `GRADES`, `LOOKING_FOR_OPTIONS`
+- Added state: `editGrade`, `editPurposes`
+- Added handlers: `handleGradeSelect`, `handlePurposeToggle`
+- Initialize from profile data on load (parse comma-separated string)
+- Save to `onboardingprofiles.grade` and `onboardingprofiles.lookingFor` fields
+- `lookingFor` stored as comma-separated string, not array
+
+### Files Modified
+- `src/app/profile/page.tsx`:
+  - Added grade and looking for constants (lines 44-49)
+  - Added state for grade and purposes (lines 100-101)
+  - Initialize from profile (lines 138-148)
+  - Added handler functions (lines 351-361)
+  - Updated save function to include grade and purposes (lines 423-424)
+  - Added grade selector UI (lines 718-733)
+  - Added looking for selector UI (lines 735-756)
+
+---
+
+## 2026-01-05 - Fix Style Display to Show All 3 Selected Styles
+
+### Changes
+- Removed `.slice(0, 2)` limit on profile page style display
+- All selected climbing styles (up to 3) now display on profile cards
+- Home page already displayed all styles correctly
+
+### Files Modified
+- `src/app/profile/page.tsx` - Removed slice limit on line 423
+
+---
+
+## 2026-01-05 - Remove fc-chip Elements from Profile and Home Pages
+
+### Changes
+- Removed all fc-chip class elements from `/profile` page
+- Removed all fc-chip class elements from `/home` page
+- Only button-tag elements remain for styles and grade display
+- Cleaner chip display without duplicate styling classes
+
+### Files Modified
+- `src/app/profile/page.tsx` - Removed remainingChips rendering section
+- `src/app/home/page.tsx` - Removed specialTopChips and remainingChips sections
+
+---
+
+## 2026-01-05 - Update Profile Edit Modal with Gym Selector
+
+### Changes
+- Reviewed and updated profile edit modal to use design tokens from `src/app/tokens.css`
+- Updated "City / Homebase" label to just "City" for clarity
+- Removed "Tags" section from edit modal (tags still stored in database)
+- Added gym selector from onboarding flow to profile edit modal
+- Fixed missing imports for LoadingState and EmptyState components
+
+### Gym Selector Features
+- Multi-select gym picker with same UI as onboarding (LocationStep)
+- Shows first 3 gyms, dropdown for remaining gyms
+- Includes "I climb outside" option
+- Fetches gyms dynamically from Supabase gyms table
+- Saves selected gyms to onboardingprofiles.gym field
+- Loading states and empty states handled
+
+### Design Tokens Review
+- All components use design tokens (--color-*, --space-*, --font-size-*, etc.)
+- Inline styles only use CSS variables from tokens.css
+- One rgba color (rgba(92, 225, 230, 0.1)) follows existing pattern for semi-transparent brand colors
+- No hard-coded values found
+
+### Files Modified
+- `src/app/profile/page.tsx`:
+  - Added Gym type and gym-related state (lines 42-48, 92-97)
+  - Added gym fetching useEffect (lines 143-178)
+  - Updated loadProfile to initialize gym selection (lines 127-131)
+  - Added gym toggle handlers (lines 298-308)
+  - Updated handleSaveProfile to save gym data (lines 357-370)
+  - Updated "City / Homebase" to "City" (line 678)
+  - Removed Tags section (previously lines 612-621)
+  - Added gym selector UI matching onboarding flow (lines 688-797)
+
+---
+
 ## 2026-01-05 - Disable Auto-Refresh on /home Page
 
 ### Issue
@@ -3756,3 +3877,5 @@ Implementation complete. Build passing. Ready for testing with detailed logging.
 **Next:**
 - Update TICKET-ANA-001 scope and docs/EVENT_TAXONOMY.md.
 - Tech Lead review for schema and migration plan.
+-   [ T I C K E T _ P R O F I L E _ E D I T _ S T Y L E S ]   U p d a t e d   E d i t   P r o f i l e   m o d a l   w i t h   m u l t i - s e l e c t   c l i m b i n g   s t y l e   b u t t o n s .  
+ 
