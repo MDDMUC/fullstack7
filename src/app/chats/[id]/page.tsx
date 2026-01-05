@@ -232,9 +232,9 @@ export default function ChatDetailPage() {
             const profile = profiles[0]
             setOtherProfile(profile)
           } else {
-            // Fallback to just profiles table if fetchProfiles doesn't return anything
+            // Fallback to onboardingprofiles if fetchProfiles doesn't return anything
             const { data: p } = await client
-              .from('profiles')
+              .from('onboardingprofiles')
               .select('id,username,avatar_url')
               .eq('id', otherId)
               .single()
@@ -242,9 +242,9 @@ export default function ChatDetailPage() {
           }
         } catch (err) {
           console.error('Error fetching other profile:', err)
-          // Fallback to just profiles table
+          // Fallback to onboardingprofiles table
           const { data: p } = await client
-            .from('profiles')
+            .from('onboardingprofiles')
             .select('id,username,avatar_url')
             .eq('id', otherId)
             .single()

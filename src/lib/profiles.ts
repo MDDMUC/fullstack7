@@ -181,21 +181,16 @@ const resolveAvatarUrl = async (
 
 export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
   const c = client ?? requireSupabase()
-  const baseQuery = c
-    .from('profiles')
+
+  // Fetch from onboardingprofiles (single source of truth)
+  const obQuery = c
+    .from('onboardingprofiles')
     .select('*')
     .order('created_at', { ascending: false })
-  if (ids?.length) baseQuery.in('id', ids)
-
-  const { data: baseProfiles, error: baseErr } = await baseQuery
-  if (baseErr) throw baseErr
-
-  // Pull onboarding rows; if ids are provided, scope to those ids to avoid mixing users.
-  const obQuery = c.from('onboardingprofiles').select('*')
   if (ids?.length) obQuery.in('id', ids)
-  const { data: obRows, error: obErr } = await obQuery
-  if (obErr) throw obErr
-  const obMap = new Map((obRows ?? []).map(ob => [ob.id, ob]))
+
+  const { data: profiles, error: profilesError } = await obQuery
+  if (profilesError) throw profilesError
 
   // Preload a flat listing at root as a fallback for manually uploaded files not placed in user folders
   let bucketListing: { name: string }[] | undefined
@@ -206,24 +201,9 @@ export async function fetchProfiles(client?: SupabaseClient, ids?: string[]) {
     console.warn('Bucket root listing failed', err)
   }
 
-  // If no profiles rows for some ids, synthesize profiles from onboarding data
-  const baseIds = new Set((baseProfiles ?? []).map(p => p.id))
-  const synthesizedFromOnboarding =
-    (obRows ?? [])
-      .filter(ob => !baseIds.has(ob.id))
-      .map(ob => ({ ...ob, id: ob.id, created_at: ob.created_at }))
-
-  const sourceProfiles = [
-    ...(baseProfiles ?? []),
-    ...synthesizedFromOnboarding,
-  ]
-
   const resolved = await Promise.all(
-    (sourceProfiles ?? []).map(async profile => {
-      const normalized = normalizeProfile({
-        ...profile,
-        onboardingprofiles: obMap.get(profile.id) ? [obMap.get(profile.id)] : [],
-      })
+    (profiles ?? []).map(async profile => {
+      const normalized = normalizeProfile(profile)
 
       let avatarUrl = normalized.avatar_url
 

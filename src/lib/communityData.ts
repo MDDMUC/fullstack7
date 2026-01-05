@@ -575,9 +575,9 @@ export async function loadCheckIns(): Promise<CheckIn[]> {
     }))
     if (resolved.length) return resolved
 
-    // Fallback to profiles if no live check-ins
+    // Fallback to onboardingprofiles if no live check-ins
     const { data: profiles, error: profErr } = await client
-      .from('profiles')
+      .from('onboardingprofiles')
       .select('id, username, homebase, availability, grade, tags, avatar_url')
       .order('created_at', { ascending: false })
       .limit(8)

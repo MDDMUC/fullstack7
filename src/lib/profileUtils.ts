@@ -124,24 +124,8 @@ export async function upsertPublicProfile(
   userId: string,
   data: Partial<OnboardingData>
 ): Promise<UpsertResult> {
-  try {
-    const { data: row, error } = await client
-      .from('profiles')
-      .upsert(
-        {
-          id: userId,
-          email: (data as any)?.email || undefined,
-          username: data.username || (data as any)?.name || (data as any)?.email?.split?.('@')?.[0] || 'Climber',
-        },
-        { onConflict: 'id' }
-      )
-      .select('*')
-      .single()
-
-    return { data: row, error }
-  } catch (error: any) {
-    // RLS can block public profile upsert; return error but don't throw
-    return { data: null, error }
-  }
+  // DEPRECATED: profiles table has been removed - all data now in onboardingprofiles
+  // This function is kept as a no-op for backward compatibility
+  return { data: null, error: null }
 }
 

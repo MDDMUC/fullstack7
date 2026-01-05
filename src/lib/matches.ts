@@ -102,23 +102,13 @@ export async function listMatches() {
 
   const ids = Array.from(new Set(data.flatMap(m => [m.user_a, m.user_b])))
   const { data: profiles, error: pErr } = await supabase
-    .from('profiles')
-    .select('id, username, email, created_at')
-    .in('id', ids)
-  if (pErr) throw pErr
-
-  const { data: obRows, error: obErr } = await supabase
     .from('onboardingprofiles')
     .select('*')
     .in('id', ids)
-  if (obErr) throw obErr
-  const obMap = new Map((obRows ?? []).map(ob => [ob.id, ob]))
+  if (pErr) throw pErr
 
   const map = new Map((profiles ?? []).map(p => {
-    const normalized = normalizeProfile({
-      ...p,
-      onboardingprofiles: obMap.get(p.id) ? [obMap.get(p.id)] : [],
-    })
+    const normalized = normalizeProfile(p)
     return [normalized.id, normalized]
   }))
   return data.map(m => ({ ...m, profiles: [map.get(m.user_a), map.get(m.user_b)].filter(Boolean) }))

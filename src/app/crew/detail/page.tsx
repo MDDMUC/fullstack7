@@ -303,7 +303,7 @@ function CrewDetailContent() {
       const senderIds = Array.from(new Set((msgs ?? []).map(m => m.sender_id).filter(Boolean)))
       if (senderIds.length > 0) {
         const { data: profilesData } = await client
-          .from('profiles')
+          .from('onboardingprofiles')
           .select('id,username,avatar_url')
           .in('id', senderIds)
         if (profilesData) {
@@ -379,7 +379,7 @@ function CrewDetailContent() {
             // Fetch sender profile if new
             if (newMsg.sender_id && !profiles[newMsg.sender_id]) {
               client
-                .from('profiles')
+                .from('onboardingprofiles')
                 .select('id,username,avatar_url')
                 .eq('id', newMsg.sender_id)
                 .single()

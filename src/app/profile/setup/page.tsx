@@ -57,16 +57,8 @@ export default function ProfileSetup() {
         bio,
         availability: availability ? availability.split(',').map(s => s.trim()) : undefined,
       })
-      const { error } = await client.from('profiles').upsert({
-        id: userData.user.id,
-        username: username || userData.user.email,
-        email: userData.user.email,
-      })
+      // Note: profiles table has been removed - all data now in onboardingprofiles
       setLoading(false)
-      if (error) {
-        setStatus(error.message)
-        return
-      }
       setStatus('Profile saved.')
       router.push('/home')
     } catch (err: any) {
