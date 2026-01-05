@@ -1,7 +1,20 @@
 import { createClient } from '@supabase/supabase-js'
+import { config } from 'dotenv'
+import { resolve } from 'path'
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Load environment variables from .env.local
+config({ path: resolve(process.cwd(), '.env.local') })
+
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!url || !anonKey) {
+  console.error('❌ Error: Missing Supabase credentials')
+  console.error('Please ensure .env.local contains:')
+  console.error('  - NEXT_PUBLIC_SUPABASE_URL')
+  console.error('  - NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  process.exit(1)
+}
 
 const supabase = createClient(url, anonKey)
 
