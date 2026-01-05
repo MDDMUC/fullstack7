@@ -9,6 +9,8 @@ import MobileTopbar from '@/components/MobileTopbar'
 import Avatar from '@/components/Avatar'
 import ActionMenu from '@/components/ActionMenu'
 import ReportModal from '@/components/ReportModal'
+import LoadingState from '@/components/LoadingState'
+import EmptyState from '@/components/EmptyState'
 import { RequireOnboarding } from '@/components/RequireOnboarding'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { fetchProfiles, Profile as DbProfile, fetchGymsFromTable, Gym } from '@/lib/profiles'
@@ -502,14 +504,14 @@ export default function HomeScreen() {
             />
           </>
         )}
-        <div className="home-content">
+        <div
+          className="home-content"
+          style={loadingProfiles || !current ? { justifyContent: 'center' } : undefined}
+        >
           {loadingProfiles ? (
-            <div className="home-loading" role="status" aria-label="Loading profiles">
-              <span className="home-loading-dot" />
-              <span className="home-loading-text">Loading…</span>
-            </div>
+            <LoadingState message="Loading climbers…" />
           ) : !current ? (
-            <div className="home-empty">No profiles available.</div>
+            <EmptyState message="No profiles available" />
           ) : (
             <>
               <div className="home-card" data-name="usercard-mobile">

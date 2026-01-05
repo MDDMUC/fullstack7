@@ -85,9 +85,11 @@ export default function NotificationsPage() {
   useEffect(() => {
     const loadNotifications = async () => {
       if (!userId || !supabase) {
-        setLoading(false)
+        // Don't set loading to false here - keep showing spinner until userId is available
         return
       }
+
+      setLoading(true) // Start loading when we have userId
       
       try {
         const client = supabase
@@ -554,19 +556,17 @@ export default function NotificationsPage() {
     <RequireAuth>
       <div className="notifications-screen" data-name="/notifications">
         <MobileTopbar breadcrumb="Notifications" />
-        <div className="notifications-content">
-          <div
-            className="notifications-card"
-            data-node-id="786:2988"
-            style={loading || visibleNotifications.length === 0 ? { justifyContent: 'center' } : undefined}
-          >
-            {loading ? (
-              <LoadingState message="Loading notifications…" />
-            ) : visibleNotifications.length === 0 ? (
-              <EmptyState message="No notifications" />
-            ) : (
-              <div className="notifications-list" data-node-id="786:2987">
-                {visibleNotifications.map(notif => (
+        <div
+          className="notifications-content"
+          style={loading || visibleNotifications.length === 0 ? { justifyContent: 'center' } : undefined}
+        >
+          {loading ? (
+            <LoadingState message="Loading notifications…" />
+          ) : visibleNotifications.length === 0 ? (
+            <EmptyState message="No notifications" />
+          ) : (
+            <>
+              {visibleNotifications.map(notif => (
                   <div
                     key={notif.id}
                     className="notification-tile"
@@ -651,9 +651,8 @@ export default function NotificationsPage() {
                     )}
                   </div>
                 ))}
-              </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
         <MobileNavbar active="Default" />
       </div>

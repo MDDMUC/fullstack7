@@ -1,4 +1,112 @@
-## 2026-01-05 - Fix: Notifications Page Loading Spinner Display Issue
+## 2026-01-05 - Fix: Notifications Page Loading State Logic
+
+### Issue
+- Loading spinner on `/notifications` page was never displayed
+- Page showed "No notifications" empty state immediately, then jumped to showing notifications
+- Loading was set to `false` when `userId` was undefined on initial render, skipping the spinner entirely
+
+### Root Cause
+The `useEffect` hook was setting `loading = false` when `userId` was undefined:
+```tsx
+if (!userId || !supabase) {
+  setLoading(false)  // ❌ This happened on first render before session loaded
+  return
+}
+```
+
+**Flow:**
+1. Component mounts, `userId` is undefined (session not loaded yet)
+2. useEffect runs, sees no userId, sets `loading = false` immediately
+3. Shows "No notifications" empty state
+4. Session loads, userId becomes available
+5. useEffect runs again, fetches notifications
+6. Shows notifications (without ever showing spinner)
+
+### Fix Applied
+
+**Notifications Page** (`src/app/notifications/page.tsx`):
+- Removed `setLoading(false)` when userId is undefined
+- Loading state now remains `true` (initial value) until userId is available
+- Added explicit `setLoading(true)` when starting to fetch data with userId
+- Spinner now displays from page load until data is fetched
+
+```tsx
+if (!userId || !supabase) {
+  // Don't set loading to false - keep showing spinner until userId is available
+  return
+}
+
+setLoading(true) // Start loading when we have userId
+```
+
+### Result
+- ✓ Loading spinner now displays immediately on page load
+- ✓ Spinner stays visible while session loads and data fetches
+- ✓ Spinner displays centered with "Loading notifications…" message
+- ✓ Build successful with no errors
+
+---
+
+## 2026-01-05 - Fix: Standardize Loading Spinner Across All Pages
+
+### Issue
+- Loading spinner on `/home` page was not displaying at all
+- Loading spinner on `/notifications` page was not positioned consistently with other pages
+- Needed consistent loading states across `/home`, `/notifications`, `/events`, `/chats`, and `/crew` pages
+- `/home` page spinner was appearing at bottom instead of center due to `justify-content: flex-end` CSS
+
+### Changes Made
+
+**Home Page** (`src/app/home/page.tsx`):
+- Added imports for `LoadingState` and `EmptyState` components
+- Replaced custom `.home-loading` div with standard `<LoadingState message="Loading climbers…" />` component
+- Replaced custom `.home-empty` div with `<EmptyState message="No profiles available" />` component
+- Added conditional `justifyContent: 'center'` style to `.home-content` when loading or empty (overrides default `flex-end`)
+- Loading spinner now displays centered on screen, while profile cards remain at bottom when loaded
+- Now matches the pattern used across `/events`, `/chats`, and `/crew` pages
+
+**Notifications Page** (`src/app/notifications/page.tsx`):
+- Removed unnecessary `.notifications-card` wrapper around loading/empty states
+- LoadingState and EmptyState now render directly in `.notifications-content` (matching other pages)
+- Added conditional `justifyContent: 'center'` style to `.notifications-content` when loading or empty (ensures visibility and centering)
+- Message text kept as "Loading notifications…" with ellipsis for consistency
+- Notification tiles now render as direct children of `.notifications-content` with consistent spacing
+
+### Design Pattern
+All list pages now follow the same structure:
+```tsx
+<div className="[page]-content">
+  {loading ? (
+    <LoadingState message="Loading [items]…" />
+  ) : items.length === 0 ? (
+    <EmptyState message="No [items] found" />
+  ) : (
+    // Render items directly as children
+  )}
+</div>
+```
+
+Pages following this pattern:
+- `/events` - "Loading events…"
+- `/chats` - "Loading chats…"
+- `/crew` - "Loading crews…"
+- `/home` - "Loading climbers…"
+- `/notifications` - "Loading notifications…"
+
+### Design Tokens Compliance
+All loading states use the centralized `LoadingState` component which uses:
+- Colors: `--color-primary` (spinner), `--color-muted` (text)
+- Typography: `--font-inter`, `--font-size-md`, `--font-weight-medium`
+- Spacing: Tailwind `py-8`, `gap-4`
+
+### Testing
+- Build successful: `npm run build` passed with no errors
+- No TypeScript errors
+- All pages now display consistent loading spinner with spinning cyan circle and appropriate message
+
+---
+
+## 2026-01-05 - Fix: Notifications Page Loading Spinner Display Issue (Initial)
 
 ### Issue
 - Loading spinner on `/notifications` page was not visible to users during data fetch
@@ -41,6 +149,9 @@ All changes use design tokens from `src/app/tokens.css`:
 - Build successful: `npm run build` passed with no errors
 - No TypeScript errors
 - Loading spinner now displays correctly with spinning animation and "Loading notifications…" message
+
+### Note
+This initial fix was later superseded by the standardization effort above, which removed the `.notifications-card` wrapper entirely to match other pages.
 
 ---
 
