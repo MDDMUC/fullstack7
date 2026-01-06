@@ -12025,8 +12025,9 @@ div.mh-silver-card[data-name="card2"] {
   display: flex;
   flex-direction: column;
   gap: 0;
-  align-items: center;
-  padding: var(--space-xs); /* space/xs (6px) - tokens */
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: var(--space-md) var(--space-lg); /* py: space/md (12px), px: space/lg (16px) - tokens */
   background: var(--color-stroke); /* color/stroke */
   border-radius: var(--radius-lg); /* radius/lg */
   box-sizing: border-box;
@@ -12039,9 +12040,11 @@ div.mh-silver-card[data-name="card2"] {
   font-weight: 500;
   font-size: var(--font-size-sm); /* body/sm */
   color: var(--color-muted); /* color/muted */
-  line-height: normal;
+  line-height: 1.4;
+  text-align: left;
   width: 100%;
   max-width: 278px;
+  margin: 0;
   position: relative; /* Ensure text is above shadow */
   z-index: 1;
 }
