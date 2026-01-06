@@ -18,6 +18,7 @@ import Modal from '@/components/Modal'
 import ReportModal from '@/components/ReportModal'
 import BlockConfirmModal from '@/components/BlockConfirmModal'
 import LoadingState from '@/components/LoadingState'
+import ButtonCta from '@/components/ButtonCta'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym, Profile } from '@/lib/profiles'
@@ -1327,14 +1328,14 @@ function CrewDetailContent() {
             >
               Cancel
             </button>
-            <button
+            <ButtonCta
               type="button"
-              className="invite-users-btn-invite"
               onClick={handleInvite}
               disabled={inviting || selectedUsers.size === 0}
+              style={{ flex: '1 1 0' }}
             >
               {inviting ? 'Inviting...' : `Invite ${selectedUsers.size > 0 ? `(${selectedUsers.size})` : ''}`}
-            </button>
+            </ButtonCta>
           </>
         }
       >
