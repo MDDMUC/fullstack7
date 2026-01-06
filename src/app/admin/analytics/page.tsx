@@ -31,6 +31,15 @@ const mockRecentActivity = [
   { id: 5, type: 'event', text: 'Event RSVP in Munich', time: '15m ago', icon: '📅' },
 ]
 
+// Mock funnel data
+const mockFunnelSteps = [
+  { name: 'Basic Profile', count: 150, percentage: 100, dropoff: 0, avgTime: '45s' },
+  { name: 'Interests', count: 132, percentage: 88, dropoff: 12, avgTime: '20s' },
+  { name: 'Location', count: 118, percentage: 79, dropoff: 11, avgTime: '15s' },
+  { name: 'Pledge', count: 105, percentage: 70, dropoff: 11, avgTime: '30s' },
+  { name: 'Success', count: 98, percentage: 65, dropoff: 7, avgTime: '10s' },
+]
+
 export default function AdminAnalyticsPage() {
   const { session } = useAuthSession()
   const router = useRouter()
@@ -166,9 +175,80 @@ export default function AdminAnalyticsPage() {
 
             {activeTab === 'funnel' && (
               <div className="analytics-tab-panel">
-                <p style={{ color: 'var(--color-muted)', padding: 'var(--space-lg)' }}>
-                  Funnel tab - Coming soon
-                </p>
+                {/* Funnel Summary Card */}
+                <div className="admin-funnel-summary">
+                  <div className="admin-funnel-completion-rate">65%</div>
+                  <div className="admin-funnel-completion-label">Completion Rate</div>
+                  <div className="admin-funnel-completion-subtext">Basic Profile → Success</div>
+                </div>
+
+                {/* Funnel Visualization */}
+                <div className="admin-funnel-card">
+                  <h3 className="admin-funnel-title">Onboarding Funnel</h3>
+                  <div className="admin-funnel-steps">
+                    {mockFunnelSteps.map((step, index) => (
+                      <div key={index} className="admin-funnel-step">
+                        <div className="admin-funnel-step-header">
+                          <span className="admin-funnel-step-label">
+                            {step.name} ({step.count})
+                          </span>
+                          {step.dropoff > 0 && (
+                            <span
+                              className="admin-funnel-step-dropoff"
+                              style={{
+                                color: step.dropoff > 20 ? 'var(--color-state-red)' : 'var(--color-muted)'
+                              }}
+                            >
+                              -{step.dropoff}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="admin-funnel-bar-container">
+                          <div
+                            className="admin-funnel-bar-fill"
+                            style={{ width: `${step.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step Friction Table */}
+                <div className="admin-friction-card">
+                  <h3 className="admin-friction-title">Step Friction</h3>
+                  <table className="admin-friction-table">
+                    <thead>
+                      <tr>
+                        <th>Step Name</th>
+                        <th>Avg Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mockFunnelSteps.map((step, index) => {
+                        const isSlowest = step.avgTime === '45s' || step.avgTime === '30s'
+                        return (
+                          <tr key={index}>
+                            <td
+                              style={{
+                                color: isSlowest ? 'var(--color-yellow)' : 'var(--color-text)'
+                              }}
+                            >
+                              {step.name}
+                            </td>
+                            <td
+                              style={{
+                                color: isSlowest ? 'var(--color-yellow)' : 'var(--color-text)'
+                              }}
+                            >
+                              {step.avgTime}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 

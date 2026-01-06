@@ -16762,3 +16762,149 @@ img.friend-tile-img {
   font-size: var(--font-size-xs);
   color: var(--color-muted);
 }
+
+/* Funnel Summary */
+.admin-funnel-summary {
+  background: var(--color-card);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.admin-funnel-completion-rate {
+  font-family: var(--font-inter);
+  font-size: 48px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
+  text-shadow: var(--shadow-glow);
+  line-height: 1;
+}
+
+.admin-funnel-completion-label {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.admin-funnel-completion-subtext {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  color: var(--color-muted);
+}
+
+/* Funnel Visualization */
+.admin-funnel-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.admin-funnel-title {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.admin-funnel-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.admin-funnel-step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.admin-funnel-step-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-funnel-step-label {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.admin-funnel-step-dropoff {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.admin-funnel-bar-container {
+  height: 8px;
+  background: var(--color-surface-panel);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.admin-funnel-bar-fill {
+  height: 100%;
+  background: var(--gradient-brand-horizontal);
+  border-radius: var(--radius-full);
+  transition: width 0.3s ease;
+}
+
+/* Step Friction Table */
+.admin-friction-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.admin-friction-title {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.admin-friction-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-friction-table th {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--color-stroke);
+}
+
+.admin-friction-table td {
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-sm);
+  border-bottom: 1px solid var(--color-stroke);
+}
+
+.admin-friction-table tr:last-child td {
+  border-bottom: none;
+}
