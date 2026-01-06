@@ -7,7 +7,7 @@ import MobileNavbar from '@/components/MobileNavbar'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import AdminMetricCard from '@/components/admin/AdminMetricCard'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 type TabType = 'overview' | 'funnel' | 'engagement'
 
@@ -39,6 +39,17 @@ const mockFunnelSteps = [
   { name: 'Pledge', count: 105, percentage: 70, dropoff: 11, avgTime: '30s' },
   { name: 'Success', count: 98, percentage: 65, dropoff: 7, avgTime: '10s' },
 ]
+
+// Mock engagement data
+const mockMatchHealthData = [
+  { name: 'Matched', value: 80 },
+  { name: 'Unmatched', value: 20 },
+]
+
+const MATCH_HEALTH_COLORS = {
+  matched: 'var(--color-primary)',
+  unmatched: 'var(--color-surface-panel)',
+}
 
 export default function AdminAnalyticsPage() {
   const { session } = useAuthSession()
@@ -254,9 +265,64 @@ export default function AdminAnalyticsPage() {
 
             {activeTab === 'engagement' && (
               <div className="analytics-tab-panel">
-                <p style={{ color: 'var(--color-muted)', padding: 'var(--space-lg)' }}>
-                  Engagement tab - Coming soon
-                </p>
+                {/* Match Health */}
+                <div className="admin-engagement-card">
+                  <h3 className="admin-engagement-title">Match Health</h3>
+                  <div className="admin-engagement-metric">Matches / DAU</div>
+                  <div className="admin-donut-container">
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie
+                          data={mockMatchHealthData}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={80}
+                          dataKey="value"
+                        >
+                          <Cell fill={MATCH_HEALTH_COLORS.matched} />
+                          <Cell fill={MATCH_HEALTH_COLORS.unmatched} />
+                        </Pie>
+                      </PieChart>
+                    </ResponsiveContainer>
+                    <div className="admin-donut-center-text">0.8</div>
+                  </div>
+                </div>
+
+                {/* Chat Activity */}
+                <div className="admin-engagement-card">
+                  <div className="admin-engagement-header">
+                    <span className="admin-engagement-icon">💬</span>
+                    <h3 className="admin-engagement-title">Chat Activity</h3>
+                  </div>
+                  <div className="admin-engagement-metric">Messages / Match</div>
+                  <div className="admin-engagement-value">4.2</div>
+                  <div className="admin-engagement-subtext">Avg messages per match</div>
+                </div>
+
+                {/* Event Participation */}
+                <div className="admin-engagement-card">
+                  <div className="admin-engagement-header">
+                    <span className="admin-engagement-icon">📅</span>
+                    <h3 className="admin-engagement-title">Event Participation</h3>
+                  </div>
+                  <div className="admin-event-stats">
+                    <div className="admin-event-stat-row">
+                      <span className="admin-event-stat-label">Views</span>
+                      <span className="admin-event-stat-value">1,200</span>
+                    </div>
+                    <div className="admin-event-stat-row">
+                      <span className="admin-event-stat-label">RSVPs</span>
+                      <span className="admin-event-stat-value">140</span>
+                    </div>
+                    <div className="admin-event-stat-row">
+                      <span className="admin-event-stat-label">Conversion</span>
+                      <span className="admin-event-stat-value" style={{ color: 'var(--color-accent-warm-cream)' }}>
+                        11.6%
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
