@@ -12026,7 +12026,7 @@ div.mh-silver-card[data-name="card2"] {
   flex-direction: column;
   gap: 0;
   align-items: center;
-  padding: var(--space-md) var(--space-lg); /* py: space/md (12px), px: space/lg (16px) - tokens */
+  padding: var(--space-xs); /* space/xs (6px) - tokens */
   background: var(--color-stroke); /* color/stroke */
   border-radius: var(--radius-lg); /* radius/lg */
   box-sizing: border-box;
