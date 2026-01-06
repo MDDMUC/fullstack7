@@ -2,7 +2,7 @@
 
 ID: TICKET-ANA-001
 Owner: Product
-Status: In Tech Review
+Status: Ready for Implementation
 Priority: P2
 Created: 2025-12-22
 Last updated: 2026-01-05
@@ -24,12 +24,14 @@ Define a clear v1 analytics taxonomy and property schema for the 8 required clie
 - Event names, required properties, optional properties, and examples.
 - Definitions for onboarding completion, app_open, match_created, message_sent, event_view, event_rsvp, invite_sent, invite_accepted.
 - Add onboarding step events: onboarding_step_started, onboarding_step_completed.
+- Design spec for an admin analytics dashboard (core metrics + onboarding funnel performance).
 
 ## Requirements
 - Naming conventions documented.
 - Properties defined for each event.
 - Privacy and data minimization checklist.
 - Step events include: step_id (enum), step_index (int), onboarding_version (string), duration_ms (int, only on completed).
+- Dashboard design includes overview metrics, onboarding funnel/drop-off views, and step-level performance.
 
 ## Success metrics
 - Tracking spec approved by Eng and Tech Lead.
@@ -59,3 +61,4 @@ Define a clear v1 analytics taxonomy and property schema for the 8 required clie
 
 ## Definition of Done
 - Tracking spec published and linked from ticket.
+- Admin analytics dashboard design spec completed and linked from ticket: `docs/ADMIN_ANALYTICS_DASHBOARD_DESIGN.md`.

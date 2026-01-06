@@ -16561,3 +16561,68 @@ img.friend-tile-img {
   left: 22px;
 }
 
+
+/* ========================================
+   ADMIN ANALYTICS DASHBOARD
+   ======================================== */
+
+.analytics-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+.analytics-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-safe-top) 0 var(--space-safe-bottom);
+  overflow-y: auto;
+}
+
+/* Tabs */
+.analytics-tabs {
+  display: flex;
+  gap: var(--space-xxs);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-panel);
+  border-radius: var(--radius-md);
+  margin: 0 var(--space-lg) var(--space-md);
+}
+
+.analytics-tab {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-inter);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.analytics-tab-active {
+  background: var(--gradient-brand-hero);
+  color: var(--color-primary);
+}
+
+.analytics-tab:hover:not(.analytics-tab-active) {
+  color: var(--color-text);
+}
+
+/* Tab Content */
+.analytics-tab-content {
+  flex: 1;
+  padding: 0 var(--space-lg) var(--space-lg);
+}
+
+.analytics-tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}

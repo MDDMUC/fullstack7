@@ -8,7 +8,7 @@
 
 ## Overview
 
-This document defines the 8 core analytics events we track for:
+This document defines the 8 core analytics events plus onboarding step events we track for:
 - **Retention metrics** (Day 1/7/30)
 - **Funnel analysis** (match → message, event browse → RSVP, invite → signup)
 - **B2B sponsor decks** (DAU, engagement, activity metrics)
@@ -25,9 +25,21 @@ Every event includes these standard fields:
 | `event_ts` | timestamptz | Event timestamp (UTC) | `2025-12-22T14:30:00Z` |
 | `user_id` | uuid | User who triggered event | `'abc-123-def'` |
 | `session_id` | uuid | Session identifier | `'session-xyz'` |
-| `properties` | jsonb | Event-specific data | `{"onboarding_step": 6}` |
+| `properties` | jsonb | Event-specific data | `{"step_id": "basic_profile", "step_index": 1}` |
 | `city_id` | text | User's city (optional) | `'Munich'` |
 | `gym_id` | uuid | Related gym (optional) | `'gym-uuid'` |
+
+---
+
+## Onboarding Step IDs (v1)
+
+Step IDs must match the current `/dab` flow order:
+
+1. `basic_profile` (step_index 1)
+2. `interests` (step_index 2)
+3. `location` (step_index 3)
+4. `pledge` (step_index 4)
+5. `success` (step_index 5)
 
 ---
 
@@ -50,7 +62,8 @@ Every event includes these standard fields:
 **Properties (JSONB):**
 ```json
 {
-  "onboarding_step": 6,
+  "onboarding_step": 5,
+  "onboarding_version": "v1",
   "completion_time_seconds": 120,
   "acquisition_source": "organic" | "invite" | "gym_qr" | "social",
   "invite_token": "invite-xyz",
@@ -62,6 +75,7 @@ Every event includes these standard fields:
 
 **Triggers:**
 - `src/app/dab/steps/SuccessStep.tsx` - After profile save success
+- **Note:** Current code logs signup in `PledgeStep`; reconcile in implementation.
 
 ---
 
@@ -287,6 +301,63 @@ Every event includes these standard fields:
 
 ---
 
+### 9. `onboarding_step_started` - User starts an onboarding step
+
+**When:** User enters an onboarding step in `/dab`
+
+**Purpose:** Measure step-level drop-off and engagement
+
+**Standard Fields:**
+- `event_name`: `'onboarding_step_started'`
+- `event_ts`: Step entry timestamp
+- `user_id`: Current user ID
+- `session_id`: Session UUID
+- `city_id`: null (not yet known for early steps)
+- `gym_id`: null
+
+**Properties (JSONB):**
+```json
+{
+  "step_id": "basic_profile" | "interests" | "location" | "pledge" | "success",
+  "step_index": 1,
+  "onboarding_version": "v1"
+}
+```
+
+**Triggers:**
+- `src/app/dab/page.tsx` - On step entry/render
+
+---
+
+### 10. `onboarding_step_completed` - User completes an onboarding step
+
+**When:** User completes a step and advances to the next step (or finishes on Success)
+
+**Purpose:** Measure step completion and time-on-step
+
+**Standard Fields:**
+- `event_name`: `'onboarding_step_completed'`
+- `event_ts`: Step completion timestamp
+- `user_id`: Current user ID
+- `session_id`: Session UUID
+- `city_id`: null (early steps) or user's city when known
+- `gym_id`: null
+
+**Properties (JSONB):**
+```json
+{
+  "step_id": "basic_profile" | "interests" | "location" | "pledge" | "success",
+  "step_index": 1,
+  "onboarding_version": "v1",
+  "duration_ms": 12000
+}
+```
+
+**Triggers:**
+- `src/app/dab/page.tsx` or step components - On step completion
+
+---
+
 ## Database Schema (Supabase)
 
 ### Table: `analytics_events`
@@ -321,10 +392,8 @@ CREATE INDEX idx_analytics_events_properties ON analytics_events USING gin(prope
 -- Enable RLS
 ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 
--- Select: Admins only (or read-only for analytics service)
-CREATE POLICY "analytics_events_select_admin" ON analytics_events
-  FOR SELECT
-  USING (auth.uid() IN (SELECT id FROM admin_users));
+-- Select: service_role only (no client access)
+-- Note: service_role bypasses RLS; do not introduce admin_users.
 
 -- Insert: Authenticated users can insert their own events
 CREATE POLICY "analytics_events_insert_own" ON analytics_events
@@ -422,12 +491,11 @@ export function getOrCreateSessionId(): string {
 - [ ] Create `analytics_events` table with schema above
 - [ ] Create indexes (5 total)
 - [ ] Enable RLS
-- [ ] Create RLS policies (select for admins, insert for authenticated)
-- [ ] Create `admin_users` table or use role-based check
+- [ ] Create RLS policies (select via service_role only, insert for authenticated)
 
 **Step 2: Analytics Library**
 - [ ] Create `src/lib/analytics.ts` with `logEvent` and `getOrCreateSessionId`
-- [ ] Add TypeScript types for all 8 events
+- [ ] Add TypeScript types for core events + onboarding step events
 - [ ] Add error handling (don't break app if analytics fails)
 
 **Step 3: Instrument Events**
@@ -439,13 +507,15 @@ export function getOrCreateSessionId(): string {
 - [ ] `event_rsvp` - `src/app/events/detail/[id]/page.tsx`
 - [ ] `invite_sent` - Future implementation
 - [ ] `invite_accepted` - Future implementation
+- [ ] `onboarding_step_started` - `/dab` flow (step entry)
+- [ ] `onboarding_step_completed` - `/dab` flow (step completion)
 
 **Step 4: Testing**
 - [ ] Create 20+ test users
 - [ ] Simulate full user journeys
 - [ ] Validate events appear in `analytics_events` table
 - [ ] Verify properties JSONB contains expected fields
-- [ ] Check RLS policies (non-admins can't read events)
+- [ ] Check RLS policies (no client select; service_role only)
 
 ---
 

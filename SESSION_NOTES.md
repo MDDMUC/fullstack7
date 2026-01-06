@@ -3878,4 +3878,29 @@ Implementation complete. Build passing. Ready for testing with detailed logging.
 - Update TICKET-ANA-001 scope and docs/EVENT_TAXONOMY.md.
 - Tech Lead review for schema and migration plan.
 -   [ T I C K E T _ P R O F I L E _ E D I T _ S T Y L E S ]   U p d a t e d   E d i t   P r o f i l e   m o d a l   w i t h   m u l t i - s e l e c t   c l i m b i n g   s t y l e   b u t t o n s .  
+  
+ - - -  
+  
+ # #   2 0 2 6 - 0 1 - 0 6   -   A d m i n   A n a l y t i c s   D a s h b o a r d   D e s i g n   S p e c   ( v 1 . 2 )   C o m p l e t e  
+  
+ # # #   S t a t u s  
+ -   * * T i c k e t   I D * * :   T I C K E T - A N A - 0 0 1  
+ -   * * S t a t u s * * :   R e a d y   f o r   I m p l e m e n t a t i o n  
+ -   * * D e s i g n   S p e c * * :   \ d o c s / A D M I N _ A N A L Y T I C S _ D A S H B O A R D _ D E S I G N . m d \   ( v 1 . 2 )  
+ -   * * T a x o n o m y * * :   \ d o c s / E V E N T _ T A X O N O M Y . m d \ \  \ 
+ \  \ 
+ # # #   S u m m a r y   o f   D e c i s i o n s \  \ 
+ -   * * A r c h i t e c t u r e * * :   A d m i n   d a s h b o a r d   ( \ / a d m i n / a n a l y t i c s \ )   m u s t   u s e   s e r v e r - s i d e   s e r v i c e _ r o l e   a c c e s s   f o r   a n a l y t i c s   d a t a   ( n o   c l i e n t - s i d e   s e l e c t s ) .   L i v e   f e e d   p o w e r e d   v i a   p o l l i n g   ( n o   r e a l t i m e ) . \  \ 
+ -   * * D e s i g n * * :   S t r i c t l y   u s e s   d e s i g n   s y s t e m   t o k e n s .   F e a t u r e s   a   g a m i f i e d   \  
+ L i v e  
+ F e e d \   w i t h   p u l s a t i n g   d o t s   ( \ . s t a t - l i v e - d o t \ )   a n d   c o l o r - c o d e d   t r e n d s . \  \ 
+ -   * * F u n n e l * * :   A l i g n e d   t o   \ s t e p _ i d \   e n u m   ( B a s i c   P r o f i l e ,   I n t e r e s t s ,   L o c a t i o n ,   P l e d g e ,   S u c c e s s ) .   R e m o v e d   \ S t a r t e d \   s t e p . \  \ 
+ -   * * M e t r i c s * * :   \ M a t c h  
+ R a t e \   d e f i n e d   a s   \ m a t c h _ c r e a t e d \   /   \ D A U \   ( U n i q u e   U s e r s ) .   T i m e   o n   s t e p   d e r i v e d   f r o m   \ o n b o a r d i n g _ s t e p _ c o m p l e t e d . d u r a t i o n _ m s \ . \  \ 
+ -   * * P r i v a c y * * :   L i v e   f e e d   m u s t   f i l t e r   o u t   P I I   ( e . g . ,   i n v i t e   t o k e n s )   a n d   o n l y   s h o w   s a f e   f i e l d s   ( e v e n t _ n a m e ,   c i t y ,   t s ) . \  \ 
+ \  \ 
+ # # #   N e x t   S t e p s \  \ 
+ -   * * I m p l e m e n t a t i o n * * :   I m p l e m e n t a t i o n   E n g i n e e r   t o   b u i l d   t h e   \ / a d m i n / a n a l y t i c s \   r o u t e   a n d   c o m p o n e n t s . \  \ 
+ -   * * S e c u r i t y * * :   T e c h n i c a l   L e a d   t o   f i n a l i z e   a d m i n   a u t h   g a t i n g   f o r   t h e   r o u t e . \  \ 
+  
  
