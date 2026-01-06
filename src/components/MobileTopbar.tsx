@@ -115,9 +115,27 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
           return
         }
         
-        // Check for recent dabs (last 7 days), excluding dismissed ones
+        // Check for accepted crew invites (last 7 days) where user is the inviter
+        // Show notification dot when someone joins user's crew
         const weekAgo = new Date()
         weekAgo.setDate(weekAgo.getDate() - 7)
+        const { data: acceptedInvites } = await client
+          .from('crew_invites')
+          .select('id')
+          .eq('inviter_id', userId)
+          .eq('status', 'accepted')
+          .not('accepted_at', 'is', null)
+          .gte('accepted_at', weekAgo.toISOString())
+          .limit(20)
+
+        // Check if any accepted invites are not dismissed
+        const undismissedAccepted = acceptedInvites?.filter(inv => !dismissed.has(`crew-joined-${inv.id}`)) ?? []
+        if (undismissedAccepted.length > 0) {
+          setHasUnreadNotifications(true)
+          return
+        }
+
+        // Check for recent dabs (last 7 days), excluding dismissed ones
         const { data: dabs } = await client
           .from('swipes')
           .select('id')
@@ -125,14 +143,14 @@ export default function MobileTopbar({ breadcrumb = 'Breadcrumb', className = ''
           .eq('action', 'like')
           .gte('created_at', weekAgo.toISOString())
           .limit(20)
-        
+
         // Check if any dabs are not dismissed
         const undismissedDabs = dabs?.filter(d => !dismissed.has(`dab-${d.id}`)) ?? []
         if (undismissedDabs.length > 0) {
           setHasUnreadNotifications(true)
           return
         }
-        
+
         // No unread notifications
         setHasUnreadNotifications(false)
       } catch (err) {

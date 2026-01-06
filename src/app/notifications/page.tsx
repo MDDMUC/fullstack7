@@ -44,7 +44,7 @@ const saveDismissedNotifications = (ids: Set<string>) => {
 
 type NotificationItem = {
   id: string
-  type: 'message' | 'dab' | 'crew_invite'
+  type: 'message' | 'dab' | 'crew_invite' | 'crew_joined'
   text: string
   time?: string
   link?: string
@@ -258,6 +258,55 @@ export default function NotificationsPage() {
           }
         }
 
+        // 2c. Fetch accepted crew invites where current user is the inviter (crew owner)
+        // Show notifications when someone joins the crew
+        const { data: acceptedInvites } = await client
+          .from('crew_invites')
+          .select(`
+            id,
+            crew_id,
+            invitee_id,
+            accepted_at,
+            crews!inner(id, title)
+          `)
+          .eq('inviter_id', userId)
+          .eq('status', 'accepted')
+          .not('accepted_at', 'is', null)
+          .order('accepted_at', { ascending: false })
+          .limit(10)
+
+        if (acceptedInvites && acceptedInvites.length > 0) {
+          const joinedUserIds = acceptedInvites.map(inv => inv.invitee_id).filter(Boolean)
+          let joinedUserProfiles: Record<string, { username: string; avatar_url?: string }> = {}
+          if (joinedUserIds.length > 0) {
+            const profiles = await fetchProfiles(client, joinedUserIds)
+            joinedUserProfiles = profiles.reduce<Record<string, { username: string; avatar_url?: string }>>((acc, p) => {
+              acc[p.id] = { username: p.username || 'User', avatar_url: p.avatar_url ?? undefined }
+              return acc
+            }, {})
+          }
+
+          for (const invite of acceptedInvites) {
+            const crew = invite.crews as any
+            const joinedUser = joinedUserProfiles[invite.invitee_id]
+            const joinedUserName = joinedUser?.username?.trim().split(/\s+/)[0] || 'Someone'
+            const crewName = crew?.title || 'your crew'
+            const timeAgo = formatTimeAgo(invite.accepted_at)
+
+            allNotifications.push({
+              id: `crew-joined-${invite.id}`,
+              type: 'crew_joined',
+              text: `${joinedUserName} joined "${crewName}"`,
+              time: timeAgo,
+              link: `/crew/detail?crewId=${crew.id}`,
+              userId: invite.invitee_id,
+              crewId: crew.id,
+              crewName: crewName,
+              avatarUrl: joinedUser?.avatar_url,
+            })
+          }
+        }
+
         // 3. Fetch dabs (swipes where user was dabbed)
         const { data: dabs } = await client
           .from('swipes')
@@ -386,6 +435,10 @@ export default function NotificationsPage() {
         if (updateError) {
           console.error('Error updating invite status:', updateError)
         }
+
+        // Redirect owner to crew detail page after accepting request
+        router.push(`/crew/detail?crewId=${inviteData.crew_id}`)
+        return
       } else if (isInvite) {
         const { error } = await client.rpc('accept_crew_invite', { invite_id: inviteId })
         if (error) {
@@ -401,21 +454,27 @@ export default function NotificationsPage() {
           .eq('invitee_id', userId)
           .eq('crew_id', inviteData.crew_id)
           .eq('status', 'pending')
+
+        // Dispatch custom event for toast notification
+        window.dispatchEvent(new CustomEvent('crew-invite-accepted', {
+          detail: {
+            inviteId: inviteId,
+            inviterId: inviteData.inviter_id,
+            inviteeId: inviteData.invitee_id,
+            crewId: inviteData.crew_id
+          }
+        }))
+
+        // Redirect invitee to crew detail page after accepting
+        router.push(`/crew/detail?crewId=${inviteData.crew_id}`)
+        return
       } else {
         setErrorIds(prev => ({ ...prev, [inviteId]: 'No permission to accept this invite' }))
         return
       }
 
-      // Remove all notifications related to this user+crew combo
-      setNotifications(prev => prev.filter(n => {
-        if (n.type !== 'crew_invite') return true
-        return !(n.crewId === inviteData.crew_id &&
-          (n.userId === inviteData.invitee_id || n.inviteId === inviteId))
-      }))
-      // Clear error on success
-      setErrorIds(prev => { const next = { ...prev }; delete next[inviteId]; return next })
-      // Notify MobileTopbar to re-check unread count
-      window.dispatchEvent(new CustomEvent('notifications-updated'))
+      // Note: Code below is unreachable since both branches above return early
+      // Left for reference but will never execute
     } catch (err) {
       console.error('Error accepting invite:', err)
       setErrorIds(prev => ({ ...prev, [inviteId]: 'Failed to accept invitation' }))

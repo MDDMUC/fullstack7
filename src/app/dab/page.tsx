@@ -46,51 +46,52 @@ export default function OnboardingPage() {
       try {
         const { safeGetUser } = await import('@/lib/authUtils')
         const { user, error: userError } = await safeGetUser(supabase)
-        
-        // If user is authenticated, check if they have a profile
+
+        // If user is authenticated, check if they have completed onboarding
         if (user && !userError) {
           // Check current step again before redirecting (in case it changed during async operation)
           const stepAtCheckTime = currentStep
-          
+
           // CRITICAL: Never redirect if on final onboarding steps
           if (stepAtCheckTime >= 4) {
             console.log('On final onboarding steps, skipping redirect check')
             return
           }
-          
-          const { data: profile, error: profileError } = await supabase
-            .from('onboardingprofiles')
-            .select('id')
-            .eq('id', user.id)
-            .single()
+
+          // Use hasCompletedOnboarding to check if profile is COMPLETE (not just exists)
+          // This prevents redirect loops where profile exists but is missing required fields
+          const { hasCompletedOnboarding } = await import('@/lib/onboardingGuard')
+          const isComplete = await hasCompletedOnboarding()
 
           // Check if testing mode is enabled (bypass profile check)
-          const isTestingMode = 
-            typeof window !== 'undefined' && 
-            (localStorage.getItem('onboarding_test_mode') === 'true' || 
+          const isTestingMode =
+            typeof window !== 'undefined' &&
+            (localStorage.getItem('onboarding_test_mode') === 'true' ||
              new URLSearchParams(window.location.search).get('test') === 'true')
-          
+
           // Only redirect if:
-          // 1. Profile exists
+          // 1. Onboarding is COMPLETE (profile has all required fields)
           // 2. We're still on early steps (1-3)
           // 3. User is not actively completing onboarding (steps 4+ mean they're in flow)
           // 4. Testing mode is not enabled
-          if (profile && !profileError && stepAtCheckTime < 4 && !isTestingMode) {
+          if (isComplete && stepAtCheckTime < 4 && !isTestingMode) {
             // Final safety check - never redirect if somehow we got to final steps
             if (currentStep >= 4) {
               console.log('Step changed to final steps during check, aborting redirect')
               return
             }
-            console.log('User already has a profile, redirecting to home')
+            console.log('User has completed onboarding, redirecting to home')
             console.log('💡 To test onboarding again, add ?test=true to the URL or set localStorage.setItem("onboarding_test_mode", "true")')
             router.replace('/home')
             return
-          } else if (profile && !profileError) {
-            // User has profile but is on step 4+, meaning they're actively in onboarding
+          } else if (isComplete) {
+            // User has completed onboarding but is on step 4+, meaning they're actively in onboarding
             // Don't redirect - let them complete it
-            console.log('User has profile but is in onboarding flow, allowing to continue')
+            console.log('User has completed onboarding but is in onboarding flow, allowing to continue')
           } else if (isTestingMode) {
             console.log('🧪 Testing mode enabled - allowing onboarding even with existing profile')
+          } else {
+            console.log('Onboarding incomplete, staying on /dab to complete')
           }
         }
       } catch (error) {

@@ -17,6 +17,7 @@ import ActionMenu from '@/components/ActionMenu'
 import Modal from '@/components/Modal'
 import ReportModal from '@/components/ReportModal'
 import BlockConfirmModal from '@/components/BlockConfirmModal'
+import LoadingState from '@/components/LoadingState'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase } from '@/lib/supabaseClient'
 import { fetchProfiles, fetchGymsFromTable, Gym, Profile } from '@/lib/profiles'
@@ -110,6 +111,7 @@ function CrewDetailContent() {
   const [blockConfirmOpen, setBlockConfirmOpen] = useState(false)
   const [blockTarget, setBlockTarget] = useState<{ userId: string, username?: string } | null>(null)
   const [blockingUser, setBlockingUser] = useState(false)
+  const [leaveCrewModalOpen, setLeaveCrewModalOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const inviteModalRef = useRef<HTMLDivElement | null>(null)
@@ -559,14 +561,20 @@ function CrewDetailContent() {
     return date.toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: 'numeric' })
   }
 
-  const handleLeaveCrew = async () => {
+  const handleLeaveCrew = () => {
+    setMenuOpen(false)
+    setLeaveCrewModalOpen(true)
+  }
+
+  const confirmLeaveCrew = async () => {
     const client = supabase
     if (!client || !userId || !thread?.id) {
       setError('Unable to leave crew')
+      setLeaving(false)
       return
     }
+
     setLeaving(true)
-    setMenuOpen(false)
 
     // Remove user from thread participants
     const { error: leaveError } = await client
@@ -583,6 +591,11 @@ function CrewDetailContent() {
 
     // Redirect to crew list
     router.push('/crew')
+  }
+
+  const cancelLeaveCrew = () => {
+    setLeaveCrewModalOpen(false)
+    setLeaving(false)
   }
 
   const handleInviteUsers = () => {
@@ -1048,7 +1061,7 @@ function CrewDetailContent() {
       <div className="chats-event-screen" data-name="/crew/detail">
         <div className="chats-event-content">
           <div className="chats-event-card">
-            <p style={{ padding: 'var(--button-padding-xxxxl)', textAlign: 'center' }}>Loading crew chat…</p>
+            <LoadingState message="Loading crew chat…" />
           </div>
         </div>
         <MobileNavbar active="crew" />
@@ -1327,31 +1340,37 @@ function CrewDetailContent() {
       >
         <div className="invite-users-modal-search">
           <div className="invite-users-search-row">
-            <input
-              type="text"
-              placeholder="Search by name..."
-              value={searchName}
-              onChange={(e) => setSearchName(e.target.value)}
-              className="invite-users-search-input"
-            />
+            <div className="onb-input-wrapper">
+              <input
+                type="text"
+                placeholder="Search by name..."
+                value={searchName}
+                onChange={(e) => setSearchName(e.target.value)}
+                className="onb-input"
+              />
+            </div>
           </div>
           <div className="invite-users-search-row">
-            <input
-              type="text"
-              placeholder="Search by city..."
-              value={searchCity}
-              onChange={(e) => setSearchCity(e.target.value)}
-              className="invite-users-search-input"
-            />
+            <div className="onb-input-wrapper">
+              <input
+                type="text"
+                placeholder="Search by city..."
+                value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                className="onb-input"
+              />
+            </div>
           </div>
           <div className="invite-users-search-row">
-            <input
-              type="text"
-              placeholder="Search by gym..."
-              value={searchGym}
-              onChange={(e) => setSearchGym(e.target.value)}
-              className="invite-users-search-input"
-            />
+            <div className="onb-input-wrapper">
+              <input
+                type="text"
+                placeholder="Search by gym..."
+                value={searchGym}
+                onChange={(e) => setSearchGym(e.target.value)}
+                className="onb-input"
+              />
+            </div>
           </div>
         </div>
 
@@ -1428,6 +1447,40 @@ function CrewDetailContent() {
         <div className="report-modal-form">
           <p style={{ margin: 0, color: 'var(--color-text)', lineHeight: 1.5 }}>
             Are you sure you want to remove <strong>{participantToRemove?.name}</strong> from this crew?
+          </p>
+        </div>
+      </Modal>
+
+      {/* Leave Crew Confirmation Modal */}
+      <Modal
+        open={leaveCrewModalOpen}
+        onClose={cancelLeaveCrew}
+        title="Leave Crew"
+        size="sm"
+        footer={
+          <div className="report-modal-footer">
+            <button
+              type="button"
+              className="report-modal-cancel"
+              onClick={cancelLeaveCrew}
+              disabled={leaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              className="report-modal-submit"
+              onClick={confirmLeaveCrew}
+              disabled={leaving}
+            >
+              {leaving ? 'Leaving...' : 'Leave'}
+            </button>
+          </div>
+        }
+      >
+        <div className="report-modal-form">
+          <p style={{ margin: 0, color: 'var(--color-text)', lineHeight: 1.5 }}>
+            Are you sure you want to leave <strong>{crew?.title}</strong>?
           </p>
         </div>
       </Modal>

@@ -15483,6 +15483,57 @@ img.friend-tile-img {
 }
 
 /* ========================================
+   MODAL BUTTONS - Standardized using design tokens only
+   ======================================== */
+
+.modal-button-secondary {
+  flex: 1;
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-inter);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted);
+  background: transparent;
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.modal-button-secondary:hover:not(:disabled) {
+  background: var(--color-bg);
+  border-color: var(--color-muted);
+}
+
+.modal-button-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-button-primary {
+  flex: 1;
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-inter);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-bg);
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.modal-button-primary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.modal-button-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ========================================
    NOTIFICATIONS PAGE - Exact from Figma node 786:2988
    ======================================== */
 .notifications-screen {

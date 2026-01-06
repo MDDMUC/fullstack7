@@ -19,6 +19,12 @@ Template
 - Impact:
 - Links:
 
+## 2026-01-05 - Add onboarding step analytics events in v1
+- Decision: Add onboarding_step_started and onboarding_step_completed to analytics taxonomy in v1; defer onboarding_step_error to v1.1; keep analytics select restricted to service_role.
+- Rationale: Need early visibility into onboarding drop-off with minimal data collection.
+- Impact: Update tracking spec and event_name CHECK constraint; add step-level instrumentation and guard against duplicates.
+- Links: `TICKETS/analytics-tracking-spec.md`, `docs/EVENT_TAXONOMY.md`
+
 ## 2025-12-22 - Use Next.js App Router
 - Decision: Build the frontend with Next.js App Router.
 - Rationale: Server Components reduce bundle size and layouts simplify mobile nav.

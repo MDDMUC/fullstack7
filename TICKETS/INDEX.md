@@ -24,15 +24,12 @@
 | TICKET-MKT-002 | Social Accounts Setup | Proposed | Marketing | P1 | `TICKETS/social-accounts-setup.md` |
 | TICKET-PRT-001 | Partnerships Pack (Gyms + Gear) | Proposed | Biz Dev/Marketing | P1 | `TICKETS/partnerships-pack.md` |
 | TICKET-MKT-003 | Launch Marketing Pack | Proposed | Marketing | P1 | `TICKETS/launch-marketing-pack.md` |
-| TICKET-ANA-001 | Analytics Tracking Spec (v1) | Proposed | Product | P2 | `TICKETS/analytics-tracking-spec.md` |
+| TICKET-ANA-001 | Analytics Tracking Spec (v1) | In Tech Review | Product | P2 | `TICKETS/analytics-tracking-spec.md` |
 | TICKET-ANA-002 | Analytics Pipeline (events table + client instrumentation) | Proposed | Eng | P2 | `TICKETS/analytics-pipeline.md` |
-| TICKET-ANA-003 | Analytics Views + Metrics Dashboard + CSV Export | Proposed | Eng/Data | P2 | `TICKETS/analytics-dashboard-and-views.md` |
+| TICKET-ANA-003 | Analytics Views + Metrics Dashboard + CSV Export | Proposed | Eng/Data | P2 | `TICKETS/analytics-dashboard-and-views.md` |     
 | TICKET-ANA-004 | Analytics QA (Seeded Cohort Validation) | Proposed | Product/Eng | P2 | `TICKETS/analytics-seeded-cohort-qa.md` |
 | TICKET-RET-001 | Habit Loops and Retention Prompts | Proposed | Eng/Product | P2 | `TICKETS/habit-loops-retention.md` |
 | TICKET-UX-001 | Launch Polish Pack | Proposed | Product/Marketing | P2 | `TICKETS/launch-polish-pack.md` |
 | TICKET-PRES-001 | Friends in Gym Phase 2 (Opt-in Check-ins) | Parked | Eng/Product | P2 | `TICKETS/friends-in-gym-phase2.md` |
 
-
-
-
-
+- [x] [TICKET_PROFILE_EDIT_STYLES](TICKET_PROFILE_EDIT_STYLES.md) - Update Profile Edit Climbing Styles

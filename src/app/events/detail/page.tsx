@@ -9,6 +9,7 @@ import React, { Suspense } from 'react'
 import ButtonCta from '@/components/ButtonCta'
 import MobileNavbar from '@/components/MobileNavbar'
 import BackBar from '@/components/BackBar'
+import LoadingState from '@/components/LoadingState'
 import { RequireAuth } from '@/components/RequireAuth'
 import { useAuthSession } from '@/hooks/useAuthSession'
 import { supabase, requireSupabase } from '@/lib/supabaseClient'
@@ -280,7 +281,7 @@ function EventDetailContent() {
             }
           />
 
-          {loading && <p className="events-detail-status">Loading event...</p>}
+          {loading && <LoadingState message="Loading event…" />}
           {!loading && error && <p className="events-detail-status events-detail-status-error">{error}</p>}
 
           {event && !loading && !error && (

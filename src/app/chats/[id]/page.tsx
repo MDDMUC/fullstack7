@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import MobileNavbar from '@/components/MobileNavbar'
 import BackBar from '@/components/BackBar'
+import LoadingState from '@/components/LoadingState'
 import { ChatMessage } from '@/components/ChatMessage'
 import ActionMenu from '@/components/ActionMenu'
 import ReportModal from '@/components/ReportModal'
@@ -752,6 +753,19 @@ export default function ChatDetailPage() {
   const heroSub = isEventThread ? event?.title || '' : isCrewThread ? crew?.title || '' : gym?.name || 'Gym Name'
   const heroInfoLeft = isEventThread ? event?.location || '' : isCrewThread ? crew?.location || '' : gym?.location || 'City'
   const heroInfoRight = isEventThread ? formatDate(event?.start_at) || 'Date/time' : isCrewThread ? formatDate(crew?.start_at) || 'Date/time' : '27 people are going'
+
+  if (loading) {
+    return (
+      <div className={isGroupThread ? 'chat-gym-screen' : 'chat-detail-screen'} data-chat-id={chatId}>
+        <div className={isGroupThread ? 'chat-gym-content' : 'chat-detail-content'}>
+          <div className={isGroupThread ? 'chat-gym-card' : 'chat-detail-card'}>
+            <LoadingState message="Loading chat…" />
+          </div>
+        </div>
+        <MobileNavbar active="chats" />
+      </div>
+    )
+  }
 
   return (
     <div className={isGroupThread ? 'chat-gym-screen' : 'chat-detail-screen'} data-chat-id={chatId}>

@@ -17,7 +17,7 @@ async function main() {
   const { data: auth } = await supabase.auth.getSession()
   console.log('Auth session:', auth.session ? 'present' : 'none')
 
-  const tables = ['threads', 'messages', 'thread_participants', 'profiles']
+  const tables = ['threads', 'messages', 'thread_participants', 'profiles', 'onboardingprofiles', 'gyms', 'crews', 'events']
   for (const table of tables) {
     const { data, error } = await supabase.from(table).select('*').limit(1)
     if (error) {
