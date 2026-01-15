@@ -17,7 +17,8 @@
       "Bash(if [ -f .env.local ])",
       "Bash(then grep \"FIREBASE_SERVICE_ACCOUNT_JSON\" .env.local)",
       "Bash(else echo \".env.local file not found\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Bash(npm install:*)"
     ]
   }
 }
